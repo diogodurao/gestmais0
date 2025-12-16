@@ -24,6 +24,13 @@ export function RegisterForm() {
         setLoading(true)
         setError("")
 
+        // Validate NIF
+        if (formData.nif.length !== 9 || !/^\d+$/.test(formData.nif)) {
+            setError("NIF é composto por 9 digitos")
+            setLoading(false)
+            return
+        }
+
         try {
             await authClient.signUp.email({
                 email: formData.email,
@@ -102,7 +109,7 @@ export function RegisterForm() {
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
             />
             <Input
-                label={role === "manager" ? "Building NIF" : "NIF"}
+                label="NIF"
                 type="text"
                 placeholder="123456789"
                 required

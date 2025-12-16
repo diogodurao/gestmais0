@@ -1,10 +1,12 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment } from "@/app/actions/building";
+import { getManagerBuilding, getBuildingResidents, getResidentApartment } from "@/app/actions/building";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { JoinBuildingForm } from "@/features/dashboard/JoinBuildingForm";
 import { ClaimApartmentForm } from "@/features/dashboard/ClaimApartmentForm";
+import { CreateBuildingForm } from "@/features/dashboard/CreateBuildingForm";
+import { BuildingInfoCard } from "@/features/dashboard/BuildingInfoCard";
 import { Users } from "lucide-react";
 
 export const dynamic = 'force-dynamic'
@@ -20,14 +22,15 @@ export default async function DashboardPage() {
 
     // --- MANAGER LOGIC ---
     let buildingInfo = null;
-    let buildingCode = "N/A";
     let residents: any[] = [];
 
     if (session.user.role === 'manager') {
         try {
-            const building = await getOrCreateManagerBuilding(session.user.id, session.user.nif || "");
+            const building = await getManagerBuilding(session.user.id);
+            if (!building) {
+                return <CreateBuildingForm userId={session.user.id} userNif={session.user.nif || ""} />
+            }
             buildingInfo = building;
-            buildingCode = building.code;
             residents = await getBuildingResidents(building.id);
         } catch (e) {
             console.error("Failed to load building", e);
@@ -82,34 +85,21 @@ export default async function DashboardPage() {
                                 )}
                             </div>
 
-                            {session.user.role === 'manager' && (
-                                <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg flex justify-between items-center">
-                                    <div>
-                                        <p className="text-blue-800 font-medium text-sm">Valid Invite Code</p>
-                                        <p className="text-2xl font-bold text-blue-900 tracking-wider font-mono lowercase">{buildingCode}</p>
-                                    </div>
-                                    <div className="text-right max-w-[150px]">
-                                        <p className="text-xs text-blue-600 leading-tight">Share this code with residents to let them join.</p>
-                                    </div>
-                                </div>
+                            {/* Manager Building Info */}
+                            {session.user.role === 'manager' && buildingInfo && (
+                                <BuildingInfoCard building={buildingInfo} role="manager" />
                             )}
 
+                            {/* Resident Building Info */}
                             {session.user.role === 'resident' && residentBuildingInfo && (
-                                <div className="p-4 bg-gray-50 border border-gray-100 rounded-md">
-                                    <h3 className="font-medium text-black mb-2">Building Details</h3>
-                                    <div className="text-sm space-y-1">
-                                        <p><span className="text-gray-500">Name:</span> <span className="font-medium">{residentBuildingInfo.building.name}</span></p>
-                                        <p><span className="text-gray-500">Manager:</span> <span className="font-medium">{residentBuildingInfo.manager.name}</span></p>
-                                        <p><span className="text-gray-500">Contact:</span> <span className="font-medium">{residentBuildingInfo.manager.email}</span></p>
-                                    </div>
-                                </div>
+                                <BuildingInfoCard building={residentBuildingInfo.building} role="resident" />
                             )}
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Manager: Residents Card */}
-                {session.user.role === 'manager' && (
+                {session.user.role === 'manager' && residents && (
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <h3 className="text-sm font-medium">Residents</h3>

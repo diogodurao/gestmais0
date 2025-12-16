@@ -5,41 +5,62 @@ import { building, user, apartments, payments } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
 import { nanoid } from "nanoid"
 
-export async function getOrCreateManagerBuilding(userId: string, userNif: string) {
-    // 1. Check if user already has a building
+export async function getManagerBuilding(userId: string) {
     const existingUser = await db.select().from(user).where(eq(user.id, userId)).limit(1)
     if (!existingUser.length) throw new Error("User not found")
 
     const currentUser = existingUser[0]
 
     if (currentUser.buildingId) {
-        // Return existing building
         const existingBuilding = await db.select().from(building).where(eq(building.id, currentUser.buildingId)).limit(1)
         return existingBuilding[0]
     }
 
-    // 2. Create new building
-    // Generate a simple short code for invites
-    // User requested: no hyphens, no capslock. So we use alphanumeric mixed case.
+    return null
+}
+
+export async function createSetupBuilding(data: {
+    userId: string,
+    userNif: string,
+    city: string,
+    street: string,
+    number: string,
+    buildingNif: string,
+    iban: string,
+    totalApartments: number
+}) {
+    // Validations
+    if (data.buildingNif.length !== 9 || !/^\d+$/.test(data.buildingNif)) {
+        throw new Error("Building NIF must be exactly 9 digits")
+    }
+    if (data.iban.length !== 25 || !/^[a-zA-Z0-9]+$/.test(data.iban)) {
+        throw new Error("IBAN must be exactly 25 alphanumeric characters")
+    }
+
+    // Generate code
     const { customAlphabet } = await import("nanoid")
     const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
     const code = nanoidCode()
 
-    // We'll use the user's NIF as the building NIF by default for MVP simplification
-    // or we could ask for it. But requirements say "generate buildingid".
+    const autoName = `Condominio ${data.street} ${data.number}, ${data.city}`
 
     const [newBuilding] = await db.insert(building).values({
         id: crypto.randomUUID(),
-        name: "My Condominium", // Default name, editable later
-        nif: userNif || "N/A",
+        name: autoName,
+        nif: data.buildingNif,
         code: code,
-        managerId: userId,
+        managerId: data.userId,
+        city: data.city,
+        street: data.street,
+        number: data.number,
+        iban: data.iban,
+        totalApartments: data.totalApartments
     }).returning()
 
-    // 3. Link user to building
+    // Link user
     await db.update(user)
         .set({ buildingId: newBuilding.id })
-        .where(eq(user.id, userId))
+        .where(eq(user.id, data.userId))
 
     return newBuilding
 }

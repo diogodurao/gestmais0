@@ -5,7 +5,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { getPaymentMap } from "@/app/actions/payments"
 import { PaymentGrid } from "@/features/dashboard/PaymentGrid"
-import { getOrCreateManagerBuilding } from "@/app/actions/building"
+import { getManagerBuilding } from "@/app/actions/building"
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +24,10 @@ export default async function PaymentsPage() {
     // Defensive: if for some reason buildingId is missing but they are manager (should stick from dashboard, but let's be safe)
     if (!buildingId) {
         try {
-            const building = await getOrCreateManagerBuilding(session.user.id, session.user.nif || "")
+            const building = await getManagerBuilding(session.user.id)
+            if (!building) {
+                return redirect("/dashboard")
+            }
             buildingId = building.id
         } catch (e) {
             console.error("Critical error loading building", e)

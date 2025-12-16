@@ -60,7 +60,16 @@ export const building = pgTable('building', {
     nif: text('nif').notNull(),
     code: text('code').notNull().unique(), // The "Building ID" for invites (e.g. "BM123")
     managerId: text('manager_id').notNull().references(() => user.id),
-    address: text('address'),
+
+    // Detailed Address (Onboarding)
+    city: text('city'),
+    street: text('street'),
+    number: text('number'),
+
+    // Financial & Stats
+    iban: text('iban'),
+    totalApartments: integer('total_apartments'),
+
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
