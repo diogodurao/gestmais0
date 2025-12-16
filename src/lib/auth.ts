@@ -28,6 +28,10 @@ export const auth = betterAuth({
             buildingId: {
                 type: "string",
                 required: false,
+            },
+            iban: {
+                type: "string",
+                required: false,
             }
         }
     }

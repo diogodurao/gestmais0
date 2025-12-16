@@ -80,7 +80,24 @@ export async function getResidentBuildingDetails(buildingId: string) {
     return result[0] || null
 }
 
+// Helper to verify manager ownership
+async function verifyManager(buildingId: string) {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+    if (!session || !session.user) throw new Error("Unauthorized")
+
+    // Check if the user is the manager of the building
+    const b = await db.select().from(building).where(eq(building.id, buildingId)).limit(1)
+    if (!b.length || b[0].managerId !== session.user.id) {
+        throw new Error("Unauthorized: Not the building manager")
+    }
+    return session.user
+}
+
 export async function createApartment(buildingId: string, unit: string) {
+    await verifyManager(buildingId)
+
     if (!buildingId || !unit) throw new Error("Missing fields")
 
     // Check if exists
@@ -100,6 +117,12 @@ export async function createApartment(buildingId: string, unit: string) {
 }
 
 export async function deleteApartment(apartmentId: number) {
+    // We need buildingId to verify manager. First fetch the apartment
+    const apt = await db.select().from(apartments).where(eq(apartments.id, apartmentId)).limit(1)
+    if (!apt.length) throw new Error("Apartment not found")
+
+    await verifyManager(apt[0].buildingId)
+
     // Delete related payments first (cascade usually handles this if defined, but explicit is safer for MVP)
     await db.delete(payments).where(eq(payments.apartmentId, apartmentId))
 
@@ -107,6 +130,46 @@ export async function deleteApartment(apartmentId: number) {
     await db.delete(apartments).where(eq(apartments.id, apartmentId))
 
     return true
+}
+
+// New actions for Manager
+export async function updateBuilding(buildingId: string, data: Partial<typeof building.$inferInsert>) {
+    await verifyManager(buildingId)
+
+    await db.update(building)
+        .set(data)
+        .where(eq(building.id, buildingId))
+    return true
+}
+
+export async function getBuildingApartments(buildingId: string) {
+    const result = await db.select({
+        id: apartments.id,
+        unit: apartments.unit,
+        residentId: apartments.residentId,
+        residentName: user.name,
+    })
+        .from(apartments)
+        .leftJoin(user, eq(apartments.residentId, user.id))
+        .where(eq(apartments.buildingId, buildingId))
+        .orderBy(apartments.unit)
+
+    return result
+}
+
+// New actions for Resident
+export async function getAvailableApartments(buildingId: string) {
+    // Return apartments that have no residentId
+    const result = await db.select().from(apartments)
+        .where(and(
+            eq(apartments.buildingId, buildingId),
+            // We want apartments where residentId is null
+        ))
+        // Filtering for null in code or using isNull()
+
+    // Drizzle isNull helper needed? Or just filter results.
+    // Let's import isNull from drizzle-orm
+    return result.filter(apt => !apt.residentId)
 }
 
 import { headers } from "next/headers"
@@ -121,26 +184,27 @@ export async function claimApartment(buildingId: string, unit: string) {
 
     const userId = session.user.id
 
-    // Check if apartment exists
+    // Check if apartment exists and is free
     const existing = await db.select().from(apartments).where(and(
         eq(apartments.buildingId, buildingId),
         eq(apartments.unit, unit)
     )).limit(1)
 
     if (existing.length) {
-        // Update existing
+        const apt = existing[0]
+        if (apt.residentId) {
+            throw new Error("Apartment is already taken")
+        }
+
+        // Claim it
         await db.update(apartments)
             .set({ residentId: userId })
-            .where(eq(apartments.id, existing[0].id))
-        return existing[0]
+            .where(eq(apartments.id, apt.id))
+        return apt
     } else {
-        // Create new
-        const [newApt] = await db.insert(apartments).values({
-            buildingId,
-            unit,
-            residentId: userId,
-        }).returning()
-        return newApt
+        // We do NOT create new apartments here anymore (Manager must create them)
+        // Only if legacy support needed? Requirement says "select from list"
+        throw new Error("Apartment not found")
     }
 }
 

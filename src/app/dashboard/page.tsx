@@ -1,10 +1,12 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment } from "@/app/actions/building";
+import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment, getBuildingApartments, getAvailableApartments } from "@/app/actions/building";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { JoinBuildingForm } from "@/features/dashboard/JoinBuildingForm";
 import { ClaimApartmentForm } from "@/features/dashboard/ClaimApartmentForm";
+import { BuildingSettings } from "@/features/manager/BuildingSettings";
+import { ApartmentManager } from "@/features/manager/ApartmentManager";
 import { Users } from "lucide-react";
 
 export const dynamic = 'force-dynamic'
@@ -21,7 +23,10 @@ export default async function DashboardPage() {
     // --- MANAGER LOGIC ---
     let buildingInfo = null;
     let buildingCode = "N/A";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let residents: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let allApartments: any[] = [];
 
     if (session.user.role === 'manager') {
         try {
@@ -29,6 +34,7 @@ export default async function DashboardPage() {
             buildingInfo = building;
             buildingCode = building.code;
             residents = await getBuildingResidents(building.id);
+            allApartments = await getBuildingApartments(building.id);
         } catch (e) {
             console.error("Failed to load building", e);
         }
@@ -37,6 +43,8 @@ export default async function DashboardPage() {
     // --- RESIDENT LOGIC ---
     let residentBuildingInfo = null;
     let residentApartment = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let availableApartments: any[] = [];
 
     if (session.user.role === 'resident') {
         if (!session.user.buildingId) {
@@ -45,22 +53,48 @@ export default async function DashboardPage() {
             // Already joined building. Now check if they have an apartment
             try {
                 residentApartment = await getResidentApartment(session.user.id)
-                // If NO apartment, show Claim Form
+
+                // If NO apartment, fetch available ones for the form
                 if (!residentApartment) {
-                    return <ClaimApartmentForm buildingId={session.user.buildingId} />
+                    availableApartments = await getAvailableApartments(session.user.buildingId);
                 }
 
                 // If HAS apartment, load details
-                const { getResidentBuildingDetails } = await import("@/app/actions/building");
-                residentBuildingInfo = await getResidentBuildingDetails(session.user.buildingId);
+                if (residentApartment || !residentApartment) { // Always load building details
+                   const { getResidentBuildingDetails } = await import("@/app/actions/building");
+                   residentBuildingInfo = await getResidentBuildingDetails(session.user.buildingId);
+                }
             } catch (error) {
                 console.error("Failed check resident status", error)
             }
         }
     }
 
+    // If resident has no apartment, show claim form fully
+    if (session.user.role === 'resident' && !residentApartment && session.user.buildingId) {
+        // Explicitly cast or access session user. TS might not know about iban yet without a regen.
+        // We trust better-auth includes it because we configured it in auth.ts
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const user = session.user as any;
+        return <ClaimApartmentForm
+            buildingId={session.user.buildingId}
+            availableApartments={availableApartments}
+            userIban={user.iban}
+            userNif={user.nif}
+            userId={session.user.id}
+        />
+    }
+
     return (
         <div className="space-y-6">
+            {/* Manager: Building Management Section */}
+            {session.user.role === 'manager' && buildingInfo && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                     <BuildingSettings building={buildingInfo} />
+                     <ApartmentManager buildingId={buildingInfo.id} apartments={allApartments} />
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Welcome / Info Card */}
                 <Card className="col-span-1 md:col-span-2">

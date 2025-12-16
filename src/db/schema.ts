@@ -13,6 +13,7 @@ export const user = pgTable('user', {
     // Custom fields
     role: text('role'), // 'manager' | 'resident'
     nif: text('nif'),
+    iban: text('iban'),
     buildingId: text('building_id'), // Link to building (Manager manages it, Resident lives in it)
 });
 
@@ -61,6 +62,10 @@ export const building = pgTable('building', {
     code: text('code').notNull().unique(), // The "Building ID" for invites (e.g. "BM123")
     managerId: text('manager_id').notNull().references(() => user.id),
     address: text('address'),
+    city: text('city'),
+    zip: text('zip'),
+    country: text('country'),
+    iban: text('iban'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

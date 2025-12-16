@@ -92,7 +92,7 @@ export function PaymentDesktopTable({
                     {data.length === 0 && (
                         <tr>
                             <td colSpan={14} className="px-6 py-12 text-center text-gray-400">
-                                No apartments yet. Click "Add Apartment" to get started.
+                                No apartments yet. Click &quot;Add Apartment&quot; to get started.
                             </td>
                         </tr>
                     )}
