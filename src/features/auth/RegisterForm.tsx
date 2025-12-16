@@ -1,0 +1,120 @@
+"use client"
+
+import { useState } from "react"
+import { authClient } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
+
+export function RegisterForm() {
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
+    const [role, setRole] = useState<"manager" | "resident">("resident")
+    const router = useRouter() // Initialize router
+
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        password: "",
+        nif: ""
+    })
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setError("")
+
+        try {
+            await authClient.signUp.email({
+                email: formData.email,
+                password: formData.password,
+                name: formData.name,
+                // Helper cast for custom fields configured in server
+                role: role,
+                nif: formData.nif,
+                callbackURL: "/dashboard"
+            } as Parameters<typeof authClient.signUp.email>[0] & { role: string; nif: string }, {
+                onRequest: () => {
+                    console.log("REGISTER REQUEST STARTED")
+                    setLoading(true)
+                },
+                onSuccess: () => {
+                    console.log("REGISTER SUCCESS - REDIRECTING TO /dashboard")
+                    router.push("/dashboard")
+                },
+                onError: (ctx) => {
+                    console.error("REGISTER ERROR", ctx)
+                    setError(ctx.error.message || "Failed to create account")
+                    setLoading(false)
+                }
+            })
+        } catch (err) {
+            setError("An unexpected error occurred")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Role Selection */}
+            <div className="flex gap-2 mb-4">
+                <Button
+                    type="button"
+                    variant={role === "resident" ? "primary" : "outline"}
+                    fullWidth
+                    onClick={() => setRole("resident")}
+                >
+                    Resident
+                </Button>
+                <Button
+                    type="button"
+                    variant={role === "manager" ? "primary" : "outline"}
+                    fullWidth
+                    onClick={() => setRole("manager")}
+                >
+                    Manager
+                </Button>
+            </div>
+
+            <Input
+                label="Full Name"
+                type="text"
+                placeholder="John Doe"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            />
+            <Input
+                label="Email"
+                type="email"
+                placeholder="you@example.com"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            />
+            <Input
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+            />
+            <Input
+                label={role === "manager" ? "Building NIF" : "NIF"}
+                type="text"
+                placeholder="123456789"
+                required
+                value={formData.nif}
+                onChange={(e) => setFormData(prev => ({ ...prev, nif: e.target.value }))}
+            />
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
+            <Button type="submit" fullWidth disabled={loading}>
+                {loading ? "Creating Account..." : "Sign Up"}
+            </Button>
+        </form>
+    )
+}
