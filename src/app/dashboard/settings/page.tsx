@@ -1,13 +1,14 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getBuilding, getBuildingApartments } from "@/app/actions/building"
+import { getBuilding, getBuildingApartments, getResidentApartment } from "@/app/actions/building"
 import { BuildingSettingsForm } from "@/features/dashboard/BuildingSettingsForm"
 import { ApartmentManager } from "@/features/dashboard/ApartmentManager"
 import { NewBuildingForm } from "@/features/dashboard/NewBuildingForm"
 import { SettingsTabs } from "@/features/dashboard/SettingsTabs"
 import { ProfileSettings } from "@/features/dashboard/ProfileSettings"
 import { User, Building, CreditCard } from "lucide-react"
+import { getApartmentDisplayName } from "@/lib/utils"
 
 export const dynamic = 'force-dynamic'
 
@@ -40,6 +41,10 @@ export default async function SettingsPage({
         )
     }
 
+    // Fetch Unit Info (for both Residents and Managers)
+    const userApartment = await getResidentApartment(session.user.id)
+    const unitName = userApartment ? getApartmentDisplayName(userApartment) : null
+
     // Prepare User Data
     const userData = {
         id: session.user.id,
@@ -48,6 +53,7 @@ export default async function SettingsPage({
         role: session.user.role || 'resident',
         nif: session.user.nif,
         iban: session.user.iban, 
+        unitName: unitName,
     }
 
     // --- MANAGER LOGIC ---

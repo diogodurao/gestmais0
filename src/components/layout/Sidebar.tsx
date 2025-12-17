@@ -37,11 +37,11 @@ export function Sidebar({
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard, requiresSetup: false },
         ...(userRole === "manager" ? [
             { href: "/dashboard/payments", label: "Payment Map", icon: CreditCard, requiresSetup: true },
-            { href: "/dashboard/settings", label: "Settings", icon: Settings, requiresSetup: false }
         ] : []),
         ...(userRole === "resident" ? [
             { href: "/dashboard/my-payments", label: "My Payments", icon: CreditCard, requiresSetup: true }
-        ] : [])
+        ] : []),
+        { href: "/dashboard/settings", label: "Settings", icon: Settings, requiresSetup: false }
     ]
 
     const handleSwitchBuilding = (buildingId: string) => {

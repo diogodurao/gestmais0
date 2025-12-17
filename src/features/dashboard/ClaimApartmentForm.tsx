@@ -49,6 +49,7 @@ export function ClaimApartmentForm({
             router.refresh()
         } catch (e) {
             setError("Failed to claim unit. Please try again.")
+        } finally {
             setIsLoading(false)
         }
     }
@@ -80,7 +81,16 @@ export function ClaimApartmentForm({
         return acc
     }, {} as Record<string, UnclaimedApartment[]>)
 
-    const sortedFloors = Object.keys(groupedByFloor).sort((a, b) => parseInt(a) - parseInt(b))
+    const sortedFloors = Object.keys(groupedByFloor).sort((a, b) => {
+        const aNum = a === "R/C" ? 0 : parseInt(a)
+        const bNum = b === "R/C" ? 0 : parseInt(b)
+        
+        // Handle cases where parseInt might return NaN (though shouldn't happen with valid data)
+        const aVal = isNaN(aNum) ? 0 : aNum
+        const bVal = isNaN(bNum) ? 0 : bNum
+        
+        return aVal - bVal
+    })
 
     return (
         <Card className="max-w-md mx-auto mt-10">

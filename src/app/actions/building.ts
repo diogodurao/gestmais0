@@ -182,18 +182,31 @@ export async function claimApartment(apartmentId: number) {
 
     const userId = session.user.id
 
-    // Verify apartment exists and is unclaimed
-    const apt = await db.select().from(apartments).where(eq(apartments.id, apartmentId)).limit(1)
-    
-    if (!apt.length) throw new Error("Apartment not found")
-    if (apt[0].residentId) throw new Error("Apartment already claimed")
+    // Use a transaction and atomic update to prevent race conditions
+    return await db.transaction(async (tx) => {
+        // 1. Unassign any existing apartment for this user
+        await tx.update(apartments)
+            .set({ residentId: null })
+            .where(eq(apartments.residentId, userId))
 
-    // Claim it
-    await db.update(apartments)
-        .set({ residentId: userId })
-        .where(eq(apartments.id, apartmentId))
+        // 2. Claim the new one
+        const updateResult = await tx.update(apartments)
+            .set({ residentId: userId })
+            .where(and(
+                eq(apartments.id, apartmentId),
+                isNull(apartments.residentId)
+            ))
+            .returning()
 
-    return apt[0]
+        if (updateResult.length === 0) {
+            // Check if it exists at all to provide better error message
+            const exists = await tx.select().from(apartments).where(eq(apartments.id, apartmentId)).limit(1)
+            if (!exists.length) throw new Error("Apartment not found")
+            throw new Error("Apartment already claimed")
+        }
+
+        return updateResult[0]
+    })
 }
 
 export async function getResidentApartment(userId: string) {

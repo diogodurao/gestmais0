@@ -87,7 +87,11 @@ export function ApartmentManager({
 
     // Sort floors
     const sortedFloors = Object.keys(groupedByFloor).sort((a, b) => {
-        return parseInt(a) - parseInt(b)
+        const aNum = a === "R/C" ? 0 : parseInt(a)
+        const bNum = b === "R/C" ? 0 : parseInt(b)
+        const aVal = isNaN(aNum) ? 0 : aNum
+        const bVal = isNaN(bNum) ? 0 : bNum
+        return aVal - bVal
     })
 
     const toggleFloor = (floor: string) => {

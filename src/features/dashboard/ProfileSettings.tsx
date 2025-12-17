@@ -1,9 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
-import { User } from "lucide-react"
+import { User, Check, Loader2 } from "lucide-react"
+import { updateUserProfile } from "@/app/actions/user"
 
 type UserData = {
     id: string
@@ -12,9 +14,43 @@ type UserData = {
     role: string
     nif?: string | null
     iban?: string | null
+    unitName?: string | null
 }
 
 export function ProfileSettings({ user }: { user: UserData }) {
+    const [isSaving, setIsSaving] = useState(false)
+    const [showSuccess, setShowSuccess] = useState(false)
+    const [formData, setFormData] = useState({
+        name: user.name,
+        nif: user.nif || "",
+        iban: user.iban || "",
+    })
+
+    const handleChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }))
+        if (showSuccess) setShowSuccess(false)
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsSaving(true)
+        try {
+            await updateUserProfile(formData)
+            setShowSuccess(true)
+            setTimeout(() => setShowSuccess(false), 3000)
+        } catch (error) {
+            console.error("Failed to update profile", error)
+            alert("Failed to update profile")
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const hasChanges = 
+        formData.name !== user.name || 
+        formData.nif !== (user.nif || "") || 
+        formData.iban !== (user.iban || "")
+
     return (
         <div className="max-w-2xl">
             <Card>
@@ -29,50 +65,78 @@ export function ProfileSettings({ user }: { user: UserData }) {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Input
-                            label="Full Name"
-                            defaultValue={user.name}
-                            readOnly // For now, until we add update action
-                            className="bg-gray-50 text-gray-600"
-                        />
-                        <Input
-                            label="Email Address"
-                            defaultValue={user.email}
-                            readOnly
-                            className="bg-gray-50 text-gray-600"
-                        />
-                    </div>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Input
+                                label="Full Name"
+                                value={formData.name}
+                                onChange={e => handleChange("name", e.target.value)}
+                                required
+                            />
+                            <Input
+                                label="Email Address"
+                                value={user.email}
+                                readOnly
+                                className="bg-gray-50 text-gray-600 cursor-not-allowed"
+                                title="Email cannot be changed"
+                            />
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Input
-                            label="NIF (Tax ID)"
-                            defaultValue={user.nif || ""}
-                            placeholder="Not set"
-                            readOnly
-                            className="bg-gray-50 text-gray-600"
-                        />
-                        <Input
-                            label="Personal IBAN"
-                            defaultValue={user.iban || ""}
-                            placeholder="Not set"
-                            readOnly
-                            className="bg-gray-50 text-gray-600"
-                        />
-                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Input
+                                label="NIF (Tax ID)"
+                                value={formData.nif}
+                                onChange={e => handleChange("nif", e.target.value)}
+                                placeholder="9-digit number"
+                            />
+                            <Input
+                                label="Personal IBAN"
+                                value={formData.iban}
+                                onChange={e => handleChange("iban", e.target.value)}
+                                placeholder="PT50..."
+                            />
+                        </div>
 
-                    <div className="pt-4 border-t border-gray-100">
-                        <div className="flex items-center justify-between">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Input
+                                label="Assigned Unit"
+                                value={user.unitName || "No unit assigned"}
+                                readOnly
+                                className="bg-gray-50 text-gray-600 cursor-not-allowed"
+                                title="Units are assigned by claiming them or by the manager"
+                            />
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium">Account Role</p>
                                 <p className="text-xs text-gray-500 capitalize">{user.role}</p>
                             </div>
-                            {/* <Button variant="outline" size="sm" disabled>
-                                Change Password
-                            </Button> */}
+                            <div className="flex items-center gap-3">
+                                {showSuccess && (
+                                    <span className="flex items-center gap-1 text-sm text-green-600 animate-in fade-in">
+                                        <Check className="w-4 h-4" />
+                                        Saved
+                                    </span>
+                                )}
+                                <Button 
+                                    type="submit" 
+                                    disabled={isSaving || !hasChanges}
+                                    className="min-w-[100px]"
+                                >
+                                    {isSaving ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        "Save Changes"
+                                    )}
+                                </Button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </CardContent>
             </Card>
         </div>

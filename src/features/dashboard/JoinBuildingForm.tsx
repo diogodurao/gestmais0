@@ -24,6 +24,7 @@ export function JoinBuildingForm({ userId }: { userId: string }) {
             router.refresh()
         } catch (e) {
             setError("Invalid building code. Please try again.")
+        } finally {
             setIsLoading(false)
         }
     }

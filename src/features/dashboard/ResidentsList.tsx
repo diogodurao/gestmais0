@@ -55,7 +55,13 @@ export function ResidentsList({
     const sortedFloors = Object.keys(groupedByFloor).sort((a, b) => {
         if (a === "unassigned") return -1
         if (b === "unassigned") return 1
-        return parseInt(a) - parseInt(b)
+        
+        const aNum = a === "R/C" ? 0 : parseInt(a)
+        const bNum = b === "R/C" ? 0 : parseInt(b)
+        const aVal = isNaN(aNum) ? 0 : aNum
+        const bVal = isNaN(bNum) ? 0 : bNum
+        
+        return aVal - bVal
     })
 
     const openFloorDetails = (floor: string) => {
