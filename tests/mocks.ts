@@ -1,36 +1,77 @@
 
 import { vi } from 'vitest';
 
-export const mockDb = {
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    innerJoin: vi.fn().mockReturnThis(),
-    leftJoin: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockReturnThis(),
-    returning: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    set: vi.fn().mockReturnThis(),
-    delete: vi.fn().mockReturnThis(),
+// Define the mock DB object structure
+const createMockDb = () => {
+    let responseQueue: any[] = [];
+    let rejectNext: any = undefined;
+
+    const db: any = {};
+
+    // Make the db object thenable so it can be awaited
+    db.then = (resolve: any, reject: any) => {
+        if (rejectNext) {
+            const err = rejectNext;
+            rejectNext = undefined;
+            return reject(err);
+        }
+
+        const val = responseQueue.length > 0 ? responseQueue.shift() : [];
+        return resolve(val);
+    };
+
+    // Helper to queue resolved values
+    db.__queueResolvedValue = (val: any) => {
+        responseQueue.push(val);
+    };
+
+    // Helper to clear queue
+    db.__resetQueue = () => {
+        responseQueue = [];
+        rejectNext = undefined;
+    };
+
+    db.__setMockRejectedValue = (err: any) => {
+        rejectNext = err;
+    };
+
+    // Chainable methods
+    const methods = [
+        'select', 'from', 'where', 'innerJoin', 'leftJoin',
+        'limit', 'orderBy', 'insert', 'values', 'returning',
+        'update', 'set', 'delete'
+    ];
+
+    methods.forEach(method => {
+        db[method] = vi.fn().mockReturnValue(db);
+    });
+
+    // Transaction mock
+    db.transaction = vi.fn().mockImplementation(async (cb) => {
+        return await cb(db);
+    });
+
+    return db;
 };
+
+export const mockDb = createMockDb();
 
 // Helpers to reset mocks between tests
 export const resetMocks = () => {
     vi.clearAllMocks();
-    mockDb.select.mockReturnThis();
-    mockDb.from.mockReturnThis();
-    mockDb.where.mockReturnThis();
-    mockDb.innerJoin.mockReturnThis();
-    mockDb.leftJoin.mockReturnThis();
-    mockDb.limit.mockReturnThis();
-    mockDb.orderBy.mockReturnThis();
-    mockDb.insert.mockReturnThis();
-    mockDb.values.mockReturnThis();
-    mockDb.returning.mockReturnThis();
-    mockDb.update.mockReturnThis();
-    mockDb.set.mockReturnThis();
-    mockDb.delete.mockReturnThis();
+    mockDb.__resetQueue();
+
+    const methods = [
+        'select', 'from', 'where', 'innerJoin', 'leftJoin',
+        'limit', 'orderBy', 'insert', 'values', 'returning',
+        'update', 'set', 'delete'
+    ];
+
+    methods.forEach(method => {
+        mockDb[method].mockReturnValue(mockDb);
+    });
+
+    mockDb.transaction.mockImplementation(async (cb: any) => {
+        return await cb(mockDb);
+    });
 };

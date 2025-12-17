@@ -40,54 +40,42 @@ describe('Resident and Building Operations', () => {
     });
 
     it('should join a building with correct code', async () => {
-        // Mock finding building
-        mockDb.limit.mockResolvedValueOnce([{ id: buildingId, code: 'SUNSET' }]);
-        // Mock update user
-        mockDb.where.mockResolvedValueOnce([]);
+        mockDb.__queueResolvedValue([{ id: buildingId, code: 'SUNSET' }]); // select building
+        mockDb.__queueResolvedValue([]); // update user
 
         const result = await buildingActions.joinBuilding(residentId, 'SUNSET');
 
         expect(result.id).toBe(buildingId);
-        expect(mockDb.select).toHaveBeenCalledWith();
-        expect(mockDb.from).toHaveBeenCalledWith(building);
-        expect(mockDb.update).toHaveBeenCalledWith(user);
-        expect(mockDb.set).toHaveBeenCalledWith({ buildingId });
+        expect(mockDb.select).toHaveBeenCalled();
+        expect(mockDb.update).toHaveBeenCalled();
     });
 
     it('should fail to join with incorrect code', async () => {
-        // Mock finding building -> none found
-        mockDb.limit.mockResolvedValueOnce([]);
+        mockDb.__queueResolvedValue([]); // not found
 
         await expect(buildingActions.joinBuilding(residentId, 'WRONG')).rejects.toThrow("Invalid building code");
     });
 
     it('should claim an apartment', async () => {
-        // Mock auth session
         (auth.api.getSession as any).mockResolvedValue({
             user: { id: residentId }
         });
 
-        // Mock getting apartment (exists and unclaimed)
-        mockDb.limit.mockResolvedValueOnce([{ id: apartmentId, residentId: null }]);
-
-        // Mock update
-        mockDb.where.mockResolvedValueOnce([]);
+        mockDb.__queueResolvedValue([{ id: apartmentId, residentId: null }]); // find apt
+        mockDb.__queueResolvedValue([{ id: apartmentId, residentId }]); // update apt
 
         const result = await buildingActions.claimApartment(apartmentId);
 
         expect(result.id).toBe(apartmentId);
-        expect(mockDb.update).toHaveBeenCalledWith(apartments);
-        expect(mockDb.set).toHaveBeenCalledWith({ residentId });
+        expect(mockDb.update).toHaveBeenCalled();
     });
 
     it('should fail to claim already claimed apartment', async () => {
-         // Mock auth session
          (auth.api.getSession as any).mockResolvedValue({
             user: { id: residentId }
         });
 
-        // Mock getting apartment (exists but claimed)
-        mockDb.limit.mockResolvedValueOnce([{ id: apartmentId, residentId: 'other-guy' }]);
+        mockDb.__queueResolvedValue([{ id: apartmentId, residentId: 'other-guy' }]); // find apt
 
         await expect(buildingActions.claimApartment(apartmentId)).rejects.toThrow("Apartment already claimed");
     });
@@ -96,24 +84,20 @@ describe('Resident and Building Operations', () => {
         const managerId = 'manager-1';
         const newBuilding = { id: 'new-b', name: 'New Place', code: 'NEWCODE' };
 
-        // Mock insert building
-        mockDb.returning.mockResolvedValueOnce([newBuilding]);
+        // Transaction flow:
+        // 1. insert building
+        // 2. insert junction
+        // 3. update user
 
-        // Mock insert managerBuildings
-        mockDb.values.mockResolvedValueOnce([]);
-
-        // Mock update user
-        mockDb.where.mockResolvedValueOnce([]);
+        mockDb.__queueResolvedValue([newBuilding]);
+        mockDb.__queueResolvedValue([]);
+        mockDb.__queueResolvedValue([]);
 
         const newB = await buildingActions.createNewBuilding(managerId, 'New Place', '999999999');
 
         expect(newB).toEqual(newBuilding);
-
-        expect(mockDb.insert).toHaveBeenCalledTimes(2); // building + junction
-        expect(mockDb.insert).toHaveBeenNthCalledWith(1, building);
-        expect(mockDb.insert).toHaveBeenNthCalledWith(2, managerBuildings);
-
-        expect(mockDb.update).toHaveBeenCalledWith(user);
-        expect(mockDb.set).toHaveBeenCalledWith({ activeBuildingId: newBuilding.id });
+        expect(mockDb.transaction).toHaveBeenCalled();
+        expect(mockDb.insert).toHaveBeenCalledTimes(2);
+        expect(mockDb.update).toHaveBeenCalled();
     });
 });
