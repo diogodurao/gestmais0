@@ -36,61 +36,42 @@ describe('Manager Apartment Operations', () => {
     it('should create multiple apartments correctly', async () => {
       const unitsInput = '1A, 1B\n2A';
 
-      // Mock db.select to return empty array (no existing apartments)
-      const selectMock = vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue([]),
-          }),
-        }),
-      });
-      (db.select as any).mockImplementation(selectMock);
-
-      // Mock db.insert
+      // Mock db.insert for batch operation
       const insertMock = vi.fn().mockReturnValue({
         values: vi.fn().mockReturnValue({
-          returning: vi.fn().mockImplementation(() => Promise.resolve([{ id: 1, unit: '1A' }])), // Simple return for test
+            onConflictDoNothing: vi.fn().mockReturnValue({
+                returning: vi.fn().mockResolvedValue([
+                    { id: 1, unit: '1A' },
+                    { id: 2, unit: '1B' },
+                    { id: 3, unit: '2A' }
+                ])
+            })
         }),
       });
       (db.insert as any).mockImplementation(insertMock);
 
       const result = await buildingActions.bulkCreateApartments(mockBuildingId, unitsInput);
 
-      expect(db.select).toHaveBeenCalledTimes(3); // 1A, 1B, 2A
-      expect(db.insert).toHaveBeenCalledTimes(3);
+      expect(db.insert).toHaveBeenCalledTimes(1); // One batch insert
       expect(result).toHaveLength(3);
     });
 
-    it('should skip existing apartments', async () => {
+    it('should skip existing apartments (handled by DB conflict)', async () => {
         const unitsInput = '1A, 1B';
 
-        // Mock db.select to return existing for 1A, empty for 1B
-        let callCount = 0;
-        const selectMock = vi.fn().mockReturnValue({
-          from: vi.fn().mockReturnValue({
-            where: vi.fn().mockReturnValue({
-              limit: vi.fn().mockImplementation(async () => {
-                  callCount++;
-                  if (callCount === 1) return [{ id: 1, unit: '1A' }]; // 1A exists
-                  return []; // 1B does not exist
-              }),
-            }),
-          }),
-        });
-        (db.select as any).mockImplementation(selectMock);
-
-        // Mock db.insert
+        // Mock db.insert returning only the one that didn't conflict
         const insertMock = vi.fn().mockReturnValue({
           values: vi.fn().mockReturnValue({
-            returning: vi.fn().mockResolvedValue([{ id: 2, unit: '1B' }]),
+            onConflictDoNothing: vi.fn().mockReturnValue({
+                returning: vi.fn().mockResolvedValue([{ id: 2, unit: '1B' }]), // 1A existed (simulated by not returning it)
+            })
           }),
         });
         (db.insert as any).mockImplementation(insertMock);
 
         const result = await buildingActions.bulkCreateApartments(mockBuildingId, unitsInput);
 
-        expect(db.select).toHaveBeenCalledTimes(2);
-        expect(db.insert).toHaveBeenCalledTimes(1); // Only 1B inserted
+        expect(db.insert).toHaveBeenCalledTimes(1);
         expect(result).toHaveLength(1);
         expect(result[0].unit).toBe('1B');
       });

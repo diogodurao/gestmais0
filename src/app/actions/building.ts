@@ -277,22 +277,16 @@ export async function bulkCreateApartments(buildingId: string, unitsString: stri
         .filter(Boolean)
     if (!units.length) throw new Error("No units provided")
 
-    const created: typeof apartments.$inferSelect[] = []
+    // Use batch insert with onConflictDoNothing to handle duplicates efficiently
+    const values = units.map(unit => ({
+        buildingId,
+        unit,
+    }));
 
-    for (const unit of units) {
-        const existing = await db.select().from(apartments).where(and(
-            eq(apartments.buildingId, buildingId),
-            eq(apartments.unit, unit)
-        )).limit(1)
-
-        if (!existing.length) {
-            const [newApt] = await db.insert(apartments).values({
-                buildingId,
-                unit,
-            }).returning()
-            created.push(newApt)
-        }
-    }
+    const created = await db.insert(apartments)
+        .values(values)
+        .onConflictDoNothing({ target: [apartments.buildingId, apartments.unit] })
+        .returning();
 
     return created
 }
