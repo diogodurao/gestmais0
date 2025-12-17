@@ -16,11 +16,12 @@ CREATE TABLE "account" (
 --> statement-breakpoint
 CREATE TABLE "apartments" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"unit" text NOT NULL,
-	"resident_id" text,
-	"floor" integer,
-	"permillage" integer,
-	"building_id" text NOT NULL
+	"building_id" text NOT NULL,
+	"floor" text NOT NULL,
+	"unit_type" text NOT NULL,
+	"identifier" text NOT NULL,
+	"permillage" real,
+	"resident_id" text
 );
 --> statement-breakpoint
 CREATE TABLE "building" (
@@ -39,6 +40,14 @@ CREATE TABLE "building" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "building_code_unique" UNIQUE("code")
+);
+--> statement-breakpoint
+CREATE TABLE "manager_buildings" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"manager_id" text NOT NULL,
+	"building_id" text NOT NULL,
+	"is_owner" boolean DEFAULT false,
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE "payments" (
@@ -73,7 +82,9 @@ CREATE TABLE "user" (
 	"updated_at" timestamp NOT NULL,
 	"role" text,
 	"nif" text,
+	"iban" text,
 	"building_id" text,
+	"active_building_id" text,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
@@ -87,8 +98,10 @@ CREATE TABLE "verification" (
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "apartments" ADD CONSTRAINT "apartments_resident_id_user_id_fk" FOREIGN KEY ("resident_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "apartments" ADD CONSTRAINT "apartments_building_id_building_id_fk" FOREIGN KEY ("building_id") REFERENCES "public"."building"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "apartments" ADD CONSTRAINT "apartments_resident_id_user_id_fk" FOREIGN KEY ("resident_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "building" ADD CONSTRAINT "building_manager_id_user_id_fk" FOREIGN KEY ("manager_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "manager_buildings" ADD CONSTRAINT "manager_buildings_manager_id_user_id_fk" FOREIGN KEY ("manager_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "manager_buildings" ADD CONSTRAINT "manager_buildings_building_id_building_id_fk" FOREIGN KEY ("building_id") REFERENCES "public"."building"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_apartment_id_apartments_id_fk" FOREIGN KEY ("apartment_id") REFERENCES "public"."apartments"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
