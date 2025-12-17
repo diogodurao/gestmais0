@@ -37,22 +37,21 @@ export async function getPaymentMap(buildingId: string, year: number) {
             eq(payments.year, year)
         ))
 
-    // 3. Transform into a Grid Friendly Structure
-    const gridData: PaymentData[] = buildingApartments.map(apt => {
-        const aptPayments: Record<number, string> = {}
-        // Initialize all months as 'pending' or 'unpaid' effectively (empty in our record)
-        // Or we can pre-fill. Let's send what we have.
-
-        rawPayments.filter(p => p.apartmentId === apt.id).forEach(p => {
-            aptPayments[p.month] = p.status
-        })
-
-        return {
-            apartmentId: apt.id,
-            unit: apt.unit,
-            payments: aptPayments
+    // 3. Index payments by apartmentId for O(1) lookup
+    const paymentsByApartment = new Map<number, Record<number, string>>()
+    for (const p of rawPayments) {
+        if (!paymentsByApartment.has(p.apartmentId)) {
+            paymentsByApartment.set(p.apartmentId, {})
         }
-    })
+        paymentsByApartment.get(p.apartmentId)![p.month] = p.status
+    }
+
+    // 4. Build grid data
+    const gridData: PaymentData[] = buildingApartments.map(apt => ({
+        apartmentId: apt.id,
+        unit: apt.unit,
+        payments: paymentsByApartment.get(apt.id) || {}
+    }))
 
     return gridData
 }
