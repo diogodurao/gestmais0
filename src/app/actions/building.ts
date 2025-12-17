@@ -1,53 +1,138 @@
 "use server"
 
 import { db } from "@/db"
-import { building, user, apartments, payments } from "@/db/schema"
-import { eq, and } from "drizzle-orm"
-import { nanoid } from "nanoid"
+import { building, user, apartments, payments, managerBuildings } from "@/db/schema"
+import { eq, and, isNull, asc } from "drizzle-orm"
+import { headers } from "next/headers"
+import { auth } from "@/lib/auth"
+
+// ==========================================
+// MANAGER BUILDING ACTIONS
+// ==========================================
 
 export async function getOrCreateManagerBuilding(userId: string, userNif: string) {
-    // 1. Check if user already has a building
+    // 1. Check if user has an active building selected
     const existingUser = await db.select().from(user).where(eq(user.id, userId)).limit(1)
     if (!existingUser.length) throw new Error("User not found")
 
     const currentUser = existingUser[0]
 
-    if (currentUser.buildingId) {
-        // Return existing building
-        const existingBuilding = await db.select().from(building).where(eq(building.id, currentUser.buildingId)).limit(1)
-        return existingBuilding[0]
+    // If manager has an active building, return it
+    if (currentUser.activeBuildingId) {
+        const existingBuilding = await db.select().from(building).where(eq(building.id, currentUser.activeBuildingId)).limit(1)
+        if (existingBuilding.length) return existingBuilding[0]
+    }
+
+    // Check if manager has any buildings via junction table
+    const existingManagedBuildings = await db.select()
+        .from(managerBuildings)
+        .innerJoin(building, eq(managerBuildings.buildingId, building.id))
+        .where(eq(managerBuildings.managerId, userId))
+        .limit(1)
+
+    if (existingManagedBuildings.length) {
+        // Set the first one as active
+        const firstBuilding = existingManagedBuildings[0].building
+        await db.update(user)
+            .set({ activeBuildingId: firstBuilding.id })
+            .where(eq(user.id, userId))
+        return firstBuilding
     }
 
     // 2. Create new building
-    // Generate a simple short code for invites
-    // User requested: no hyphens, no capslock. So we use alphanumeric mixed case.
     const { customAlphabet } = await import("nanoid")
     const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
     const code = nanoidCode()
 
-    // We'll use the user's NIF as the building NIF by default for MVP simplification
-    // or we could ask for it. But requirements say "generate buildingid".
-
     const [newBuilding] = await db.insert(building).values({
         id: crypto.randomUUID(),
-        name: "My Condominium", // Default name, editable later
+        name: "My Condominium",
         nif: userNif || "N/A",
         code: code,
         managerId: userId,
     }).returning()
 
-    // 3. Link user to building
+    // 3. Create junction table entry
+    await db.insert(managerBuildings).values({
+        managerId: userId,
+        buildingId: newBuilding.id,
+        isOwner: true,
+    })
+
+    // 4. Set as active building
     await db.update(user)
-        .set({ buildingId: newBuilding.id })
+        .set({ activeBuildingId: newBuilding.id })
         .where(eq(user.id, userId))
 
     return newBuilding
 }
 
+export async function createNewBuilding(userId: string, name: string, nif: string) {
+    const { customAlphabet } = await import("nanoid")
+    const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
+    const code = nanoidCode()
+
+    const [newBuilding] = await db.insert(building).values({
+        id: crypto.randomUUID(),
+        name: name || "New Building",
+        nif: nif || "N/A",
+        code: code,
+        managerId: userId,
+    }).returning()
+
+    // Create junction table entry
+    await db.insert(managerBuildings).values({
+        managerId: userId,
+        buildingId: newBuilding.id,
+        isOwner: true,
+    })
+
+    // Set as active building
+    await db.update(user)
+        .set({ activeBuildingId: newBuilding.id })
+        .where(eq(user.id, userId))
+
+    return newBuilding
+}
+
+export async function getManagerBuildings(userId: string) {
+    const result = await db.select({
+        building: building,
+        isOwner: managerBuildings.isOwner,
+    })
+        .from(managerBuildings)
+        .innerJoin(building, eq(managerBuildings.buildingId, building.id))
+        .where(eq(managerBuildings.managerId, userId))
+
+    return result
+}
+
+export async function switchActiveBuilding(userId: string, buildingId: string) {
+    // Verify manager has access to this building
+    const access = await db.select()
+        .from(managerBuildings)
+        .where(and(
+            eq(managerBuildings.managerId, userId),
+            eq(managerBuildings.buildingId, buildingId)
+        ))
+        .limit(1)
+
+    if (!access.length) throw new Error("Access denied to this building")
+
+    await db.update(user)
+        .set({ activeBuildingId: buildingId })
+        .where(eq(user.id, userId))
+
+    return true
+}
+
+// ==========================================
+// RESIDENT ACTIONS
+// ==========================================
+
 export async function joinBuilding(userId: string, code: string) {
     if (!code) throw new Error("Code is required")
 
-    // Find building by code
     const foundBuilding = await db.select().from(building).where(eq(building.code, code)).limit(1)
 
     if (!foundBuilding.length) {
@@ -56,7 +141,6 @@ export async function joinBuilding(userId: string, code: string) {
 
     const targetBuilding = foundBuilding[0]
 
-    // Link user
     await db.update(user)
         .set({ buildingId: targetBuilding.id })
         .where(eq(user.id, userId))
@@ -80,39 +164,7 @@ export async function getResidentBuildingDetails(buildingId: string) {
     return result[0] || null
 }
 
-export async function createApartment(buildingId: string, unit: string) {
-    if (!buildingId || !unit) throw new Error("Missing fields")
-
-    // Check if exists
-    const existing = await db.select().from(apartments).where(and(
-        eq(apartments.buildingId, buildingId),
-        eq(apartments.unit, unit)
-    )).limit(1)
-
-    if (existing.length) throw new Error("Apartment already exists")
-
-    const [newApt] = await db.insert(apartments).values({
-        buildingId,
-        unit,
-    }).returning()
-
-    return newApt
-}
-
-export async function deleteApartment(apartmentId: number) {
-    // Delete related payments first (cascade usually handles this if defined, but explicit is safer for MVP)
-    await db.delete(payments).where(eq(payments.apartmentId, apartmentId))
-
-    // Delete apartment
-    await db.delete(apartments).where(eq(apartments.id, apartmentId))
-
-    return true
-}
-
-import { headers } from "next/headers"
-import { auth } from "@/lib/auth"
-
-export async function claimApartment(buildingId: string, unit: string) {
+export async function claimApartment(apartmentId: number) {
     const session = await auth.api.getSession({
         headers: await headers()
     })
@@ -121,27 +173,18 @@ export async function claimApartment(buildingId: string, unit: string) {
 
     const userId = session.user.id
 
-    // Check if apartment exists
-    const existing = await db.select().from(apartments).where(and(
-        eq(apartments.buildingId, buildingId),
-        eq(apartments.unit, unit)
-    )).limit(1)
+    // Verify apartment exists and is unclaimed
+    const apt = await db.select().from(apartments).where(eq(apartments.id, apartmentId)).limit(1)
+    
+    if (!apt.length) throw new Error("Apartment not found")
+    if (apt[0].residentId) throw new Error("Apartment already claimed")
 
-    if (existing.length) {
-        // Update existing
-        await db.update(apartments)
-            .set({ residentId: userId })
-            .where(eq(apartments.id, existing[0].id))
-        return existing[0]
-    } else {
-        // Create new
-        const [newApt] = await db.insert(apartments).values({
-            buildingId,
-            unit,
-            residentId: userId,
-        }).returning()
-        return newApt
-    }
+    // Claim it
+    await db.update(apartments)
+        .set({ residentId: userId })
+        .where(eq(apartments.id, apartmentId))
+
+    return apt[0]
 }
 
 export async function getResidentApartment(userId: string) {
@@ -149,9 +192,23 @@ export async function getResidentApartment(userId: string) {
     return result[0] || null
 }
 
+export async function getUnclaimedApartments(buildingId: string) {
+    const result = await db.select()
+        .from(apartments)
+        .where(and(
+            eq(apartments.buildingId, buildingId),
+            isNull(apartments.residentId)
+        ))
+        .orderBy(asc(apartments.floor), asc(apartments.identifier))
+
+    return result
+}
+
+// ==========================================
+// BUILDING INFO ACTIONS
+// ==========================================
+
 export async function getBuildingResidents(buildingId: string) {
-    // Get all users linked to this building with role resident
-    // Also join with apartment to show their unit if they have one
     const result = await db.select({
         user: user,
         apartment: apartments
@@ -183,7 +240,7 @@ export async function getBuildingApartments(buildingId: string) {
         .from(apartments)
         .leftJoin(user, eq(apartments.residentId, user.id))
         .where(eq(apartments.buildingId, buildingId))
-        .orderBy(apartments.unit)
+        .orderBy(asc(apartments.floor), asc(apartments.identifier))
 
     return result
 }
@@ -209,35 +266,55 @@ export async function updateBuilding(
     return updated
 }
 
-export async function bulkCreateApartments(buildingId: string, unitsString: string) {
-    const units = unitsString.split(',').map(u => u.trim()).filter(Boolean)
-    if (!units.length) throw new Error("No units provided")
+// ==========================================
+// APARTMENT CRUD ACTIONS
+// ==========================================
 
-    const created: typeof apartments.$inferSelect[] = []
+// Helper to compute display name
+export function getApartmentDisplayName(apt: { floor: string; unitType: string; identifier: string }) {
+    const floorLabel = apt.floor === "0" ? "R/C" : apt.floor === "-1" ? "Cave" : `${apt.floor}º`
+    return `${floorLabel} ${apt.identifier}`
+}
 
-    for (const unit of units) {
-        const existing = await db.select().from(apartments).where(and(
-            eq(apartments.buildingId, buildingId),
-            eq(apartments.unit, unit)
-        )).limit(1)
-
-        if (!existing.length) {
-            const [newApt] = await db.insert(apartments).values({
-                buildingId,
-                unit,
-            }).returning()
-            created.push(newApt)
-        }
+export async function createApartment(
+    buildingId: string,
+    data: {
+        floor: string
+        unitType: string
+        identifier: string
+        permillage?: number | null
+    }
+) {
+    if (!buildingId || !data.floor || !data.unitType || !data.identifier) {
+        throw new Error("Missing required fields")
     }
 
-    return created
+    // Check if exists (same floor + identifier)
+    const existing = await db.select().from(apartments).where(and(
+        eq(apartments.buildingId, buildingId),
+        eq(apartments.floor, data.floor),
+        eq(apartments.identifier, data.identifier)
+    )).limit(1)
+
+    if (existing.length) throw new Error("Unit already exists on this floor")
+
+    const [newApt] = await db.insert(apartments).values({
+        buildingId,
+        floor: data.floor,
+        unitType: data.unitType,
+        identifier: data.identifier,
+        permillage: data.permillage,
+    }).returning()
+
+    return newApt
 }
 
 export async function updateApartment(
     apartmentId: number,
     data: {
-        unit?: string
-        floor?: number | null
+        floor?: string
+        unitType?: string
+        identifier?: string
         permillage?: number | null
     }
 ) {
@@ -247,4 +324,50 @@ export async function updateApartment(
         .returning()
 
     return updated
+}
+
+export async function deleteApartment(apartmentId: number) {
+    // Delete related payments first
+    await db.delete(payments).where(eq(payments.apartmentId, apartmentId))
+
+    // Delete apartment
+    await db.delete(apartments).where(eq(apartments.id, apartmentId))
+
+    return true
+}
+
+// Bulk create - simplified for structured units
+export async function bulkCreateApartments(
+    buildingId: string,
+    units: Array<{
+        floor: string
+        unitType: string
+        identifier: string
+        permillage?: number | null
+    }>
+) {
+    if (!units.length) throw new Error("No units provided")
+
+    const created: typeof apartments.$inferSelect[] = []
+
+    for (const unit of units) {
+        const existing = await db.select().from(apartments).where(and(
+            eq(apartments.buildingId, buildingId),
+            eq(apartments.floor, unit.floor),
+            eq(apartments.identifier, unit.identifier)
+        )).limit(1)
+
+        if (!existing.length) {
+            const [newApt] = await db.insert(apartments).values({
+                buildingId,
+                floor: unit.floor,
+                unitType: unit.unitType,
+                identifier: unit.identifier,
+                permillage: unit.permillage,
+            }).returning()
+            created.push(newApt)
+        }
+    }
+
+    return created
 }

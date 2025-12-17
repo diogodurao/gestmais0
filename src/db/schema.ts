@@ -13,7 +13,9 @@ export const user = pgTable('user', {
     // Custom fields
     role: text('role'), // 'manager' | 'resident'
     nif: text('nif'),
-    buildingId: text('building_id'), // Link to building (Manager manages it, Resident lives in it)
+    iban: text('iban'), // Personal IBAN for residents
+    buildingId: text('building_id'), // For residents: their building
+    activeBuildingId: text('active_building_id'), // For managers: currently selected building
 });
 
 export const session = pgTable('session', {
@@ -71,16 +73,26 @@ export const building = pgTable('building', {
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-// Update user to have optional link to building (Manager owns it, Resident belongs to it)
-// Note: We'll need to manually modify the user table definition above to include 'buildingId'
+// --- Junction Tables ---
+
+export const managerBuildings = pgTable('manager_buildings', {
+    id: serial('id').primaryKey(),
+    managerId: text('manager_id').notNull().references(() => user.id),
+    buildingId: text('building_id').notNull().references(() => building.id),
+    isOwner: boolean('is_owner').default(false), // Original creator
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+// --- Unit/Apartment Tables ---
 
 export const apartments = pgTable('apartments', {
     id: serial('id').primaryKey(),
-    unit: text('unit').notNull(), // e.g., "1A", "2B"
-    residentId: text('resident_id').references(() => user.id), // Can be null if empty
-    floor: integer('floor'),
-    permillage: real('permillage'), // e.g., 45 means 45/1000 of building
-    buildingId: text('building_id').notNull().references(() => building.id), // Link to building
+    buildingId: text('building_id').notNull().references(() => building.id),
+    floor: text('floor').notNull(), // "R/C", "-1", "1", "2", etc.
+    unitType: text('unit_type').notNull(), // 'apartment' | 'shop' | 'garage' | 'cave' | 'storage'
+    identifier: text('identifier').notNull(), // "A", "B", "esq", "dto", "1"
+    permillage: real('permillage'),
+    residentId: text('resident_id').references(() => user.id), // Can be null if unclaimed
 });
 
 export const payments = pgTable('payments', {

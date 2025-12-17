@@ -19,13 +19,21 @@ export const auth = betterAuth({
         additionalFields: {
             role: {
                 type: "string",
-                required: false, // Optional initially, but we'll enforce in UI
+                required: false,
             },
             nif: {
                 type: "string",
                 required: false,
             },
+            iban: {
+                type: "string",
+                required: false,
+            },
             buildingId: {
+                type: "string",
+                required: false,
+            },
+            activeBuildingId: {
                 type: "string",
                 required: false,
             }

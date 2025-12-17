@@ -1,35 +1,69 @@
 "use client"
 
-import { Building2, CreditCard, LayoutDashboard, Menu, Settings, X } from "lucide-react"
+import { Building2, CreditCard, LayoutDashboard, Menu, Settings, X, ChevronDown, Plus } from "lucide-react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useState } from "react"
-import { Button, cn } from "@/components/ui/Button" // Reusing cn and Button
+import { usePathname, useRouter } from "next/navigation"
+import { useState, useTransition } from "react"
+import { Button, cn } from "@/components/ui/Button"
+import { switchActiveBuilding } from "@/app/actions/building"
 
-export function Sidebar({ userRole }: { userRole: string }) {
+type ManagedBuilding = {
+    building: { id: string; name: string; code: string }
+    isOwner: boolean | null
+}
+
+type SidebarProps = {
+    userRole: string
+    setupComplete?: boolean
+    managerBuildings?: ManagedBuilding[]
+    activeBuildingId?: string
+}
+
+export function Sidebar({ 
+    userRole, 
+    setupComplete = true,
+    managerBuildings = [],
+    activeBuildingId 
+}: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false)
+    const [buildingDropdownOpen, setBuildingDropdownOpen] = useState(false)
+    const [isPending, startTransition] = useTransition()
     const pathname = usePathname()
+    const router = useRouter()
+
+    const activeBuilding = managerBuildings.find(b => b.building.id === activeBuildingId)
 
     const links = [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+        { href: "/dashboard", label: "Overview", icon: LayoutDashboard, requiresSetup: false },
         ...(userRole === "manager" ? [
-            { href: "/dashboard/payments", label: "Payment Map", icon: CreditCard },
-            { href: "/dashboard/settings", label: "Settings", icon: Settings }
+            { href: "/dashboard/payments", label: "Payment Map", icon: CreditCard, requiresSetup: true },
+            { href: "/dashboard/settings", label: "Settings", icon: Settings, requiresSetup: false }
         ] : []),
         ...(userRole === "resident" ? [
-            { href: "/dashboard/my-payments", label: "My Payments", icon: CreditCard }
+            { href: "/dashboard/my-payments", label: "My Payments", icon: CreditCard, requiresSetup: true }
         ] : [])
     ]
 
+    const handleSwitchBuilding = (buildingId: string) => {
+        startTransition(async () => {
+            try {
+                await switchActiveBuilding(activeBuildingId ? activeBuildingId : "", buildingId)
+                setBuildingDropdownOpen(false)
+                router.refresh()
+            } catch (error) {
+                console.error("Failed to switch building", error)
+            }
+        })
+    }
+
     return (
         <>
-            {/* Mobile Trigger */}
             {/* Mobile Trigger */}
             <div className="lg:hidden fixed top-4 left-4 z-50">
                 <Button
                     variant="outline"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="p-2 h-auto" // Override default height/padding for icon-only feel
+                    className="p-2 h-auto"
                 >
                     {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </Button>
@@ -47,11 +81,79 @@ export function Sidebar({ userRole }: { userRole: string }) {
                         <span className="font-bold text-lg">GestMais</span>
                     </div>
 
+                    {/* Building Selector (Manager Only) */}
+                    {userRole === "manager" && managerBuildings.length > 0 && (
+                        <div className="px-4 py-3 border-b border-gray-100">
+                            <div className="relative">
+                                <button
+                                    onClick={() => setBuildingDropdownOpen(!buildingDropdownOpen)}
+                                    className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
+                                    disabled={isPending}
+                                >
+                                    <div className="truncate text-left">
+                                        <p className="text-xs text-gray-500">Building</p>
+                                        <p className="text-sm font-medium truncate">
+                                            {activeBuilding?.building.name || "Select..."}
+                                        </p>
+                                    </div>
+                                    <ChevronDown className={cn(
+                                        "w-4 h-4 text-gray-400 transition-transform",
+                                        buildingDropdownOpen && "rotate-180"
+                                    )} />
+                                </button>
+
+                                {/* Dropdown */}
+                                {buildingDropdownOpen && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
+                                        {managerBuildings.map(({ building, isOwner }) => (
+                                            <button
+                                                key={building.id}
+                                                onClick={() => handleSwitchBuilding(building.id)}
+                                                className={cn(
+                                                    "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors",
+                                                    building.id === activeBuildingId && "bg-gray-100"
+                                                )}
+                                            >
+                                                <p className="text-sm font-medium truncate">{building.name}</p>
+                                                <p className="text-xs text-gray-400">{building.code}</p>
+                                            </button>
+                                        ))}
+                                        <Link
+                                            href="/dashboard/settings?new=1"
+                                            onClick={() => {
+                                                setBuildingDropdownOpen(false)
+                                                setIsOpen(false)
+                                            }}
+                                            className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors border-t border-gray-100 text-sm text-gray-600"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            Add New Building
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Navigation */}
                     <nav className="flex-1 p-4 space-y-1">
                         {links.map((link) => {
                             const Icon = link.icon
                             const isActive = pathname === link.href
+                            const isDisabled = link.requiresSetup && !setupComplete
+
+                            if (isDisabled) {
+                                return (
+                                    <div
+                                        key={link.href}
+                                        className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 cursor-not-allowed"
+                                        title="Complete setup to access this feature"
+                                    >
+                                        <Icon className="w-5 h-5 mr-3 text-gray-300" />
+                                        {link.label}
+                                    </div>
+                                )
+                            }
 
                             return (
                                 <Link
@@ -63,7 +165,6 @@ export function Sidebar({ userRole }: { userRole: string }) {
                                             ? "bg-gray-100 text-black"
                                             : "text-gray-900 hover:bg-gray-50 hover:text-black"
                                     )}
-                                    // Close menu on mobile click
                                     onClick={() => setIsOpen(false)}
                                 >
                                     <Icon className={cn("w-5 h-5 mr-3", isActive ? "text-black" : "text-gray-500")} />
@@ -73,10 +174,19 @@ export function Sidebar({ userRole }: { userRole: string }) {
                         })}
                     </nav>
 
-                    {/* Footer / User Info could go here */}
+                    {/* Setup Warning for Residents */}
+                    {userRole === "resident" && !setupComplete && (
+                        <div className="px-4 py-3 border-t border-gray-100 bg-amber-50">
+                            <p className="text-xs text-amber-700">
+                                Complete your setup to access all features.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Footer */}
                     <div className="p-4 border-t border-gray-100">
                         <div className="text-xs text-gray-400">
-                            v0.1.0 MVP
+                            v0.2.0 MVP
                         </div>
                     </div>
                 </div>
@@ -87,6 +197,14 @@ export function Sidebar({ userRole }: { userRole: string }) {
                 <div
                     className="fixed inset-0 z-30 bg-black/20 lg:hidden"
                     onClick={() => setIsOpen(false)}
+                />
+            )}
+
+            {/* Close building dropdown when clicking outside */}
+            {buildingDropdownOpen && (
+                <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setBuildingDropdownOpen(false)}
                 />
             )}
         </>

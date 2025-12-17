@@ -1,13 +1,23 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment } from "@/app/actions/building";
+import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment, getUnclaimedApartments } from "@/app/actions/building";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { JoinBuildingForm } from "@/features/dashboard/JoinBuildingForm";
 import { ClaimApartmentForm } from "@/features/dashboard/ClaimApartmentForm";
 import { Users } from "lucide-react";
 
 export const dynamic = 'force-dynamic'
+
+function getFloorLabel(floor: string): string {
+    if (floor === "0") return "R/C"
+    if (floor === "-1") return "Cave"
+    return `${floor}º`
+}
+
+function getApartmentDisplayName(apt: { floor: string; identifier: string }): string {
+    return `${getFloorLabel(apt.floor)} ${apt.identifier}`
+}
 
 export default async function DashboardPage() {
     const session = await auth.api.getSession({
@@ -45,9 +55,15 @@ export default async function DashboardPage() {
             // Already joined building. Now check if they have an apartment
             try {
                 residentApartment = await getResidentApartment(session.user.id)
-                // If NO apartment, show Claim Form
+                // If NO apartment, show Claim Form with unclaimed apartments dropdown
                 if (!residentApartment) {
-                    return <ClaimApartmentForm buildingId={session.user.buildingId} />
+                    const unclaimed = await getUnclaimedApartments(session.user.buildingId)
+                    return (
+                        <ClaimApartmentForm 
+                            buildingId={session.user.buildingId} 
+                            unclaimedApartments={unclaimed}
+                        />
+                    )
                 }
 
                 // If HAS apartment, load details
@@ -76,8 +92,10 @@ export default async function DashboardPage() {
                                 </div>
                                 {session.user.role === 'resident' && residentApartment && (
                                     <div className="text-right">
-                                        <p className="text-gray-400 text-xs uppercase tracking-wider">Apartment</p>
-                                        <p className="text-3xl font-bold text-gray-900">{residentApartment.unit}</p>
+                                        <p className="text-gray-400 text-xs uppercase tracking-wider">Unit</p>
+                                        <p className="text-3xl font-bold text-gray-900">
+                                            {getApartmentDisplayName(residentApartment)}
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -135,7 +153,7 @@ export default async function DashboardPage() {
                                         <div className="text-right">
                                             {r.apartment ? (
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                                    {r.apartment.unit}
+                                                    {getApartmentDisplayName(r.apartment)}
                                                 </span>
                                             ) : (
                                                 <span className="text-xs text-orange-500">No Unit</span>
