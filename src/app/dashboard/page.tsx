@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment } from "@/app/actions/building";
+import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment, getUnclaimedApartments } from "@/app/actions/building";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { JoinBuildingForm } from "@/features/dashboard/JoinBuildingForm";
 import { ClaimApartmentForm } from "@/features/dashboard/ClaimApartmentForm";
@@ -22,13 +22,15 @@ export default async function DashboardPage() {
     let buildingInfo = null;
     let buildingCode = "N/A";
     let residents: any[] = [];
+    let managerBuildings: any[] = [];
 
     if (session.user.role === 'manager') {
         try {
-            const building = await getOrCreateManagerBuilding(session.user.id, session.user.nif || "");
-            buildingInfo = building;
-            buildingCode = building.code;
-            residents = await getBuildingResidents(building.id);
+            const { activeBuilding, buildings } = await getOrCreateManagerBuilding(session.user.id, session.user.nif || "");
+            buildingInfo = activeBuilding;
+            managerBuildings = buildings;
+            buildingCode = activeBuilding?.code || "N/A";
+            residents = activeBuilding ? await getBuildingResidents(activeBuilding.id) : [];
         } catch (e) {
             console.error("Failed to load building", e);
         }
@@ -47,7 +49,8 @@ export default async function DashboardPage() {
                 residentApartment = await getResidentApartment(session.user.id)
                 // If NO apartment, show Claim Form
                 if (!residentApartment) {
-                    return <ClaimApartmentForm buildingId={session.user.buildingId} />
+                    const unclaimedUnits = await getUnclaimedApartments(session.user.buildingId)
+                    return <ClaimApartmentForm buildingId={session.user.buildingId} userId={session.user.id} units={unclaimedUnits} />
                 }
 
                 // If HAS apartment, load details
@@ -87,6 +90,7 @@ export default async function DashboardPage() {
                                     <div>
                                         <p className="text-blue-800 font-medium text-sm">Valid Invite Code</p>
                                         <p className="text-2xl font-bold text-blue-900 tracking-wider font-mono lowercase">{buildingCode}</p>
+                                        <p className="text-xs text-blue-700 mt-1">Managing {managerBuildings.length || 1} building(s)</p>
                                     </div>
                                     <div className="text-right max-w-[150px]">
                                         <p className="text-xs text-blue-600 leading-tight">Share this code with residents to let them join.</p>

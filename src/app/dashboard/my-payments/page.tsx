@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { getPaymentMap } from "@/app/actions/payments"
+import { getResidentApartment } from "@/app/actions/building"
 import { PaymentGrid } from "@/features/dashboard/PaymentGrid"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
 
@@ -19,6 +20,11 @@ export default async function MyPaymentsPage() {
     }
 
     if (!session.user.buildingId) {
+        return redirect("/dashboard")
+    }
+
+    const residentApartment = await getResidentApartment(session.user.id)
+    if (!residentApartment || session.user.profileComplete === false) {
         return redirect("/dashboard")
     }
 

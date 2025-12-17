@@ -28,6 +28,10 @@ export const auth = betterAuth({
             buildingId: {
                 type: "string",
                 required: false,
+            },
+            profileComplete: {
+                type: "boolean",
+                required: false,
             }
         }
     }

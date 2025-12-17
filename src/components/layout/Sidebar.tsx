@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Button, cn } from "@/components/ui/Button" // Reusing cn and Button
 
-export function Sidebar({ userRole }: { userRole: string }) {
+export function Sidebar({ userRole, disableNavigation = false, lockedReason }: { userRole: string, disableNavigation?: boolean, lockedReason?: string }) {
     const [isOpen, setIsOpen] = useState(false)
     const pathname = usePathname()
 
@@ -52,16 +52,22 @@ export function Sidebar({ userRole }: { userRole: string }) {
                         {links.map((link) => {
                             const Icon = link.icon
                             const isActive = pathname === link.href
+                            const isLocked = disableNavigation && link.href !== "/dashboard"
 
                             return (
                                 <Link
                                     key={link.href}
-                                    href={link.href}
+                                    href={isLocked ? "#" : link.href}
+                                    aria-disabled={isLocked}
+                                    title={isLocked ? (lockedReason || "Finish setup to access") : undefined}
                                     className={cn(
                                         "flex items-center px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
-                                        isActive
-                                            ? "bg-gray-100 text-black"
-                                            : "text-gray-900 hover:bg-gray-50 hover:text-black"
+                                        isLocked
+                                            ? "text-gray-400 cursor-not-allowed"
+                                            : isActive
+                                                ? "bg-gray-100 text-black"
+                                                : "text-gray-900 hover:bg-gray-50 hover:text-black",
+                                        isLocked && "pointer-events-none"
                                     )}
                                     // Close menu on mobile click
                                     onClick={() => setIsOpen(false)}

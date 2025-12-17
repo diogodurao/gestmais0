@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, boolean, integer, date, real } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, boolean, integer, date, real, uniqueIndex } from 'drizzle-orm/pg-core';
 
 // --- Auth Tables (Better-Auth) ---
 
@@ -14,6 +14,7 @@ export const user = pgTable('user', {
     role: text('role'), // 'manager' | 'resident'
     nif: text('nif'),
     buildingId: text('building_id'), // Link to building (Manager manages it, Resident lives in it)
+    profileComplete: boolean('profile_complete').notNull().default(false),
 });
 
 export const session = pgTable('session', {
@@ -81,7 +82,9 @@ export const apartments = pgTable('apartments', {
     floor: integer('floor'),
     permillage: real('permillage'), // e.g., 45 means 45/1000 of building
     buildingId: text('building_id').notNull().references(() => building.id), // Link to building
-});
+}, (table) => ({
+    buildingUnitUnique: uniqueIndex('apartments_building_unit_idx').on(table.buildingId, table.unit),
+}));
 
 export const payments = pgTable('payments', {
     id: serial('id').primaryKey(),

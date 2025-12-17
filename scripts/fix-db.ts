@@ -31,6 +31,13 @@ async function main() {
 
         console.log("✅ Fixed Floor column type");
 
+        // 4. Add user profile completion flag
+        await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_complete BOOLEAN DEFAULT FALSE`);
+        await db.execute(sql`UPDATE "user" SET profile_complete = TRUE WHERE profile_complete IS NULL`);
+
+        // 5. Enforce unique unit labels per building
+        await db.execute(sql`CREATE UNIQUE INDEX IF NOT EXISTS apartments_building_unit_idx ON apartments(building_id, unit)`);
+
         console.log("Database schema fixed successfully!");
         process.exit(0);
     } catch (error) {

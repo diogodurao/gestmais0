@@ -3,45 +3,42 @@
 import { db } from "@/db"
 import { building, user, apartments, payments } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
-import { nanoid } from "nanoid"
 
 export async function getOrCreateManagerBuilding(userId: string, userNif: string) {
-    // 1. Check if user already has a building
     const existingUser = await db.select().from(user).where(eq(user.id, userId)).limit(1)
     if (!existingUser.length) throw new Error("User not found")
-
     const currentUser = existingUser[0]
 
-    if (currentUser.buildingId) {
-        // Return existing building
-        const existingBuilding = await db.select().from(building).where(eq(building.id, currentUser.buildingId)).limit(1)
-        return existingBuilding[0]
+    const currentBuildings = await db.select().from(building).where(eq(building.managerId, userId))
+    let activeBuilding = currentBuildings.find(b => b.id === currentUser.buildingId) || null
+    let buildings = [...currentBuildings]
+
+    if (!activeBuilding) {
+        if (!currentBuildings.length) {
+            const { customAlphabet } = await import("nanoid")
+            const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
+            const code = nanoidCode()
+
+            const [newBuilding] = await db.insert(building).values({
+                id: crypto.randomUUID(),
+                name: "My Condominium",
+                nif: userNif || "N/A",
+                code,
+                managerId: userId,
+            }).returning()
+
+            activeBuilding = newBuilding
+            buildings = [newBuilding]
+        } else {
+            activeBuilding = currentBuildings[0]
+        }
+
+        await db.update(user)
+            .set({ buildingId: activeBuilding.id })
+            .where(eq(user.id, userId))
     }
 
-    // 2. Create new building
-    // Generate a simple short code for invites
-    // User requested: no hyphens, no capslock. So we use alphanumeric mixed case.
-    const { customAlphabet } = await import("nanoid")
-    const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
-    const code = nanoidCode()
-
-    // We'll use the user's NIF as the building NIF by default for MVP simplification
-    // or we could ask for it. But requirements say "generate buildingid".
-
-    const [newBuilding] = await db.insert(building).values({
-        id: crypto.randomUUID(),
-        name: "My Condominium", // Default name, editable later
-        nif: userNif || "N/A",
-        code: code,
-        managerId: userId,
-    }).returning()
-
-    // 3. Link user to building
-    await db.update(user)
-        .set({ buildingId: newBuilding.id })
-        .where(eq(user.id, userId))
-
-    return newBuilding
+    return { activeBuilding, buildings }
 }
 
 export async function joinBuilding(userId: string, code: string) {
@@ -62,6 +59,48 @@ export async function joinBuilding(userId: string, code: string) {
         .where(eq(user.id, userId))
 
     return targetBuilding
+}
+
+export async function getManagerBuildings(managerId: string) {
+    const buildings = await db.select().from(building).where(eq(building.managerId, managerId))
+    return buildings
+}
+
+export async function setActiveBuilding(managerId: string, buildingId: string) {
+    const ownedBuilding = await db.select().from(building).where(and(
+        eq(building.managerId, managerId),
+        eq(building.id, buildingId)
+    )).limit(1)
+
+    if (!ownedBuilding.length) {
+        throw new Error("Building not found or not owned by manager")
+    }
+
+    await db.update(user)
+        .set({ buildingId: buildingId })
+        .where(eq(user.id, managerId))
+
+    return ownedBuilding[0]
+}
+
+export async function createBuildingForManager(managerId: string, name: string, nif: string | null) {
+    const { customAlphabet } = await import("nanoid")
+    const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
+    const code = nanoidCode()
+
+    const [newBuilding] = await db.insert(building).values({
+        id: crypto.randomUUID(),
+        name: name || "New Building",
+        nif: nif || "N/A",
+        code,
+        managerId,
+    }).returning()
+
+    await db.update(user)
+        .set({ buildingId: newBuilding.id })
+        .where(eq(user.id, managerId))
+
+    return newBuilding
 }
 
 export async function getResidentBuildingDetails(buildingId: string) {
@@ -112,41 +151,49 @@ export async function deleteApartment(apartmentId: number) {
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 
-export async function claimApartment(buildingId: string, unit: string) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    })
+export async function claimApartment(buildingId: string, apartmentId: number, userId: string) {
+    if (!buildingId || !apartmentId || !userId) throw new Error("Missing fields")
 
-    if (!session) throw new Error("Unauthorized")
-
-    const userId = session.user.id
-
-    // Check if apartment exists
-    const existing = await db.select().from(apartments).where(and(
-        eq(apartments.buildingId, buildingId),
-        eq(apartments.unit, unit)
+    const targetApartment = await db.select().from(apartments).where(and(
+        eq(apartments.id, apartmentId),
+        eq(apartments.buildingId, buildingId)
     )).limit(1)
 
-    if (existing.length) {
-        // Update existing
-        await db.update(apartments)
-            .set({ residentId: userId })
-            .where(eq(apartments.id, existing[0].id))
-        return existing[0]
-    } else {
-        // Create new
-        const [newApt] = await db.insert(apartments).values({
-            buildingId,
-            unit,
-            residentId: userId,
-        }).returning()
-        return newApt
+    if (!targetApartment.length) {
+        throw new Error("Apartment not found for this building")
     }
+
+    if (targetApartment[0].residentId && targetApartment[0].residentId !== userId) {
+        throw new Error("Apartment already claimed")
+    }
+
+    const [updated] = await db.update(apartments)
+        .set({ residentId: userId })
+        .where(eq(apartments.id, apartmentId))
+        .returning()
+
+    // Ensure user is linked to this building
+    await db.update(user)
+        .set({ buildingId, profileComplete: true, updatedAt: new Date() })
+        .where(eq(user.id, userId))
+
+    return updated
 }
 
 export async function getResidentApartment(userId: string) {
     const result = await db.select().from(apartments).where(eq(apartments.residentId, userId)).limit(1)
     return result[0] || null
+}
+
+export async function getUnclaimedApartments(buildingId: string) {
+    const result = await db.select().from(apartments)
+        .where(and(
+            eq(apartments.buildingId, buildingId),
+            eq(apartments.residentId, null)
+        ))
+        .orderBy(apartments.unit)
+
+    return result
 }
 
 export async function getBuildingResidents(buildingId: string) {
@@ -169,6 +216,20 @@ export async function getBuildingResidents(buildingId: string) {
 export async function getBuilding(buildingId: string) {
     const result = await db.select().from(building).where(eq(building.id, buildingId)).limit(1)
     return result[0] || null
+}
+
+export async function getResidentStatus(userId: string) {
+    const existingUser = await db.select().from(user).where(eq(user.id, userId)).limit(1)
+    if (!existingUser.length) throw new Error("User not found")
+
+    const profile = existingUser[0]
+    const residentApartment = profile.buildingId ? await getResidentApartment(userId) : null
+
+    return {
+        buildingId: profile.buildingId,
+        profileComplete: Boolean(profile.profileComplete),
+        apartment: residentApartment,
+    }
 }
 
 export async function getBuildingApartments(buildingId: string) {
@@ -210,7 +271,10 @@ export async function updateBuilding(
 }
 
 export async function bulkCreateApartments(buildingId: string, unitsString: string) {
-    const units = unitsString.split(',').map(u => u.trim()).filter(Boolean)
+    const units = unitsString
+        .split(/[\n,]/)
+        .map(u => u.trim())
+        .filter(Boolean)
     if (!units.length) throw new Error("No units provided")
 
     const created: typeof apartments.$inferSelect[] = []
@@ -245,6 +309,35 @@ export async function updateApartment(
         .set(data)
         .where(eq(apartments.id, apartmentId))
         .returning()
+
+    return updated
+}
+
+export async function completeResidentProfile(
+    userId: string,
+    data: {
+        name?: string
+    }
+) {
+    if (!userId) throw new Error("Missing user")
+
+    const updatePayload: Partial<typeof user.$inferInsert> = {
+        profileComplete: true,
+        updatedAt: new Date(),
+    }
+
+    if (data.name) {
+        updatePayload.name = data.name
+    }
+
+    const [updated] = await db.update(user)
+        .set(updatePayload)
+        .where(eq(user.id, userId))
+        .returning({
+            id: user.id,
+            name: user.name,
+            profileComplete: user.profileComplete,
+        })
 
     return updated
 }

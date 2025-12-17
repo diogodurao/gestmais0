@@ -21,15 +21,13 @@ export default async function PaymentsPage() {
     // Ensure building exists for manager context
     let buildingId = session.user.buildingId
 
-    // Defensive: if for some reason buildingId is missing but they are manager (should stick from dashboard, but let's be safe)
-    if (!buildingId) {
-        try {
-            const building = await getOrCreateManagerBuilding(session.user.id, session.user.nif || "")
-            buildingId = building.id
-        } catch (e) {
-            console.error("Critical error loading building", e)
-            return <div>Error loading building ecosystem.</div>
-        }
+    // Always resolve the active building for the manager
+    try {
+        const { activeBuilding } = await getOrCreateManagerBuilding(session.user.id, session.user.nif || "")
+        buildingId = activeBuilding.id
+    } catch (e) {
+        console.error("Critical error loading building", e)
+        return <div>Error loading building ecosystem.</div>
     }
 
     const currentYear = new Date().getFullYear()

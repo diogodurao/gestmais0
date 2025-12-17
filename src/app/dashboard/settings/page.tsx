@@ -1,9 +1,10 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getBuilding, getBuildingApartments } from "@/app/actions/building"
+import { getBuildingApartments, getOrCreateManagerBuilding } from "@/app/actions/building"
 import { BuildingSettingsForm } from "@/features/dashboard/BuildingSettingsForm"
 import { ApartmentManager } from "@/features/dashboard/ApartmentManager"
+import { BuildingSwitcher } from "@/features/dashboard/BuildingSwitcher"
 
 export const dynamic = 'force-dynamic'
 
@@ -16,13 +17,9 @@ export default async function SettingsPage() {
         return redirect("/dashboard")
     }
 
-    const buildingId = session.user.buildingId
-    if (!buildingId) {
-        return redirect("/dashboard")
-    }
-
-    const building = await getBuilding(buildingId)
-    if (!building) {
+    const { activeBuilding, buildings } = await getOrCreateManagerBuilding(session.user.id, session.user.nif || "")
+    const buildingId = activeBuilding?.id
+    if (!buildingId || !activeBuilding) {
         return redirect("/dashboard")
     }
 
@@ -35,7 +32,14 @@ export default async function SettingsPage() {
                 <p className="text-gray-500 text-sm mt-1">Manage your building configuration</p>
             </div>
 
-            <BuildingSettingsForm building={building} />
+            <BuildingSwitcher
+                buildings={buildings}
+                activeBuildingId={buildingId}
+                managerId={session.user.id}
+                managerNif={session.user.nif || ""}
+            />
+
+            <BuildingSettingsForm building={activeBuilding} />
 
             <ApartmentManager
                 apartments={apartmentsData}

@@ -6,7 +6,6 @@ import { bulkCreateApartments, updateApartment, deleteApartment } from "@/app/ac
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
-import { Modal } from "@/components/ui/Modal"
 import { Plus, Trash2, Pencil } from "lucide-react"
 
 type ApartmentData = {
@@ -36,7 +35,7 @@ export function ApartmentManager({
     const [bulkInput, setBulkInput] = useState("")
     const [isBulkSaving, setIsBulkSaving] = useState(false)
 
-    const [editApt, setEditApt] = useState<ApartmentData["apartment"] | null>(null)
+    const [expandedId, setExpandedId] = useState<number | null>(null)
     const [editForm, setEditForm] = useState({ unit: "", floor: "", permillage: "" })
     const [isEditSaving, setIsEditSaving] = useState(false)
 
@@ -58,7 +57,7 @@ export function ApartmentManager({
     }
 
     const openEdit = (apt: ApartmentData["apartment"]) => {
-        setEditApt(apt)
+        setExpandedId(apt.id)
         setEditForm({
             unit: apt.unit,
             floor: apt.floor?.toString() || "",
@@ -66,25 +65,25 @@ export function ApartmentManager({
         })
     }
 
-    const handleEditSave = async (e: React.FormEvent) => {
+    const handleEditSave = async (e: React.FormEvent, apartmentId: number) => {
         e.preventDefault()
-        if (!editApt) return
+        if (!apartmentId) return
 
         setIsEditSaving(true)
         // Handle comma as decimal separator and parse as float
         const cleanFloor = editForm.floor.replace(',', '.')
         const cleanPerm = editForm.permillage.replace(',', '.')
-        
+
         const parsedFloor = parseInt(cleanFloor)
         const parsedPerm = parseFloat(cleanPerm)
 
         try {
-            await updateApartment(editApt.id, {
+            await updateApartment(apartmentId, {
                 unit: editForm.unit,
                 floor: editForm.floor && !isNaN(parsedFloor) ? parsedFloor : null,
                 permillage: editForm.permillage && !isNaN(parsedPerm) ? parsedPerm : null,
             })
-            setEditApt(null)
+            setExpandedId(null)
             router.refresh()
         } catch (error) {
             console.error("Update failed", error)
@@ -116,12 +115,16 @@ export function ApartmentManager({
             <CardContent className="space-y-4">
                 {showBulkAdd && (
                     <form onSubmit={handleBulkAdd} className="p-4 bg-gray-50 rounded-md border border-gray-200 space-y-3">
-                        <Input
-                            label="Units (comma-separated)"
-                            placeholder="1A, 1B, 2A, 2B, 3A, 3B"
-                            value={bulkInput}
-                            onChange={e => setBulkInput(e.target.value)}
-                        />
+                        <div className="space-y-1">
+                            <label className="block text-sm font-medium text-gray-700">Units (comma or line separated)</label>
+                            <textarea
+                                placeholder={"Loja A\nCave B\nR/C Esq\n1Dto"}
+                                value={bulkInput}
+                                onChange={e => setBulkInput(e.target.value)}
+                                rows={4}
+                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-black text-black placeholder:text-gray-400 border-gray-300"
+                            />
+                        </div>
                         <div className="flex gap-2">
                             <Button type="submit" size="sm" disabled={isBulkSaving}>
                                 {isBulkSaving ? "Adding..." : "Add Units"}
@@ -136,92 +139,86 @@ export function ApartmentManager({
                 {apartments.length === 0 ? (
                     <p className="text-sm text-gray-400 italic py-4">No apartments yet. Use Bulk Add to create multiple at once.</p>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-gray-100">
-                                    <th className="text-left py-2 px-2 font-medium text-gray-600">Unit</th>
-                                    <th className="text-left py-2 px-2 font-medium text-gray-600">Floor</th>
-                                    <th className="text-left py-2 px-2 font-medium text-gray-600">Permillage</th>
-                                    <th className="text-left py-2 px-2 font-medium text-gray-600">Resident</th>
-                                    <th className="text-right py-2 px-2 font-medium text-gray-600">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {apartments.map(({ apartment, resident }) => (
-                                    <tr key={apartment.id} className="border-b border-gray-50 hover:bg-gray-50">
-                                        <td className="py-2 px-2 font-medium">{apartment.unit}</td>
-                                        <td className="py-2 px-2 text-gray-600">{apartment.floor ?? "—"}</td>
-                                        <td className="py-2 px-2 text-gray-600">
-                                        {apartment.permillage?.toString().replace('.', ',') ?? "—"}
-                                    </td>
-                                        <td className="py-2 px-2 text-gray-600">
-                                            {resident ? resident.name : <span className="text-gray-400">—</span>}
-                                        </td>
-                                        <td className="py-2 px-2 text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => openEdit(apartment)}
-                                                    className="p-1 h-auto"
-                                                >
-                                                    <Pencil className="w-4 h-4" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {apartments.map(({ apartment, resident }) => {
+                            const isOpen = expandedId === apartment.id
+                            return (
+                                <div key={apartment.id} className="border border-gray-200 rounded-lg p-3 bg-white shadow-sm">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-base font-semibold text-black">{apartment.unit}</span>
+                                                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                                                    {apartment.floor !== null && apartment.floor !== undefined ? `Floor ${apartment.floor}` : "No floor"}
+                                                </span>
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                Permillage: {apartment.permillage !== null && apartment.permillage !== undefined
+                                                    ? apartment.permillage.toString().replace('.', ',')
+                                                    : "—"}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                Resident: {resident ? resident.name : "Unclaimed"}
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => (isOpen ? setExpandedId(null) : openEdit(apartment))}
+                                                className="p-1 h-auto"
+                                            >
+                                                <Pencil className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => handleDelete(apartment.id)}
+                                                className="p-1 h-auto text-red-500 hover:text-red-600"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {isOpen && (
+                                        <form onSubmit={(e) => handleEditSave(e, apartment.id)} className="mt-3 space-y-3">
+                                            <Input
+                                                label="Unit label"
+                                                value={editForm.unit}
+                                                onChange={e => setEditForm(prev => ({ ...prev, unit: e.target.value }))}
+                                                required
+                                            />
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <Input
+                                                    label="Floor"
+                                                    value={editForm.floor}
+                                                    onChange={e => setEditForm(prev => ({ ...prev, floor: e.target.value }))}
+                                                    placeholder="-1, 0, 1..."
+                                                />
+                                                <Input
+                                                    label="Permillage (‰)"
+                                                    value={editForm.permillage}
+                                                    onChange={e => setEditForm(prev => ({ ...prev, permillage: e.target.value }))}
+                                                    placeholder="e.g., 16,48"
+                                                />
+                                            </div>
+                                            <div className="flex justify-end gap-2">
+                                                <Button type="button" variant="ghost" onClick={() => setExpandedId(null)}>
+                                                    Cancel
                                                 </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => handleDelete(apartment.id)}
-                                                    className="p-1 h-auto text-red-500 hover:text-red-600"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
+                                                <Button type="submit" disabled={isEditSaving}>
+                                                    {isEditSaving ? "Saving..." : "Save"}
                                                 </Button>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </form>
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
                 )}
             </CardContent>
-
-            <Modal
-                isOpen={!!editApt}
-                onClose={() => setEditApt(null)}
-                title={`Edit Apartment ${editApt?.unit || ""}`}
-            >
-                {editApt && (
-                    <form onSubmit={handleEditSave} className="space-y-4">
-                        <Input
-                            label="Unit"
-                            value={editForm.unit}
-                            onChange={e => setEditForm(prev => ({ ...prev, unit: e.target.value }))}
-                            required
-                        />
-                        <Input
-                            label="Floor"
-                            type="number"
-                            value={editForm.floor}
-                            onChange={e => setEditForm(prev => ({ ...prev, floor: e.target.value }))}
-                        />
-                        <Input
-                            label="Permillage"
-                            value={editForm.permillage}
-                            onChange={e => setEditForm(prev => ({ ...prev, permillage: e.target.value }))}
-                            placeholder="e.g., 45,50"
-                        />
-                        <div className="flex justify-end gap-2 pt-2">
-                            <Button type="button" variant="ghost" onClick={() => setEditApt(null)}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={isEditSaving}>
-                                {isEditSaving ? "Saving..." : "Save"}
-                            </Button>
-                        </div>
-                    </form>
-                )}
-            </Modal>
         </Card>
     )
 }
