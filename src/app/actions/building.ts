@@ -107,7 +107,16 @@ export async function getManagerBuildings(userId: string) {
     return result
 }
 
-export async function switchActiveBuilding(userId: string, buildingId: string) {
+export async function switchActiveBuilding(buildingId: string) {
+    // Get current user from session
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+    
+    if (!session) throw new Error("Unauthorized")
+    
+    const userId = session.user.id
+
     // Verify manager has access to this building
     const access = await db.select()
         .from(managerBuildings)

@@ -47,7 +47,7 @@ export function Sidebar({
     const handleSwitchBuilding = (buildingId: string) => {
         startTransition(async () => {
             try {
-                await switchActiveBuilding(activeBuildingId ? activeBuildingId : "", buildingId)
+                await switchActiveBuilding(buildingId)
                 setBuildingDropdownOpen(false)
                 router.refresh()
             } catch (error) {

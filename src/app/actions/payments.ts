@@ -2,29 +2,38 @@
 
 import { db } from "@/db"
 import { payments, apartments, building } from "@/db/schema"
-import { eq, and } from "drizzle-orm"
+import { eq, and, asc } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 
 export type PaymentStatus = 'paid' | 'pending' | 'late'
 
 export interface PaymentData {
     apartmentId: number
-    unit: string
+    unit: string // Computed display name: "R/C A", "1º esq", etc.
     payments: Record<number, string> // month (1-12) -> status
+}
+
+// Helper to compute unit display name from floor + identifier
+function getUnitDisplayName(floor: string, identifier: string): string {
+    let floorLabel: string
+    if (floor === "0") floorLabel = "R/C"
+    else if (floor === "-1") floorLabel = "Cave"
+    else if (floor === "-2") floorLabel = "-2"
+    else floorLabel = `${floor}º`
+    
+    return `${floorLabel} ${identifier}`
 }
 
 export async function getPaymentMap(buildingId: string, year: number) {
     if (!buildingId) return []
 
-    // 1. Get all apartments for the building
-    const buildingApartments = await db.select().from(apartments).where(eq(apartments.buildingId, buildingId)).orderBy(apartments.unit)
+    // 1. Get all apartments for the building, ordered by floor then identifier
+    const buildingApartments = await db.select()
+        .from(apartments)
+        .where(eq(apartments.buildingId, buildingId))
+        .orderBy(asc(apartments.floor), asc(apartments.identifier))
 
     // 2. Get all payments for these apartments for the given year
-    // Note: Drizzle doesn't support 'IN' easily with composed queries sometimes, so we might loop or do a join
-    // Let's rely on a join if possible, or just fetch all payments for the building's apartments
-    // For MVP, fetching all payments for the building/year is fine
-
-    // Get raw payments
     const rawPayments = await db.select({
         apartmentId: payments.apartmentId,
         month: payments.month,
@@ -46,10 +55,10 @@ export async function getPaymentMap(buildingId: string, year: number) {
         paymentsByApartment.get(p.apartmentId)![p.month] = p.status
     }
 
-    // 4. Build grid data
+    // 4. Build grid data with computed unit display name
     const gridData: PaymentData[] = buildingApartments.map(apt => ({
         apartmentId: apt.id,
-        unit: apt.unit,
+        unit: getUnitDisplayName(apt.floor, apt.identifier),
         payments: paymentsByApartment.get(apt.id) || {}
     }))
 
@@ -74,7 +83,7 @@ export async function updatePaymentStatus(apartmentId: number, month: number, ye
             month,
             year,
             status,
-            amount: amount, // For MVP we default to 0 or manual input
+            amount: amount,
         })
     }
 
