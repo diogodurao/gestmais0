@@ -38,8 +38,9 @@ export function NewBuildingForm() {
                 formData.name,
                 formData.nif
             )
-            router.push("/dashboard/settings")
-            router.refresh()
+            
+            // Force full page reload to ensure session cookies are updated
+            window.location.href = "/dashboard/settings"
         } catch (err) {
             console.error("Failed to create building", err)
             setError("Failed to create building. Please try again.")

@@ -5,24 +5,21 @@ async function main() {
     console.log("Running V2 migration: Multi-building + Structured Units...\n");
 
     try {
+        // ... (Skipping user table parts as they passed) ...
+        // To be safe I'll keep them but they are idempotent (IF NOT EXISTS/Check existence)
+
         // ========================================
         // 1. USER TABLE UPDATES
         // ========================================
         console.log("📦 Updating User table...");
-        
-        // Add personal IBAN for residents
         await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS iban TEXT`);
-        
-        // Add activeBuildingId for managers (currently selected building)
         await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS active_building_id TEXT`);
-        
         console.log("✅ User table updated\n");
 
         // ========================================
         // 2. MANAGER_BUILDINGS JUNCTION TABLE
         // ========================================
         console.log("📦 Creating manager_buildings table...");
-        
         await db.execute(sql`
             CREATE TABLE IF NOT EXISTS manager_buildings (
                 id SERIAL PRIMARY KEY,
@@ -32,15 +29,12 @@ async function main() {
                 created_at TIMESTAMP DEFAULT NOW()
             )
         `);
-        
         console.log("✅ manager_buildings table created\n");
 
         // ========================================
         // 3. MIGRATE EXISTING MANAGER RELATIONSHIPS
         // ========================================
         console.log("📦 Migrating existing manager-building relationships...");
-        
-        // For each building, create a manager_buildings entry for the managerId
         await db.execute(sql`
             INSERT INTO manager_buildings (manager_id, building_id, is_owner)
             SELECT manager_id, id, TRUE
@@ -52,7 +46,6 @@ async function main() {
             )
         `);
         
-        // Set activeBuildingId for managers who don't have one yet
         await db.execute(sql`
             UPDATE "user" u
             SET active_building_id = (
@@ -63,7 +56,6 @@ async function main() {
             WHERE u.role = 'manager' 
             AND u.active_building_id IS NULL
         `);
-        
         console.log("✅ Manager relationships migrated\n");
 
         // ========================================
@@ -71,41 +63,66 @@ async function main() {
         // ========================================
         console.log("📦 Restructuring apartments table...");
         
-        // Add new columns
         await db.execute(sql`ALTER TABLE apartments ADD COLUMN IF NOT EXISTS unit_type TEXT`);
         await db.execute(sql`ALTER TABLE apartments ADD COLUMN IF NOT EXISTS identifier TEXT`);
         
-        // Migrate existing 'unit' data to new structure
-        // Default: floor = "1", unitType = "apartment", identifier = unit value
-        await db.execute(sql`
-            UPDATE apartments 
-            SET 
-                unit_type = 'apartment',
-                identifier = COALESCE(unit, 'A')
-            WHERE unit_type IS NULL OR identifier IS NULL
+        const unitColExists = await db.execute(sql`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'apartments' AND column_name = 'unit'
         `);
+
+        if (unitColExists.length > 0) {
+             console.log("Migrating data from 'unit' column...");
+             await db.execute(sql`
+                UPDATE apartments 
+                SET 
+                    unit_type = 'apartment',
+                    identifier = COALESCE(unit, 'A')
+                WHERE (unit_type IS NULL OR identifier IS NULL)
+             `);
+        } else {
+             console.log("'unit' column not found, setting defaults for new columns...");
+             await db.execute(sql`
+                UPDATE apartments 
+                SET 
+                    unit_type = 'apartment',
+                    identifier = 'A'
+                WHERE (unit_type IS NULL OR identifier IS NULL)
+             `);
+        }
         
-        // Convert floor from INTEGER to TEXT if needed
-        // First check if floor is INTEGER type
         await db.execute(sql`
             ALTER TABLE apartments 
             ALTER COLUMN floor TYPE TEXT 
             USING COALESCE(floor::TEXT, '1')
         `);
+
+        // FIX PERMILLAGE
+        console.log("Fixing permillage column...");
         
-        // Set NOT NULL constraints after data is migrated
+        // 1. Drop bad default
+        await db.execute(sql`ALTER TABLE apartments ALTER COLUMN permillage DROP DEFAULT`);
+        
+        // 2. Clean invalid data (non-numeric text)
+        await db.execute(sql`
+            UPDATE apartments 
+            SET permillage = NULL 
+            WHERE permillage !~ '^[0-9]+(\.[0-9]+)?$'
+        `);
+
+        // 3. Convert to REAL
+        await db.execute(sql`
+            ALTER TABLE apartments 
+            ALTER COLUMN permillage TYPE REAL 
+            USING permillage::REAL
+        `);
+        
         await db.execute(sql`ALTER TABLE apartments ALTER COLUMN floor SET NOT NULL`);
         await db.execute(sql`ALTER TABLE apartments ALTER COLUMN unit_type SET NOT NULL`);
         await db.execute(sql`ALTER TABLE apartments ALTER COLUMN identifier SET NOT NULL`);
         
-        // Drop old 'unit' column (optional - keep for now as backup)
-        // await db.execute(sql`ALTER TABLE apartments DROP COLUMN IF EXISTS unit`);
-        
         console.log("✅ Apartments table restructured\n");
-
-        // ========================================
-        // DONE
-        // ========================================
         console.log("🎉 V2 migration completed successfully!");
         process.exit(0);
     } catch (error) {
@@ -115,4 +132,3 @@ async function main() {
 }
 
 main();
-

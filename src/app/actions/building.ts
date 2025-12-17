@@ -279,11 +279,6 @@ export async function updateBuilding(
 // APARTMENT CRUD ACTIONS
 // ==========================================
 
-// Helper to compute display name
-export function getApartmentDisplayName(apt: { floor: string; unitType: string; identifier: string }) {
-    const floorLabel = apt.floor === "0" ? "R/C" : apt.floor === "-1" ? "Cave" : `${apt.floor}º`
-    return `${floorLabel} ${apt.identifier}`
-}
 
 export async function createApartment(
     buildingId: string,

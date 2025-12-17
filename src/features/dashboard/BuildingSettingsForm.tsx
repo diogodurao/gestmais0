@@ -6,6 +6,7 @@ import { updateBuilding } from "@/app/actions/building"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
+import { Pencil, Building2, MapPin, Wallet, Calculator } from "lucide-react"
 
 type Building = {
     id: string
@@ -22,6 +23,7 @@ type Building = {
 
 export function BuildingSettingsForm({ building }: { building: Building }) {
     const router = useRouter()
+    const [isEditing, setIsEditing] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const [formData, setFormData] = useState({
         name: building.name,
@@ -56,6 +58,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                 quotaMode: formData.quotaMode,
                 monthlyQuota: monthlyQuotaStr && !isNaN(parsedQuota) ? Math.round(parsedQuota * 100) : 0,
             })
+            setIsEditing(false)
             router.refresh()
         } catch (error) {
             console.error("Failed to update building", error)
@@ -64,10 +67,87 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         }
     }
 
+    const handleCancel = () => {
+        setIsEditing(false)
+        setFormData({
+            name: building.name,
+            nif: building.nif,
+            iban: building.iban || "",
+            city: building.city || "",
+            street: building.street || "",
+            number: building.number || "",
+            quotaMode: building.quotaMode || "global",
+        })
+        setMonthlyQuotaStr(building.monthlyQuota ? (building.monthlyQuota / 100).toString() : "")
+    }
+
+    if (!isEditing) {
+        return (
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between py-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-50 rounded-lg">
+                            <Building2 className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                            <h2 className="text-base font-semibold text-gray-900">{building.name}</h2>
+                            <p className="text-xs text-gray-500">NIF: {building.nif}</p>
+                        </div>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Edit
+                    </Button>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4 bg-gray-50/50">
+                    {/* Location */}
+                    <div className="flex gap-3">
+                        <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                        <div>
+                            <p className="text-xs font-medium text-gray-500 uppercase mb-1">Location</p>
+                            <p className="text-sm text-gray-900">
+                                {building.street || "No street"} {building.number ? `, ${building.number}` : ""}
+                            </p>
+                            <p className="text-sm text-gray-600">{building.city || "No city"}</p>
+                        </div>
+                    </div>
+
+                    {/* Financial */}
+                    <div className="flex gap-3">
+                        <Wallet className="w-4 h-4 text-gray-400 mt-0.5" />
+                        <div>
+                            <p className="text-xs font-medium text-gray-500 uppercase mb-1">Bank Info</p>
+                            <p className="text-sm text-gray-900 break-all">{building.iban || "No IBAN configured"}</p>
+                        </div>
+                    </div>
+
+                    {/* Quota */}
+                    <div className="flex gap-3">
+                        <Calculator className="w-4 h-4 text-gray-400 mt-0.5" />
+                        <div>
+                            <p className="text-xs font-medium text-gray-500 uppercase mb-1">Quota Settings</p>
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                    {building.quotaMode === "permillage" ? "Permillage Based" : "Fixed Global"}
+                                </span>
+                                <span className="text-sm font-semibold">
+                                    {building.monthlyQuota ? `€${(building.monthlyQuota / 100).toFixed(2)}` : "€0.00"}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
     return (
         <Card>
-            <CardHeader>
-                <h2 className="text-lg font-semibold">Building Details</h2>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <h2 className="text-lg font-semibold">Edit Building Details</h2>
+                <Button variant="ghost" size="sm" onClick={handleCancel}>
+                    Cancel
+                </Button>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -153,7 +233,10 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         </div>
                     </div>
 
-                    <div className="flex justify-end border-t border-gray-100 pt-4">
+                    <div className="flex justify-end border-t border-gray-100 pt-4 gap-3">
+                        <Button type="button" variant="ghost" onClick={handleCancel}>
+                            Cancel
+                        </Button>
                         <Button type="submit" disabled={isSaving}>
                             {isSaving ? "Saving..." : "Save Changes"}
                         </Button>

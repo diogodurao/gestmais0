@@ -2,22 +2,13 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment, getUnclaimedApartments } from "@/app/actions/building";
+import { getApartmentDisplayName } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { JoinBuildingForm } from "@/features/dashboard/JoinBuildingForm";
 import { ClaimApartmentForm } from "@/features/dashboard/ClaimApartmentForm";
-import { Users } from "lucide-react";
+import { ResidentsList } from "@/features/dashboard/ResidentsList";
 
 export const dynamic = 'force-dynamic'
-
-function getFloorLabel(floor: string): string {
-    if (floor === "0") return "R/C"
-    if (floor === "-1") return "Cave"
-    return `${floor}º`
-}
-
-function getApartmentDisplayName(apt: { floor: string; identifier: string }): string {
-    return `${getFloorLabel(apt.floor)} ${apt.identifier}`
-}
 
 export default async function DashboardPage() {
     const session = await auth.api.getSession({
@@ -32,6 +23,7 @@ export default async function DashboardPage() {
     let buildingInfo = null;
     let buildingCode = "N/A";
     let residents: any[] = [];
+    let unclaimedUnits: any[] = [];
 
     if (session.user.role === 'manager') {
         try {
@@ -39,6 +31,7 @@ export default async function DashboardPage() {
             buildingInfo = building;
             buildingCode = building.code;
             residents = await getBuildingResidents(building.id);
+            unclaimedUnits = await getUnclaimedApartments(building.id);
         } catch (e) {
             console.error("Failed to load building", e);
         }
@@ -128,45 +121,11 @@ export default async function DashboardPage() {
 
                 {/* Manager: Residents Card */}
                 {session.user.role === 'manager' && (
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <h3 className="text-sm font-medium">Residents</h3>
-                            <Users className="h-4 w-4 text-gray-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{residents.length}</div>
-                            <p className="text-xs text-gray-500 mb-4">
-                                {residents.length === 1 ? '1 resident joined' : `${residents.length} residents joined`}
-                            </p>
-                            <div className="space-y-3 max-h-[200px] overflow-y-auto">
-                                {residents.map((r, i) => (
-                                    <div key={i} className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium">
-                                                {r.user.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium truncate max-w-[100px]">{r.user.name}</p>
-                                                <p className="text-xs text-gray-400 truncate max-w-[120px]">{r.user.email}</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            {r.apartment ? (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                                    {getApartmentDisplayName(r.apartment)}
-                                                </span>
-                                            ) : (
-                                                <span className="text-xs text-orange-500">No Unit</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                                {residents.length === 0 && (
-                                    <p className="text-sm text-gray-400 italic">No residents yet.</p>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <ResidentsList 
+                        residents={residents}
+                        buildingId={buildingInfo?.id || ""}
+                        unclaimedUnits={unclaimedUnits}
+                    />
                 )}
             </div>
         </div>

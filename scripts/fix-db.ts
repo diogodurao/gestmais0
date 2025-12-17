@@ -43,7 +43,8 @@ async function main() {
             WHERE table_name = 'apartments' AND column_name = 'unit'
         `);
         
-        if (hasUnitColumn.rows.length > 0) {
+        // Postgres.js returns an array-like object for result
+        if (hasUnitColumn.length > 0) {
             // Migrate existing 'unit' data to 'identifier'
             await db.execute(sql`UPDATE apartments SET identifier = unit WHERE identifier IS NULL`);
             // Set default unit_type for existing records
@@ -67,7 +68,17 @@ async function main() {
         await db.execute(sql`ALTER TABLE apartments ALTER COLUMN identifier SET NOT NULL`);
         
         // Ensure permillage is REAL type
-        await db.execute(sql`ALTER TABLE apartments ALTER COLUMN permillage TYPE REAL`);
+        // Handle conversion from TEXT to REAL (handling commas vs dots)
+        await db.execute(sql`
+            ALTER TABLE apartments 
+            ALTER COLUMN permillage TYPE REAL 
+            USING (
+                CASE 
+                    WHEN permillage IS NULL OR permillage = '' THEN NULL 
+                    ELSE REPLACE(permillage, ',', '.')::REAL 
+                END
+            )
+        `);
         console.log("✅ Updated apartments table structure");
 
         // 5. Link existing buildings to managers in junction table
