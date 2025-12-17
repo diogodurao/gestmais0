@@ -1,6 +1,6 @@
 "use client"
 
-import { Building2, CreditCard, LayoutDashboard, Menu, X } from "lucide-react"
+import { Building2, CreditCard, LayoutDashboard, Menu, Settings, X } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -13,7 +13,8 @@ export function Sidebar({ userRole }: { userRole: string }) {
     const links = [
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
         ...(userRole === "manager" ? [
-            { href: "/dashboard/payments", label: "Payment Map", icon: CreditCard }
+            { href: "/dashboard/payments", label: "Payment Map", icon: CreditCard },
+            { href: "/dashboard/settings", label: "Settings", icon: Settings }
         ] : []),
         ...(userRole === "resident" ? [
             { href: "/dashboard/my-payments", label: "My Payments", icon: CreditCard }

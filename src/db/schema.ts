@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, boolean, integer, date } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, boolean, integer, date, real } from 'drizzle-orm/pg-core';
 
 // --- Auth Tables (Better-Auth) ---
 
@@ -65,6 +65,8 @@ export const building = pgTable('building', {
     number: text('number'),
     iban: text('iban'),
     totalApartments: integer('total_apartments'),
+    quotaMode: text('quota_mode').default('global'), // 'global' | 'permillage'
+    monthlyQuota: integer('monthly_quota'), // in cents
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -77,6 +79,7 @@ export const apartments = pgTable('apartments', {
     unit: text('unit').notNull(), // e.g., "1A", "2B"
     residentId: text('resident_id').references(() => user.id), // Can be null if empty
     floor: integer('floor'),
+    permillage: real('permillage'), // e.g., 45 means 45/1000 of building
     buildingId: text('building_id').notNull().references(() => building.id), // Link to building
 });
 

@@ -165,3 +165,86 @@ export async function getBuildingResidents(buildingId: string) {
 
     return result
 }
+
+export async function getBuilding(buildingId: string) {
+    const result = await db.select().from(building).where(eq(building.id, buildingId)).limit(1)
+    return result[0] || null
+}
+
+export async function getBuildingApartments(buildingId: string) {
+    const result = await db.select({
+        apartment: apartments,
+        resident: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+        }
+    })
+        .from(apartments)
+        .leftJoin(user, eq(apartments.residentId, user.id))
+        .where(eq(apartments.buildingId, buildingId))
+        .orderBy(apartments.unit)
+
+    return result
+}
+
+export async function updateBuilding(
+    buildingId: string,
+    data: {
+        name?: string
+        nif?: string
+        iban?: string | null
+        city?: string | null
+        street?: string | null
+        number?: string | null
+        quotaMode?: string
+        monthlyQuota?: number
+    }
+) {
+    const [updated] = await db.update(building)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(building.id, buildingId))
+        .returning()
+
+    return updated
+}
+
+export async function bulkCreateApartments(buildingId: string, unitsString: string) {
+    const units = unitsString.split(',').map(u => u.trim()).filter(Boolean)
+    if (!units.length) throw new Error("No units provided")
+
+    const created: typeof apartments.$inferSelect[] = []
+
+    for (const unit of units) {
+        const existing = await db.select().from(apartments).where(and(
+            eq(apartments.buildingId, buildingId),
+            eq(apartments.unit, unit)
+        )).limit(1)
+
+        if (!existing.length) {
+            const [newApt] = await db.insert(apartments).values({
+                buildingId,
+                unit,
+            }).returning()
+            created.push(newApt)
+        }
+    }
+
+    return created
+}
+
+export async function updateApartment(
+    apartmentId: number,
+    data: {
+        unit?: string
+        floor?: number | null
+        permillage?: number | null
+    }
+) {
+    const [updated] = await db.update(apartments)
+        .set(data)
+        .where(eq(apartments.id, apartmentId))
+        .returning()
+
+    return updated
+}
