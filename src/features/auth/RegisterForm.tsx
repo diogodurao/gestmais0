@@ -24,6 +24,18 @@ export function RegisterForm() {
         setLoading(true)
         setError("")
 
+        // NIF Validation (Simple implementation)
+        const isNumeric = /^\d+$/.test(formData.nif)
+        if (formData.nif.length !== 9) {
+            setError("NIF must be exactly 9 digits")
+            setLoading(false)
+            return
+        } else if (!isNumeric) {
+            setError("NIF must contain only numbers")
+            setLoading(false)
+            return
+        }
+
         try {
             await authClient.signUp.email({
                 email: formData.email,
@@ -106,6 +118,7 @@ export function RegisterForm() {
                 type="text"
                 placeholder="123456789"
                 required
+                maxLength={9}
                 value={formData.nif}
                 onChange={(e) => setFormData(prev => ({ ...prev, nif: e.target.value }))}
             />

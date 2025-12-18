@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { claimApartment } from "@/app/actions/building"
 import { Button } from "@/components/ui/Button"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
-import { Home, AlertCircle } from "lucide-react"
+import { Home, AlertCircle, AlertTriangle } from "lucide-react"
 
 type UnclaimedApartment = {
     id: number
@@ -35,10 +35,18 @@ export function ClaimApartmentForm({
     const [selectedId, setSelectedId] = useState<number | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
+    const [showConfirmation, setShowConfirmation] = useState(false)
     const router = useRouter()
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const selectedApartment = unclaimedApartments.find(apt => apt.id === selectedId)
+
+    const handleInitiateClaim = (e: React.FormEvent) => {
         e.preventDefault()
+        if (!selectedId) return
+        setShowConfirmation(true)
+    }
+
+    const handleConfirmClaim = async () => {
         if (!selectedId) return
         
         setIsLoading(true)
@@ -49,6 +57,7 @@ export function ClaimApartmentForm({
             router.refresh()
         } catch (e) {
             setError("Failed to claim unit. Please try again.")
+            setShowConfirmation(false)
         } finally {
             setIsLoading(false)
         }
@@ -92,6 +101,72 @@ export function ClaimApartmentForm({
         return aVal - bVal
     })
 
+    // Confirmation Screen
+    if (showConfirmation && selectedApartment) {
+        return (
+            <Card className="max-w-md mx-auto mt-10">
+                <CardHeader>
+                    <div className="flex items-center gap-2 mb-2 justify-center">
+                        <div className="p-3 bg-amber-100 rounded-full">
+                            <AlertTriangle className="w-8 h-8 text-amber-600" />
+                        </div>
+                    </div>
+                    <h2 className="text-xl font-bold text-center">Confirm Your Selection</h2>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {/* Selected Unit Display */}
+                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg text-center">
+                        <p className="text-sm text-gray-500 mb-1">You are claiming</p>
+                        <p className="text-2xl font-bold text-gray-900">
+                            {getDisplayName(selectedApartment)}
+                        </p>
+                    </div>
+
+                    {/* Critical Warning */}
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="flex gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                            <div className="text-sm">
+                                <p className="font-semibold text-red-800 mb-1">
+                                    This action is critical
+                                </p>
+                                <p className="text-red-700 leading-relaxed">
+                                    Make sure you are selecting the correct unit. Choosing the wrong apartment 
+                                    could mix your payment history and data with another resident's information.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {error && (
+                        <p className="text-sm text-red-500 text-center">{error}</p>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            fullWidth
+                            onClick={() => setShowConfirmation(false)}
+                            disabled={isLoading}
+                        >
+                            Go Back
+                        </Button>
+                        <Button
+                            type="button"
+                            fullWidth
+                            onClick={handleConfirmClaim}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? "Claiming..." : "Confirm"}
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
     return (
         <Card className="max-w-md mx-auto mt-10">
             <CardHeader>
@@ -106,7 +181,7 @@ export function ClaimApartmentForm({
                 </p>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleInitiateClaim} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Available Units
@@ -139,7 +214,7 @@ export function ClaimApartmentForm({
                         fullWidth
                         disabled={isLoading || !selectedId}
                     >
-                        {isLoading ? "Claiming..." : "Claim This Unit"}
+                        Claim This Unit
                     </Button>
                 </form>
             </CardContent>

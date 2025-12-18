@@ -3,11 +3,9 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { updatePaymentStatus, PaymentData, PaymentStatus } from "@/app/actions/payments"
-import { createApartment, deleteApartment } from "@/app/actions/building"
+import { deleteApartment } from "@/app/actions/building"
 import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Input"
 import { Modal } from "@/components/ui/Modal"
-import { Plus } from "lucide-react"
 import { PaymentDesktopTable } from "./PaymentDesktopTable"
 import { PaymentMobileCards } from "./PaymentMobileCards"
 
@@ -25,25 +23,10 @@ export function PaymentGrid({
     readOnly?: boolean
 }) {
     const router = useRouter()
-    const [isAdding, setIsAdding] = useState(false)
-    const [newUnit, setNewUnit] = useState("")
 
     // Modal State
     const [editCell, setEditCell] = useState<{ aptId: number, monthIdx: number, status: string, unit: string } | null>(null)
     const [isSaving, setIsSaving] = useState(false)
-
-    const handleAddApartment = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!newUnit) return
-        try {
-            await createApartment(buildingId, newUnit)
-            setNewUnit("")
-            setIsAdding(false)
-            router.refresh()
-        } catch (error) {
-            alert("Failed to create apartment. It might already exist.")
-        }
-    }
 
     const handleDeleteApartment = async (aptId: number) => {
         if (!confirm("Are you sure? This will delete all payments for this apartment.")) return
@@ -82,28 +65,7 @@ export function PaymentGrid({
             {/* Controls */}
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold">Payments {year}</h2>
-                {!readOnly && (
-                    <Button size="sm" onClick={() => setIsAdding(!isAdding)}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Apartment
-                    </Button>
-                )}
             </div>
-
-            {/* Add Form */}
-            {isAdding && !readOnly && (
-                <form onSubmit={handleAddApartment} className="flex gap-2 items-center p-4 bg-gray-50 rounded-md border border-gray-200 animate-in slide-in-from-top-2">
-                    <Input
-                        placeholder="Unit (e.g. 1A)"
-                        value={newUnit}
-                        onChange={e => setNewUnit(e.target.value)}
-                        className="w-32 bg-white"
-                        autoFocus
-                    />
-                    <Button type="submit" size="sm">Save</Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setIsAdding(false)}>Cancel</Button>
-                </form>
-            )}
 
             {/* Desktop View */}
             <PaymentDesktopTable
