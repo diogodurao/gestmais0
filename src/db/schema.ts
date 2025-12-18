@@ -16,6 +16,7 @@ export const user = pgTable('user', {
     iban: text('iban'), // Personal IBAN for residents
     buildingId: text('building_id'), // For residents: their building
     activeBuildingId: text('active_building_id'), // For managers: currently selected building
+    stripeCustomerId: text('stripe_customer_id'), // Link Stripe Customer to Manager
 });
 
 export const session = pgTable('session', {
@@ -71,6 +72,10 @@ export const building = pgTable('building', {
     monthlyQuota: integer('monthly_quota'), // in cents
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    // Stripe Subscription Fields
+    stripeSubscriptionId: text('stripe_subscription_id'),
+    stripePriceId: text('stripe_price_id'),
+    subscriptionStatus: text('subscription_status').default('incomplete'), // 'active', 'incomplete', 'canceled', 'past_due'
 });
 
 // --- Junction Tables ---

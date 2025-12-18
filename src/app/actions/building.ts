@@ -50,6 +50,7 @@ export async function getOrCreateManagerBuilding(userId: string, userNif: string
         nif: userNif || "N/A",
         code: code,
         managerId: userId,
+        subscriptionStatus: 'incomplete',
     }).returning()
 
     // 3. Create junction table entry
@@ -78,6 +79,7 @@ export async function createNewBuilding(userId: string, name: string, nif: strin
         nif: nif || "N/A",
         code: code,
         managerId: userId,
+        subscriptionStatus: 'incomplete',
     }).returning()
 
     // Create junction table entry
@@ -112,9 +114,9 @@ export async function switchActiveBuilding(buildingId: string) {
     const session = await auth.api.getSession({
         headers: await headers()
     })
-    
+
     if (!session) throw new Error("Unauthorized")
-    
+
     const userId = session.user.id
 
     // Verify manager has access to this building
@@ -369,7 +371,7 @@ export async function bulkDeleteApartments(apartmentIds: number[]) {
     await db.delete(payments).where(eq(payments.apartmentId, apartmentIds[0])) // simplified for now, should use inArray
     // Actually, Drizzle supports inArray
     const { inArray } = await import("drizzle-orm")
-    
+
     await db.delete(payments).where(inArray(payments.apartmentId, apartmentIds))
     await db.delete(apartments).where(inArray(apartments.id, apartmentIds))
 

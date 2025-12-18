@@ -36,6 +36,10 @@ export const auth = betterAuth({
             activeBuildingId: {
                 type: "string",
                 required: false,
+            },
+            stripeCustomerId: {
+                type: "string",
+                required: false,
             }
         }
     }

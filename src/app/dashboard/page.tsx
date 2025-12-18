@@ -52,8 +52,8 @@ export default async function DashboardPage() {
                 if (!residentApartment) {
                     const unclaimed = await getUnclaimedApartments(session.user.buildingId)
                     return (
-                        <ClaimApartmentForm 
-                            buildingId={session.user.buildingId} 
+                        <ClaimApartmentForm
+                            buildingId={session.user.buildingId}
                             unclaimedApartments={unclaimed}
                         />
                     )
@@ -94,15 +94,27 @@ export default async function DashboardPage() {
                             </div>
 
                             {session.user.role === 'manager' && (
-                                <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg flex justify-between items-center">
-                                    <div>
-                                        <p className="text-blue-800 font-medium text-sm">Valid Invite Code</p>
-                                        <p className="text-2xl font-bold text-blue-900 tracking-wider font-mono lowercase">{buildingCode}</p>
+                                buildingInfo?.subscriptionStatus === 'active' ? (
+                                    <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg flex justify-between items-center">
+                                        <div>
+                                            <p className="text-blue-800 font-medium text-sm">Valid Invite Code</p>
+                                            <p className="text-2xl font-bold text-blue-900 tracking-wider font-mono lowercase">{buildingCode}</p>
+                                        </div>
+                                        <div className="text-right max-w-[150px]">
+                                            <p className="text-xs text-blue-600 leading-tight">Share this code with residents to let them join.</p>
+                                        </div>
                                     </div>
-                                    <div className="text-right max-w-[150px]">
-                                        <p className="text-xs text-blue-600 leading-tight">Share this code with residents to let them join.</p>
+                                ) : (
+                                    <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg flex justify-between items-center">
+                                        <div>
+                                            <p className="text-amber-800 font-medium text-sm">Subscription Needed</p>
+                                            <p className="text-sm text-amber-700">Invite code is hidden until you subscribe.</p>
+                                        </div>
+                                        <a href="/dashboard/settings?tab=payments" className="text-sm bg-white text-amber-800 px-3 py-1.5 rounded-md border border-amber-200 shadow-sm font-medium hover:bg-amber-50">
+                                            Go to Payment
+                                        </a>
                                     </div>
-                                </div>
+                                )
                             )}
 
                             {session.user.role === 'resident' && residentBuildingInfo && (
@@ -119,13 +131,30 @@ export default async function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                {/* Manager: Residents Card */}
-                {session.user.role === 'manager' && (
-                    <ResidentsList 
+                {/* Manager: Residents Card - Protected by Subscription */}
+                {session.user.role === 'manager' && buildingInfo?.subscriptionStatus === 'active' && (
+                    <ResidentsList
                         residents={residents}
                         buildingId={buildingInfo?.id || ""}
                         unclaimedUnits={unclaimedUnits}
                     />
+                )}
+
+                {session.user.role === 'manager' && buildingInfo?.subscriptionStatus !== 'active' && (
+                    <Card className="col-span-1">
+                        <CardHeader>
+                            <h2 className="text-xl font-semibold">Residents</h2>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-col items-center justify-center p-6 bg-gray-50 border border-gray-100 rounded-lg text-center h-[300px]">
+                                <div className="p-3 bg-gray-200 rounded-full mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                </div>
+                                <h3 className="font-semibold text-gray-900 mb-1">Feature Locked</h3>
+                                <p className="text-sm text-gray-500 mb-4">Complete your subscription to manage residents.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
             </div>
         </div>
