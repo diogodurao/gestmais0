@@ -53,6 +53,41 @@ export async function removeResidentFromBuilding(residentId: string, buildingId:
     return true
 }
 
+export async function unclaimApartmentAction(apartmentId: number) {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+
+    if (!session || session.user.role !== 'manager') {
+        throw new Error("Unauthorized")
+    }
+
+    // 1. Get apartment to check building
+    const apt = await db.select().from(apartments).where(eq(apartments.id, apartmentId)).limit(1)
+    if (!apt.length) throw new Error("Apartment not found")
+
+    const buildingId = apt[0].buildingId
+
+    // 2. Verify manager manages this building
+    const access = await db.select()
+        .from(managerBuildings)
+        .where(and(
+            eq(managerBuildings.managerId, session.user.id),
+            eq(managerBuildings.buildingId, buildingId)
+        ))
+        .limit(1)
+
+    if (!access.length) throw new Error("Unauthorized access to building")
+
+    // 3. Unclaim
+    await db.update(apartments)
+        .set({ residentId: null })
+        .where(eq(apartments.id, apartmentId))
+
+    revalidatePath("/dashboard")
+    return true
+}
+
 export async function updateResidentUnit(residentId: string, newApartmentId: number | null) {
     const session = await auth.api.getSession({
         headers: await headers()

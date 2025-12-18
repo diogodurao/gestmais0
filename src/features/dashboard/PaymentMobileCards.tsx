@@ -9,6 +9,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 interface PaymentMobileCardsProps {
     data: PaymentData[]
     readOnly: boolean
+    highlightedId: number | null
     onCellClick: (aptId: number, monthIdx: number, status: string, unit: string) => void
     onDelete: (aptId: number) => void
 }
@@ -16,6 +17,7 @@ interface PaymentMobileCardsProps {
 export function PaymentMobileCards({
     data,
     readOnly,
+    highlightedId,
     onCellClick,
     onDelete
 }: PaymentMobileCardsProps) {
@@ -39,7 +41,15 @@ export function PaymentMobileCards({
     return (
         <div className="md:hidden space-y-4">
             {data.map(apt => (
-                <div key={apt.apartmentId} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm relative">
+                <div 
+                    key={apt.apartmentId} 
+                    className={cn(
+                        "bg-white p-4 rounded-lg border shadow-sm relative transition-all duration-300",
+                        apt.apartmentId === highlightedId 
+                            ? "border-amber-400 ring-2 ring-amber-200 bg-amber-50" 
+                            : "border-gray-200"
+                    )}
+                >
                     <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-gray-500 uppercase">Unit</span>

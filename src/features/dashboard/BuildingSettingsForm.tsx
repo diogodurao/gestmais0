@@ -25,6 +25,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
     const router = useRouter()
     const [isEditing, setIsEditing] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
+    const [error, setError] = useState("")
     const [formData, setFormData] = useState({
         name: building.name,
         nif: building.nif,
@@ -33,6 +34,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         street: building.street || "",
         number: building.number || "",
         quotaMode: building.quotaMode || "global",
+        totalApartments: building.totalApartments?.toString() || "",
     })
     const [monthlyQuotaStr, setMonthlyQuotaStr] = useState(
         building.monthlyQuota ? (building.monthlyQuota / 100).toString() : ""
@@ -42,12 +44,51 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         setFormData(prev => ({ ...prev, [field]: value }))
     }
 
+    const isValidIban = (iban: string) => /^[A-Za-z0-9]{25}$/.test(iban.replace(/\s+/g, ""))
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSaving(true)
+        setError("")
+
+        // Basic required checks
+        const requiredFilled =
+            formData.name.trim() &&
+            formData.nif.trim() &&
+            formData.iban.trim() &&
+            formData.city.trim() &&
+            formData.street.trim() &&
+            formData.number.trim() &&
+            formData.totalApartments.trim() &&
+            monthlyQuotaStr.trim()
+
+        if (!requiredFilled) {
+            setError("Please fill all building fields before saving.")
+            setIsSaving(false)
+            return
+        }
+
+        if (!isValidIban(formData.iban)) {
+            setError("IBAN must have exactly 25 alphanumeric characters.")
+            setIsSaving(false)
+            return
+        }
+
+        const parsedQuota = parseFloat(monthlyQuotaStr)
+        if (isNaN(parsedQuota) || parsedQuota <= 0) {
+            setError("Monthly quota must be a positive number.")
+            setIsSaving(false)
+            return
+        }
+
+        const parsedTotalUnits = parseInt(formData.totalApartments)
+        if (isNaN(parsedTotalUnits) || parsedTotalUnits <= 0) {
+            setError("Total units must be a positive number.")
+            setIsSaving(false)
+            return
+        }
 
         try {
-            const parsedQuota = parseFloat(monthlyQuotaStr)
             await updateBuilding(building.id, {
                 name: formData.name,
                 nif: formData.nif,
@@ -56,7 +97,8 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                 street: formData.street || null,
                 number: formData.number || null,
                 quotaMode: formData.quotaMode,
-                monthlyQuota: monthlyQuotaStr && !isNaN(parsedQuota) ? Math.round(parsedQuota * 100) : 0,
+                monthlyQuota: Math.round(parsedQuota * 100),
+                totalApartments: parsedTotalUnits,
             })
             setIsEditing(false)
             router.refresh()
@@ -77,6 +119,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
             street: building.street || "",
             number: building.number || "",
             quotaMode: building.quotaMode || "global",
+            totalApartments: building.totalApartments?.toString() || "",
         })
         setMonthlyQuotaStr(building.monthlyQuota ? (building.monthlyQuota / 100).toString() : "")
     }
@@ -91,7 +134,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         </div>
                         <div>
                             <h2 className="text-base font-semibold text-gray-900">{building.name}</h2>
-                            <p className="text-xs text-gray-500">NIF: {building.nif}</p>
+                            <p className="text-xs text-gray-500">NIF: {building.nif} • {building.totalApartments || 0} Units</p>
                         </div>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
@@ -151,7 +194,12 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {error && (
+                        <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
+                            {error}
+                        </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <Input
                             label="Building Name"
                             value={formData.name}
@@ -165,10 +213,18 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                             required
                         />
                         <Input
+                            label="Total Units"
+                            type="number"
+                            value={formData.totalApartments}
+                            onChange={e => handleChange("totalApartments", e.target.value)}
+                            required
+                        />
+                        <Input
                             label="IBAN"
                             value={formData.iban}
                             onChange={e => handleChange("iban", e.target.value)}
                             placeholder="PT50..."
+                            required
                         />
                     </div>
 

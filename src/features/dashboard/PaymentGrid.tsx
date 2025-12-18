@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { updatePaymentStatus, PaymentData, PaymentStatus } from "@/app/actions/payments"
+import { updatePaymentStatus, bulkUpdatePayments, PaymentData, PaymentStatus } from "@/app/actions/payments"
 import { deleteApartment } from "@/app/actions/building"
 import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
 import { Modal } from "@/components/ui/Modal"
+import { Search, ChevronRight } from "lucide-react"
 import { PaymentDesktopTable } from "./PaymentDesktopTable"
 import { PaymentMobileCards } from "./PaymentMobileCards"
 
@@ -23,10 +25,38 @@ export function PaymentGrid({
     readOnly?: boolean
 }) {
     const router = useRouter()
+    const [searchTerm, setSearchTerm] = useState("")
+    const [highlightedId, setHighlightedId] = useState<number | null>(null)
 
     // Modal State
     const [editCell, setEditCell] = useState<{ aptId: number, monthIdx: number, status: string, unit: string } | null>(null)
+    const [isBulk, setIsBulk] = useState(false)
+    const [startMonthIdx, setStartMonthIdx] = useState<number>(0)
+    const [endMonthIdx, setEndMonthIdx] = useState<number>(0)
     const [isSaving, setIsSaving] = useState(false)
+
+    // Clear highlight after 3 seconds
+    useEffect(() => {
+        if (highlightedId !== null) {
+            const timer = setTimeout(() => setHighlightedId(null), 3000)
+            return () => clearTimeout(timer)
+        }
+    }, [highlightedId])
+
+    const filteredData = data.filter(apt => 
+        apt.unit.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!searchTerm) return
+
+        // If there's an exact or close match, highlight the first one
+        const match = filteredData[0]
+        if (match) {
+            setHighlightedId(match.apartmentId)
+        }
+    }
 
     const handleDeleteApartment = async (aptId: number) => {
         if (!confirm("Are you sure? This will delete all payments for this apartment.")) return
@@ -41,6 +71,9 @@ export function PaymentGrid({
 
     const handleCellClick = (aptId: number, monthIdx: number, currentStatus: string, unit: string) => {
         setEditCell({ aptId, monthIdx, status: currentStatus, unit })
+        setStartMonthIdx(monthIdx)
+        setEndMonthIdx(monthIdx)
+        setIsBulk(false)
     }
 
     const handleSaveStatus = async (e: React.FormEvent) => {
@@ -48,9 +81,20 @@ export function PaymentGrid({
         if (!editCell) return
 
         setIsSaving(true)
-        const month = editCell.monthIdx + 1
+        
         try {
-            await updatePaymentStatus(editCell.aptId, month, year, editCell.status as PaymentStatus)
+            if (isBulk) {
+                await bulkUpdatePayments(
+                    editCell.aptId,
+                    year,
+                    startMonthIdx + 1,
+                    endMonthIdx + 1,
+                    editCell.status as PaymentStatus
+                )
+            } else {
+                const month = editCell.monthIdx + 1
+                await updatePaymentStatus(editCell.aptId, month, year, editCell.status as PaymentStatus)
+            }
             setEditCell(null)
             router.refresh()
         } catch (error) {
@@ -63,23 +107,36 @@ export function PaymentGrid({
     return (
         <div className="space-y-6">
             {/* Controls */}
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Payments {year}</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 className="text-xl font-bold whitespace-nowrap">Payments {year}</h2>
+                
+                <form onSubmit={handleSearch} className="relative w-full sm:max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                        placeholder="Search unit or floor..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9 pr-4 py-2 h-10 w-full"
+                    />
+                    <button type="submit" className="hidden">Search</button>
+                </form>
             </div>
 
             {/* Desktop View */}
             <PaymentDesktopTable
-                data={data}
+                data={filteredData}
                 readOnly={readOnly}
-                loadingCell={null} // We removed optimistic loading state for now in favor of simple refresh
+                loadingCell={null}
+                highlightedId={highlightedId}
                 onCellClick={handleCellClick}
                 onDelete={handleDeleteApartment}
             />
 
             {/* Mobile View */}
             <PaymentMobileCards
-                data={data}
+                data={filteredData}
                 readOnly={readOnly}
+                highlightedId={highlightedId}
                 onCellClick={handleCellClick}
                 onDelete={handleDeleteApartment}
             />
@@ -95,16 +152,73 @@ export function PaymentGrid({
             <Modal
                 isOpen={!!editCell}
                 onClose={() => setEditCell(null)}
-                title={editCell ? `Edit Payment: ${editCell.unit} - ${MONTHS[editCell.monthIdx]}` : "Edit Payment"}
+                title={editCell ? `Edit Payment: ${editCell.unit}` : "Edit Payment"}
             >
                 {editCell && (
-                    <form onSubmit={handleSaveStatus} className="space-y-4">
+                    <form onSubmit={handleSaveStatus} className="space-y-6">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <div className="flex-1 text-center">
+                                    <span className="text-xs text-gray-400 uppercase font-semibold block">From</span>
+                                    {isBulk ? (
+                                        <select
+                                            value={startMonthIdx}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value)
+                                                setStartMonthIdx(val)
+                                                if (endMonthIdx < val) setEndMonthIdx(val)
+                                            }}
+                                            className="text-sm font-medium bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
+                                        >
+                                            {MONTHS.map((m, idx) => (
+                                                <option key={m} value={idx}>{m}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <span className="text-sm font-medium">{MONTHS[editCell.monthIdx]}</span>
+                                    )}
+                                </div>
+                                {isBulk && (
+                                    <>
+                                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                                        <div className="flex-1 text-center">
+                                            <span className="text-xs text-gray-400 uppercase font-semibold block">To</span>
+                                            <select
+                                                value={endMonthIdx}
+                                                onChange={(e) => setEndMonthIdx(parseInt(e.target.value))}
+                                                className="text-sm font-medium bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
+                                            >
+                                                {MONTHS.map((m, idx) => (
+                                                    idx >= startMonthIdx && (
+                                                        <option key={m} value={idx}>{m}</option>
+                                                    )
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="bulk-update"
+                                    checked={isBulk}
+                                    onChange={(e) => setIsBulk(e.target.checked)}
+                                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
+                                />
+                                <label htmlFor="bulk-update" className="text-sm text-gray-600 cursor-pointer">
+                                    Update multiple months at once
+                                </label>
+                            </div>
+                        </div>
+
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Status for {isBulk ? "selected months" : MONTHS[editCell.monthIdx]}</label>
                             <select
                                 value={editCell.status}
                                 onChange={(e) => setEditCell({ ...editCell, status: e.target.value })}
-                                className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                className="w-full rounded-md border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-black appearance-none bg-white"
                             >
                                 <option value="pending">Pending</option>
                                 <option value="paid">Paid</option>
@@ -112,10 +226,10 @@ export function PaymentGrid({
                             </select>
                         </div>
 
-                        <div className="flex justify-end gap-2 pt-2">
+                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                             <Button type="button" variant="ghost" onClick={() => setEditCell(null)}>Cancel</Button>
-                            <Button type="submit" disabled={isSaving}>
-                                {isSaving ? "Saving..." : "Save Changes"}
+                            <Button type="submit" disabled={isSaving} fullWidth className="sm:w-auto">
+                                {isSaving ? "Saving..." : isBulk ? "Apply Bulk Update" : "Save Changes"}
                             </Button>
                         </div>
                     </form>

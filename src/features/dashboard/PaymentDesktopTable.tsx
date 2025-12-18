@@ -10,6 +10,7 @@ interface PaymentDesktopTableProps {
     data: PaymentData[]
     readOnly: boolean
     loadingCell: string | null
+    highlightedId: number | null
     onCellClick: (aptId: number, monthIdx: number, status: string, unit: string) => void
     onDelete: (aptId: number) => void
 }
@@ -18,6 +19,7 @@ export function PaymentDesktopTable({
     data,
     readOnly,
     loadingCell,
+    highlightedId,
     onCellClick,
     onDelete
 }: PaymentDesktopTableProps) {
@@ -52,8 +54,19 @@ export function PaymentDesktopTable({
                 </thead>
                 <tbody>
                     {data.map(apt => (
-                        <tr key={apt.apartmentId} className="border-b border-gray-100 hover:bg-gray-50/50 group">
-                            <td className="px-4 py-2 font-medium sticky left-0 bg-white z-10 border-r border-gray-100">
+                        <tr 
+                            key={apt.apartmentId} 
+                            className={cn(
+                                "border-b border-gray-100 transition-colors group",
+                                apt.apartmentId === highlightedId 
+                                    ? "bg-amber-50 ring-2 ring-inset ring-amber-200 z-20" 
+                                    : "hover:bg-gray-50/50"
+                            )}
+                        >
+                            <td className={cn(
+                                "px-4 py-2 font-medium sticky left-0 z-10 border-r border-gray-100",
+                                apt.apartmentId === highlightedId ? "bg-amber-50" : "bg-white"
+                            )}>
                                 {apt.unit}
                             </td>
                             {MONTHS.map((_, idx) => {

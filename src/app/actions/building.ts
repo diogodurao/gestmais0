@@ -306,11 +306,12 @@ export async function createApartment(
         throw new Error("Missing required fields")
     }
 
-    // Check if exists (same floor + identifier)
+    // Check if exists (same floor + identifier + unitType)
     const existing = await db.select().from(apartments).where(and(
         eq(apartments.buildingId, buildingId),
         eq(apartments.floor, data.floor),
-        eq(apartments.identifier, data.identifier)
+        eq(apartments.identifier, data.identifier),
+        eq(apartments.unitType, data.unitType)
     )).limit(1)
 
     if (existing.length) throw new Error("Unit already exists on this floor")
@@ -353,6 +354,28 @@ export async function deleteApartment(apartmentId: number) {
     return true
 }
 
+export async function bulkDeleteApartments(apartmentIds: number[]) {
+    if (!apartmentIds.length) return true
+
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+
+    if (!session || session.user.role !== 'manager') {
+        throw new Error("Unauthorized")
+    }
+
+    // Delete related payments first for all apartments
+    await db.delete(payments).where(eq(payments.apartmentId, apartmentIds[0])) // simplified for now, should use inArray
+    // Actually, Drizzle supports inArray
+    const { inArray } = await import("drizzle-orm")
+    
+    await db.delete(payments).where(inArray(payments.apartmentId, apartmentIds))
+    await db.delete(apartments).where(inArray(apartments.id, apartmentIds))
+
+    return true
+}
+
 // Bulk create - simplified for structured units
 export async function bulkCreateApartments(
     buildingId: string,
@@ -371,7 +394,8 @@ export async function bulkCreateApartments(
         const existing = await db.select().from(apartments).where(and(
             eq(apartments.buildingId, buildingId),
             eq(apartments.floor, unit.floor),
-            eq(apartments.identifier, unit.identifier)
+            eq(apartments.identifier, unit.identifier),
+            eq(apartments.unitType, unit.unitType)
         )).limit(1)
 
         if (!existing.length) {
