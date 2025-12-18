@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import { getPaymentMap } from "@/app/actions/payments"
 import { PaymentGrid } from "@/features/dashboard/PaymentGrid"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
+import { checkSetupStatus } from "@/lib/setup-status"
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +19,8 @@ export default async function MyPaymentsPage() {
         return redirect("/dashboard")
     }
 
-    if (!session.user.buildingId) {
+    const setupStatus = await checkSetupStatus(session.user)
+    if (!setupStatus.isComplete) {
         return redirect("/dashboard")
     }
 

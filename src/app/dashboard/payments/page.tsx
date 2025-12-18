@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import { getPaymentMap } from "@/app/actions/payments"
 import { PaymentGrid } from "@/features/dashboard/PaymentGrid"
 import { getOrCreateManagerBuilding } from "@/app/actions/building"
+import { checkSetupStatus } from "@/lib/setup-status"
 
 export const dynamic = 'force-dynamic'
 
@@ -18,8 +19,13 @@ export default async function PaymentsPage() {
         return redirect("/dashboard")
     }
 
+    const setupStatus = await checkSetupStatus(session.user)
+    if (!setupStatus.isComplete) {
+        return redirect("/dashboard")
+    }
+
     // Ensure building exists for manager context
-    let buildingId = session.user.buildingId
+    let buildingId = session.user.activeBuildingId || ""
 
     // Defensive: if for some reason buildingId is missing but they are manager (should stick from dashboard, but let's be safe)
     if (!buildingId) {

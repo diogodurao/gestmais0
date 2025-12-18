@@ -7,6 +7,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { JoinBuildingForm } from "@/features/dashboard/JoinBuildingForm";
 import { ClaimApartmentForm } from "@/features/dashboard/ClaimApartmentForm";
 import { ResidentsList } from "@/features/dashboard/ResidentsList";
+import { checkSetupStatus } from "@/lib/setup-status";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, Circle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +22,8 @@ export default async function DashboardPage() {
     if (!session) {
         return redirect("/sign-in");
     }
+
+    const setupStatus = await checkSetupStatus(session.user);
 
     // --- MANAGER LOGIC ---
     let buildingInfo = null;
@@ -70,6 +76,122 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-6">
+            {!setupStatus.isComplete && (
+                <Card className="border-amber-200 bg-amber-50/50 max-w-2xl">
+                    <CardHeader className="pb-2">
+                        <h2 className="text-lg font-semibold text-amber-900">Configuração Pendente</h2>
+                        <p className="text-sm text-amber-700">Complete estes passos para desbloquear todas as funcionalidades.</p>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-100">
+                                <div className="flex items-center gap-3">
+                                    {setupStatus.personalInfoComplete ? (
+                                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                    ) : (
+                                        <Circle className="w-5 h-5 text-amber-400" />
+                                    )}
+                                    <span className={cn("text-sm font-medium", setupStatus.personalInfoComplete ? "text-gray-500 line-through" : "text-gray-900")}>
+                                        Informação Pessoal (NIF, IBAN)
+                                    </span>
+                                </div>
+                                {!setupStatus.personalInfoComplete && (
+                                    <Link href="/dashboard/settings" className="text-xs font-semibold text-amber-600 flex items-center gap-1 hover:underline">
+                                        Ir para Profile <ArrowRight className="w-3 h-3" />
+                                    </Link>
+                                )}
+                            </div>
+
+                            {session.user.role === 'manager' ? (
+                                <>
+                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-100">
+                                        <div className="flex items-center gap-3">
+                                            {setupStatus.buildingComplete ? (
+                                                <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                            ) : (
+                                                <Circle className="w-5 h-5 text-amber-400" />
+                                            )}
+                                            <span className={cn("text-sm font-medium", setupStatus.buildingComplete ? "text-gray-500 line-through" : "text-gray-900")}>
+                                                Dados do Edifício
+                                            </span>
+                                        </div>
+                                        {!setupStatus.buildingComplete && (
+                                            <Link href="/dashboard/settings" className="text-xs font-semibold text-amber-600 flex items-center gap-1 hover:underline">
+                                                Configurar Edifício <ArrowRight className="w-3 h-3" />
+                                            </Link>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-100">
+                                        <div className="flex items-center gap-3">
+                                            {setupStatus.unitsCreated ? (
+                                                <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                            ) : (
+                                                <Circle className="w-5 h-5 text-amber-400" />
+                                            )}
+                                            <span className={cn("text-sm font-medium", setupStatus.unitsCreated ? "text-gray-500 line-through" : "text-gray-900")}>
+                                                Criar Frações ({setupStatus.apartmentsCount}/{setupStatus.building?.totalApartments || 0})
+                                            </span>
+                                        </div>
+                                        {!setupStatus.unitsCreated && setupStatus.buildingComplete && (
+                                            <Link href="/dashboard/settings" className="text-xs font-semibold text-amber-600 flex items-center gap-1 hover:underline">
+                                                Gerir Frações <ArrowRight className="w-3 h-3" />
+                                            </Link>
+                                        )}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-100">
+                                    <div className="flex items-center gap-3">
+                                        {setupStatus.hasBuilding ? (
+                                            <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                        ) : (
+                                            <Circle className="w-5 h-5 text-amber-400" />
+                                        )}
+                                        <span className={cn("text-sm font-medium", setupStatus.hasBuilding ? "text-gray-500 line-through" : "text-gray-900")}>
+                                            Aderir a um Edifício
+                                        </span>
+                                    </div>
+                                    {!setupStatus.hasBuilding && (
+                                        <span className="text-xs font-medium text-amber-600">
+                                            Aguardando código...
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-100">
+                                <div className="flex items-center gap-3">
+                                    {setupStatus.selfClaimed ? (
+                                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                    ) : (
+                                        <Circle className="w-5 h-5 text-amber-400" />
+                                    )}
+                                    <span className={cn("text-sm font-medium", setupStatus.selfClaimed ? "text-gray-500 line-through" : "text-gray-900")}>
+                                        Selecionar a sua Fração
+                                    </span>
+                                </div>
+                                {!setupStatus.selfClaimed && (
+                                    session.user.role === 'manager' ? (
+                                        setupStatus.unitsCreated && (
+                                            <Link href="/dashboard/settings" className="text-xs font-semibold text-amber-600 flex items-center gap-1 hover:underline">
+                                                Claim Unit <ArrowRight className="w-3 h-3" />
+                                            </Link>
+                                        )
+                                    ) : (
+                                        setupStatus.hasBuilding && (
+                                            <Link href="/dashboard" className="text-xs font-semibold text-amber-600 flex items-center gap-1 hover:underline">
+                                                Claim Unit <ArrowRight className="w-3 h-3" />
+                                            </Link>
+                                        )
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Welcome / Info Card */}
                 <Card className="col-span-1 md:col-span-2">

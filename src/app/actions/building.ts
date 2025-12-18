@@ -2,7 +2,7 @@
 
 import { db } from "@/db"
 import { building, user, apartments, payments, managerBuildings } from "@/db/schema"
-import { eq, and, isNull, asc } from "drizzle-orm"
+import { eq, and, isNull, asc, inArray } from "drizzle-orm"
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 
@@ -278,6 +278,7 @@ export async function updateBuilding(
         number?: string | null
         quotaMode?: string
         monthlyQuota?: number
+        totalApartments?: number
     }
 ) {
     const [updated] = await db.update(building)
@@ -365,11 +366,7 @@ export async function bulkDeleteApartments(apartmentIds: number[]) {
         throw new Error("Unauthorized")
     }
 
-    // Delete related payments first for all apartments
-    await db.delete(payments).where(eq(payments.apartmentId, apartmentIds[0])) // simplified for now, should use inArray
-    // Actually, Drizzle supports inArray
-    const { inArray } = await import("drizzle-orm")
-    
+    // Delete related payments and apartments
     await db.delete(payments).where(inArray(payments.apartmentId, apartmentIds))
     await db.delete(apartments).where(inArray(apartments.id, apartmentIds))
 

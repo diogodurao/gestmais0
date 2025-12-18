@@ -95,10 +95,16 @@ export default async function SettingsPage({
     const unitsCreated = building?.totalApartments ? apartmentsData.length >= building.totalApartments : false
     const selfClaimed = Boolean(userApartment)
     
+    const personalInfoComplete = Boolean(
+        session.user.name && 
+        session.user.nif && 
+        session.user.iban
+    )
+
     const hasResidents = apartmentsData.some(a => a.resident && a.resident.id !== session.user.id)
 
     // Checklist remains visible until all critical steps are done AND no residents have joined yet
-    const showSetupGuide = session.user.role === 'manager' && building && !hasResidents && (!buildingComplete || !unitsCreated || !selfClaimed)
+    const showSetupGuide = session.user.role === 'manager' && building && !hasResidents && (!buildingComplete || !unitsCreated || !selfClaimed || !personalInfoComplete)
 
     // Define Tabs
     const tabs: Array<{ label: string, value: string, icon: 'user' | 'building' | 'payments' }> = [
@@ -132,6 +138,10 @@ export default async function SettingsPage({
                                     <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg max-w-2xl">
                                         <h3 className="text-lg font-semibold text-blue-900 mb-2">Guia rápido de configuração:</h3>
                                         <ul className="space-y-1 text-sm text-blue-900">
+                                            <li className="flex items-center gap-2">
+                                                <div className={`w-1.5 h-1.5 rounded-full ${personalInfoComplete ? 'bg-green-500' : 'bg-blue-400'}`} />
+                                                <span className={personalInfoComplete ? 'line-through text-blue-600/60' : ''}>Preencher os seus dados pessoais na aba "Profile".</span>
+                                            </li>
                                             <li className="flex items-center gap-2">
                                                 <div className={`w-1.5 h-1.5 rounded-full ${buildingComplete ? 'bg-green-500' : 'bg-blue-400'}`} />
                                                 <span className={buildingComplete ? 'line-through text-blue-600/60' : ''}>Preencher os dados do edifício abaixo.</span>

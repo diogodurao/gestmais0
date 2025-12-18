@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
-import { getResidentApartment, getManagerBuildings } from "@/app/actions/building"
+import { getManagerBuildings } from "@/app/actions/building"
+import { checkSetupStatus } from "@/lib/setup-status"
 
 export default async function DashboardLayout({
     children,
@@ -17,18 +18,10 @@ export default async function DashboardLayout({
     let managerBuildings: { building: { id: string; name: string; code: string }; isOwner: boolean | null }[] = []
 
     if (session?.user) {
-        if (session.user.role === "resident") {
-            // Residents need: buildingId + claimed apartment
-            const hasBuildingId = !!session.user.buildingId
-            if (hasBuildingId) {
-                const apartment = await getResidentApartment(session.user.id)
-                setupComplete = !!apartment
-            } else {
-                setupComplete = false
-            }
-        } else if (session.user.role === "manager") {
-            // Managers are always setup complete
-            setupComplete = true
+        const status = await checkSetupStatus(session.user)
+        setupComplete = status.isComplete
+
+        if (session.user.role === "manager") {
             // Fetch their buildings for the selector
             const buildings = await getManagerBuildings(session.user.id)
             managerBuildings = buildings.map(b => ({

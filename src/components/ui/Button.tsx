@@ -1,10 +1,5 @@
 import { ButtonHTMLAttributes, forwardRef } from "react"
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs))
-}
+import { cn } from "@/lib/utils"
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: "primary" | "secondary" | "outline" | "ghost"
@@ -38,4 +33,5 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
-export { Button, cn }
+export { Button }
+export { cn } from "@/lib/utils"

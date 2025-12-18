@@ -174,11 +174,11 @@ export function Sidebar({
                         })}
                     </nav>
 
-                    {/* Setup Warning for Residents */}
-                    {userRole === "resident" && !setupComplete && (
+                    {/* Setup Warning */}
+                    {!setupComplete && (
                         <div className="px-4 py-3 border-t border-gray-100 bg-amber-50">
                             <p className="text-xs text-amber-700">
-                                Complete your setup to access all features.
+                                Complete your setup in Settings to access all features.
                             </p>
                         </div>
                     )}

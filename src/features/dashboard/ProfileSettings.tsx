@@ -51,18 +51,27 @@ export function ProfileSettings({ user }: { user: UserData }) {
         formData.nif !== (user.nif || "") || 
         formData.iban !== (user.iban || "")
 
+    const isComplete = formData.name && formData.nif && formData.iban
+
     return (
         <div className="max-w-2xl">
-            <Card>
+            <Card className={!isComplete ? "border-amber-200" : ""}>
                 <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gray-100 rounded-full">
-                            <User className="w-6 h-6 text-gray-600" />
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-gray-100 rounded-full">
+                                <User className="w-6 h-6 text-gray-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-semibold">Personal Information</h2>
+                                <p className="text-sm text-gray-500">Update your personal details</p>
+                            </div>
                         </div>
-                        <div>
-                            <h2 className="text-lg font-semibold">Personal Information</h2>
-                            <p className="text-sm text-gray-500">Update your personal details</p>
-                        </div>
+                        {!isComplete && (
+                            <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-100">
+                                Incomplete Profile
+                            </span>
+                        )}
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -89,12 +98,14 @@ export function ProfileSettings({ user }: { user: UserData }) {
                                 value={formData.nif}
                                 onChange={e => handleChange("nif", e.target.value)}
                                 placeholder="9-digit number"
+                                required
                             />
                             <Input
                                 label="Personal IBAN"
                                 value={formData.iban}
                                 onChange={e => handleChange("iban", e.target.value)}
                                 placeholder="PT50..."
+                                required
                             />
                         </div>
 

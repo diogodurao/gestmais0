@@ -19,6 +19,7 @@ type Building = {
     number: string | null
     quotaMode: string | null
     monthlyQuota: number | null
+    totalApartments: number | null
 }
 
 export function BuildingSettingsForm({ building }: { building: Building }) {
@@ -233,16 +234,19 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                             label="City"
                             value={formData.city}
                             onChange={e => handleChange("city", e.target.value)}
+                            required
                         />
                         <Input
                             label="Street"
                             value={formData.street}
                             onChange={e => handleChange("street", e.target.value)}
+                            required
                         />
                         <Input
                             label="Number"
                             value={formData.number}
                             onChange={e => handleChange("number", e.target.value)}
+                            required
                         />
                     </div>
 
