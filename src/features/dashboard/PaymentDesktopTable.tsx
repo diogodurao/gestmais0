@@ -15,6 +15,10 @@ interface PaymentDesktopTableProps {
     onDelete: (aptId: number) => void
 }
 
+/**
+ * Displays resident quota status in a table format (Desktop).
+ * NOT related to Stripe/SaaS subscriptions.
+ */
 export function PaymentDesktopTable({
     data,
     readOnly,

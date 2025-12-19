@@ -6,6 +6,15 @@ import { eq, and } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getApartmentDisplayName, sortApartments } from "@/lib/utils"
 
+/**
+ * ============================================================================
+ * RESIDENT QUOTA PAYMENTS (Server Actions)
+ * ============================================================================
+ * These actions handle the storage/retrieval of which residents have paid their
+ * monthly quotas.
+ * 
+ * NOT RELATED TO STRIPE.
+ */
 export type PaymentStatus = 'paid' | 'pending' | 'late'
 
 export interface PaymentData {

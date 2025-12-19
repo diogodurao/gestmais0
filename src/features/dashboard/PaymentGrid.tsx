@@ -12,6 +12,15 @@ import { PaymentDesktopTable } from "./PaymentDesktopTable"
 import { PaymentMobileCards } from "./PaymentMobileCards"
 import { MONTHS } from "@/lib/constants"
 
+/**
+ * ============================================================================
+ * RESIDENT QUOTA PAYMENTS (MANAGEMENT GRID)
+ * ============================================================================
+ * This component is for managers to track if residents have paid their monthly
+ * condominium fees. It updates the 'payments' table.
+ * 
+ * IT IS NOT RELATED TO THE STRIPE SUBSCRIPTION / SAAS PAYMENTS.
+ */
 export function PaymentGrid({
     data,
     buildingId,

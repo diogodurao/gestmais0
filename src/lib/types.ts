@@ -57,6 +57,8 @@ export type ApartmentWithResident = {
 }
 
 // --- Payment Types ---
+// IMPORTANT: These types refer strictly to RESIDENT QUOTA PAYMENTS (Condominium Fees).
+// They are NOT related to the manager's SaaS subscription (Stripe).
 export type Payment = {
     id: number
     apartmentId: number
@@ -66,6 +68,8 @@ export type Payment = {
     amount: number
 }
 
+// Data structure for the "Mapa de Quotas" grid
+// Tracks which residents have paid their building fees for each month.
 export type PaymentGridData = {
     apartmentId: number
     unit: string

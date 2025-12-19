@@ -14,6 +14,10 @@ interface PaymentMobileCardsProps {
     onDelete: (aptId: number) => void
 }
 
+/**
+ * Displays resident quota status in cards (Mobile).
+ * NOT related to Stripe/SaaS subscriptions.
+ */
 export function PaymentMobileCards({
     data,
     readOnly,
@@ -53,7 +57,7 @@ export function PaymentMobileCards({
                             const monthNum = idx + 1
                             const status = apt.payments[monthNum] || 'pending'
                             const StatusIcon = getPaymentStatusIcon(status)
-                            
+
                             return (
                                 <div key={m} className="flex flex-col items-center gap-1">
                                     <span className="text-[10px] uppercase text-gray-400 font-medium">{m}</span>

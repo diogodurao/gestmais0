@@ -100,6 +100,10 @@ export const apartments = pgTable('apartments', {
     residentId: text('resident_id').references(() => user.id), // Can be null if unclaimed
 });
 
+// --- RESIDENT QUOTA PAYMENTS (NOT STRIPE/SAAS) ---
+// This table tracks if a resident has paid their monthly condominium quota.
+// It is manually updated by the manager or via bank import.
+// IT IS NOT RELATED TO THE MANAGER'S SUBSCRIPTION TO THE APP.
 export const payments = pgTable('payments', {
     id: serial('id').primaryKey(),
     apartmentId: integer('apartment_id').notNull().references(() => apartments.id),
