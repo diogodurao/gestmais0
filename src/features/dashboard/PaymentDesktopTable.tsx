@@ -2,9 +2,9 @@
 
 import { PaymentData } from "@/app/actions/payments"
 import { cn } from "@/components/ui/Button"
-import { Check, AlertCircle, Clock, Trash2 } from "lucide-react"
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+import { Trash2 } from "lucide-react"
+import { getPaymentStatusColor, getPaymentStatusIcon } from "@/lib/utils"
+import { MONTHS } from "@/lib/constants"
 
 interface PaymentDesktopTableProps {
     data: PaymentData[]
@@ -23,23 +23,6 @@ export function PaymentDesktopTable({
     onCellClick,
     onDelete
 }: PaymentDesktopTableProps) {
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'paid': return "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
-            case 'late': return "bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
-            default: return "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100"
-        }
-    }
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'paid': return <Check className="w-3 h-3" />
-            case 'late': return <AlertCircle className="w-3 h-3" />
-            default: return null
-        }
-    }
-
     return (
         <div className="hidden md:block border border-gray-200 rounded-lg overflow-x-auto bg-white shadow-sm">
             <table className="w-full text-sm text-left">
@@ -54,12 +37,12 @@ export function PaymentDesktopTable({
                 </thead>
                 <tbody>
                     {data.map(apt => (
-                        <tr 
-                            key={apt.apartmentId} 
+                        <tr
+                            key={apt.apartmentId}
                             className={cn(
                                 "border-b border-gray-100 transition-colors group",
-                                apt.apartmentId === highlightedId 
-                                    ? "bg-amber-50 ring-2 ring-inset ring-amber-200 z-20" 
+                                apt.apartmentId === highlightedId
+                                    ? "bg-amber-50 ring-2 ring-inset ring-amber-200 z-20"
                                     : "hover:bg-gray-50/50"
                             )}
                         >
@@ -72,6 +55,7 @@ export function PaymentDesktopTable({
                             {MONTHS.map((_, idx) => {
                                 const monthNum = idx + 1
                                 const status = apt.payments[monthNum] || 'pending'
+                                const StatusIcon = getPaymentStatusIcon(status)
 
                                 return (
                                     <td key={idx} className="p-1 text-center">
@@ -80,11 +64,11 @@ export function PaymentDesktopTable({
                                             disabled={readOnly}
                                             className={cn(
                                                 "w-8 h-8 rounded-full inline-flex items-center justify-center transition-all border",
-                                                getStatusColor(status),
+                                                getPaymentStatusColor(status),
                                                 readOnly ? "cursor-default opacity-80" : "cursor-pointer"
                                             )}
                                         >
-                                            {getStatusIcon(status)}
+                                            {StatusIcon && <StatusIcon className="w-3 h-3" />}
                                         </button>
                                     </td>
                                 )

@@ -2,9 +2,9 @@
 
 import { PaymentData } from "@/app/actions/payments"
 import { cn } from "@/components/ui/Button"
-import { Check, AlertCircle, Clock, Trash2 } from "lucide-react"
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+import { Trash2 } from "lucide-react"
+import { getPaymentStatusColor, getPaymentStatusIcon } from "@/lib/utils"
+import { MONTHS } from "@/lib/constants"
 
 interface PaymentMobileCardsProps {
     data: PaymentData[]
@@ -21,32 +21,15 @@ export function PaymentMobileCards({
     onCellClick,
     onDelete
 }: PaymentMobileCardsProps) {
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'paid': return "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
-            case 'late': return "bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
-            default: return "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100"
-        }
-    }
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'paid': return <Check className="w-3 h-3" />
-            case 'late': return <AlertCircle className="w-3 h-3" />
-            default: return null
-        }
-    }
-
     return (
         <div className="md:hidden space-y-4">
             {data.map(apt => (
-                <div 
-                    key={apt.apartmentId} 
+                <div
+                    key={apt.apartmentId}
                     className={cn(
                         "bg-white p-4 rounded-lg border shadow-sm relative transition-all duration-300",
-                        apt.apartmentId === highlightedId 
-                            ? "border-amber-400 ring-2 ring-amber-200 bg-amber-50" 
+                        apt.apartmentId === highlightedId
+                            ? "border-amber-400 ring-2 ring-amber-200 bg-amber-50"
                             : "border-gray-200"
                     )}
                 >
@@ -69,6 +52,8 @@ export function PaymentMobileCards({
                         {MONTHS.map((m, idx) => {
                             const monthNum = idx + 1
                             const status = apt.payments[monthNum] || 'pending'
+                            const StatusIcon = getPaymentStatusIcon(status)
+                            
                             return (
                                 <div key={m} className="flex flex-col items-center gap-1">
                                     <span className="text-[10px] uppercase text-gray-400 font-medium">{m}</span>
@@ -77,11 +62,11 @@ export function PaymentMobileCards({
                                         disabled={readOnly}
                                         className={cn(
                                             "w-8 h-8 rounded-full inline-flex items-center justify-center transition-all border",
-                                            getStatusColor(status),
+                                            getPaymentStatusColor(status),
                                             readOnly ? "cursor-default opacity-80" : "cursor-pointer"
                                         )}
                                     >
-                                        {getStatusIcon(status)}
+                                        {StatusIcon && <StatusIcon className="w-3 h-3" />}
                                     </button>
                                 </div>
                             )
