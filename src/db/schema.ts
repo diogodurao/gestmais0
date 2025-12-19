@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, boolean, integer, date, real } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, boolean, integer, date, real, index } from 'drizzle-orm/pg-core';
 
 // --- Auth Tables (Better-Auth) ---
 
@@ -76,6 +76,10 @@ export const building = pgTable('building', {
     stripeSubscriptionId: text('stripe_subscription_id'),
     stripePriceId: text('stripe_price_id'),
     subscriptionStatus: text('subscription_status').default('incomplete'), // 'active', 'incomplete', 'canceled', 'past_due'
+}, (table) => {
+    return {
+        stripeSubIdx: index('stripe_sub_idx').on(table.stripeSubscriptionId),
+    }
 });
 
 // --- Junction Tables ---
