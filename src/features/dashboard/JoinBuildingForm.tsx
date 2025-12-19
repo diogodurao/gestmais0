@@ -6,7 +6,7 @@ import { joinBuilding } from "@/app/actions/building"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
-import { Building2 } from "lucide-react"
+import { Building2, AlertCircle } from "lucide-react"
 
 export function JoinBuildingForm({ userId }: { userId: string }) {
     const [code, setCode] = useState("")
@@ -19,11 +19,20 @@ export function JoinBuildingForm({ userId }: { userId: string }) {
         setIsLoading(true)
         setError("")
 
+        const normalizedCode = code.toLowerCase().trim()
+
+        if (normalizedCode.length < 3) {
+            setError("Please enter a valid building code")
+            setIsLoading(false)
+            return
+        }
+
         try {
-            await joinBuilding(userId, code)
+            await joinBuilding(userId, normalizedCode)
             router.refresh()
-        } catch (e) {
-            setError("Invalid building code. Please try again.")
+        } catch (e: any) {
+            const message = e?.message || "Invalid building code. Please try again."
+            setError(message)
         } finally {
             setIsLoading(false)
         }
@@ -47,16 +56,22 @@ export function JoinBuildingForm({ userId }: { userId: string }) {
                     <Input
                         placeholder="e.g. 8k92la"
                         value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        className="text-center text-lg tracking-widest uppercase font-mono" // visual style
+                        onChange={(e) => {
+                            setCode(e.target.value)
+                            if (error) setError("")
+                        }}
+                        className="text-center text-lg tracking-widest lowercase font-mono"
                     />
                     {error && (
-                        <p className="text-sm text-red-500 text-center">{error}</p>
+                        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                            <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                            <p className="text-sm text-red-600">{error}</p>
+                        </div>
                     )}
                     <Button
                         type="submit"
                         fullWidth
-                        disabled={isLoading || code.length < 3}
+                        disabled={isLoading || code.trim().length < 3}
                     >
                         {isLoading ? "Joining..." : "Join Building"}
                     </Button>

@@ -19,6 +19,7 @@ type Building = {
     number: string | null
     quotaMode: string | null
     monthlyQuota: number | null
+    totalApartments: number | null
 }
 
 export function BuildingSettingsForm({ building }: { building: Building }) {

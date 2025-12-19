@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { JoinBuildingForm } from "@/features/dashboard/JoinBuildingForm";
 import { ClaimApartmentForm } from "@/features/dashboard/ClaimApartmentForm";
 import { ResidentsList } from "@/features/dashboard/ResidentsList";
+import { SubscriptionSyncWrapper } from "@/features/dashboard/SubscriptionSyncWrapper";
 
 export const dynamic = 'force-dynamic'
 
@@ -70,6 +71,11 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-6">
+            {/* Subscription Sync Handler - only for managers */}
+            {session.user.role === 'manager' && buildingInfo && (
+                <SubscriptionSyncWrapper buildingId={buildingInfo.id} />
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Welcome / Info Card */}
                 <Card className="col-span-1 md:col-span-2">

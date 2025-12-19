@@ -144,13 +144,20 @@ export async function switchActiveBuilding(buildingId: string) {
 export async function joinBuilding(userId: string, code: string) {
     if (!code) throw new Error("Code is required")
 
-    const foundBuilding = await db.select().from(building).where(eq(building.code, code)).limit(1)
+    const normalizedCode = code.toLowerCase().trim()
+
+    const foundBuilding = await db.select().from(building).where(eq(building.code, normalizedCode)).limit(1)
 
     if (!foundBuilding.length) {
         throw new Error("Invalid building code")
     }
 
     const targetBuilding = foundBuilding[0]
+
+    // Check if building has active subscription before allowing join
+    if (targetBuilding.subscriptionStatus !== 'active') {
+        throw new Error("This building is not accepting residents at this time")
+    }
 
     await db.update(user)
         .set({ buildingId: targetBuilding.id })
@@ -280,8 +287,31 @@ export async function updateBuilding(
         number?: string | null
         quotaMode?: string
         monthlyQuota?: number
+        totalApartments?: number
     }
 ) {
+    // Get current session to verify ownership
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+
+    if (!session || session.user.role !== 'manager') {
+        throw new Error("Unauthorized")
+    }
+
+    // Verify manager has access to this building
+    const access = await db.select()
+        .from(managerBuildings)
+        .where(and(
+            eq(managerBuildings.managerId, session.user.id),
+            eq(managerBuildings.buildingId, buildingId)
+        ))
+        .limit(1)
+
+    if (!access.length) {
+        throw new Error("Unauthorized: You do not manage this building")
+    }
+
     const [updated] = await db.update(building)
         .set({ ...data, updatedAt: new Date() })
         .where(eq(building.id, buildingId))
@@ -367,9 +397,6 @@ export async function bulkDeleteApartments(apartmentIds: number[]) {
         throw new Error("Unauthorized")
     }
 
-    // Delete related payments first for all apartments
-    await db.delete(payments).where(eq(payments.apartmentId, apartmentIds[0])) // simplified for now, should use inArray
-    // Actually, Drizzle supports inArray
     const { inArray } = await import("drizzle-orm")
 
     await db.delete(payments).where(inArray(payments.apartmentId, apartmentIds))

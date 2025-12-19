@@ -32,7 +32,12 @@ export default async function DashboardLayout({
             // Fetch their buildings for the selector
             const buildings = await getManagerBuildings(session.user.id)
             managerBuildings = buildings.map(b => ({
-                building: { id: b.building.id, name: b.building.name, code: b.building.code },
+                building: {
+                    id: b.building.id,
+                    name: b.building.name,
+                    code: b.building.code,
+                    subscriptionStatus: b.building.subscriptionStatus
+                },
                 isOwner: b.isOwner
             }))
         }
@@ -41,8 +46,8 @@ export default async function DashboardLayout({
     return (
         <div className="min-h-screen bg-gray-50 flex">
             {/* Sidebar */}
-            <Sidebar 
-                userRole={session?.user.role || "resident"} 
+            <Sidebar
+                userRole={session?.user.role || "resident"}
                 setupComplete={setupComplete}
                 managerBuildings={managerBuildings}
                 activeBuildingId={session?.user.activeBuildingId || undefined}

@@ -1,8 +1,8 @@
-import { InputHTMLAttributes, forwardRef } from "react"
+import { InputHTMLAttributes, forwardRef, ReactNode } from "react"
 import { cn } from "./Button" // Reusing cn utility
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-    label?: string
+    label?: ReactNode
     error?: string
 }
 

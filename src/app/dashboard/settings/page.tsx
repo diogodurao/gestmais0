@@ -8,7 +8,7 @@ import { NewBuildingForm } from "@/features/dashboard/NewBuildingForm"
 import { SettingsTabs } from "@/features/dashboard/SettingsTabs"
 import { ProfileSettings } from "@/features/dashboard/ProfileSettings"
 import { ClaimApartmentForm } from "@/features/dashboard/ClaimApartmentForm"
-import { User, Building, CreditCard } from "lucide-react"
+import { User, Building, CreditCard, AlertCircle, CheckCircle } from "lucide-react"
 import { getApartmentDisplayName } from "@/lib/utils"
 
 export const dynamic = 'force-dynamic'
@@ -57,6 +57,25 @@ export default async function SettingsPage({
         unitName: unitName,
     }
 
+    // --- PROFILE COMPLETION CHECK ---
+    const isValidNif = (nif?: string | null) => {
+        if (!nif) return false
+        return /^\d{9}$/.test(nif)
+    }
+
+    const isValidIban = (iban?: string | null) => {
+        if (!iban) return false
+        const normalized = iban.replace(/\s+/g, "")
+        return /^[A-Za-z0-9]{25}$/.test(normalized)
+    }
+
+    const profileComplete = Boolean(
+        session.user.name &&
+        session.user.name.trim().length > 0 &&
+        isValidNif(session.user.nif) &&
+        isValidIban(session.user.iban)
+    )
+
     // --- MANAGER LOGIC ---
     const managerActiveBuildingId = session.user.activeBuildingId ?? null
     let building = null
@@ -72,12 +91,6 @@ export default async function SettingsPage({
     }
 
     // Gate unit creation until building has real details (not defaults)
-    const isValidIban = (iban?: string | null) => {
-        if (!iban) return false
-        const normalized = iban.replace(/\s+/g, "")
-        return /^[A-Za-z0-9]{25}$/.test(normalized)
-    }
-
     const buildingComplete = Boolean(
         building?.name &&
         building?.nif &&
@@ -99,6 +112,9 @@ export default async function SettingsPage({
 
     // Checklist remains visible until all critical steps are done AND no residents have joined yet
     const showSetupGuide = session.user.role === 'manager' && building && !hasResidents && (!buildingComplete || !unitsCreated || !selfClaimed)
+
+    // Can subscribe only if profile AND building are complete
+    const canSubscribe = profileComplete && buildingComplete
 
     // Define Tabs
     const tabs: Array<{ label: string, value: string, icon: 'user' | 'building' | 'payments' }> = [
@@ -190,8 +206,56 @@ export default async function SettingsPage({
                     )
                 ) : null}
 
+                {/* 3. Payments Tab (Manager Only) */}
                 {session.user.role === 'manager' && building ? (
                     <div className="space-y-6 max-w-2xl">
+                        {/* Setup Requirements Checklist */}
+                        {!canSubscribe && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                <div className="flex items-start gap-3">
+                                    <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                                    <div>
+                                        <h3 className="font-semibold text-amber-900 mb-2">Complete Setup Before Subscribing</h3>
+                                        <p className="text-sm text-amber-800 mb-3">
+                                            You need to complete the following steps before you can subscribe:
+                                        </p>
+                                        <ul className="space-y-2 text-sm">
+                                            <li className="flex items-center gap-2">
+                                                {profileComplete ? (
+                                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                                ) : (
+                                                    <div className="w-4 h-4 rounded-full border-2 border-amber-400" />
+                                                )}
+                                                <span className={profileComplete ? 'text-green-800' : 'text-amber-800'}>
+                                                    Fill in your profile (Name, NIF, IBAN)
+                                                </span>
+                                                {!profileComplete && (
+                                                    <span className="text-xs text-amber-600 bg-amber-100 px-2 py-0.5 rounded">
+                                                        Go to Profile tab
+                                                    </span>
+                                                )}
+                                            </li>
+                                            <li className="flex items-center gap-2">
+                                                {buildingComplete ? (
+                                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                                ) : (
+                                                    <div className="w-4 h-4 rounded-full border-2 border-amber-400" />
+                                                )}
+                                                <span className={buildingComplete ? 'text-green-800' : 'text-amber-800'}>
+                                                    Complete building details
+                                                </span>
+                                                {!buildingComplete && (
+                                                    <span className="text-xs text-amber-600 bg-amber-100 px-2 py-0.5 rounded">
+                                                        Go to Building tab
+                                                    </span>
+                                                )}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-2 bg-blue-50 rounded-lg">
@@ -228,20 +292,28 @@ export default async function SettingsPage({
                                         </ul>
                                     </div>
 
-                                    {/* Dynamically import button to avoid server component issues if any */}
-                                    {(() => {
-                                        const { SubscribeButton, SyncSubscriptionButton } = require("@/features/dashboard/SubscribeButton")
-                                        return (
-                                            <>
-                                                <SubscribeButton
-                                                    buildingId={building.id}
-                                                    quantity={building.totalApartments || 1}
-                                                    pricePerUnit={300}
-                                                />
-                                                <SyncSubscriptionButton buildingId={building.id} />
-                                            </>
-                                        )
-                                    })()}
+                                    {/* Only show subscribe button if requirements are met */}
+                                    {canSubscribe ? (
+                                        (() => {
+                                            const { SubscribeButton, SyncSubscriptionButton } = require("@/features/dashboard/SubscribeButton")
+                                            return (
+                                                <>
+                                                    <SubscribeButton
+                                                        buildingId={building.id}
+                                                        quantity={building.totalApartments || 1}
+                                                        pricePerUnit={300}
+                                                    />
+                                                    <SyncSubscriptionButton buildingId={building.id} />
+                                                </>
+                                            )
+                                        })()
+                                    ) : (
+                                        <div className="p-4 bg-gray-100 border border-gray-200 rounded-md">
+                                            <p className="text-sm text-gray-600 text-center">
+                                                Complete the setup requirements above to enable subscription.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

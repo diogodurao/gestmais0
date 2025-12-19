@@ -8,7 +8,7 @@ import { Button, cn } from "@/components/ui/Button"
 import { switchActiveBuilding } from "@/app/actions/building"
 
 type ManagedBuilding = {
-    building: { id: string; name: string; code: string }
+    building: { id: string; name: string; code: string; subscriptionStatus?: string | null }
     isOwner: boolean | null
 }
 
@@ -19,11 +19,11 @@ type SidebarProps = {
     activeBuildingId?: string
 }
 
-export function Sidebar({ 
-    userRole, 
+export function Sidebar({
+    userRole,
     setupComplete = true,
     managerBuildings = [],
-    activeBuildingId 
+    activeBuildingId
 }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [buildingDropdownOpen, setBuildingDropdownOpen] = useState(false)
@@ -34,14 +34,14 @@ export function Sidebar({
     const activeBuilding = managerBuildings.find(b => b.building.id === activeBuildingId)
 
     const links = [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard, requiresSetup: false },
+        { href: "/dashboard", label: "Overview", icon: LayoutDashboard, requiresSetup: false, requiresSubscription: false },
         ...(userRole === "manager" ? [
-            { href: "/dashboard/payments", label: "Payment Map", icon: CreditCard, requiresSetup: true },
+            { href: "/dashboard/payments", label: "Payment Map", icon: CreditCard, requiresSetup: true, requiresSubscription: true },
         ] : []),
         ...(userRole === "resident" ? [
-            { href: "/dashboard/my-payments", label: "My Payments", icon: CreditCard, requiresSetup: true }
+            { href: "/dashboard/my-payments", label: "My Payments", icon: CreditCard, requiresSetup: true, requiresSubscription: false }
         ] : []),
-        { href: "/dashboard/settings", label: "Settings", icon: Settings, requiresSetup: false }
+        { href: "/dashboard/settings", label: "Settings", icon: Settings, requiresSetup: false, requiresSubscription: false }
     ]
 
     const handleSwitchBuilding = (buildingId: string) => {
@@ -140,14 +140,22 @@ export function Sidebar({
                         {links.map((link) => {
                             const Icon = link.icon
                             const isActive = pathname === link.href
-                            const isDisabled = link.requiresSetup && !setupComplete
+
+                            // Check subscription status for managers
+                            const hasActiveSubscription = activeBuilding?.building.subscriptionStatus === 'active'
+
+                            // Determine if disabled
+                            const isSubscriptionRestricted = userRole === 'manager' && link.requiresSubscription && !hasActiveSubscription
+                            const isSetupRestricted = link.requiresSetup && !setupComplete
+
+                            const isDisabled = isSetupRestricted || isSubscriptionRestricted
 
                             if (isDisabled) {
                                 return (
                                     <div
                                         key={link.href}
                                         className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 cursor-not-allowed"
-                                        title="Complete setup to access this feature"
+                                        title={isSubscriptionRestricted ? "Active subscription required" : "Complete setup to access this feature"}
                                     >
                                         <Icon className="w-5 h-5 mr-3 text-gray-300" />
                                         {link.label}

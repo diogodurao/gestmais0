@@ -3,22 +3,24 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { db } from "@/db"
-import { building, user, apartments } from "@/db/schema"
-import { eq, count } from "drizzle-orm"
+import { building, user } from "@/db/schema"
+import { eq } from "drizzle-orm"
 import { stripe } from "@/lib/stripe"
-import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 
 /**
  * Syncs the subscription status from Stripe for a building.
- * Useful when webhook fails or to verify payment status.
+ * More aggressive searching to handle webhook delays.
  */
 export async function syncSubscriptionStatus(buildingId: string) {
+    console.log("[syncSubscriptionStatus] Starting for building:", buildingId)
+    
     const session = await auth.api.getSession({
         headers: await headers()
     })
 
     if (!session || !session.user) {
+        console.log("[syncSubscriptionStatus] No session")
         throw new Error("Unauthorized")
     }
 
@@ -26,62 +28,170 @@ export async function syncSubscriptionStatus(buildingId: string) {
         where: eq(building.id, buildingId),
     })
 
-    if (!buildingRecord) throw new Error("Building not found")
-    if (buildingRecord.managerId !== session.user.id) throw new Error("Unauthorized")
+    if (!buildingRecord) {
+        console.log("[syncSubscriptionStatus] Building not found")
+        throw new Error("Building not found")
+    }
+    
+    if (buildingRecord.managerId !== session.user.id) {
+        console.log("[syncSubscriptionStatus] Not the manager")
+        throw new Error("Unauthorized")
+    }
 
-    // If no subscription ID stored, check Stripe for any active subscriptions
-    if (!buildingRecord.stripeSubscriptionId) {
-        // Try to find subscription by customer and metadata
-        const customerId = session.user.stripeCustomerId
-        if (customerId) {
-            const subscriptions = await stripe.subscriptions.list({
-                customer: customerId,
-                status: 'active',
-                limit: 10,
-            })
+    console.log("[syncSubscriptionStatus] Current status:", buildingRecord.subscriptionStatus)
 
-            // Find subscription with matching building metadata
-            for (const sub of subscriptions.data) {
-                // Check if any of the checkout sessions for this subscription has our buildingId
-                const sessions = await stripe.checkout.sessions.list({
-                    subscription: sub.id,
-                    limit: 1,
-                })
+    // If already active, just return
+    if (buildingRecord.subscriptionStatus === 'active') {
+        console.log("[syncSubscriptionStatus] Already active")
+        revalidatePath('/dashboard')
+        return { status: 'active', synced: true }
+    }
 
-                if (sessions.data[0]?.metadata?.buildingId === buildingId) {
+    const customerId = session.user.stripeCustomerId
+    console.log("[syncSubscriptionStatus] Customer ID:", customerId)
+
+    if (!customerId) {
+        return { 
+            status: 'incomplete', 
+            synced: false, 
+            message: 'No Stripe customer found. Please try the checkout again.' 
+        }
+    }
+
+    try {
+        // Strategy 1: Check all recent checkout sessions for this customer
+        console.log("[syncSubscriptionStatus] Checking checkout sessions...")
+        const checkoutSessions = await stripe.checkout.sessions.list({
+            customer: customerId,
+            limit: 10,
+        })
+
+        console.log("[syncSubscriptionStatus] Found", checkoutSessions.data.length, "checkout sessions")
+
+        for (const cs of checkoutSessions.data) {
+            console.log("[syncSubscriptionStatus] Session:", cs.id, "status:", cs.status, "payment_status:", cs.payment_status, "metadata:", cs.metadata)
+            
+            // Check if this session is complete and has a subscription
+            if (cs.payment_status === 'paid' && cs.subscription) {
+                const subId = typeof cs.subscription === 'string' 
+                    ? cs.subscription 
+                    : cs.subscription.id
+
+                console.log("[syncSubscriptionStatus] Found paid session with subscription:", subId)
+
+                // Verify the subscription is active
+                const subscription = await stripe.subscriptions.retrieve(subId)
+                console.log("[syncSubscriptionStatus] Subscription status:", subscription.status)
+
+                if (subscription.status === 'active') {
+                    // Check if metadata matches OR if it's the only building
+                    const shouldActivate = cs.metadata?.buildingId === buildingId
+
+                    if (!shouldActivate) {
+                        // Check if user has only one building
+                        const userBuildings = await db.query.building.findMany({
+                            where: eq(building.managerId, session.user.id),
+                        })
+                        
+                        if (userBuildings.length === 1) {
+                            console.log("[syncSubscriptionStatus] Single building, activating anyway")
+                        } else {
+                            console.log("[syncSubscriptionStatus] Multiple buildings, metadata doesn't match, skipping")
+                            continue
+                        }
+                    }
+
+                    // Activate!
+                    console.log("[syncSubscriptionStatus] Activating building!")
                     await db.update(building)
                         .set({
                             subscriptionStatus: 'active',
-                            stripeSubscriptionId: sub.id,
+                            stripeSubscriptionId: subId,
                         })
                         .where(eq(building.id, buildingId))
                     
+                    revalidatePath('/dashboard')
                     revalidatePath('/dashboard/settings')
                     return { status: 'active', synced: true }
                 }
             }
         }
-        
-        return { status: 'incomplete', synced: false, message: 'No active subscription found' }
-    }
 
-    // Verify existing subscription status
-    try {
-        const subscription = await stripe.subscriptions.retrieve(buildingRecord.stripeSubscriptionId)
-        const newStatus = subscription.status === 'active' ? 'active' : 
-                          subscription.status === 'canceled' ? 'canceled' : 'incomplete'
+        // Strategy 2: Check active subscriptions directly
+        console.log("[syncSubscriptionStatus] Checking active subscriptions...")
+        const subscriptions = await stripe.subscriptions.list({
+            customer: customerId,
+            status: 'active',
+            limit: 10,
+        })
 
-        if (buildingRecord.subscriptionStatus !== newStatus) {
-            await db.update(building)
-                .set({ subscriptionStatus: newStatus })
-                .where(eq(building.id, buildingId))
+        console.log("[syncSubscriptionStatus] Found", subscriptions.data.length, "active subscriptions")
+
+        if (subscriptions.data.length > 0) {
+            // If there's any active subscription and user has only one building, activate it
+            const userBuildings = await db.query.building.findMany({
+                where: eq(building.managerId, session.user.id),
+            })
+
+            if (userBuildings.length === 1 || subscriptions.data.length === 1) {
+                const sub = subscriptions.data[0]
+                console.log("[syncSubscriptionStatus] Activating with subscription:", sub.id)
+                
+                await db.update(building)
+                    .set({
+                        subscriptionStatus: 'active',
+                        stripeSubscriptionId: sub.id,
+                    })
+                    .where(eq(building.id, buildingId))
+                
+                revalidatePath('/dashboard')
+                revalidatePath('/dashboard/settings')
+                return { status: 'active', synced: true }
+            }
         }
 
-        revalidatePath('/dashboard/settings')
-        return { status: newStatus, synced: true }
+        // Strategy 3: Check if there's any subscription at all (including trialing, past_due, etc.)
+        console.log("[syncSubscriptionStatus] Checking all subscriptions...")
+        const allSubs = await stripe.subscriptions.list({
+            customer: customerId,
+            limit: 10,
+        })
+
+        console.log("[syncSubscriptionStatus] Found", allSubs.data.length, "total subscriptions")
+        
+        for (const sub of allSubs.data) {
+            console.log("[syncSubscriptionStatus] Sub:", sub.id, "status:", sub.status)
+            
+            if (sub.status === 'active' || sub.status === 'trialing') {
+                console.log("[syncSubscriptionStatus] Found usable subscription, activating!")
+                
+                await db.update(building)
+                    .set({
+                        subscriptionStatus: 'active',
+                        stripeSubscriptionId: sub.id,
+                    })
+                    .where(eq(building.id, buildingId))
+                
+                revalidatePath('/dashboard')
+                revalidatePath('/dashboard/settings')
+                return { status: 'active', synced: true }
+            }
+        }
+
+        console.log("[syncSubscriptionStatus] No active subscription found")
+        return { 
+            status: 'incomplete', 
+            synced: false, 
+            message: 'Payment received but subscription not yet active. Please wait a moment and retry.' 
+        }
+
     } catch (error: any) {
-        console.error("Failed to sync subscription:", error)
-        return { status: buildingRecord.subscriptionStatus, synced: false, message: error.message }
+        console.error("[syncSubscriptionStatus] Error:", error)
+        return { 
+            status: 'incomplete', 
+            synced: false, 
+            message: error.message || 'Failed to verify subscription' 
+        }
     }
 }
 
@@ -109,7 +219,7 @@ export async function createCheckoutSession(buildingId: string) {
     // Use 'totalApartments' from settings as the source of truth for billing capacity
     const quantity = buildingRecord.totalApartments && buildingRecord.totalApartments > 0
         ? buildingRecord.totalApartments
-        : 1; // Fallback to 1 if not set (shouldn't happen if validated in settings)
+        : 1
 
     // 2. Get or Create Stripe Customer
     let stripeCustomerId = session.user.stripeCustomerId
@@ -147,7 +257,7 @@ export async function createCheckoutSession(buildingId: string) {
                 },
             ],
             success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/payments?canceled=true`,
+            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?canceled=true`,
             metadata: {
                 buildingId: buildingId,
                 userId: userId,
@@ -168,7 +278,7 @@ export async function createCheckoutSession(buildingId: string) {
                     },
                 ],
                 success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-                cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/payments?canceled=true`,
+                cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?canceled=true`,
                 metadata: {
                     buildingId: buildingId,
                     userId: userId,
