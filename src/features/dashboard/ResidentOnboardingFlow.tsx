@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import { Building2, Home, CreditCard, Check, AlertCircle, Loader2 } from "lucide-react"
 import { joinBuilding, claimApartment, getUnclaimedApartments } from "@/app/actions/building"
 import { updateUserProfile } from "@/app/actions/user"
-import { Button, cn } from "@/components/ui/Button"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/Button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { isValidIban } from "@/lib/validations"
@@ -245,4 +246,3 @@ function OnboardingStep({
         </Card>
     )
 }
-

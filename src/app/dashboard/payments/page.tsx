@@ -1,5 +1,3 @@
-// manager zone
-
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
@@ -28,8 +26,8 @@ export default async function PaymentsPage() {
         return redirect("/dashboard")
     }
 
-    // Ensure building exists for manager context
-    let buildingId = session.user.buildingId || building.id
+    // FIX: For managers, use activeBuildingId (not buildingId which is for residents)
+    const buildingId = session.user.activeBuildingId || building.id
 
     const currentYear = new Date().getFullYear()
     const { gridData, monthlyQuota } = await getPaymentMap(buildingId, currentYear)

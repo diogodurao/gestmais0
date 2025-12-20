@@ -1,5 +1,18 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 import { FLOOR_OPTIONS, UNIT_TYPES, PAYMENT_STATUS } from "./constants"
 import { Home, Store, Car, Package, Check, AlertCircle, Clock, LucideIcon } from "lucide-react"
+
+// ==========================================
+// CLASSNAME UTILITY
+// ==========================================
+
+/**
+ * Merge Tailwind classes with clsx
+ */
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs))
+}
 
 // ==========================================
 // FLOOR & APARTMENT DISPLAY UTILITIES
@@ -24,19 +37,6 @@ export function getFloorLabel(floor: string): string {
  */
 export function getApartmentDisplayName(apt: { unit: string }): string {
     return apt.unit
-}
-
-/**
- * Get unit type icon component
- */
-export function getUnitTypeIcon(unitType: string): LucideIcon {
-    switch (unitType) {
-        case 'shop': return Store
-        case 'garage': return Car
-        case 'cave':
-        case 'storage': return Package
-        default: return Home
-    }
 }
 
 // ==========================================
@@ -66,65 +66,6 @@ export function getPaymentStatusIcon(status: string): LucideIcon | null {
         case PAYMENT_STATUS.LATE: return AlertCircle
         default: return null
     }
-}
-
-// ==========================================
-// SORTING UTILITIES
-// ==========================================
-
-/**
- * Sort floors in logical order (negatives first, then R/C, then ascending)
- */
-export function sortFloors(floors: string[]): string[] {
-    return [...floors].sort((a, b) => {
-        if (a === "unassigned") return -1
-        if (b === "unassigned") return 1
-        
-        const aNum = a === "R/C" ? 0 : parseInt(a)
-        const bNum = b === "R/C" ? 0 : parseInt(b)
-        const aVal = isNaN(aNum) ? 0 : aNum
-        const bVal = isNaN(bNum) ? 0 : bNum
-        
-        return aVal - bVal
-    })
-}
-
-/**
- * Unit type priority for sorting (caves/shops before apartments)
- */
-export const UNIT_TYPE_PRIORITY: Record<string, number> = {
-    cave: 1,
-    shop: 2,
-    garage: 3,
-    storage: 4,
-    apartment: 5
-}
-
-/**
- * Sort apartments by floor, then type, then identifier
- */
-export function sortApartments<T extends { floor: string; unitType: string; identifier: string }>(
-    apartments: T[]
-): T[] {
-    return [...apartments].sort((a, b) => {
-        const floorA = parseInt(a.floor)
-        const floorB = parseInt(b.floor)
-        
-        // 1. Sort by floor
-        if (!isNaN(floorA) && !isNaN(floorB)) {
-            if (floorA !== floorB) return floorA - floorB
-        } else if (a.floor !== b.floor) {
-            return a.floor.localeCompare(b.floor)
-        }
-        
-        // 2. Sort by unit type (Caves/Shops first)
-        const priorityA = UNIT_TYPE_PRIORITY[a.unitType] || 99
-        const priorityB = UNIT_TYPE_PRIORITY[b.unitType] || 99
-        if (priorityA !== priorityB) return priorityA - priorityB
-
-        // 3. Sort by identifier
-        return a.identifier.localeCompare(b.identifier, undefined, { numeric: true })
-    })
 }
 
 // ==========================================

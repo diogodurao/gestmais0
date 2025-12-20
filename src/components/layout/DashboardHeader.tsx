@@ -1,10 +1,11 @@
 "use client"
 
-import { ChevronDown, Building2, User, Plus, AlertCircle } from "lucide-react"
+import { ChevronDown, Building2, Plus, AlertCircle, Menu } from "lucide-react"
 import { useState, useTransition } from "react"
-import { cn } from "@/components/ui/Button"
+import { cn } from "@/lib/utils"
 import { switchActiveBuilding, createNewBuilding } from "@/app/actions/building"
 import { useRouter } from "next/navigation"
+import { useSidebar } from "./SidebarProvider"
 
 type ManagedBuilding = {
     building: { id: string; name: string; code: string; subscriptionStatus?: string | null }
@@ -26,6 +27,7 @@ export function DashboardHeader({
     activeBuilding,
     managerBuildings = []
 }: DashboardHeaderProps) {
+    const { toggleSidebar, toggleDesktopCollapse } = useSidebar()
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const [isPending, startTransition] = useTransition()
     const [isCreating, setIsCreating] = useState(false)
@@ -43,10 +45,8 @@ export function DashboardHeader({
         if (!managerId) return
         setIsCreating(true)
         try {
-            // Create a new building with placeholders - will be configured in onboarding
             await createNewBuilding(managerId, "New Building", "")
             setDropdownOpen(false)
-            // Refresh takes manager to onboarding since building is incomplete
             router.refresh()
         } catch (error) {
             console.error("Failed to create building:", error)
@@ -64,13 +64,31 @@ export function DashboardHeader({
 
     return (
         <header className="h-10 bg-slate-50 border-b border-slate-300 flex items-center px-3 justify-between shrink-0 z-50">
-            <div className="flex items-center gap-4">
-                <div className="flex items-center font-bold tracking-tight text-sm">
+            <div className="flex items-center gap-2">
+                {/* Mobile Toggle */}
+                <button
+                    onClick={toggleSidebar}
+                    className="lg:hidden p-1.5 hover:bg-slate-200 rounded-sm text-slate-600 transition-colors"
+                    aria-label="Toggle menu"
+                >
+                    <Menu className="w-5 h-5" />
+                </button>
+
+                {/* Desktop Toggle */}
+                <button
+                    onClick={toggleDesktopCollapse}
+                    className="hidden lg:flex p-1.5 hover:bg-slate-200 rounded-sm text-slate-600 transition-colors"
+                    aria-label="Toggle sidebar"
+                >
+                    <Menu className="w-4 h-4" />
+                </button>
+
+                <div className="flex items-center font-bold tracking-tight text-sm ml-1">
                     <span className="text-slate-400 font-normal">GEST</span>
                     <span className="text-slate-800">MAIS+</span>
                 </div>
 
-                <div className="h-5 w-px bg-slate-300"></div>
+                <div className="h-5 w-px bg-slate-300 mx-2"></div>
 
                 {userRole === "manager" && managerBuildings.length > 0 ? (
                     <div className="relative">
@@ -156,4 +174,3 @@ export function DashboardHeader({
         </header>
     )
 }
-

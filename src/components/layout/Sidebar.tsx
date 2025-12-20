@@ -1,11 +1,11 @@
 "use client"
 
-import { Building2, CreditCard, LayoutDashboard, Menu, Settings, X, ChevronDown, Plus } from "lucide-react"
+import { CreditCard, LayoutDashboard, Settings } from "lucide-react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
-import { Button, cn } from "@/components/ui/Button"
-import { switchActiveBuilding } from "@/app/actions/building"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/Button"
+import { useSidebar } from "./SidebarProvider"
 
 type ManagedBuilding = {
     building: { id: string; name: string; code: string; subscriptionStatus?: string | null }
@@ -22,14 +22,11 @@ type SidebarProps = {
 export function Sidebar({
     userRole,
     setupComplete = true,
-    managerBuildings = [],
-    activeBuildingId
+    activeBuildingId,
+    managerBuildings = []
 }: SidebarProps) {
-    const [isOpen, setIsOpen] = useState(false)
-    const [buildingDropdownOpen, setBuildingDropdownOpen] = useState(false)
-    const [isPending, startTransition] = useTransition()
+    const { isOpen, isDesktopCollapsed, closeSidebar } = useSidebar()
     const pathname = usePathname()
-    const router = useRouter()
 
     const activeBuilding = managerBuildings.find(b => b.building.id === activeBuildingId)
 
@@ -44,43 +41,25 @@ export function Sidebar({
         { href: "/dashboard/settings", label: "Settings", icon: Settings, requiresSetup: false, requiresSubscription: false }
     ]
 
-    const handleSwitchBuilding = (buildingId: string) => {
-        startTransition(async () => {
-            try {
-                await switchActiveBuilding(buildingId)
-                setBuildingDropdownOpen(false)
-                router.refresh()
-            } catch (error) {
-                console.error("Failed to switch building", error)
-            }
-        })
-    }
-
     return (
         <>
-            {/* Mobile Trigger - positioned inside sidebar when open */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={cn(
-                    "lg:hidden fixed z-[60] p-2 rounded-sm transition-all duration-200",
-                    "border border-slate-300 shadow-sm",
-                    isOpen 
-                        ? "top-3 left-[176px] bg-slate-100 text-slate-600 hover:bg-slate-200" 
-                        : "top-14 left-3 bg-white text-slate-600 hover:bg-slate-50"
-                )}
-                aria-label={isOpen ? "Close menu" : "Open menu"}
-            >
-                {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-
             {/* Sidebar Container */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-50 w-52 bg-slate-50 border-r border-slate-300 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:h-screen flex flex-col py-3",
-                isOpen ? "translate-x-0" : "-translate-x-full"
+                "fixed inset-y-0 left-0 z-50 bg-slate-50 border-r border-slate-300 transform transition-all duration-300 ease-in-out flex flex-col py-3",
+                // Mobile state
+                isOpen ? "translate-x-0 w-64" : "-translate-x-full w-64",
+                // Desktop state
+                "lg:translate-x-0 lg:static lg:h-screen",
+                isDesktopCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none lg:border-r-0" : "lg:w-52 lg:opacity-100"
             )}>
-                <div className="px-4 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Workspace</div>
+                <div className={cn(
+                    "px-4 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider transition-opacity whitespace-nowrap overflow-hidden",
+                    isDesktopCollapsed && "lg:opacity-0"
+                )}>
+                    Workspace
+                </div>
 
-                <nav className="flex-1 space-y-0">
+                <nav className="flex-1 space-y-0 overflow-hidden">
                     {links.map((link) => {
                         const Icon = link.icon
                         const isActive = pathname === link.href
@@ -101,8 +80,8 @@ export function Sidebar({
                                     className="flex items-center px-4 py-1.5 text-slate-300 cursor-not-allowed border-l-[3px] border-transparent"
                                     title={isSubscriptionRestricted ? "Active subscription required" : "Complete setup to access this feature"}
                                 >
-                                    <Icon className="w-4 h-4 mr-3" />
-                                    <span className="text-xs font-medium">{link.label}</span>
+                                    <Icon className="w-4 h-4 mr-3 shrink-0" />
+                                    <span className="text-xs font-medium truncate whitespace-nowrap">{link.label}</span>
                                 </div>
                             )
                         }
@@ -117,10 +96,10 @@ export function Sidebar({
                                         ? "bg-white border-blue-600 text-slate-900 font-medium shadow-sm"
                                         : "text-slate-600 border-transparent hover:bg-white hover:border-slate-300"
                                 )}
-                                onClick={() => setIsOpen(false)}
+                                onClick={closeSidebar}
                             >
-                                <Icon className={cn("w-4 h-4 mr-3", isActive ? "text-blue-600" : "text-slate-400")} />
-                                <span className="text-xs">{link.label}</span>
+                                <Icon className={cn("w-4 h-4 mr-3 shrink-0", isActive ? "text-blue-600" : "text-slate-400")} />
+                                <span className="text-xs truncate whitespace-nowrap">{link.label}</span>
                             </Link>
                         )
                     })}
@@ -136,15 +115,7 @@ export function Sidebar({
             {isOpen && (
                 <div
                     className="fixed inset-0 z-40 bg-black/30 lg:hidden backdrop-blur-[2px]"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
-
-            {/* Close building dropdown when clicking outside */}
-            {buildingDropdownOpen && (
-                <div
-                    className="fixed inset-0 z-30"
-                    onClick={() => setBuildingDropdownOpen(false)}
+                    onClick={closeSidebar}
                 />
             )}
         </>

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { DashboardHeader } from "@/components/layout/DashboardHeader"
+import { SidebarProvider } from "@/components/layout/SidebarProvider"
 import { getResidentApartment, getManagerBuildings, getBuilding } from "@/app/actions/building"
 import { isProfileComplete, isBuildingComplete } from "@/lib/validations"
 
@@ -60,32 +61,34 @@ export default async function DashboardLayout({
     const activeBuilding = managerBuildings.find(b => b.building.id === session?.user.activeBuildingId)
 
     return (
-        <div className="h-screen bg-slate-100 flex flex-col overflow-hidden">
-            {/* Header */}
-            <DashboardHeader
-                userName={session?.user.name || "User"}
-                userRole={session?.user.role || "resident"}
-                managerId={session?.user.id || ""}
-                activeBuilding={activeBuilding}
-                managerBuildings={managerBuildings}
-            />
-
-            <div className="flex flex-1 overflow-hidden">
-                {/* Sidebar */}
-                <Sidebar
+        <SidebarProvider>
+            <div className="h-screen bg-slate-100 flex flex-col overflow-hidden">
+                {/* Header */}
+                <DashboardHeader
+                    userName={session?.user.name || "User"}
                     userRole={session?.user.role || "resident"}
-                    setupComplete={setupComplete}
+                    managerId={session?.user.id || ""}
+                    activeBuilding={activeBuilding}
                     managerBuildings={managerBuildings}
-                    activeBuildingId={session?.user.activeBuildingId || undefined}
                 />
 
-                {/* Main Content */}
-                <main className="flex-1 bg-slate-200 p-px flex flex-col min-w-0 overflow-hidden relative">
-                    <div className="flex-1 overflow-y-auto bg-slate-100 p-4 lg:p-6 flex flex-col">
-                        {children}
-                    </div>
-                </main>
+                <div className="flex flex-1 overflow-hidden">
+                    {/* Sidebar */}
+                    <Sidebar
+                        userRole={session?.user.role || "resident"}
+                        setupComplete={setupComplete}
+                        managerBuildings={managerBuildings}
+                        activeBuildingId={session?.user.activeBuildingId || undefined}
+                    />
+
+                    {/* Main Content */}
+                    <main className="flex-1 bg-slate-200 p-px flex flex-col min-w-0 overflow-hidden relative">
+                        <div className="flex-1 overflow-y-auto bg-slate-100 p-4 lg:p-6 flex flex-col">
+                            {children}
+                        </div>
+                    </main>
+                </div>
             </div>
-        </div>
+        </SidebarProvider>
     );
 }
