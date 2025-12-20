@@ -20,23 +20,10 @@ export function getFloorLabel(floor: string): string {
 }
 
 /**
- * Get apartment display name (e.g., "1º Esq", "Shop A", "R/C Dto")
+ * Get apartment display name - now just returns the unit directly
  */
-export function getApartmentDisplayName(apt: {
-    floor: string
-    identifier: string
-    unitType?: string
-}): string {
-    const floorLabel = getFloorLabel(apt.floor)
-    
-    // Non-apartment types get prefixed with type name
-    if (apt.unitType && apt.unitType !== 'apartment') {
-        const typeInfo = UNIT_TYPES.find(t => t.value === apt.unitType)
-        const displayType = typeInfo?.label || apt.unitType.charAt(0).toUpperCase() + apt.unitType.slice(1)
-        return `${displayType} ${apt.identifier}`
-    }
-    
-    return `${floorLabel} ${apt.identifier}`
+export function getApartmentDisplayName(apt: { unit: string }): string {
+    return apt.unit
 }
 
 /**

@@ -2,15 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { updatePaymentStatus, bulkUpdatePayments, PaymentData, PaymentStatus } from "@/app/actions/payments"
+import { updatePaymentStatus, PaymentData, PaymentStatus } from "@/app/actions/payments"
 import { deleteApartment } from "@/app/actions/building"
-import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Input"
-import { Modal } from "@/components/ui/Modal"
-import { Search, ChevronRight } from "lucide-react"
+import { Search } from "lucide-react"
 import { PaymentDesktopTable } from "./PaymentDesktopTable"
 import { PaymentMobileCards } from "./PaymentMobileCards"
-import { MONTHS } from "@/lib/constants"
+import { cn } from "@/components/ui/Button"
 
 /**
  * ============================================================================
@@ -23,11 +20,13 @@ import { MONTHS } from "@/lib/constants"
  */
 export function PaymentGrid({
     data,
+    monthlyQuota,
     buildingId,
     year,
     readOnly = false
 }: {
     data: PaymentData[],
+    monthlyQuota: number,
     buildingId: string,
     year: number,
     readOnly?: boolean
@@ -35,13 +34,12 @@ export function PaymentGrid({
     const router = useRouter()
     const [searchTerm, setSearchTerm] = useState("")
     const [highlightedId, setHighlightedId] = useState<number | null>(null)
-    const [editCell, setEditCell] = useState<{ aptId: number, monthIdx: number, status: string, unit: string } | null>(null)
-    const [isBulk, setIsBulk] = useState(false)
-    const [startMonthIdx, setStartMonthIdx] = useState<number>(0)
-    const [endMonthIdx, setEndMonthIdx] = useState<number>(0)
+    const [activeTool, setActiveTool] = useState<PaymentStatus | 'clear' | null>(null)
     const [isSaving, setIsSaving] = useState(false)
+    const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
+        setMounted(true)
         if (highlightedId !== null) {
             const timer = setTimeout(() => setHighlightedId(null), 3000)
             return () => clearTimeout(timer)
@@ -70,26 +68,13 @@ export function PaymentGrid({
         }
     }
 
-    const handleCellClick = (aptId: number, monthIdx: number, currentStatus: string, unit: string) => {
-        setEditCell({ aptId, monthIdx, status: currentStatus, unit })
-        setStartMonthIdx(monthIdx)
-        setEndMonthIdx(monthIdx)
-        setIsBulk(false)
-    }
-
-    const handleSaveStatus = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!editCell) return
+    const handleCellClick = async (aptId: number, monthIdx: number) => {
+        if (!activeTool) return
 
         setIsSaving(true)
-
         try {
-            if (isBulk) {
-                await bulkUpdatePayments(editCell.aptId, year, startMonthIdx + 1, endMonthIdx + 1, editCell.status as PaymentStatus)
-            } else {
-                await updatePaymentStatus(editCell.aptId, editCell.monthIdx + 1, year, editCell.status as PaymentStatus)
-            }
-            setEditCell(null)
+            const status = activeTool === 'clear' ? 'pending' : activeTool
+            await updatePaymentStatus(aptId, monthIdx + 1, year, status as PaymentStatus)
             router.refresh()
         } catch (error) {
             console.error(error)
@@ -98,111 +83,125 @@ export function PaymentGrid({
         }
     }
 
+    const totalCollected = data.reduce((acc, apt) => acc + apt.totalPaid, 0)
+    const totalOverdue = data.reduce((acc, apt) => acc + apt.balance, 0)
+
+    const formatCurrency = (cents: number) => {
+        return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(cents / 100)
+    }
+
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-xl font-bold whitespace-nowrap">Payments {year}</h2>
+        <div className="flex flex-col h-full min-h-0 bg-white tech-border overflow-hidden">
+            <header className="bg-white border-b border-slate-300 flex flex-col shrink-0 z-30">
+                {/* Top row - Title and Stats */}
+                <div className="h-12 flex items-center px-4 justify-between">
+                    <div className="flex flex-col">
+                        <span className="font-bold text-slate-800 text-sm leading-tight">Master Ledger</span>
+                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-tighter">{year}_FINANCIAL_YEAR</span>
+                    </div>
 
-                <form onSubmit={handleSearch} className="relative w-full sm:max-w-xs">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                        placeholder="Search unit or floor..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 pr-4 py-2 h-10 w-full"
-                    />
-                </form>
-            </div>
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-sm">
+                            <span className="text-[8px] sm:text-[9px] font-bold uppercase hidden xs:inline">Collected</span>
+                            <span className="font-mono font-bold text-[10px] sm:text-xs">{formatCurrency(totalCollected)}</span>
+                        </div>
+                        <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-sm">
+                            <span className="text-[8px] sm:text-[9px] font-bold uppercase hidden xs:inline">Overdue</span>
+                            <span className="font-mono font-bold text-[10px] sm:text-xs">{formatCurrency(totalOverdue)}</span>
+                        </div>
+                    </div>
+                </div>
 
-            <PaymentDesktopTable
-                data={filteredData}
-                readOnly={readOnly}
-                loadingCell={null}
-                highlightedId={highlightedId}
-                onCellClick={handleCellClick}
-                onDelete={handleDeleteApartment}
-            />
-
-            <PaymentMobileCards
-                data={filteredData}
-                readOnly={readOnly}
-                highlightedId={highlightedId}
-                onCellClick={handleCellClick}
-                onDelete={handleDeleteApartment}
-            />
-
-            <div className="flex gap-4 text-xs text-gray-500 justify-end">
-                <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-green-100 border border-green-200"></div> Paid</div>
-                <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-red-100 border border-red-200"></div> Late</div>
-                <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-gray-50 border border-gray-200"></div> Pending</div>
-            </div>
-
-            <Modal isOpen={!!editCell} onClose={() => setEditCell(null)} title={editCell ? `Edit Payment: ${editCell.unit}` : "Edit Payment"}>
-                {editCell && (
-                    <form onSubmit={handleSaveStatus} className="space-y-6">
-                        <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                <div className="flex-1 text-center">
-                                    <span className="text-xs text-gray-400 uppercase font-semibold block">From</span>
-                                    {isBulk ? (
-                                        <select
-                                            value={startMonthIdx}
-                                            onChange={(e) => {
-                                                const val = parseInt(e.target.value)
-                                                setStartMonthIdx(val)
-                                                if (endMonthIdx < val) setEndMonthIdx(val)
-                                            }}
-                                            className="text-sm font-medium bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
-                                        >
-                                            {MONTHS.map((m, idx) => <option key={m} value={idx}>{m}</option>)}
-                                        </select>
-                                    ) : (
-                                        <span className="text-sm font-medium">{MONTHS[editCell.monthIdx]}</span>
-                                    )}
-                                </div>
-                                {isBulk && (
-                                    <>
-                                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                                        <div className="flex-1 text-center">
-                                            <span className="text-xs text-gray-400 uppercase font-semibold block">To</span>
-                                            <select
-                                                value={endMonthIdx}
-                                                onChange={(e) => setEndMonthIdx(parseInt(e.target.value))}
-                                                className="text-sm font-medium bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
-                                            >
-                                                {MONTHS.map((m, idx) => idx >= startMonthIdx && <option key={m} value={idx}>{m}</option>)}
-                                            </select>
-                                        </div>
-                                    </>
+                {/* Bottom row - Tools (only if not readOnly) */}
+                {!readOnly && (
+                    <div className="h-10 flex items-center px-4 gap-3 border-t border-slate-100 bg-slate-50/50 overflow-x-auto">
+                        <div className="flex bg-slate-100 p-0.5 rounded-sm border border-slate-200 shrink-0">
+                            <button 
+                                onClick={() => setActiveTool(activeTool === 'paid' ? null : 'paid')}
+                                className={cn(
+                                    "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
+                                    activeTool === 'paid' ? "bg-emerald-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
                                 )}
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <input type="checkbox" id="bulk-update" checked={isBulk} onChange={(e) => setIsBulk(e.target.checked)} className="w-4 h-4" />
-                                <label htmlFor="bulk-update" className="text-sm text-gray-600 cursor-pointer">Update multiple months at once</label>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Status for {isBulk ? "selected months" : MONTHS[editCell.monthIdx]}</label>
-                            <select
-                                value={editCell.status}
-                                onChange={(e) => setEditCell({ ...editCell, status: e.target.value })}
-                                className="w-full rounded-md border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-black"
                             >
-                                <option value="pending">Pending</option>
-                                <option value="paid">Paid</option>
-                                <option value="late">Late</option>
-                            </select>
+                                <span className="hidden sm:inline">Mark </span>Paid
+                            </button>
+                            <button 
+                                onClick={() => setActiveTool(activeTool === 'late' ? null : 'late')}
+                                className={cn(
+                                    "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
+                                    activeTool === 'late' ? "bg-rose-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
+                                )}
+                            >
+                                <span className="hidden sm:inline">Mark </span>Late
+                            </button>
+                            <button 
+                                onClick={() => setActiveTool(activeTool === 'clear' ? null : 'clear')}
+                                className={cn(
+                                    "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
+                                    activeTool === 'clear' ? "bg-slate-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
+                                )}
+                            >
+                                Clear
+                            </button>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                            <Button type="button" variant="ghost" onClick={() => setEditCell(null)}>Cancel</Button>
-                            <Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : isBulk ? "Apply Bulk Update" : "Save Changes"}</Button>
-                        </div>
-                    </form>
+                        <form onSubmit={handleSearch} className="relative shrink-0">
+                            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                            <input
+                                placeholder="FIND..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="bg-white border border-slate-200 text-[10px] pl-7 pr-2 py-1 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 w-20 sm:w-28 uppercase"
+                            />
+                        </form>
+                    </div>
                 )}
-            </Modal>
+            </header>
+
+            <div className="flex-1 overflow-auto relative">
+                {/* Desktop Table - hidden on mobile */}
+                <div className="hidden md:block h-full">
+                    <PaymentDesktopTable
+                        data={filteredData}
+                        monthlyQuota={monthlyQuota}
+                        readOnly={readOnly}
+                        activeTool={activeTool}
+                        highlightedId={highlightedId}
+                        onCellClick={handleCellClick}
+                        onDelete={handleDeleteApartment}
+                    />
+                </div>
+                
+                {/* Mobile Cards - shown only on mobile */}
+                <div className="md:hidden">
+                    <PaymentMobileCards
+                        data={filteredData}
+                        readOnly={readOnly}
+                        activeTool={activeTool}
+                        highlightedId={highlightedId}
+                        onCellClick={handleCellClick}
+                        onDelete={handleDeleteApartment}
+                    />
+                </div>
+            </div>
+
+            <footer className="bg-slate-50 border-t border-slate-300 p-2 flex flex-wrap items-center gap-2 md:gap-4 text-[10px] text-slate-500 shrink-0">
+                <span className="font-bold text-slate-700">LEGEND:</span>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-emerald-50 border border-emerald-200"></div> PAID</div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-rose-50 border border-rose-200"></div> LATE</div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-white border border-slate-200"></div> PENDING</div>
+                
+                {!readOnly && activeTool && (
+                    <div className="flex items-center gap-2 animate-pulse basis-full md:basis-auto md:ml-4">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                        <span className="font-bold text-blue-600 uppercase text-[9px]">EDIT: TAP TO {activeTool.toUpperCase()}</span>
+                    </div>
+                )}
+
+                <div className="ml-auto font-mono text-[9px] uppercase hidden sm:block">
+                    Refreshed: {mounted ? new Date().toLocaleTimeString() : "--:--:--"}
+                </div>
+            </footer>
         </div>
     )
 }

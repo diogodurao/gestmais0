@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GestMais - Occurrences</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; background: #f1f5f9; color: #0f172a; }
+        .tech-border { border: 1px solid #cbd5e1; }
+        .ticket-row:hover { background: #f8fafc; cursor: pointer; }
+        .priority-badge { font-size: 9px; padding: 1px 4px; border-radius: 2px; text-transform: uppercase; font-weight: bold; border: 1px solid transparent; }
+        .p-high { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+        .p-med { background: #ffedd5; color: #c2410c; border-color: #fed7aa; }
+        .p-low { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <header class="h-12 bg-white border-b border-slate-300 flex items-center px-4 justify-between flex-shrink-0">
+        <div class="flex items-center gap-4">
+            <span class="font-bold text-slate-800">Occurrences Log</span>
+            <div class="h-5 w-px bg-slate-200"></div>
+            <div class="flex gap-1">
+                <button class="px-3 py-1 bg-slate-100 text-slate-900 border border-slate-300 rounded-sm text-xs font-medium">Open (3)</button>
+                <button class="px-3 py-1 bg-white text-slate-500 border border-transparent hover:bg-slate-50 rounded-sm text-xs font-medium">Closed (12)</button>
+            </div>
+        </div>
+        <button class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-sm text-xs font-bold flex items-center gap-2">
+            <i data-lucide="plus" class="w-3 h-3"></i> Report Issue
+        </button>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <main class="flex-1 bg-white overflow-auto border-r border-slate-200">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50 border-b border-slate-200 sticky top-0">
+                    <tr>
+                        <th class="p-3 w-16 text-[10px] font-bold text-slate-400 uppercase">ID</th>
+                        <th class="p-3 text-[10px] font-bold text-slate-400 uppercase">Subject</th>
+                        <th class="p-3 w-24 text-[10px] font-bold text-slate-400 uppercase">Status</th>
+                        <th class="p-3 w-24 text-[10px] font-bold text-slate-400 uppercase">Priority</th>
+                        <th class="p-3 w-32 text-[10px] font-bold text-slate-400 uppercase">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr class="ticket-row bg-slate-50/50">
+                        <td class="p-3 font-mono text-xs text-slate-500">#402</td>
+                        <td class="p-3 font-medium text-slate-900">Main entrance light flickering</td>
+                        <td class="p-3"><span class="flex items-center gap-1.5 text-xs text-blue-600 font-medium"><div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div> New</span></td>
+                        <td class="p-3"><span class="priority-badge p-med">Medium</span></td>
+                        <td class="p-3 text-slate-500 text-xs">Today, 10:30</td>
+                    </tr>
+                    <tr class="ticket-row">
+                        <td class="p-3 font-mono text-xs text-slate-500">#401</td>
+                        <td class="p-3 font-medium text-slate-900">Garage door stuck open</td>
+                        <td class="p-3"><span class="flex items-center gap-1.5 text-xs text-amber-600 font-medium"><div class="w-1.5 h-1.5 bg-amber-500 rounded-full"></div> In Progress</span></td>
+                        <td class="p-3"><span class="priority-badge p-high">High</span></td>
+                        <td class="p-3 text-slate-500 text-xs">Yesterday</td>
+                    </tr>
+                    <tr class="ticket-row opacity-60">
+                        <td class="p-3 font-mono text-xs text-slate-500">#399</td>
+                        <td class="p-3 font-medium text-slate-900 line-through">Cleaning skipped on 2nd floor</td>
+                        <td class="p-3"><span class="flex items-center gap-1.5 text-xs text-emerald-600 font-medium"><i data-lucide="check" class="w-3 h-3"></i> Resolved</span></td>
+                        <td class="p-3"><span class="priority-badge p-low">Low</span></td>
+                        <td class="p-3 text-slate-500 text-xs">Oct 24</td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+
+        <aside class="w-80 bg-slate-50 p-6 overflow-y-auto hidden md:block">
+            <div class="mb-4 flex items-center justify-between">
+                <span class="font-mono text-xs text-slate-400">TICKET #401</span>
+                <span class="priority-badge p-high">High Priority</span>
+            </div>
+            
+            <h2 class="text-lg font-bold text-slate-900 mb-4">Garage door stuck open</h2>
+            
+            <div class="space-y-4">
+                <div class="bg-white tech-border p-3 rounded-sm">
+                    <p class="text-xs text-slate-700 leading-relaxed">
+                        The sensor seems broken. The door won't close automatically. Security risk.
+                    </p>
+                </div>
+                
+                <div class="flex items-center gap-3 text-xs text-slate-500">
+                    <div class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i> Unit 3B</div>
+                    <div class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 24h ago</div>
+                </div>
+
+                <div class="border-t border-slate-200 pt-4">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase mb-2">Attachments</h4>
+                    <div class="flex gap-2">
+                        <div class="w-16 h-16 bg-slate-200 rounded-sm flex items-center justify-center text-slate-400 hover:bg-slate-300 cursor-pointer">
+                            <i data-lucide="image" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-200 pt-4">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase mb-2">Manager Actions</h4>
+                    <select class="w-full bg-white border border-slate-300 text-xs p-2 rounded-sm mb-2">
+                        <option>Update Status: In Progress</option>
+                        <option>Mark as Resolved</option>
+                    </select>
+                    <button class="w-full bg-slate-900 text-white py-2 text-xs font-bold rounded-sm">Update</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

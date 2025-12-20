@@ -40,9 +40,7 @@ export type Building = {
 export type Apartment = {
     id: number
     buildingId: string
-    floor: string
-    unitType: UnitType
-    identifier: string
+    unit: string
     permillage?: number | null
     residentId?: string | null
 }
@@ -85,8 +83,7 @@ export type Resident = {
     }
     apartment: {
         id: number
-        floor: string
-        identifier: string
+        unit: string
     } | null
 }
 

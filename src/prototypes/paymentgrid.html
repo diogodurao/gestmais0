@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GestMais - Master Ledger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* TECHNICAL DESIGN SYSTEM */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 12px; /* Small font for high density */
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        /* GRID ARCHITECTURE */
+        .ledger-table {
+            border-collapse: collapse;
+            width: 100%;
+            white-space: nowrap;
+        }
+        
+        .ledger-th {
+            background-color: #f1f5f9;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            font-size: 10px;
+        }
+
+        .ledger-td {
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            height: 34px;
+        }
+
+        /* STATUS CELLS (The "Excel Conditional Formatting" look) */
+        .cell-paid { background-color: #f0fdf4; color: #166534; font-family: ui-monospace, monospace; }
+        .cell-late { background-color: #fef2f2; color: #991b1b; font-weight: 700; font-family: ui-monospace, monospace; }
+        .cell-pending { color: #94a3b8; font-style: italic; }
+        .cell-empty { background-color: #f8fafc; }
+
+        /* INTERACTION */
+        .row-hover:hover td { background-color: #e0f2fe !important; cursor: default; }
+        
+        /* SCROLLBARS */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border: 2px solid #f1f5f9; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <header class="h-12 bg-white border-b border-slate-300 flex items-center px-4 justify-between flex-shrink-0 z-30">
+        <div class="flex items-center gap-4">
+            <div class="flex flex-col">
+                <span class="font-bold text-slate-800 text-sm leading-tight">Master Ledger</span>
+                <span class="text-[10px] text-slate-500 font-mono">2024_FINANCIAL_YEAR</span>
+            </div>
+            <div class="h-6 w-px bg-slate-200"></div>
+            
+            <div class="flex bg-slate-100 p-1 rounded-sm border border-slate-200">
+                <button class="px-3 py-1 bg-white shadow-sm border border-slate-200 rounded-sm font-semibold text-slate-800 text-[11px]">All Units</button>
+                <button class="px-3 py-1 text-slate-500 hover:text-slate-800 font-medium text-[11px]">Debtors Only</button>
+                <button class="px-3 py-1 text-slate-500 hover:text-slate-800 font-medium text-[11px]">Archived</button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-sm">
+                <span class="text-[10px] font-bold uppercase">Collected</span>
+                <span class="font-mono font-bold">€2,450.00</span>
+            </div>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-sm">
+                <span class="text-[10px] font-bold uppercase">Overdue</span>
+                <span class="font-mono font-bold">€135.00</span>
+            </div>
+            <button class="ml-2 p-2 hover:bg-slate-100 border border-transparent hover:border-slate-300 rounded-sm text-slate-600">
+                <i data-lucide="download" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-auto bg-white relative">
+        <table class="ledger-table">
+            <thead>
+                <tr>
+                    <th class="ledger-th text-left w-16 bg-slate-100" style="position: sticky; left: 0; z-index: 30; border-right: 2px solid #cbd5e1;">Unit</th>
+                    <th class="ledger-th text-left w-48 bg-slate-100" style="position: sticky; left: 64px; z-index: 30; border-right: 2px solid #cbd5e1;">Resident Name</th>
+                    
+                    <th class="ledger-th text-center w-20">Jan</th>
+                    <th class="ledger-th text-center w-20">Feb</th>
+                    <th class="ledger-th text-center w-20">Mar</th>
+                    <th class="ledger-th text-center w-20">Apr</th>
+                    <th class="ledger-th text-center w-20">May</th>
+                    <th class="ledger-th text-center w-20">Jun</th>
+                    <th class="ledger-th text-center w-20">Jul</th>
+                    <th class="ledger-th text-center w-20">Aug</th>
+                    <th class="ledger-th text-center w-20">Sep</th>
+                    <th class="ledger-th text-center w-20">Oct</th>
+                    <th class="ledger-th text-center w-20">Nov</th>
+                    <th class="ledger-th text-center w-20">Dec</th>
+
+                    <th class="ledger-th text-right w-24 bg-slate-50 border-l-2 border-l-slate-300">Total Paid</th>
+                    <th class="ledger-th text-right w-24 bg-slate-50">Balance</th>
+                </tr>
+            </thead>
+            <tbody class="text-slate-700">
+                
+                <tr class="row-hover even:bg-slate-50">
+                    <td class="ledger-td font-bold text-slate-900 bg-white" style="position: sticky; left: 0; border-right: 2px solid #cbd5e1;">1A</td>
+                    <td class="ledger-td font-medium text-slate-700 bg-white" style="position: sticky; left: 64px; border-right: 2px solid #cbd5e1;">Maria Silva</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-right font-mono font-bold text-emerald-700 bg-slate-50 border-l-2 border-l-slate-200">€180.00</td>
+                    <td class="ledger-td text-right font-mono text-slate-400 bg-slate-50">€0.00</td>
+                </tr>
+
+                <tr class="row-hover even:bg-slate-50">
+                    <td class="ledger-td font-bold text-slate-900 bg-white" style="position: sticky; left: 0; border-right: 2px solid #cbd5e1;">1B</td>
+                    <td class="ledger-td font-medium text-slate-700 bg-white" style="position: sticky; left: 64px; border-right: 2px solid #cbd5e1;">João Santos</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-late">LATE</td>
+                    <td class="ledger-td text-center cell-late">LATE</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-right font-mono font-bold text-emerald-700 bg-slate-50 border-l-2 border-l-slate-200">€45.00</td>
+                    <td class="ledger-td text-right font-mono font-bold text-rose-600 bg-rose-50 border border-rose-200">€90.00</td>
+                </tr>
+
+                <tr class="row-hover even:bg-slate-50">
+                    <td class="ledger-td font-bold text-slate-900 bg-white" style="position: sticky; left: 0; border-right: 2px solid #cbd5e1;">2A</td>
+                    <td class="ledger-td font-medium text-slate-700 bg-white" style="position: sticky; left: 64px; border-right: 2px solid #cbd5e1;">Ana Ferreira</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-right font-mono font-bold text-emerald-700 bg-slate-50 border-l-2 border-l-slate-200">€135.00</td>
+                    <td class="ledger-td text-right font-mono text-slate-400 bg-slate-50">€0.00</td>
+                </tr>
+
+                 <tr class="row-hover even:bg-slate-50">
+                    <td class="ledger-td font-bold text-amber-800 bg-white" style="position: sticky; left: 0; border-right: 2px solid #cbd5e1;">2B</td>
+                    <td class="ledger-td font-medium text-slate-400 italic bg-white" style="position: sticky; left: 64px; border-right: 2px solid #cbd5e1;">-- Unclaimed --</td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-center cell-empty"></td>
+                    <td class="ledger-td text-right font-mono text-slate-300 bg-slate-50 border-l-2 border-l-slate-200">-</td>
+                    <td class="ledger-td text-right font-mono text-slate-300 bg-slate-50">-</td>
+                </tr>
+
+                <tr class="row-hover even:bg-slate-50">
+                    <td class="ledger-td font-bold text-slate-900 bg-white" style="position: sticky; left: 0; border-right: 2px solid #cbd5e1;">3A</td>
+                    <td class="ledger-td font-medium text-slate-700 bg-white" style="position: sticky; left: 64px; border-right: 2px solid #cbd5e1;">Pedro Costa</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-right font-mono font-bold text-emerald-700 bg-slate-50 border-l-2 border-l-slate-200">€90.00</td>
+                    <td class="ledger-td text-right font-mono font-bold text-rose-600 bg-rose-50 border border-rose-200">€45.00</td>
+                </tr>
+
+                <tr class="row-hover even:bg-slate-50">
+                    <td class="ledger-td font-bold text-slate-900 bg-white" style="position: sticky; left: 0; border-right: 2px solid #cbd5e1;">3B</td>
+                    <td class="ledger-td font-medium text-slate-700 bg-white" style="position: sticky; left: 64px; border-right: 2px solid #cbd5e1;">Sofia Martins</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-right font-mono font-bold text-emerald-700 bg-slate-50 border-l-2 border-l-slate-200">€180.00</td>
+                    <td class="ledger-td text-right font-mono text-slate-400 bg-slate-50">€0.00</td>
+                </tr>
+
+                <tr class="row-hover even:bg-slate-50">
+                    <td class="ledger-td font-bold text-slate-900 bg-white" style="position: sticky; left: 0; border-right: 2px solid #cbd5e1;">4A</td>
+                    <td class="ledger-td font-medium text-slate-700 bg-white" style="position: sticky; left: 64px; border-right: 2px solid #cbd5e1;">Miguel Oliveira</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-right font-mono font-bold text-emerald-700 bg-slate-50 border-l-2 border-l-slate-200">€135.00</td>
+                    <td class="ledger-td text-right font-mono text-slate-400 bg-slate-50">€0.00</td>
+                </tr>
+
+                <tr class="row-hover even:bg-slate-50">
+                    <td class="ledger-td font-bold text-slate-900 bg-white" style="position: sticky; left: 0; border-right: 2px solid #cbd5e1;">4B</td>
+                    <td class="ledger-td font-medium text-slate-700 bg-white" style="position: sticky; left: 64px; border-right: 2px solid #cbd5e1;">Beatriz Lima</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-paid">€45</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-center cell-pending">-</td>
+                    <td class="ledger-td text-right font-mono font-bold text-emerald-700 bg-slate-50 border-l-2 border-l-slate-200">€180.00</td>
+                    <td class="ledger-td text-right font-mono text-slate-400 bg-slate-50">€0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+    <footer class="bg-slate-50 border-t border-slate-300 p-2 flex items-center gap-4 text-[10px] text-slate-500 flex-shrink-0">
+        <span class="font-bold text-slate-700">LEGEND:</span>
+        <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-emerald-50 border border-emerald-200"></div> Paid</div>
+        <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-rose-50 border border-rose-200"></div> Late</div>
+        <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-white border border-slate-200"></div> Pending</div>
+        
+        <div class="ml-auto font-mono">
+            Generated: 2024-03-22 14:30:00
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

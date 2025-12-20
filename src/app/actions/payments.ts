@@ -1,10 +1,9 @@
 "use server"
 
 import { db } from "@/db"
-import { payments, apartments } from "@/db/schema"
-import { eq, and } from "drizzle-orm"
+import { payments, apartments, user, building } from "@/db/schema"
+import { eq, and, asc } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { getApartmentDisplayName, sortApartments } from "@/lib/utils"
 
 /**
  * ============================================================================
@@ -20,44 +19,86 @@ export type PaymentStatus = 'paid' | 'pending' | 'late'
 export interface PaymentData {
     apartmentId: number
     unit: string
-    payments: Record<number, string>
+    residentName?: string | null
+    payments: Record<number, { status: string; amount: number }>
+    totalPaid: number
+    balance: number
 }
 
-export async function getPaymentMap(buildingId: string, year: number): Promise<PaymentData[]> {
-    if (!buildingId) return []
+export async function getPaymentMap(buildingId: string, year: number): Promise<{ gridData: PaymentData[], monthlyQuota: number }> {
+    if (!buildingId) return { gridData: [], monthlyQuota: 0 }
 
-    const buildingApartments = await db.select()
+    const buildingInfo = await db.select({
+        monthlyQuota: building.monthlyQuota,
+    })
+        .from(building)
+        .where(eq(building.id, buildingId))
+        .limit(1)
+
+    const monthlyQuota = buildingInfo[0]?.monthlyQuota || 0
+
+    const buildingApartments = await db.select({
+        id: apartments.id,
+        unit: apartments.unit,
+        residentName: user.name,
+    })
         .from(apartments)
+        .leftJoin(user, eq(apartments.residentId, user.id))
         .where(eq(apartments.buildingId, buildingId))
+        .orderBy(asc(apartments.unit))
 
-    // Use centralized sorting
-    const sortedApartments = sortApartments(buildingApartments)
+    const sortedApartments = buildingApartments
 
     const rawPayments = await db.select({
         apartmentId: payments.apartmentId,
         month: payments.month,
         status: payments.status,
+        amount: payments.amount,
     })
         .from(payments)
         .innerJoin(apartments, eq(payments.apartmentId, apartments.id))
         .where(and(eq(apartments.buildingId, buildingId), eq(payments.year, year)))
 
-    const paymentsByApartment = new Map<number, Record<number, string>>()
+    const paymentsByApartment = new Map<number, Record<number, { status: string; amount: number }>>()
     for (const p of rawPayments) {
         if (!paymentsByApartment.has(p.apartmentId)) {
             paymentsByApartment.set(p.apartmentId, {})
         }
-        paymentsByApartment.get(p.apartmentId)![p.month] = p.status
+        paymentsByApartment.get(p.apartmentId)![p.month] = { status: p.status, amount: p.amount }
     }
 
-    // Use centralized display name function
-    const gridData: PaymentData[] = sortedApartments.map(apt => ({
-        apartmentId: apt.id,
-        unit: getApartmentDisplayName(apt),
-        payments: paymentsByApartment.get(apt.id) || {}
-    }))
+    // Build grid data
+    const gridData: PaymentData[] = sortedApartments.map(apt => {
+        const aptPayments = paymentsByApartment.get(apt.id) || {}
+        let totalPaid = 0
+        let totalOwed = 0
 
-    return gridData
+        // Calculate total paid and balance for the year so far
+        const currentMonth = new Date().getMonth() + 1 // 1-12
+
+        for (let m = 1; m <= 12; m++) {
+            const p = aptPayments[m]
+            if (p?.status === 'paid') {
+                totalPaid += p.amount
+            }
+            
+            // If it's the current month or earlier, they should have paid.
+            if (m <= currentMonth) {
+                totalOwed += monthlyQuota
+            }
+        }
+
+        return {
+            apartmentId: apt.id,
+            unit: apt.unit,
+            residentName: apt.residentName,
+            payments: aptPayments,
+            totalPaid,
+            balance: Math.max(0, totalOwed - totalPaid)
+        }
+    })
+
+    return { gridData, monthlyQuota }
 }
 
 export async function updatePaymentStatus(
@@ -65,7 +106,7 @@ export async function updatePaymentStatus(
     month: number,
     year: number,
     status: PaymentStatus,
-    amount: number = 0
+    amount?: number
 ) {
     const existing = await db.select().from(payments).where(and(
         eq(payments.apartmentId, apartmentId),
@@ -73,12 +114,41 @@ export async function updatePaymentStatus(
         eq(payments.year, year)
     )).limit(1)
 
+    // If amount is not provided, we might need to fetch the building quota
+    let finalAmount = amount
+    if (finalAmount === undefined) {
+        if (status === 'paid') {
+            const apt = await db.select({ buildingId: apartments.buildingId })
+                .from(apartments)
+                .where(eq(apartments.id, apartmentId))
+                .limit(1)
+            
+            if (apt.length > 0) {
+                const b = await db.select({ monthlyQuota: building.monthlyQuota })
+                    .from(building)
+                    .where(eq(building.id, apt[0].buildingId))
+                    .limit(1)
+                finalAmount = b[0]?.monthlyQuota || 0
+            } else {
+                finalAmount = 0
+            }
+        } else {
+            finalAmount = 0
+        }
+    }
+
     if (existing.length > 0) {
         await db.update(payments)
-            .set({ status, amount, updatedAt: new Date() })
+            .set({ status, amount: finalAmount ?? 0, updatedAt: new Date() })
             .where(eq(payments.id, existing[0].id))
     } else {
-        await db.insert(payments).values({ apartmentId, month, year, status, amount })
+        await db.insert(payments).values({ 
+            apartmentId, 
+            month, 
+            year, 
+            status, 
+            amount: finalAmount ?? 0
+        })
     }
 
     revalidatePath("/dashboard/payments")

@@ -93,9 +93,7 @@ export const managerBuildings = pgTable('manager_buildings', {
 export const apartments = pgTable('apartments', {
     id: serial('id').primaryKey(),
     buildingId: text('building_id').notNull().references(() => building.id),
-    floor: text('floor').notNull(), // "R/C", "-1", "1", "2", etc.
-    unitType: text('unit_type').notNull(), // 'apartment' | 'shop' | 'garage' | 'cave' | 'storage'
-    identifier: text('identifier').notNull(), // "A", "B", "esq", "dto", "1"
+    unit: text('unit').notNull(), // Free-form: "R/C Esq", "1º A", "Loja B", "Cave 3"
     permillage: real('permillage'),
     residentId: text('resident_id').references(() => user.id), // Can be null if unclaimed
 });

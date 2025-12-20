@@ -58,152 +58,84 @@ export function Sidebar({
 
     return (
         <>
-            {/* Mobile Trigger */}
-            <div className="lg:hidden fixed top-4 left-4 z-50">
-                <Button
-                    variant="outline"
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="p-2 h-auto"
-                >
-                    {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                </Button>
-            </div>
+            {/* Mobile Trigger - positioned inside sidebar when open */}
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className={cn(
+                    "lg:hidden fixed z-[60] p-2 rounded-sm transition-all duration-200",
+                    "border border-slate-300 shadow-sm",
+                    isOpen 
+                        ? "top-3 left-[176px] bg-slate-100 text-slate-600 hover:bg-slate-200" 
+                        : "top-14 left-3 bg-white text-slate-600 hover:bg-slate-50"
+                )}
+                aria-label={isOpen ? "Close menu" : "Open menu"}
+            >
+                {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
 
             {/* Sidebar Container */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:h-screen",
+                "fixed inset-y-0 left-0 z-50 w-52 bg-slate-50 border-r border-slate-300 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:h-screen flex flex-col py-3",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
-                <div className="h-full flex flex-col">
-                    {/* Header */}
-                    <div className="h-16 flex items-center px-6 border-b border-gray-100">
-                        <Building2 className="w-6 h-6 text-black mr-2" />
-                        <span className="font-bold text-lg">GestMais</span>
-                    </div>
+                <div className="px-4 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Workspace</div>
 
-                    {/* Building Selector (Manager Only) */}
-                    {userRole === "manager" && managerBuildings.length > 0 && (
-                        <div className="px-4 py-3 border-b border-gray-100">
-                            <div className="relative">
-                                <button
-                                    onClick={() => setBuildingDropdownOpen(!buildingDropdownOpen)}
-                                    className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
-                                    disabled={isPending}
-                                >
-                                    <div className="truncate text-left">
-                                        <p className="text-xs text-gray-500">Building</p>
-                                        <p className="text-sm font-medium truncate">
-                                            {activeBuilding?.building.name || "Select..."}
-                                        </p>
-                                    </div>
-                                    <ChevronDown className={cn(
-                                        "w-4 h-4 text-gray-400 transition-transform",
-                                        buildingDropdownOpen && "rotate-180"
-                                    )} />
-                                </button>
+                <nav className="flex-1 space-y-0">
+                    {links.map((link) => {
+                        const Icon = link.icon
+                        const isActive = pathname === link.href
 
-                                {/* Dropdown */}
-                                {buildingDropdownOpen && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
-                                        {managerBuildings.map(({ building, isOwner }) => (
-                                            <button
-                                                key={building.id}
-                                                onClick={() => handleSwitchBuilding(building.id)}
-                                                className={cn(
-                                                    "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors",
-                                                    building.id === activeBuildingId && "bg-gray-100"
-                                                )}
-                                            >
-                                                <p className="text-sm font-medium truncate">{building.name}</p>
-                                                <p className="text-xs text-gray-400">{building.code}</p>
-                                            </button>
-                                        ))}
-                                        <Link
-                                            href="/dashboard/settings?new=1"
-                                            onClick={() => {
-                                                setBuildingDropdownOpen(false)
-                                                setIsOpen(false)
-                                            }}
-                                            className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors border-t border-gray-100 text-sm text-gray-600"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                            Add New Building
-                                        </Link>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                        // Check subscription status for managers
+                        const hasActiveSubscription = activeBuilding?.building.subscriptionStatus === 'active'
 
-                    {/* Navigation */}
-                    <nav className="flex-1 p-4 space-y-1">
-                        {links.map((link) => {
-                            const Icon = link.icon
-                            const isActive = pathname === link.href
+                        // Determine if disabled
+                        const isSubscriptionRestricted = userRole === 'manager' && link.requiresSubscription && !hasActiveSubscription
+                        const isSetupRestricted = link.requiresSetup && !setupComplete
 
-                            // Check subscription status for managers
-                            const hasActiveSubscription = activeBuilding?.building.subscriptionStatus === 'active'
+                        const isDisabled = isSetupRestricted || isSubscriptionRestricted
 
-                            // Determine if disabled
-                            const isSubscriptionRestricted = userRole === 'manager' && link.requiresSubscription && !hasActiveSubscription
-                            const isSetupRestricted = link.requiresSetup && !setupComplete
-
-                            const isDisabled = isSetupRestricted || isSubscriptionRestricted
-
-                            if (isDisabled) {
-                                return (
-                                    <div
-                                        key={link.href}
-                                        className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-gray-300 cursor-not-allowed"
-                                        title={isSubscriptionRestricted ? "Active subscription required" : "Complete setup to access this feature"}
-                                    >
-                                        <Icon className="w-5 h-5 mr-3 text-gray-300" />
-                                        {link.label}
-                                    </div>
-                                )
-                            }
-
+                        if (isDisabled) {
                             return (
-                                <Link
+                                <div
                                     key={link.href}
-                                    href={link.href}
-                                    className={cn(
-                                        "flex items-center px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
-                                        isActive
-                                            ? "bg-gray-100 text-black"
-                                            : "text-gray-900 hover:bg-gray-50 hover:text-black"
-                                    )}
-                                    onClick={() => setIsOpen(false)}
+                                    className="flex items-center px-4 py-1.5 text-slate-300 cursor-not-allowed border-l-[3px] border-transparent"
+                                    title={isSubscriptionRestricted ? "Active subscription required" : "Complete setup to access this feature"}
                                 >
-                                    <Icon className={cn("w-5 h-5 mr-3", isActive ? "text-black" : "text-gray-500")} />
-                                    {link.label}
-                                </Link>
+                                    <Icon className="w-4 h-4 mr-3" />
+                                    <span className="text-xs font-medium">{link.label}</span>
+                                </div>
                             )
-                        })}
-                    </nav>
+                        }
 
-                    {/* Setup Warning for Residents */}
-                    {userRole === "resident" && !setupComplete && (
-                        <div className="px-4 py-3 border-t border-gray-100 bg-amber-50">
-                            <p className="text-xs text-amber-700">
-                                Complete your setup to access all features.
-                            </p>
-                        </div>
-                    )}
+                        return (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={cn(
+                                    "flex items-center px-4 py-1.5 transition-all border-l-[3px]",
+                                    isActive
+                                        ? "bg-white border-blue-600 text-slate-900 font-medium shadow-sm"
+                                        : "text-slate-600 border-transparent hover:bg-white hover:border-slate-300"
+                                )}
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <Icon className={cn("w-4 h-4 mr-3", isActive ? "text-blue-600" : "text-slate-400")} />
+                                <span className="text-xs">{link.label}</span>
+                            </Link>
+                        )
+                    })}
+                </nav>
 
-                    {/* Footer */}
-                    <div className="p-4 border-t border-gray-100">
-                        <div className="text-xs text-gray-400">
-                            v0.2.0 MVP
-                        </div>
-                    </div>
+                {/* Footer */}
+                <div className="mt-auto px-4 py-2 border-t border-slate-200">
                 </div>
             </aside>
+
 
             {/* Overlay for mobile */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-30 bg-black/20 lg:hidden"
+                    className="fixed inset-0 z-40 bg-black/30 lg:hidden backdrop-blur-[2px]"
                     onClick={() => setIsOpen(false)}
                 />
             )}

@@ -1,7 +1,9 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
-import { getResidentApartment, getManagerBuildings } from "@/app/actions/building"
+import { DashboardHeader } from "@/components/layout/DashboardHeader"
+import { getResidentApartment, getManagerBuildings, getBuilding } from "@/app/actions/building"
+import { isProfileComplete, isBuildingComplete } from "@/lib/validations"
 
 export default async function DashboardLayout({
     children,
@@ -14,21 +16,20 @@ export default async function DashboardLayout({
 
     // Compute setupComplete status
     let setupComplete = true
-    let managerBuildings: { building: { id: string; name: string; code: string }; isOwner: boolean | null }[] = []
+    let managerBuildings: { building: { id: string; name: string; code: string; subscriptionStatus?: string | null }; isOwner: boolean | null }[] = []
 
     if (session?.user) {
         if (session.user.role === "resident") {
-            // Residents need: buildingId + claimed apartment
+            // Residents need: buildingId + claimed apartment + IBAN
             const hasBuildingId = !!session.user.buildingId
-            if (hasBuildingId) {
+            const hasIban = !!session.user.iban
+            if (hasBuildingId && hasIban) {
                 const apartment = await getResidentApartment(session.user.id)
                 setupComplete = !!apartment
             } else {
                 setupComplete = false
             }
         } else if (session.user.role === "manager") {
-            // Managers are always setup complete
-            setupComplete = true
             // Fetch their buildings for the selector
             const buildings = await getManagerBuildings(session.user.id)
             managerBuildings = buildings.map(b => ({
@@ -40,25 +41,51 @@ export default async function DashboardLayout({
                 },
                 isOwner: b.isOwner
             }))
+
+            // Manager setup complete if: profile complete + at least one building complete
+            const profileDone = isProfileComplete(session.user)
+            let buildingDone = false
+            
+            if (session.user.activeBuildingId) {
+                const activeBuilding = await getBuilding(session.user.activeBuildingId)
+                buildingDone = activeBuilding ? isBuildingComplete(activeBuilding) : false
+            } else if (buildings.length > 0) {
+                buildingDone = isBuildingComplete(buildings[0].building)
+            }
+
+            setupComplete = profileDone && buildingDone
         }
     }
 
+    const activeBuilding = managerBuildings.find(b => b.building.id === session?.user.activeBuildingId)
+
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar */}
-            <Sidebar
+        <div className="h-screen bg-slate-100 flex flex-col overflow-hidden">
+            {/* Header */}
+            <DashboardHeader
+                userName={session?.user.name || "User"}
                 userRole={session?.user.role || "resident"}
-                setupComplete={setupComplete}
+                managerId={session?.user.id || ""}
+                activeBuilding={activeBuilding}
                 managerBuildings={managerBuildings}
-                activeBuildingId={session?.user.activeBuildingId || undefined}
             />
 
-            {/* Main Content */}
-            <main className="flex-1 min-w-0">
-                <div className="p-4 lg:p-8 max-w-7xl mx-auto mt-14 lg:mt-0">
-                    {children}
-                </div>
-            </main>
+            <div className="flex flex-1 overflow-hidden">
+                {/* Sidebar */}
+                <Sidebar
+                    userRole={session?.user.role || "resident"}
+                    setupComplete={setupComplete}
+                    managerBuildings={managerBuildings}
+                    activeBuildingId={session?.user.activeBuildingId || undefined}
+                />
+
+                {/* Main Content */}
+                <main className="flex-1 bg-slate-200 p-px flex flex-col min-w-0 overflow-hidden relative">
+                    <div className="flex-1 overflow-y-auto bg-slate-100 p-4 lg:p-6 flex flex-col">
+                        {children}
+                    </div>
+                </main>
+            </div>
         </div>
     );
 }

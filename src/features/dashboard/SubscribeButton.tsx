@@ -14,7 +14,6 @@ interface SubscribeButtonProps {
 
 export function SubscribeButton({ buildingId, quantity, pricePerUnit }: SubscribeButtonProps) {
     const [isPending, startTransition] = useTransition()
-    const router = useRouter()
 
     const handleSubscribe = () => {
         startTransition(async () => {
@@ -33,28 +32,29 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
     const total = ((quantity * pricePerUnit) / 100).toFixed(2);
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center bg-gray-50 p-4 rounded-md border border-gray-100">
+        <div className="space-y-3 w-full max-w-sm">
+            <div className="flex justify-between items-center bg-slate-50 p-3 tech-border">
                 <div>
-                    <p className="font-medium text-gray-900">Total Calculation</p>
-                    <p className="text-sm text-gray-500">{quantity} Units × €{(pricePerUnit / 100).toFixed(2)}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total_Calculation</p>
+                    <p className="text-[11px] text-slate-600 font-mono">{quantity} UNITS × €{(pricePerUnit / 100).toFixed(2)}</p>
                 </div>
-                <p className="text-2xl font-bold">€{total}</p>
+                <p className="text-xl font-bold font-mono text-slate-900">€{total}</p>
             </div>
 
             <Button
                 onClick={handleSubscribe}
                 disabled={isPending}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6 text-lg"
+                fullWidth
+                size="lg"
+                className="h-12 text-sm tracking-widest"
             >
-                {isPending ? "Redirecting..." : "Subscrever"}
+                {isPending ? "REDIRECTING_TO_STRIPE..." : "COMMIT_SUBSCRIPTION"}
             </Button>
-            <p className="text-xs text-center text-gray-400">Secure payment via Stripe</p>
+            <p className="text-[9px] text-center text-slate-400 uppercase font-bold tracking-tighter">Secure_Transaction // Stripe_Gateway</p>
         </div>
     )
 }
 
-// Separate component for syncing subscription status (after payment)
 interface SyncSubscriptionButtonProps {
     buildingId: string
 }
@@ -80,42 +80,29 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
     }
 
     return (
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
+        <div className="p-3 bg-blue-50/50 tech-border border-blue-100 max-w-sm">
             <div className="flex items-start gap-3">
-                <RefreshCw className="w-5 h-5 text-blue-600 mt-0.5" />
+                <RefreshCw className="w-4 h-4 text-blue-600 mt-0.5" />
                 <div className="flex-1">
-                    <p className="text-sm font-medium text-blue-900">Already paid?</p>
-                    <p className="text-xs text-blue-700 mb-2">
-                        If you completed payment but the status hasn&apos;t updated, click below to sync.
+                    <p className="text-[11px] font-bold text-blue-900 uppercase">AWAITING_PAYMENT_SYNC?</p>
+                    <p className="text-[10px] text-blue-700/70 mb-2 uppercase tracking-tight">
+                        If payment is complete but state is unchanged, trigger manual synchronization.
                     </p>
                     <Button
-                        size="sm"
+                        size="xs"
                         variant="outline"
                         onClick={handleSync}
                         disabled={isPending}
                         className="text-blue-700 border-blue-200 hover:bg-blue-100"
                     >
-                        {isPending ? (
-                            <>
-                                <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
-                                Syncing...
-                            </>
-                        ) : (
-                            "Sync Payment Status"
-                        )}
+                        {isPending ? "SYNCING..." : "SYNC_PAYMENT_STATE"}
                     </Button>
                     {result && (
-                        <div className={`mt-2 flex items-center gap-1 text-xs ${result.status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
+                        <div className={`mt-2 flex items-center gap-1 text-[10px] font-bold uppercase ${result.status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
                             {result.status === 'active' ? (
-                                <>
-                                    <CheckCircle className="w-3 h-3" />
-                                    Subscription activated!
-                                </>
+                                <><CheckCircle className="w-3 h-3" /> State_Active</>
                             ) : (
-                                <>
-                                    <AlertCircle className="w-3 h-3" />
-                                    {result.message || 'No active subscription found'}
-                                </>
+                                <><AlertCircle className="w-3 h-3" /> {result.message || 'No_Session_Found'}</>
                             )}
                         </div>
                     )}

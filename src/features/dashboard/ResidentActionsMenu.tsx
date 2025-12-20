@@ -17,16 +17,13 @@ type Resident = {
     }
     apartment: {
         id: number
-        floor: string
-        identifier: string
+        unit: string
     } | null
 }
 
 type Apartment = {
     id: number
-    floor: string
-    identifier: string
-    unitType: string
+    unit: string
 }
 
 export function ResidentActionsMenu({ 
@@ -126,41 +123,44 @@ export function ResidentActionsMenu({
                         onClick={() => setIsOpen(false)}
                     />
                     <div 
-                        className="absolute bg-white rounded-md shadow-lg border border-gray-100 z-70 py-1 w-48"
+                        className="absolute bg-white tech-border shadow-lg z-70 py-1 w-48"
                         style={{
                             top: `${menuPosition.top}px`,
                             left: `${menuPosition.left}px`
                         }}
                     >
+                        <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 mb-1">
+                            Resident_Ops
+                        </div>
                         <button
                             onClick={() => {
                                 setIsOpen(false)
                                 setShowAssignModal(true)
                             }}
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                            className="w-full text-left px-4 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 uppercase font-medium"
                         >
-                            <Home className="w-4 h-4" />
-                            {resident.apartment ? "Change Unit" : "Assign Unit"}
+                            <Home className="w-3.5 h-3.5 text-slate-400" />
+                            {resident.apartment ? "Change_Unit" : "Assign_Unit"}
                         </button>
 
                         {resident.apartment && (
                             <button
                                 onClick={handleUnassignUnit}
-                                className="w-full text-left px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 flex items-center gap-2"
+                                className="w-full text-left px-4 py-1.5 text-xs text-amber-600 hover:bg-amber-50 flex items-center gap-2 uppercase font-medium"
                             >
-                                <UserX className="w-4 h-4" />
-                                Unassign Unit
+                                <UserX className="w-3.5 h-3.5" />
+                                Unassign_Unit
                             </button>
                         )}
 
-                        <div className="h-px bg-gray-100 my-1" />
+                        <div className="h-px bg-slate-100 my-1" />
 
                         <button
                             onClick={handleRemove}
-                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                            className="w-full text-left px-4 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 uppercase font-medium"
                         >
-                            <Trash2 className="w-4 h-4" />
-                            Remove User
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Purge_Resident
                         </button>
                     </div>
                 </>,
@@ -171,27 +171,27 @@ export function ResidentActionsMenu({
             <Modal
                 isOpen={showAssignModal}
                 onClose={() => setShowAssignModal(false)}
-                title={`Assign Unit to ${resident.user.name}`}
+                title={`UPDATE_ASSIGNMENT: ${resident.user.name.toUpperCase()}`}
             >
                 <div className="space-y-4">
-                    <p className="text-sm text-gray-500">Select an available unit for this resident.</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase">Select available unit from registry:</p>
                     
-                    <div className="max-h-[300px] overflow-y-auto space-y-1">
+                    <div className="max-h-[300px] overflow-y-auto tech-border bg-slate-50">
                         {unclaimedApartments.length === 0 ? (
-                            <p className="text-sm text-gray-400 italic text-center py-4">No unclaimed units available.</p>
+                            <p className="text-[10px] text-slate-400 font-mono uppercase text-center py-8">[ NO_AVAILABLE_UNITS ]</p>
                         ) : (
                             unclaimedApartments.map(apt => (
                                 <button
                                     key={apt.id}
                                     onClick={() => handleAssignUnit(apt.id)}
                                     disabled={isLoading}
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded border border-transparent hover:border-gray-200 flex justify-between items-center group"
+                                    className="w-full text-left px-3 py-2 text-xs hover:bg-white border-b border-slate-200 last:border-b-0 flex justify-between items-center group transition-colors"
                                 >
-                                    <span className="font-medium text-gray-700">
+                                    <span className="font-bold text-slate-700 uppercase font-mono">
                                         {getApartmentDisplayName(apt)}
                                     </span>
-                                    <span className="text-xs text-gray-400 group-hover:text-blue-600 uppercase">
-                                        Select
+                                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-blue-600 uppercase tracking-tighter">
+                                        [ SELECT ]
                                     </span>
                                 </button>
                             ))
@@ -200,7 +200,7 @@ export function ResidentActionsMenu({
                     
                     <div className="flex justify-end pt-2">
                         <Button 
-                            variant="ghost" 
+                            variant="outline" 
                             size="sm" 
                             onClick={() => setShowAssignModal(false)}
                         >

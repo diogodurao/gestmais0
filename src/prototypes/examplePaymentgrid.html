@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GestMais - Payment Map</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* SPREADSHEET ESSENTIALS */
+        :root {
+            --grid-color: #e2e8f0;
+            --header-bg: #f8fafc;
+            --selection-blue: #3b82f6;
+        }
+
+        /* 1. Tighter Typography */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 13px; /* Smaller base size for density */
+            letter-spacing: -0.01em;
+        }
+
+        /* 2. Excel-like Cursor & Selection */
+        .cell-interactive {
+            cursor: default; /* Arrow cursor, not text cursor */
+        }
+        .cell-interactive:hover {
+            box-shadow: inset 0 0 0 2px var(--selection-blue);
+            z-index: 10;
+            position: relative;
+        }
+
+        /* 3. Scrollbar Hygiene */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 0; border: 2px solid #f1f5f9; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* 4. Utility Overrides */
+        .h-row { height: 32px; } /* Standard Excel row height */
+    </style>
+</head>
+<body class="h-screen flex flex-col text-slate-900 bg-white overflow-hidden">
+
+    <header class="h-10 border-b border-slate-300 flex items-center px-3 bg-slate-50 gap-3 flex-shrink-0 select-none">
+        <div class="font-bold text-slate-800 tracking-tight flex items-center gap-2 mr-2">
+            <div class="w-5 h-5 bg-slate-800 text-white flex items-center justify-center rounded-sm text-[10px]">G</div>
+            GestMais <span class="text-slate-400 font-normal">v0.2</span>
+        </div>
+        
+        <div class="h-4 w-px bg-slate-300"></div>
+
+        <div class="flex items-center gap-1">
+            <button class="flex items-center gap-2 px-2 py-1 hover:bg-slate-200 rounded-sm text-xs font-medium text-slate-700 transition-colors">
+                <i data-lucide="building-2" class="w-3 h-3 text-slate-500"></i>
+                Ocean View Apts
+                <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400"></i>
+            </button>
+        </div>
+
+        <div class="h-4 w-px bg-slate-300"></div>
+
+        <div class="flex items-center gap-1">
+            <button class="flex items-center gap-1.5 px-2 py-1 hover:bg-slate-200 rounded-sm text-xs text-slate-700">
+                <i data-lucide="save" class="w-3 h-3"></i> Save
+            </button>
+            <button class="flex items-center gap-1.5 px-2 py-1 hover:bg-slate-200 rounded-sm text-xs text-slate-700">
+                <i data-lucide="download" class="w-3 h-3"></i> Export
+            </button>
+            <div class="flex items-center gap-1 ml-2 bg-white border border-slate-300 rounded-sm px-2 py-0.5">
+                <i data-lucide="search" class="w-3 h-3 text-slate-400"></i>
+                <input type="text" placeholder="Find unit..." class="w-32 text-xs border-none outline-none placeholder:text-slate-400 h-5">
+            </div>
+        </div>
+
+        <div class="ml-auto flex items-center gap-3">
+            <span class="text-[10px] text-slate-400 uppercase font-semibold">Manager Mode</span>
+            <div class="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-xs font-bold border border-emerald-700 shadow-sm">
+                JD
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <aside class="w-48 border-r border-slate-300 bg-slate-50 flex flex-col py-2 select-none">
+            
+            <div class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dashboards</div>
+            
+            <nav class="space-y-0.5">
+                <a href="#" class="group flex items-center px-4 py-1.5 border-l-[3px] border-transparent hover:bg-white hover:border-slate-300 transition-all text-slate-600">
+                    <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 mr-2 text-slate-400 group-hover:text-slate-600"></i>
+                    Overview
+                </a>
+
+                <a href="#" class="flex items-center px-4 py-1.5 border-l-[3px] border-emerald-600 bg-white font-semibold text-slate-900 shadow-sm">
+                    <i data-lucide="credit-card" class="w-3.5 h-3.5 mr-2 text-emerald-600"></i>
+                    Payment Map
+                </a>
+
+                <a href="#" class="group flex items-center px-4 py-1.5 border-l-[3px] border-transparent hover:bg-white hover:border-slate-300 transition-all text-slate-600">
+                    <i data-lucide="users" class="w-3.5 h-3.5 mr-2 text-slate-400 group-hover:text-slate-600"></i>
+                    Residents
+                </a>
+            </nav>
+
+            <div class="mt-4 px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">System</div>
+            
+            <nav class="space-y-0.5">
+                <a href="#" class="group flex items-center px-4 py-1.5 border-l-[3px] border-transparent hover:bg-white hover:border-slate-300 transition-all text-slate-600">
+                    <i data-lucide="settings" class="w-3.5 h-3.5 mr-2 text-slate-400 group-hover:text-slate-600"></i>
+                    Settings
+                </a>
+            </nav>
+
+            <div class="mt-auto px-4 py-2">
+                <div class="text-[10px] text-slate-400">
+                    Sync Status: <span class="text-emerald-600 font-bold">● Live</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col bg-slate-200 p-[1px]">
+            
+            <div class="bg-white border border-slate-300 mb-[1px] flex items-center h-7 px-2 text-xs gap-2">
+                <div class="font-mono text-slate-400 w-6 text-center border-r border-slate-200">fx</div>
+                <div class="font-mono text-slate-800 flex-1 truncate select-all">Viewing Data: Year 2024 / All Units</div>
+            </div>
+
+            <div class="flex-1 bg-white border border-slate-300 overflow-auto relative shadow-sm">
+                
+                <table class="w-full border-collapse text-xs whitespace-nowrap">
+                    
+                    <thead class="bg-slate-100 sticky top-0 z-20 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                        <tr class="h-8">
+                            <th class="w-10 border-r border-b border-slate-300 bg-slate-100 text-center text-slate-500 font-bold">#</th>
+                            
+                            <th class="w-16 border-r border-b border-slate-300 px-2 text-left font-semibold text-slate-700">Unit</th>
+                            <th class="w-48 border-r border-b border-slate-300 px-2 text-left font-semibold text-slate-700">Resident</th>
+                            
+                            <th class="w-24 border-r border-b border-slate-300 px-2 text-center font-semibold text-slate-700 bg-slate-50">Jan</th>
+                            <th class="w-24 border-r border-b border-slate-300 px-2 text-center font-semibold text-slate-700 bg-slate-50">Feb</th>
+                            <th class="w-24 border-r border-b border-slate-300 px-2 text-center font-semibold text-slate-700 bg-slate-50">Mar</th>
+                            <th class="w-24 border-r border-b border-slate-300 px-2 text-center font-semibold text-slate-700 bg-slate-50">Apr</th>
+                            <th class="w-24 border-r border-b border-slate-300 px-2 text-center font-semibold text-slate-700 bg-slate-50">May</th>
+                            <th class="w-24 border-r border-b border-slate-300 px-2 text-center font-semibold text-slate-700 bg-slate-50">Jun</th>
+                            <th class="w-24 border-r border-b border-slate-300 px-2 text-center font-semibold text-slate-700 bg-slate-50">Jul</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="text-slate-900">
+                        
+                        <tr class="h-row group">
+                            <td class="border-r border-b border-slate-200 bg-slate-50 text-center text-slate-400 font-mono select-none">1</td>
+                            <td class="border-r border-b border-slate-200 px-2 bg-white font-medium">101</td>
+                            <td class="border-r border-b border-slate-200 px-2 bg-white text-slate-600">Maria Silva</td>
+                            
+                            <td class="border-r border-b border-slate-200 bg-emerald-50 text-emerald-700 text-center cell-interactive">€45.00</td>
+                            <td class="border-r border-b border-slate-200 bg-emerald-50 text-emerald-700 text-center cell-interactive">€45.00</td>
+                            <td class="border-r border-b border-slate-200 bg-emerald-50 text-emerald-700 text-center cell-interactive">€45.00</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                        </tr>
+
+                        <tr class="h-row group">
+                            <td class="border-r border-b border-slate-200 bg-slate-50 text-center text-slate-400 font-mono select-none">2</td>
+                            <td class="border-r border-b border-slate-200 px-2 bg-white font-medium">102</td>
+                            <td class="border-r border-b border-slate-200 px-2 bg-white text-slate-600">João Santos</td>
+                            
+                            <td class="border-r border-b border-slate-200 bg-emerald-50 text-emerald-700 text-center cell-interactive">€45.00</td>
+                            <td class="border-r border-b border-slate-200 bg-rose-50 text-rose-700 font-bold text-center cell-interactive border-rose-100">LATE</td>
+                            <td class="border-r border-b border-slate-200 bg-rose-50 text-rose-700 font-bold text-center cell-interactive border-rose-100">LATE</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                        </tr>
+
+                        <tr class="h-row group">
+                            <td class="border-r border-b border-slate-200 bg-slate-50 text-center text-slate-400 font-mono select-none">3</td>
+                            <td class="border-r border-b border-slate-200 px-2 bg-white font-medium">201</td>
+                            <td class="border-r border-b border-slate-200 px-2 bg-white text-slate-600">Ana Ferreira</td>
+                            
+                            <td class="border-r border-b border-slate-200 bg-emerald-50 text-emerald-700 text-center cell-interactive">€45.00</td>
+                            <td class="border-r border-b border-slate-200 bg-emerald-50 text-emerald-700 text-center cell-interactive">€45.00</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-400 text-center cell-interactive italic">Pending</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                            <td class="border-r border-b border-slate-200 bg-white text-slate-200 text-center cell-interactive">-</td>
+                        </tr>
+
+                         <tr class="h-row"><td class="border-r border-b border-slate-200 bg-slate-50 text-center text-slate-400 font-mono">4</td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td></tr>
+                         <tr class="h-row"><td class="border-r border-b border-slate-200 bg-slate-50 text-center text-slate-400 font-mono">5</td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td></tr>
+                         <tr class="h-row"><td class="border-r border-b border-slate-200 bg-slate-50 text-center text-slate-400 font-mono">6</td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td><td class="border-r border-b border-slate-200"></td></tr>
+
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="h-8 bg-slate-100 border-t border-slate-300 flex items-end px-2 gap-1 select-none">
+                <button class="px-3 py-1 bg-white border-t-2 border-emerald-600 text-[11px] font-bold text-slate-800 shadow-sm rounded-t-sm">2024_Data</button>
+                <button class="px-3 py-1 hover:bg-slate-200 text-[11px] text-slate-600 rounded-t-sm transition-colors">2023_Archive</button>
+                <button class="w-6 h-6 flex items-center justify-center hover:bg-slate-200 rounded text-slate-500 mb-0.5"><i data-lucide="plus" class="w-3 h-3"></i></button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

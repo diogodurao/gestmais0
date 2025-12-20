@@ -5,7 +5,7 @@ import { building, user, apartments, payments, managerBuildings } from "@/db/sch
 import { eq, and, isNull, asc } from "drizzle-orm"
 import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 
-export async function getOrCreateManagerBuilding(userId: string, userNif: string) {
+export async function getOrCreateManagerBuilding(userId: string) {
     const existingUser = await db.select().from(user).where(eq(user.id, userId)).limit(1)
     if (!existingUser.length) throw new Error("User not found")
 
@@ -34,8 +34,8 @@ export async function getOrCreateManagerBuilding(userId: string, userNif: string
 
     const [newBuilding] = await db.insert(building).values({
         id: crypto.randomUUID(),
-        name: "My Condominium",
-        nif: userNif || "N/A",
+        name: `BUILDING_${code.toUpperCase()}`,
+        nif: "N/A",
         code: code,
         managerId: userId,
         subscriptionStatus: 'incomplete',
@@ -162,7 +162,7 @@ export async function getUnclaimedApartments(buildingId: string) {
     const result = await db.select()
         .from(apartments)
         .where(and(eq(apartments.buildingId, buildingId), isNull(apartments.residentId)))
-        .orderBy(asc(apartments.floor), asc(apartments.identifier))
+        .orderBy(asc(apartments.unit))
 
     return result
 }
@@ -193,7 +193,7 @@ export async function getBuildingApartments(buildingId: string) {
         .from(apartments)
         .leftJoin(user, eq(apartments.residentId, user.id))
         .where(eq(apartments.buildingId, buildingId))
-        .orderBy(asc(apartments.floor), asc(apartments.identifier))
+        .orderBy(asc(apartments.unit))
 
     return result
 }
@@ -228,26 +228,22 @@ export async function updateBuilding(
 
 export async function createApartment(
     buildingId: string,
-    data: { floor: string; unitType: string; identifier: string; permillage?: number | null }
+    data: { unit: string; permillage?: number | null }
 ) {
-    if (!buildingId || !data.floor || !data.unitType || !data.identifier) {
+    if (!buildingId || !data.unit) {
         throw new Error("Missing required fields")
     }
 
     const existing = await db.select().from(apartments).where(and(
         eq(apartments.buildingId, buildingId),
-        eq(apartments.floor, data.floor),
-        eq(apartments.identifier, data.identifier),
-        eq(apartments.unitType, data.unitType)
+        eq(apartments.unit, data.unit)
     )).limit(1)
 
-    if (existing.length) throw new Error("Unit already exists on this floor")
+    if (existing.length) throw new Error("Unit already exists")
 
     const [newApt] = await db.insert(apartments).values({
         buildingId,
-        floor: data.floor,
-        unitType: data.unitType,
-        identifier: data.identifier,
+        unit: data.unit,
         permillage: data.permillage,
     }).returning()
 
@@ -256,7 +252,7 @@ export async function createApartment(
 
 export async function updateApartment(
     apartmentId: number,
-    data: { floor?: string; unitType?: string; identifier?: string; permillage?: number | null }
+    data: { unit?: string; permillage?: number | null }
 ) {
     const [updated] = await db.update(apartments).set(data).where(eq(apartments.id, apartmentId)).returning()
     return updated
@@ -282,27 +278,23 @@ export async function bulkDeleteApartments(apartmentIds: number[]) {
 
 export async function bulkCreateApartments(
     buildingId: string,
-    units: Array<{ floor: string; unitType: string; identifier: string; permillage?: number | null }>
+    units: Array<{ unit: string; permillage?: number | null }>
 ) {
     if (!units.length) throw new Error("No units provided")
 
     const created: typeof apartments.$inferSelect[] = []
 
-    for (const unit of units) {
+    for (const u of units) {
         const existing = await db.select().from(apartments).where(and(
             eq(apartments.buildingId, buildingId),
-            eq(apartments.floor, unit.floor),
-            eq(apartments.identifier, unit.identifier),
-            eq(apartments.unitType, unit.unitType)
+            eq(apartments.unit, u.unit)
         )).limit(1)
 
         if (!existing.length) {
             const [newApt] = await db.insert(apartments).values({
                 buildingId,
-                floor: unit.floor,
-                unitType: unit.unitType,
-                identifier: unit.identifier,
-                permillage: unit.permillage,
+                unit: u.unit,
+                permillage: u.permillage,
             }).returning()
             created.push(newApt)
         }

@@ -1,13 +1,15 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment, getUnclaimedApartments } from "@/app/actions/building";
+import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment, getUnclaimedApartments, getBuilding, getBuildingApartments } from "@/app/actions/building";
 import { getApartmentDisplayName } from "@/lib/utils";
-import { Card, CardContent, CardHeader } from "@/components/ui/Card";
-import { JoinBuildingForm } from "@/features/dashboard/JoinBuildingForm";
-import { ClaimApartmentForm } from "@/features/dashboard/ClaimApartmentForm";
+import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
+import { ResidentOnboardingFlow } from "@/features/dashboard/ResidentOnboardingFlow";
+import { ManagerOnboardingFlow } from "@/features/dashboard/ManagerOnboardingFlow";
 import { ResidentsList } from "@/features/dashboard/ResidentsList";
 import { SubscriptionSyncWrapper } from "@/features/dashboard/SubscriptionSyncWrapper";
+import { Key, Activity, BarChart3, Lock } from "lucide-react";
 
 export const dynamic = 'force-dynamic'
 
@@ -28,9 +30,35 @@ export default async function DashboardPage() {
 
     if (session.user.role === 'manager') {
         try {
-            const building = await getOrCreateManagerBuilding(session.user.id, session.user.nif || "");
+            const building = await getOrCreateManagerBuilding(session.user.id);
             buildingInfo = building;
             buildingCode = building.code;
+
+            const apartmentsData = await getBuildingApartments(building.id);
+            
+            // Check if onboarding is complete
+            const profileDone = isProfileComplete(session.user)
+            const buildingDone = isBuildingComplete(building)
+            const unitsDone = isUnitsComplete(building.totalApartments, apartmentsData.length)
+
+            if (!profileDone || !buildingDone || !unitsDone) {
+                const initialStep = !profileDone ? 'personal' : !buildingDone ? 'building' : 'units'
+                return (
+                    <ManagerOnboardingFlow
+                        user={{
+                            id: session.user.id,
+                            name: session.user.name,
+                            email: session.user.email,
+                            nif: session.user.nif,
+                            iban: session.user.iban
+                        }}
+                        building={building}
+                        apartments={apartmentsData}
+                        initialStep={initialStep}
+                    />
+                )
+            }
+
             residents = await getBuildingResidents(building.id);
             unclaimedUnits = await getUnclaimedApartments(building.id);
         } catch (e) {
@@ -43,29 +71,38 @@ export default async function DashboardPage() {
     let residentApartment = null;
 
     if (session.user.role === 'resident') {
-        if (!session.user.buildingId) {
-            return <JoinBuildingForm userId={session.user.id} />
-        } else {
-            // Already joined building. Now check if they have an apartment
-            try {
-                residentApartment = await getResidentApartment(session.user.id)
-                // If NO apartment, show Claim Form with unclaimed apartments dropdown
-                if (!residentApartment) {
-                    const unclaimed = await getUnclaimedApartments(session.user.buildingId)
-                    return (
-                        <ClaimApartmentForm
-                            buildingId={session.user.buildingId}
-                            unclaimedApartments={unclaimed}
-                        />
-                    )
-                }
+        const hasBuildingId = !!session.user.buildingId
+        const hasIban = !!session.user.iban
 
-                // If HAS apartment, load details
-                const { getResidentBuildingDetails } = await import("@/app/actions/building");
-                residentBuildingInfo = await getResidentBuildingDetails(session.user.buildingId);
-            } catch (error) {
-                console.error("Failed check resident status", error)
+        try {
+            residentApartment = await getResidentApartment(session.user.id)
+            const hasApartment = !!residentApartment
+
+            // Check if onboarding is complete
+            if (!hasBuildingId || !hasApartment || !hasIban) {
+                const initialStep = !hasBuildingId ? 'join' : !hasApartment ? 'claim' : 'iban'
+                const unclaimed = hasBuildingId ? await getUnclaimedApartments(session.user.buildingId!) : []
+                
+                return (
+                    <ResidentOnboardingFlow 
+                        user={{ 
+                            id: session.user.id, 
+                            name: session.user.name, 
+                            email: session.user.email,
+                            buildingId: session.user.buildingId,
+                            iban: session.user.iban
+                        }} 
+                        initialStep={initialStep}
+                        unclaimedApartments={unclaimed}
+                    />
+                )
             }
+
+            // If HAS everything, load details
+            const { getResidentBuildingDetails } = await import("@/app/actions/building");
+            residentBuildingInfo = await getResidentBuildingDetails(session.user.buildingId!);
+        } catch (error) {
+            console.error("Failed check resident status", error)
         }
     }
 
@@ -76,88 +113,161 @@ export default async function DashboardPage() {
                 <SubscriptionSyncWrapper buildingId={buildingInfo.id} />
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Welcome / Info Card */}
-                <Card className="col-span-1 md:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 bg-white tech-border shadow-sm">
+                
+                {/* 1. Invite Code / Welcome Panel */}
+                <div className="col-span-1 border-r border-slate-200 p-0">
                     <CardHeader>
-                        <h2 className="text-xl font-semibold">Welcome, {session.user.name}!</h2>
+                        <CardTitle>
+                            <Key className="w-3.5 h-3.5 text-slate-400" />
+                            {session.user.role === 'manager' ? 'BUILDING_INVITE_CODE' : 'RESIDENT_ACCESS'}
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-sm text-gray-500 space-y-3">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p><span className="font-medium text-gray-700">Role:</span> {session.user.role}</p>
-                                    <p><span className="font-medium text-gray-700">Email:</span> {session.user.email}</p>
+                    <div className="p-6 flex flex-col items-center justify-center bg-blue-50/30 h-32">
+                        {session.user.role === 'manager' ? (
+                            buildingInfo?.subscriptionStatus === 'active' ? (
+                                <>
+                                    <div className="text-3xl font-mono font-bold text-blue-700 tracking-widest mb-2 select-all uppercase">
+                                        {buildingCode}
+                                    </div>
+                                    <div className="text-[10px] uppercase font-bold text-blue-600/70">
+                                        Active Invite Code
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center">
+                                    <Lock className="w-6 h-6 text-slate-300 mx-auto mb-2" />
+                                    <span className="text-[10px] uppercase font-bold text-slate-400">Subscription Required</span>
                                 </div>
-                                {session.user.role === 'resident' && residentApartment && (
-                                    <div className="text-right">
-                                        <p className="text-gray-400 text-xs uppercase tracking-wider">Unit</p>
-                                        <p className="text-3xl font-bold text-gray-900">
-                                            {getApartmentDisplayName(residentApartment)}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {session.user.role === 'manager' && (
-                                buildingInfo?.subscriptionStatus === 'active' ? (
-                                    <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg flex justify-between items-center">
-                                        <div>
-                                            <p className="text-blue-800 font-medium text-sm">Valid Invite Code</p>
-                                            <p className="text-2xl font-bold text-blue-900 tracking-wider font-mono lowercase">{buildingCode}</p>
-                                        </div>
-                                        <div className="text-right max-w-[150px]">
-                                            <p className="text-xs text-blue-600 leading-tight">Share this code with residents to let them join.</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg flex justify-between items-center">
-                                        <div>
-                                            <p className="text-amber-800 font-medium text-sm">Subscription Needed</p>
-                                            <p className="text-sm text-amber-700">Invite code is hidden until you subscribe.</p>
-                                        </div>
-                                        <a href="/dashboard/settings?tab=payments" className="text-sm bg-white text-amber-800 px-3 py-1.5 rounded-md border border-amber-200 shadow-sm font-medium hover:bg-amber-50">
-                                            Go to Payment
-                                        </a>
-                                    </div>
-                                )
-                            )}
-
-                            {session.user.role === 'resident' && residentBuildingInfo && (
-                                <div className="p-4 bg-gray-50 border border-gray-100 rounded-md">
-                                    <h3 className="font-medium text-black mb-2">Building Details</h3>
-                                    <div className="text-sm space-y-1">
-                                        <p><span className="text-gray-500">Name:</span> <span className="font-medium">{residentBuildingInfo.building.name}</span></p>
-                                        <p><span className="text-gray-500">Manager:</span> <span className="font-medium">{residentBuildingInfo.manager.name}</span></p>
-                                        <p><span className="text-gray-500">Contact:</span> <span className="font-medium">{residentBuildingInfo.manager.email}</span></p>
-                                    </div>
+                            )
+                        ) : residentApartment ? (
+                            <>
+                                <div className="text-3xl font-mono font-bold text-slate-800 tracking-tight mb-1">
+                                    {getApartmentDisplayName(residentApartment)}
                                 </div>
-                            )}
+                                <div className="text-[10px] uppercase font-bold text-slate-400">Assigned_Unit</div>
+                            </>
+                        ) : null}
+                    </div>
+                    <CardFooter className="text-center">
+                        {session.user.role === 'manager' 
+                            ? "SHARE CODE WITH NEW RESIDENTS" 
+                            : "ACTIVE_RESIDENT_SESSION"}
+                    </CardFooter>
+                </div>
+
+                {/* 2. System / Status Panel */}
+                <div className="col-span-1 border-r border-slate-200 p-0">
+                    <CardHeader>
+                        <CardTitle>
+                            <Activity className="w-3.5 h-3.5 text-slate-400" />
+                            SYSTEM_STATUS
+                        </CardTitle>
+                    </CardHeader>
+                    <div className="p-4 space-y-3 h-32">
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                            <span className="text-[11px] text-slate-500 font-bold uppercase">Role</span>
+                            <span className="status-badge status-active">{session.user.role}</span>
                         </div>
-                    </CardContent>
-                </Card>
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                            <span className="text-[11px] text-slate-500 font-bold uppercase">Account</span>
+                            <div className="flex items-center gap-1 text-[11px] font-mono text-slate-700">
+                                {session.user.email.split('@')[0]}...
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-[11px] text-slate-500 font-bold uppercase">Sync</span>
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 uppercase">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                Live
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                {/* Manager: Residents Card - Protected by Subscription */}
+                {/* 3. Metrics / Building Panel */}
+                <div className="col-span-1 p-0">
+                    <CardHeader>
+                        <CardTitle>
+                            <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
+                            {session.user.role === 'manager' ? 'BUILDING_METRICS' : 'BUILDING_INFO'}
+                        </CardTitle>
+                    </CardHeader>
+                    <div className="p-4 h-32 flex flex-col justify-center">
+                        {session.user.role === 'manager' ? (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="text-center border-r border-slate-100">
+                                    <div className="text-2xl font-bold text-slate-700">{residents.length}</div>
+                                    <div className="text-[9px] text-slate-400 uppercase font-bold mt-1 tracking-tighter">Residents</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-2xl font-bold text-amber-600">{unclaimedUnits.length}</div>
+                                    <div className="text-[9px] text-amber-600/70 uppercase font-bold mt-1 tracking-tighter">Unclaimed</div>
+                                </div>
+                            </div>
+                        ) : residentBuildingInfo ? (
+                            <div className="space-y-1">
+                                <p className="text-[11px] font-bold text-slate-800 truncate uppercase">{residentBuildingInfo.building.name}</p>
+                                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-tighter">Manager: {residentBuildingInfo.manager.name}</p>
+                            </div>
+                        ) : null}
+                    </div>
+                    <CardFooter className="text-center uppercase">
+                        {session.user.role === 'manager' 
+                            ? "88% OCCUPANCY_RATE" 
+                            : "BUILDING_METADATA_LOADED"}
+                    </CardFooter>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Manager: Residents Registry - Protected by Subscription */}
                 {session.user.role === 'manager' && buildingInfo?.subscriptionStatus === 'active' && (
-                    <ResidentsList
-                        residents={residents}
-                        buildingId={buildingInfo?.id || ""}
-                        unclaimedUnits={unclaimedUnits}
-                    />
+                    <div className="lg:col-span-2">
+                        <ResidentsList
+                            residents={residents}
+                            buildingId={buildingInfo?.id || ""}
+                            unclaimedUnits={unclaimedUnits}
+                        />
+                    </div>
+                )}
+
+                {/* Quick Actions simulation for Dashboard */}
+                {session.user.role === 'manager' && buildingInfo?.subscriptionStatus === 'active' && (
+                    <div className="space-y-4">
+                        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Operational_Quick_Actions</div>
+                        <div className="grid grid-cols-1 gap-3">
+                            <button className="p-3 bg-white tech-border shadow-sm flex items-center gap-3 hover:bg-slate-50 group transition-colors text-left">
+                                <div className="p-1.5 bg-emerald-50 border border-emerald-100 rounded-sm group-hover:bg-emerald-100">
+                                    <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <div className="font-bold text-slate-700 text-[11px] uppercase tracking-tighter">Export Financials</div>
+                                    <div className="text-[9px] text-slate-400 uppercase">Generate CSV/PDF Ledger</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
                 )}
 
                 {session.user.role === 'manager' && buildingInfo?.subscriptionStatus !== 'active' && (
-                    <Card className="col-span-1">
+                    <Card className="col-span-full">
                         <CardHeader>
-                            <h2 className="text-xl font-semibold">Residents</h2>
+                            <CardTitle>
+                                <Lock className="w-3.5 h-3.5" />
+                                FEATURE_LOCKED: RESIDENT_MANAGEMENT
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex flex-col items-center justify-center p-6 bg-gray-50 border border-gray-100 rounded-lg text-center h-[300px]">
-                                <div className="p-3 bg-gray-200 rounded-full mb-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            <div className="flex flex-col items-center justify-center p-12 bg-slate-50 tech-border border-dashed text-center h-[300px]">
+                                <div className="p-4 bg-slate-200 rounded-full mb-4">
+                                    <Lock className="w-6 h-6 text-slate-500" />
                                 </div>
-                                <h3 className="font-semibold text-gray-900 mb-1">Feature Locked</h3>
-                                <p className="text-sm text-gray-500 mb-4">Complete your subscription to manage residents.</p>
+                                <h3 className="font-bold text-slate-900 uppercase text-sm mb-1">Subscription_Required</h3>
+                                <p className="text-xs text-slate-500 mb-6 uppercase tracking-tight">Complete your subscription to manage residents and financial records.</p>
+                                <a href="/dashboard/settings?tab=payments" className="px-6 py-2 bg-slate-900 text-white text-xs font-bold uppercase rounded-sm hover:bg-slate-800 transition-colors">
+                                    Upgrade_Account
+                                </a>
                             </div>
                         </CardContent>
                     </Card>

@@ -114,7 +114,7 @@ export function RegisterForm() {
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
             />
             <Input
-                label={role === "manager" ? "Building NIF" : "NIF"}
+                label={role === "manager" ? "Personal NIF" : "NIF"}
                 type="text"
                 placeholder="123456789"
                 required

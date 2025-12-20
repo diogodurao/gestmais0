@@ -1,104 +1,88 @@
 "use client"
 
 import { useState } from "react"
-import { Users, ChevronRight, Eye } from "lucide-react"
-import { Card, CardHeader, CardContent } from "@/components/ui/Card"
-import { Modal } from "@/components/ui/Modal"
+import { Users, Search } from "lucide-react"
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/Card"
 import { ResidentActionsMenu } from "./ResidentActionsMenu"
-import { getFloorLabel, getApartmentDisplayName } from "@/lib/utils"
 
 type Resident = {
     user: { id: string; name: string; email: string }
-    apartment: { id: number; floor: string; identifier: string } | null
+    apartment: { id: number; unit: string } | null
 }
 
-type Apartment = { id: number; floor: string; identifier: string; unitType: string }
+type Apartment = { id: number; unit: string }
 
 export function ResidentsList({ residents, buildingId, unclaimedUnits }: { residents: Resident[]; buildingId: string; unclaimedUnits: Apartment[] }) {
-    const [selectedFloor, setSelectedFloor] = useState<string | null>(null)
-    const [floorResidents, setFloorResidents] = useState<Resident[]>([])
+    const [searchTerm, setSearchTerm] = useState("")
 
-    const groupedByFloor = residents.reduce((acc, resident) => {
-        const key = resident.apartment ? resident.apartment.floor : "unassigned"
-        if (!acc[key]) acc[key] = []
-        acc[key].push(resident)
-        return acc
-    }, {} as Record<string, Resident[]>)
-
-    const sortedFloors = Object.keys(groupedByFloor).sort((a, b) => {
-        if (a === "unassigned") return -1
-        if (b === "unassigned") return 1
-        const aNum = parseInt(a), bNum = parseInt(b)
-        return (isNaN(aNum) ? 0 : aNum) - (isNaN(bNum) ? 0 : bNum)
-    })
-
-    const openFloorDetails = (floor: string) => {
-        setFloorResidents(groupedByFloor[floor] || [])
-        setSelectedFloor(floor)
-    }
+    const filteredResidents = residents.filter(r => 
+        r.user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        r.apartment?.unit.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    )
 
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <h3 className="text-sm font-medium">Residents</h3>
-                <Users className="h-4 w-4 text-gray-500" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{residents.length}</div>
-                <p className="text-xs text-gray-500 mb-4">{residents.length === 1 ? '1 resident joined' : `${residents.length} residents joined`}</p>
-
-                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                    {residents.length === 0 && <p className="text-sm text-gray-400 italic">No residents yet.</p>}
-
-                    {sortedFloors.map(floor => {
-                        const count = groupedByFloor[floor]?.length || 0
-                        const label = floor === "unassigned" ? "No Assigned Unit" : getFloorLabel(floor)
-                        return (
-                            <div key={floor} className="border border-gray-100 rounded-lg overflow-hidden">
-                                <button onClick={() => openFloorDetails(floor)} className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-gray-100 transition-colors">
-                                    <div className="flex items-center gap-2">
-                                        <ChevronRight className="w-3 h-3 text-gray-500" />
-                                        <span className="text-xs font-medium text-gray-700 uppercase tracking-wide">{label}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-xs text-gray-400 bg-white px-1.5 py-0.5 rounded border border-gray-200">{count}</span>
-                                        <Eye className="w-3 h-3 text-gray-400 opacity-50" />
-                                    </div>
-                                </button>
-                            </div>
-                        )
-                    })}
+        <Card className="rounded-none border-slate-200 shadow-none">
+            <CardHeader className="py-3 border-b border-slate-100 flex flex-row items-center justify-between">
+                <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                    <Users className="h-3.5 w-3.5" />
+                    Resident_Registry
+                </CardTitle>
+                <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                    <input 
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        placeholder="SEARCH..."
+                        className="bg-slate-50 border border-slate-200 text-[9px] pl-7 pr-2 py-1 rounded-none focus:outline-none focus:border-blue-300 w-32 uppercase"
+                    />
                 </div>
-            </CardContent>
+            </CardHeader>
+            <CardContent className="p-0">
+                <div className="bg-slate-50 border-b border-slate-100 px-4 py-2 flex items-center justify-between">
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-bold font-mono text-slate-900">{residents.length}</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Residents_Total</span>
+                    </div>
+                </div>
 
-            <Modal isOpen={!!selectedFloor} onClose={() => setSelectedFloor(null)} title={selectedFloor === "unassigned" ? "Residents with No Unit" : `Floor ${getFloorLabel(selectedFloor || "")} Residents`}>
-                <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                    {floorResidents.map((r) => (
-                        <div key={r.user.id} className="flex items-center justify-between p-2 border border-gray-100 rounded-lg bg-gray-50/50">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-medium border border-blue-100">
-                                    {r.user.name.charAt(0).toUpperCase()}
+                <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+                    {filteredResidents.length === 0 && (
+                        <div className="p-8 text-center text-slate-400 font-mono text-[10px] uppercase italic">
+                            [ No_Resident_Matches ]
+                        </div>
+                    )}
+
+                    {filteredResidents.map((r) => (
+                        <div key={r.user.id} className="p-3 hover:bg-slate-50 transition-colors flex items-center justify-between group">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-8 h-8 shrink-0 bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold rounded-none border border-slate-200 uppercase">
+                                    {r.user.name.charAt(0)}
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-900 truncate max-w-[120px]">{r.user.name}</p>
-                                    <p className="text-xs text-gray-500 truncate max-w-[140px]">{r.user.email}</p>
+                                <div className="truncate">
+                                    <p className="text-[11px] font-bold text-slate-800 uppercase tracking-tight truncate">{r.user.name}</p>
+                                    <p className="text-[9px] font-mono text-slate-400 truncate uppercase">{r.user.email}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                {r.apartment ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
-                                        {r.apartment.identifier}
-                                    </span>
-                                ) : (
-                                    <span className="text-[10px] uppercase font-bold text-orange-400 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">No Unit</span>
-                                )}
+                            
+                            <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                    {r.apartment ? (
+                                        <span className="font-mono text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 border border-blue-100 uppercase">
+                                            {r.apartment.unit}
+                                        </span>
+                                    ) : (
+                                        <span className="text-[9px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 border border-amber-100 uppercase">
+                                            Unlinked
+                                        </span>
+                                    )}
+                                </div>
                                 <ResidentActionsMenu resident={r} buildingId={buildingId} unclaimedApartments={unclaimedUnits} />
                             </div>
                         </div>
                     ))}
-                    {floorResidents.length === 0 && <p className="text-sm text-gray-400 italic">No residents in this group.</p>}
                 </div>
-            </Modal>
+            </CardContent>
         </Card>
     )
 }

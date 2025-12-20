@@ -58,7 +58,6 @@ export function isBuildingComplete(building: {
     monthlyQuota?: number | null
 }): boolean {
     return Boolean(
-        building.name &&
         building.nif &&
         building.city &&
         building.street &&
@@ -67,7 +66,17 @@ export function isBuildingComplete(building: {
         building.totalApartments > 0 &&
         (building.monthlyQuota ?? 0) > 0 &&
         isValidIban(building.iban) &&
-        building.name !== "My Condominium" &&
         building.nif !== "N/A"
     )
+}
+
+/**
+ * Checks if all units have been added
+ */
+export function isUnitsComplete(
+    totalApartments?: number | null,
+    currentApartmentsCount?: number
+): boolean {
+    if (!totalApartments || totalApartments <= 0) return false
+    return (currentApartmentsCount ?? 0) === totalApartments
 }
