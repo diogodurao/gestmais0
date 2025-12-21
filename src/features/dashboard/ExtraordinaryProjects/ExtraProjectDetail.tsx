@@ -2,28 +2,31 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
     ArrowLeft,
-    Settings,
     FileText,
     Calendar,
-    Download,
     MoreVertical,
     Archive,
     RefreshCw,
     ExternalLink,
+    Trash2,
+    Pencil,
+    X,
     Loader2,
 } from "lucide-react"
 import { formatCurrency, getMonthName } from "@/lib/extraordinary-calculations"
 import {
     getExtraordinaryProjectDetail,
+    updateExtraordinaryProject,
     archiveExtraordinaryProject,
+    deleteExtraordinaryProject,
     type ProjectDetail,
 } from "@/app/actions/extraordinary"
 import { ExtraPaymentGrid } from "@/features/dashboard/ExtraordinaryProjects/ExtraPaymentGrid"
-// import { useToast } from "@/components/ui/Toast"
-// import { useConfirm } from "@/components/ui/ConfirmDialog"
+import { Button } from "@/components/ui/Button"
 
 // ===========================================
 // TYPES
@@ -38,13 +41,14 @@ interface ExtraProjectDetailProps {
 // ===========================================
 
 export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
-    // const toast = useToast()
-    // const { confirm } = useConfirm()
+    const router = useRouter()
     
     const [project, setProject] = useState<ProjectDetail | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
 
     const loadProject = async () => {
         setIsLoading(true)
@@ -64,20 +68,27 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
     }, [projectId])
 
     const handleArchive = async () => {
-        // const confirmed = await confirm({
-        //     title: "Arquivar Projeto",
-        //     message: "Tem a certeza que deseja arquivar este projeto? Poderá ser recuperado mais tarde.",
-        //     confirmText: "Arquivar",
-        //     variant: "warning",
-        // })
-        // 
-        // if (!confirmed) return
-
+        if (!confirm("Tem a certeza que deseja arquivar este projeto?")) return
+        
         const result = await archiveExtraordinaryProject(projectId)
         if (result.success) {
-            // toast.success("Projeto arquivado")
+            router.push("/dashboard/extraordinary")
         } else {
-            // toast.error("Erro", result.error)
+            alert(result.error)
+        }
+    }
+
+    const handleDelete = async () => {
+        if (!confirm("ATENÇÃO: Esta ação é irreversível. Eliminar o projeto e todos os pagamentos associados?")) return
+        
+        setIsDeleting(true)
+        const result = await deleteExtraordinaryProject(projectId)
+        setIsDeleting(false)
+        
+        if (result.success) {
+            router.push("/dashboard/extraordinary")
+        } else {
+            alert(result.error)
         }
     }
 
@@ -106,41 +117,50 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
     const endDate = `${getMonthName(endMonth)} ${endYear}`
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
+            {/* Edit Modal */}
+            {isEditing && (
+                <EditProjectModal
+                    project={project}
+                    onClose={() => setIsEditing(false)}
+                    onSave={() => {
+                        setIsEditing(false)
+                        loadProject()
+                    }}
+                />
+            )}
+
             {/* Header */}
-            <header className="tech-border bg-white p-4">
-                <div className="flex items-start justify-between">
-                    {/* Left: Back + Title */}
-                    <div className="flex items-start gap-4">
+            <header className="tech-border bg-white p-3 sm:p-4">
+                <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 sm:gap-4 min-w-0 flex-1">
                         <Link
                             href="/dashboard/extraordinary"
-                            className="p-2 -ml-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                            className="p-1.5 sm:p-2 -ml-1 sm:-ml-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0"
                         >
-                            <ArrowLeft className="w-5 h-5" />
+                            <ArrowLeft className="w-4 sm:w-5 h-4 sm:h-5" />
                         </Link>
                         
-                        <div>
-                            <div className="flex items-center gap-3">
-                                <h1 className="text-lg font-bold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h1 className="text-base sm:text-lg font-bold text-slate-900 truncate">
                                     {project.name}
                                 </h1>
                                 <StatusBadge status={project.status} />
                             </div>
-                            <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                            <p className="text-[9px] sm:text-[10px] text-slate-400 font-mono mt-0.5">
                                 #EXTRA-{project.id}
                             </p>
                             {project.description && (
-                                <p className="text-[11px] text-slate-600 mt-2 max-w-xl">
+                                <p className="text-[10px] sm:text-[11px] text-slate-600 mt-1.5 sm:mt-2 line-clamp-2 sm:line-clamp-none">
                                     {project.description}
                                 </p>
                             )}
                         </div>
                     </div>
 
-                    {/* Right: Budget + Actions */}
-                    <div className="flex items-start gap-4">
-                        {/* Budget */}
-                        <div className="text-right">
+                    <div className="flex items-start gap-2 sm:gap-4 shrink-0">
+                        <div className="text-right hidden sm:block">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
                                 Orçamento
                             </span>
@@ -153,9 +173,9 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
                         <div className="relative">
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                                className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                             >
-                                <MoreVertical className="w-5 h-5" />
+                                <MoreVertical className="w-4 sm:w-5 h-4 sm:h-5" />
                             </button>
 
                             {isMenuOpen && (
@@ -165,6 +185,16 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
                                         onClick={() => setIsMenuOpen(false)}
                                     />
                                     <div className="absolute right-0 mt-1 py-1 bg-white border border-slate-200 shadow-lg z-20 min-w-[180px]">
+                                        <button
+                                            onClick={() => {
+                                                setIsEditing(true)
+                                                setIsMenuOpen(false)
+                                            }}
+                                            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-700 hover:bg-slate-50 transition-colors"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                            Editar detalhes
+                                        </button>
                                         <button
                                             onClick={() => {
                                                 loadProject()
@@ -197,6 +227,17 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
                                             <Archive className="w-4 h-4" />
                                             Arquivar projeto
                                         </button>
+                                        <button
+                                            onClick={() => {
+                                                handleDelete()
+                                                setIsMenuOpen(false)
+                                            }}
+                                            disabled={isDeleting}
+                                            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-rose-700 hover:bg-rose-50 transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            {isDeleting ? "A eliminar..." : "Eliminar projeto"}
+                                        </button>
                                     </div>
                                 </>
                             )}
@@ -204,25 +245,30 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
                     </div>
                 </div>
 
-                {/* Info Row */}
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-6 text-[11px] text-slate-500">
-                    <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>
-                            {startDate} — {endDate}
+                {/* Mobile Budget Display */}
+                <div className="sm:hidden mt-3 pt-3 border-t border-slate-100">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                            Orçamento Total
                         </span>
+                        <div className="font-mono font-bold text-slate-900 text-lg">
+                            {formatCurrency(project.totalBudget)}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Info Row */}
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100 flex flex-wrap items-center gap-3 sm:gap-6 text-[10px] sm:text-[11px] text-slate-500">
+                    <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                        <span className="hidden sm:inline">{startDate} — {endDate}</span>
+                        <span className="sm:hidden">{getMonthName(project.startMonth, true)}/{project.startYear}</span>
                     </div>
                     <div>
-                        <span className="font-medium text-slate-700">
-                            {project.numInstallments}
-                        </span>{" "}
-                        prestações
+                        <span className="font-medium text-slate-700">{project.numInstallments}</span>x
                     </div>
                     <div>
-                        <span className="font-medium text-slate-700">
-                            {project.stats.apartmentsTotal}
-                        </span>{" "}
-                        frações
+                        <span className="font-medium text-slate-700">{project.stats.apartmentsTotal}</span> frações
                     </div>
                     {project.documentUrl && (
                         <a
@@ -231,15 +277,16 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
                             rel="noopener noreferrer"
                             className="flex items-center gap-1.5 text-blue-600 hover:underline"
                         >
-                            <FileText className="w-3.5 h-3.5" />
-                            {project.documentName || "Ver orçamento"}
+                            <FileText className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                            <span className="hidden sm:inline">{project.documentName || "Ver orçamento"}</span>
+                            <span className="sm:hidden">Doc</span>
                         </a>
                     )}
                 </div>
             </header>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
                 <StatCard
                     label="Total Esperado"
                     value={formatCurrency(project.stats.totalExpected)}
@@ -277,6 +324,148 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
                 payments={project.payments}
                 onRefresh={loadProject}
             />
+        </div>
+    )
+}
+
+// ===========================================
+// EDIT PROJECT MODAL
+// ===========================================
+
+interface EditProjectModalProps {
+    project: ProjectDetail
+    onClose: () => void
+    onSave: () => void
+}
+
+function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
+    const [formData, setFormData] = useState({
+        name: project.name,
+        description: project.description || "",
+    })
+    const [isSaving, setIsSaving] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        
+        if (!formData.name.trim()) {
+            setError("Nome é obrigatório")
+            return
+        }
+        
+        setIsSaving(true)
+        setError(null)
+        
+        const result = await updateExtraordinaryProject({
+            projectId: project.id,
+            name: formData.name.trim(),
+            description: formData.description.trim(),
+        })
+        
+        setIsSaving(false)
+        
+        if (result.success) {
+            onSave()
+        } else {
+            setError(result.error)
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-white tech-border shadow-xl w-full max-w-md">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+                    <h3 className="text-[12px] font-bold text-slate-800 uppercase tracking-tight">
+                        Editar Projeto
+                    </h3>
+                    <button
+                        onClick={onClose}
+                        className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="p-4 space-y-4">
+                    <div>
+                        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-tight mb-1">
+                            Nome do Projeto *
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-200 text-[12px] focus:outline-none focus:border-slate-400"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-tight mb-1">
+                            Descrição
+                        </label>
+                        <textarea
+                            value={formData.description}
+                            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-slate-200 text-[12px] focus:outline-none focus:border-slate-400 resize-none"
+                        />
+                    </div>
+
+                    {/* Read-only fields */}
+                    <div className="bg-slate-50 p-3 tech-border border-dashed space-y-2">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                            Campos fixos (não editáveis)
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            <div>
+                                <span className="text-slate-500">Orçamento:</span>
+                                <span className="font-mono font-bold text-slate-700 ml-1">
+                                    {formatCurrency(project.totalBudget)}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-slate-500">Prestações:</span>
+                                <span className="font-bold text-slate-700 ml-1">
+                                    {project.numInstallments}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {error && (
+                        <p className="text-[11px] text-rose-600 font-bold">{error}</p>
+                    )}
+
+                    <div className="flex items-center justify-end gap-2 pt-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={onClose}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            size="sm"
+                            disabled={isSaving}
+                        >
+                            {isSaving ? (
+                                <>
+                                    <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                                    A guardar...
+                                </>
+                            ) : (
+                                "Guardar"
+                            )}
+                        </Button>
+                    </div>
+                </form>
+            </div>
         </div>
     )
 }
@@ -337,16 +526,16 @@ function StatCard({ label, value, subValue, variant }: StatCardProps) {
     }
 
     return (
-        <div className={cn("tech-border p-3", variants[variant])}>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+        <div className={cn("tech-border p-2 sm:p-3", variants[variant])}>
+            <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-tight">
                 {label}
             </p>
-            <div className="flex items-baseline gap-2 mt-1">
-                <p className={cn("text-lg font-bold font-mono", valueColors[variant])}>
+            <div className="flex items-baseline gap-1 sm:gap-2 mt-0.5 sm:mt-1">
+                <p className={cn("text-base sm:text-lg font-bold font-mono", valueColors[variant])}>
                     {value}
                 </p>
                 {subValue && (
-                    <span className="text-[11px] text-slate-500">{subValue}</span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-500">{subValue}</span>
                 )}
             </div>
         </div>

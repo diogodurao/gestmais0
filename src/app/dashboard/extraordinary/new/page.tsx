@@ -15,8 +15,12 @@ export const metadata = {
 }
 
 export default async function NewExtraordinaryProjectPage() {
-    // Get session and active building
     const session = await requireSession()
+    
+    // Only managers can create projects
+    if (session.user.role !== 'manager') {
+        redirect("/dashboard/extraordinary")
+    }
     
     if (!session.user.activeBuildingId) {
         redirect("/dashboard")
@@ -25,7 +29,6 @@ export default async function NewExtraordinaryProjectPage() {
     const buildingId = session.user.activeBuildingId
     const apartmentRecords = await getBuildingApartments(buildingId)
     
-    // Transform to the format expected by ExtraProjectCreate
     const formattedApartments = apartmentRecords.map(record => ({
         id: record.apartment.id,
         unit: record.apartment.unit,

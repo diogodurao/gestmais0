@@ -23,8 +23,6 @@ import {
     validateProjectInput,
 } from "@/lib/extraordinary-calculations"
 import { createExtraordinaryProject } from "@/app/actions/extraordinary"
-// import { useToast } from "@/components/ui/Toast"
-// import { FileUpload } from "@/components/ui/FileUpload"
 
 // ===========================================
 // TYPES
@@ -43,7 +41,7 @@ interface ExtraProjectCreateProps {
 interface FormData {
     name: string
     description: string
-    totalBudget: string // Euro string for input
+    totalBudget: string
     numInstallments: number
     startMonth: number
     startYear: number
@@ -57,7 +55,6 @@ interface FormData {
 
 export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreateProps) {
     const router = useRouter()
-    // const toast = useToast()
     
     const currentDate = new Date()
     const currentMonth = currentDate.getMonth() + 1
@@ -78,10 +75,8 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [showPreview, setShowPreview] = useState(false)
 
-    // Parse budget to cents
     const budgetCents = parseCurrency(formData.totalBudget)
 
-    // Calculate preview
     const preview = budgetCents > 0 && apartments.length > 0
         ? calculateExtraordinaryPayments(
             budgetCents,
@@ -96,25 +91,18 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
         const { name, value } = e.target
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }))
+        setFormData((prev) => ({ ...prev, [name]: value }))
         setErrors([])
     }
 
     const handleNumberChange = (name: keyof FormData, value: number) => {
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }))
+        setFormData((prev) => ({ ...prev, [name]: value }))
         setErrors([])
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         
-        // Validate
         const validation = validateProjectInput({
             name: formData.name,
             totalBudget: budgetCents,
@@ -150,11 +138,9 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
         setIsSubmitting(false)
         
         if (result.success) {
-            // toast.success("Projeto criado", "As quotas foram calculadas para todas as frações.")
             router.push(`/dashboard/extraordinary/${result.data.projectId}`)
         } else {
             setErrors([result.error])
-            // toast.error("Erro", result.error)
         }
     }
 
@@ -248,7 +234,6 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
                     </h2>
 
                     <div className="grid gap-4 md:grid-cols-3">
-                        {/* Total Budget */}
                         <div>
                             <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-tight mb-1">
                                 Orçamento Total *
@@ -272,7 +257,6 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
                             )}
                         </div>
 
-                        {/* Number of Installments */}
                         <div>
                             <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-tight mb-1">
                                 Nº de Prestações *
@@ -291,7 +275,6 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
                             </select>
                         </div>
 
-                        {/* Average per installment */}
                         <div className="bg-slate-50 p-3 flex flex-col justify-center">
                             <p className="text-[10px] text-slate-500 uppercase tracking-tight">
                                 Média por Prestação
@@ -367,7 +350,7 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
                     </div>
                 </section>
 
-                {/* Document Upload */}
+                {/* Document Upload placeholder */}
                 <section className="tech-border bg-white p-4">
                     <h2 className="text-[12px] font-bold text-slate-800 uppercase tracking-tight mb-4 flex items-center gap-2">
                         <Upload className="w-4 h-4" />
@@ -410,7 +393,6 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
 
                         {showPreview && (
                             <div className="mt-4 overflow-x-auto">
-                                {/* Warnings */}
                                 {preview.warnings.length > 0 && (
                                     <div className="mb-4 p-3 bg-amber-50 border border-amber-200">
                                         {preview.warnings.map((w, i) => (
@@ -421,7 +403,6 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
                                     </div>
                                 )}
 
-                                {/* Preview Table */}
                                 <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                                     <thead>
                                         <tr>

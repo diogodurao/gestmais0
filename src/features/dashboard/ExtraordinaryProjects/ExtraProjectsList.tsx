@@ -9,8 +9,6 @@ import {
     Calendar,
     TrendingUp,
     ChevronRight,
-    FileText,
-    Archive,
 } from "lucide-react"
 import { formatCurrency, getMonthName } from "@/lib/extraordinary-calculations"
 import { getExtraordinaryProjects, type ProjectListItem } from "@/app/actions/extraordinary"
@@ -65,20 +63,20 @@ export function ExtraProjectsList({ buildingId }: ExtraProjectsListProps) {
     return (
         <div className="space-y-4">
             {/* Header */}
-            <header className="flex items-center justify-between">
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <Hammer className="w-5 h-5 text-slate-600" />
+                    <h1 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <Hammer className="w-4 sm:w-5 h-4 sm:h-5 text-slate-600" />
                         Quotas Extraordinárias
                     </h1>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">
                         Projetos de obras e pagamentos especiais
                     </p>
                 </div>
                 
                 <Link
                     href="/dashboard/extraordinary/new"
-                    className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider hover:bg-slate-700 transition-colors"
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-slate-700 transition-colors w-full sm:w-auto"
                 >
                     <Plus className="w-3.5 h-3.5" />
                     Novo Projeto
@@ -115,13 +113,13 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
             className="group tech-border bg-white hover:border-slate-300 transition-colors"
         >
             {/* Header */}
-            <div className="p-4 border-b border-slate-100">
-                <div className="flex items-start justify-between">
+            <div className="p-3 sm:p-4 border-b border-slate-100">
+                <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-[13px] font-bold text-slate-900 truncate group-hover:text-slate-700">
+                        <h3 className="text-[12px] sm:text-[13px] font-bold text-slate-900 truncate group-hover:text-slate-700">
                             {project.name}
                         </h3>
-                        <span className="text-[10px] text-slate-400 font-mono">
+                        <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono">
                             #EXTRA-{project.id}
                         </span>
                     </div>
@@ -130,12 +128,12 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
             </div>
 
             {/* Budget */}
-            <div className="p-4 bg-slate-50/50">
-                <div className="flex items-baseline justify-between mb-3">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
-                        Orçamento Total
+            <div className="p-3 sm:p-4 bg-slate-50/50">
+                <div className="flex items-baseline justify-between mb-2 sm:mb-3">
+                    <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                        Orçamento
                     </span>
-                    <span className="text-lg font-bold text-slate-900 font-mono">
+                    <span className="text-base sm:text-lg font-bold text-slate-900 font-mono">
                         {formatCurrency(project.totalBudget)}
                     </span>
                 </div>
@@ -147,17 +145,16 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
                     showPercentage
                     size="sm"
                     variant="auto"
-                    animated={project.progressPercent < 100}
                 />
 
-                <div className="flex items-center justify-between mt-2 text-[10px] text-slate-500">
+                <div className="flex items-center justify-between mt-2 text-[9px] sm:text-[10px] text-slate-500">
                     <span>
                         Cobrado: <span className="font-medium text-emerald-600">
                             {formatCurrency(project.totalCollected)}
                         </span>
                     </span>
                     <span>
-                        Em falta: <span className="font-medium text-slate-700">
+                        Falta: <span className="font-medium text-slate-700">
                             {formatCurrency(project.totalBudget - project.totalCollected)}
                         </span>
                     </span>
@@ -165,15 +162,16 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
             </div>
 
             {/* Footer */}
-            <div className="px-4 py-3 flex items-center justify-between border-t border-slate-100">
-                <div className="flex items-center gap-3 text-[10px] text-slate-500">
+            <div className="px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between border-t border-slate-100">
+                <div className="flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] text-slate-500">
                     <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        {startDate} - {endDate}
+                        <span className="hidden sm:inline">{startDate} - {endDate}</span>
+                        <span className="sm:hidden">{getMonthName(project.startMonth, true)}/{project.startYear}</span>
                     </span>
                     <span className="flex items-center gap-1">
                         <TrendingUp className="w-3 h-3" />
-                        {project.numInstallments} prestações
+                        {project.numInstallments}x
                     </span>
                 </div>
                 

@@ -5,7 +5,7 @@
  */
 
 import { Suspense } from "react"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { ExtraProjectDetail } from "@/features/dashboard/ExtraordinaryProjects/ExtraProjectDetail"
 import { requireSession } from "@/lib/auth-helpers"
 
@@ -22,13 +22,12 @@ interface PageProps {
 
 export default async function ExtraordinaryProjectDetailPage({ params }: PageProps) {
     const { id } = await params
-    // Validate ID
     const projectId = parseInt(id, 10)
+    
     if (isNaN(projectId)) {
         notFound()
     }
 
-    // Get session
     await requireSession()
 
     return (
