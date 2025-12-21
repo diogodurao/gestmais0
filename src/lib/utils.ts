@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { FLOOR_OPTIONS, UNIT_TYPES, PAYMENT_STATUS } from "./constants"
-import { Home, Store, Car, Package, Check, AlertCircle, Clock, LucideIcon } from "lucide-react"
+import { FLOOR_OPTIONS, PAYMENT_STATUS } from "./constants"
+import { Check, AlertCircle, LucideIcon } from "lucide-react"
 
 // ==========================================
 // CLASSNAME UTILITY
@@ -33,7 +33,7 @@ export function getFloorLabel(floor: string): string {
 }
 
 /**
- * Get apartment display name - now just returns the unit directly
+ * Get apartment display name
  */
 export function getApartmentDisplayName(apt: { unit: string }): string {
     return apt.unit

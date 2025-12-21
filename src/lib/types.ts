@@ -1,115 +1,72 @@
-import { PaymentStatus, SubscriptionStatus, UserRole, UnitType } from "./constants"
+export type PaymentStatus = "paid" | "late" | "pending"
+
+/**
+ * Payment data for a single apartment in the payment grid
+ * Matches the return type from getPaymentMap action
+ */
+export type PaymentData = {
+    visibleId: number
+    visibleUnit: string
+    visibleResident: string | null
+    payments: {
+        month: number
+        status: PaymentStatus
+        paidAt: Date | null
+    }[]
+}
+
+/**
+ * @deprecated Use PaymentData instead - this type had a mismatch
+ * with the actual data structure from server actions
+ */
+export type PaymentGridData = PaymentData
 
 // ==========================================
-// SHARED TYPE DEFINITIONS
+// BUILDING TYPES
 // ==========================================
 
-// --- User Types ---
-export type User = {
+export type QuotaMode = "global" | "permillage"
+
+export type BuildingStatus = "active" | "inactive" | "pending"
+
+// ==========================================
+// USER & SESSION TYPES
+// ==========================================
+
+export type UserRole = "manager" | "resident"
+
+/**
+ * Session user type - use this for type-safe session access
+ */
+export type SessionUser = {
     id: string
     name: string
     email: string
     role: UserRole
-    nif?: string | null
-    iban?: string | null
-    buildingId?: string | null
-    activeBuildingId?: string | null
-    stripeCustomerId?: string | null
+    buildingId: string | null      // For residents: their building
+    activeBuildingId: string | null // For managers: currently selected building
+    nif: string | null
+    iban: string | null
 }
 
-// --- Building Types ---
-export type Building = {
-    id: string
-    name: string
-    nif: string
-    code: string
-    managerId: string
-    city?: string | null
-    street?: string | null
-    number?: string | null
-    iban?: string | null
-    totalApartments?: number | null
-    quotaMode?: string | null
-    monthlyQuota?: number | null
-    subscriptionStatus?: SubscriptionStatus | null
-    stripeSubscriptionId?: string | null
-    stripePriceId?: string | null
-}
+// ==========================================
+// SUBSCRIPTION TYPES
+// ==========================================
 
-// --- Apartment Types ---
-export type Apartment = {
-    id: number
-    buildingId: string
-    unit: string
-    permillage?: number | null
-    residentId?: string | null
-}
+export type SubscriptionStatus = 
+    | "active" 
+    | "canceled" 
+    | "incomplete" 
+    | "incomplete_expired" 
+    | "past_due" 
+    | "paused" 
+    | "trialing" 
+    | "unpaid"
 
-export type ApartmentWithResident = {
-    apartment: Apartment
-    resident: {
-        id: string
-        name: string
-        email: string
-    } | null
-}
+// ==========================================
+// API RESPONSE TYPES
+// ==========================================
 
-// --- Payment Types ---
-// IMPORTANT: These types refer strictly to RESIDENT QUOTA PAYMENTS (Condominium Fees).
-// They are NOT related to the manager's SaaS subscription (Stripe).
-export type Payment = {
-    id: number
-    apartmentId: number
-    month: number
-    year: number
-    status: PaymentStatus
-    amount: number
-}
-
-// Data structure for the "Mapa de Quotas" grid
-// Tracks which residents have paid their building fees for each month.
-export type PaymentGridData = {
-    apartmentId: number
-    unit: string
-    payments: Record<number, PaymentStatus>
-}
-
-// --- Resident Types ---
-export type Resident = {
-    user: {
-        id: string
-        name: string
-        email: string
-    }
-    apartment: {
-        id: number
-        unit: string
-    } | null
-}
-
-// --- Manager Building Types ---
-export type ManagedBuilding = {
-    building: Building
-    isOwner: boolean | null
-}
-
-// --- Form State Types ---
-export type FormState = {
-    isLoading: boolean
-    error: string
-    success: boolean
-}
-
-// --- API Response Types ---
-export type ActionResult<T = void> = {
-    success: boolean
-    data?: T
-    error?: string
-}
-
-// --- Subscription Types ---
-export type SubscriptionSyncResult = {
-    status: SubscriptionStatus
-    synced: boolean
-    message?: string
-}
+export type ActionResult<T> = 
+    | { success: true; data: T }
+    | { success: false; error: string }
