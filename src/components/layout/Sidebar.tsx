@@ -1,11 +1,10 @@
 "use client"
 
-import { CreditCard, LayoutDashboard, Settings } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/Button"
 import { useSidebar } from "./SidebarProvider"
+import { managerNavItems, residentNavItems } from "@/config/navigation"
 
 type ManagedBuilding = {
     building: { id: string; name: string; code: string; subscriptionStatus?: string | null }
@@ -30,16 +29,7 @@ export function Sidebar({
 
     const activeBuilding = managerBuildings.find(b => b.building.id === activeBuildingId)
 
-    const links = [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard, requiresSetup: false, requiresSubscription: false },
-        ...(userRole === "manager" ? [
-            { href: "/dashboard/payments", label: "Payment Map", icon: CreditCard, requiresSetup: true, requiresSubscription: true },
-        ] : []),
-        ...(userRole === "resident" ? [
-            { href: "/dashboard/my-payments", label: "My Payments", icon: CreditCard, requiresSetup: true, requiresSubscription: false }
-        ] : []),
-        { href: "/dashboard/settings", label: "Settings", icon: Settings, requiresSetup: false, requiresSubscription: false }
-    ]
+    const links = userRole === "manager" ? managerNavItems : residentNavItems
 
     return (
         <>

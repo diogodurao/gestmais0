@@ -39,7 +39,7 @@
     @apply bg-slate-50 text-slate-500 font-bold uppercase text-[11px] tracking-wider px-3 py-1.5 border-b border-r border-slate-300 select-none;
   }
   .data-cell {
-    @apply bg-white px-3 py-1.5 border-b border-r border-slate-200 flex items-center;
+    @apply bg-white px-3 py-1.5 border-b border-r border-slate-200;
   }
 
   /* INPUT STYLES */

@@ -1,4 +1,5 @@
-import { pgTable, serial, text, timestamp, boolean, integer, date, real } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, boolean, integer, date, real, unique } from 'drizzle-orm/pg-core';
+import { relations } from "drizzle-orm"
 
 // --- Auth Tables (Better-Auth) ---
 
@@ -111,3 +112,101 @@ export const payments = pgTable('payments', {
     amount: integer('amount').notNull(), // in cents
     updatedAt: timestamp('updated_at').defaultNow(),
 });
+
+// --- Extraordinary Projects & Payments ---
+
+export const extraordinaryProjects = pgTable("extraordinary_projects", {
+    id: serial("id").primaryKey(),
+    buildingId: text("building_id").notNull().references(() => building.id),
+    
+    // Project details
+    name: text("name").notNull(),
+    description: text("description"),
+    
+    // Budget & payment structure
+    totalBudget: integer("total_budget").notNull(), // in cents
+    numInstallments: integer("num_installments").notNull(),
+    startMonth: integer("start_month").notNull(),
+    startYear: integer("start_year").notNull(),
+    
+    // Document storage
+    documentUrl: text("document_url"),
+    documentName: text("document_name"),
+    
+    // Status tracking
+    status: text("status").default("active"),
+    
+    // Audit fields
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+    createdBy: text("created_by").references(() => user.id),
+});
+
+export const extraordinaryPayments = pgTable(
+    "extraordinary_payments",
+    {
+        id: serial("id").primaryKey(),
+        projectId: integer("project_id").notNull().references(() => extraordinaryProjects.id),
+        apartmentId: integer("apartment_id").notNull().references(() => apartments.id),
+        
+        // Installment tracking
+        installment: integer("installment").notNull(),
+        
+        // Amount tracking
+        expectedAmount: integer("expected_amount").notNull(),
+        paidAmount: integer("paid_amount").default(0),
+        
+        // Status
+        status: text("status").default("pending"),
+        
+        // Payment details
+        paidAt: timestamp("paid_at"),
+        paymentMethod: text("payment_method"),
+        notes: text("notes"),
+        
+        // Audit
+        updatedAt: timestamp("updated_at").defaultNow(),
+        updatedBy: text("updated_by").references(() => user.id),
+    },
+    (table) => ({
+        uniquePayment: unique().on(table.projectId, table.apartmentId, table.installment),
+    })
+);
+
+// --- RELATIONS ---
+
+export const buildingRelations = relations(building, ({ many }) => ({
+    apartments: many(apartments),
+    extraordinaryProjects: many(extraordinaryProjects),
+}));
+
+export const apartmentsRelations = relations(apartments, ({ one, many }) => ({
+    building: one(building, {
+        fields: [apartments.buildingId],
+        references: [building.id],
+    }),
+    resident: one(user, {
+        fields: [apartments.residentId],
+        references: [user.id],
+    }),
+    extraordinaryPayments: many(extraordinaryPayments),
+}));
+
+export const extraordinaryProjectsRelations = relations(extraordinaryProjects, ({ many, one }) => ({
+    payments: many(extraordinaryPayments),
+    building: one(building, {
+        fields: [extraordinaryProjects.buildingId],
+        references: [building.id],
+    }),
+}));
+
+export const extraordinaryPaymentsRelations = relations(extraordinaryPayments, ({ one }) => ({
+    project: one(extraordinaryProjects, {
+        fields: [extraordinaryPayments.projectId],
+        references: [extraordinaryProjects.id],
+    }),
+    apartment: one(apartments, {
+        fields: [extraordinaryPayments.apartmentId],
+        references: [apartments.id],
+    }),
+}));
