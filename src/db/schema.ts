@@ -77,6 +77,7 @@ export const building = pgTable('building', {
     stripeSubscriptionId: text('stripe_subscription_id'),
     stripePriceId: text('stripe_price_id'),
     subscriptionStatus: text('subscription_status').default('incomplete'), // 'active', 'incomplete', 'canceled', 'past_due'
+    setupComplete: boolean('setup_complete').default(false),
 });
 
 // --- Junction Tables ---

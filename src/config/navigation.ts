@@ -6,11 +6,8 @@
 
 import {
     LayoutDashboard,
-    Building2,
-    Users,
     CreditCard,
     Hammer,
-    FileText,
     Settings,
     type LucideIcon,
 } from "lucide-react"
@@ -42,17 +39,6 @@ export const managerNavItems: NavItem[] = [
         href: "/dashboard",
         label: "Painel",
         icon: LayoutDashboard,
-    },
-    {
-        href: "/dashboard/building",
-        label: "Edifício",
-        icon: Building2,
-        requiresSetup: true,
-    },
-    {
-        href: "/dashboard/residents",
-        label: "Residentes",
-        icon: Users,
         requiresSetup: true,
     },
     {
@@ -73,15 +59,10 @@ export const managerNavItems: NavItem[] = [
     },
     // =====================
     {
-        href: "/dashboard/documents",
-        label: "Documentos",
-        icon: FileText,
-        requiresSetup: true,
-    },
-    {
         href: "/dashboard/settings",
         label: "Definições",
         icon: Settings,
+        requiresSetup: true,
     },
 ]
 
@@ -104,11 +85,6 @@ export const residentNavItems: NavItem[] = [
         href: "/dashboard/extraordinary",
         label: "Quotas Extra",
         icon: Hammer,
-    },
-    {
-        href: "/dashboard/documents",
-        label: "Documentos",
-        icon: FileText,
     },
     {
         href: "/dashboard/settings",

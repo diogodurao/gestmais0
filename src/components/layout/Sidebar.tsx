@@ -20,7 +20,7 @@ type SidebarProps = {
 
 export function Sidebar({
     userRole,
-    setupComplete = true,
+    setupComplete = false,
     activeBuildingId,
     managerBuildings = []
 }: SidebarProps) {

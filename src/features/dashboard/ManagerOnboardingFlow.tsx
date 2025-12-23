@@ -3,13 +3,13 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Building2, User, CreditCard, Check, AlertCircle, Loader2, MapPin, Calculator, Layers } from "lucide-react"
-import { updateBuilding } from "@/app/actions/building"
+import { updateBuilding, completeBuildingSetup } from "@/app/actions/building"
 import { updateUserProfile } from "@/app/actions/user"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { isValidIban, isValidNif, isBuildingComplete } from "@/lib/validations"
+import { isValidIban, isValidNif, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
 import { ApartmentManager } from "./ApartmentManager"
 
 type Step = 'personal' | 'building' | 'units' | 'complete'
@@ -343,14 +343,52 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                     />
                     
                     {/* Permillage validation warning */}
-                    {buildingData.quotaMode === 'permillage' && apartments.some(a => !a.apartment.permillage) && apartments.length > 0 && (
-                        <div className="px-4 py-2 bg-amber-50 border-t border-amber-200 flex items-center gap-2">
-                            <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                            <span className="text-[10px] font-bold text-amber-700 uppercase">
-                                {apartments.filter(a => !a.apartment.permillage).length} unit(s) missing permillage value
-                            </span>
+                    <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex flex-col gap-2">
+                        {buildingData.quotaMode === 'permillage' && apartments.some(a => !a.apartment.permillage) && apartments.length > 0 && (
+                            <div className="flex items-center gap-2">
+                                <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                                <span className="text-[10px] font-bold text-amber-700 uppercase">
+                                    {apartments.filter(a => !a.apartment.permillage).length} unit(s) missing permillage value
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Calculator className="w-3.5 h-3.5 text-slate-400" />
+                                <span className="text-[10px] font-bold text-slate-500 uppercase">Total_Permillage_Sum:</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {(() => {
+                                    const sum = apartments.reduce((acc, a) => acc + (Number(a.apartment.permillage) || 0), 0)
+                                    const roundedSum = Math.round(sum * 100) / 100 // Round to 2 decimal places
+                                    const isCorrect = Math.abs(roundedSum - 1000) < 0.01
+
+                                    return (
+                                        <>
+                                            <span className={cn(
+                                                "text-[11px] font-mono font-bold",
+                                                isCorrect ? "text-emerald-600" : "text-rose-600"
+                                            )}>
+                                                {roundedSum.toFixed(2).replace('.', ',')} / 1000,00 ‰
+                                            </span>
+                                            {isCorrect ? (
+                                                <Check className="w-3 h-3 text-emerald-500" />
+                                            ) : (
+                                                <AlertCircle className="w-3 h-3 text-rose-500" />
+                                            )}
+                                        </>
+                                    )
+                                })()}
+                            </div>
                         </div>
-                    )}
+                        {apartments.length === parseInt(buildingData.totalApartments) && 
+                         Math.abs(apartments.reduce((acc, a) => acc + (Number(a.apartment.permillage) || 0), 0) - 1000) >= 0.01 && (
+                            <p className="text-[9px] text-rose-500 font-bold uppercase text-right leading-tight">
+                                [ Error: Sum must be exactly 1000,00 ‰ to finalize ]
+                            </p>
+                        )}
+                    </div>
                     
                     <div className="p-4 bg-slate-50 flex items-center justify-between border-t border-slate-200">
                         <div className="flex flex-col">
@@ -368,12 +406,21 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                             className="text-blue-600 font-bold"
                             disabled={
                                 isPending || 
-                                apartments.length !== parseInt(buildingData.totalApartments) ||
-                                (buildingData.quotaMode === 'permillage' && apartments.some(a => !a.apartment.permillage))
+                                !isUnitsComplete(
+                                    parseInt(buildingData.totalApartments),
+                                    apartments
+                                )
                             }
                             onClick={() => {
-                                setStep('complete')
-                                router.refresh()
+                                startTransition(async () => {
+                                    try {
+                                        await completeBuildingSetup(building.id)
+                                        setStep('complete')
+                                        router.refresh()
+                                    } catch (e) {
+                                        setError("Failed to finalize onboarding")
+                                    }
+                                })
                             }}
                         >
                             {isPending && step === 'units' ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}

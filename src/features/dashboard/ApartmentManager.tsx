@@ -6,7 +6,7 @@ import { createApartment, updateApartment, deleteApartment } from "@/app/actions
 import { unclaimApartmentAction } from "@/app/actions/resident-management"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/Card"
 import { cn } from "@/components/ui/Button"
-import { Trash2, UserMinus, Layers } from "lucide-react"
+import { Trash2, UserMinus, Layers, Pencil } from "lucide-react"
 
 type ApartmentData = {
     apartment: { id: number; unit: string; permillage: number | null; residentId: string | null }
@@ -211,13 +211,22 @@ export function ApartmentManager({
                                         )}
                                     </td>
                                     <td className="text-center p-0">
-                                        <button 
-                                            onClick={() => handleDelete(apartment.id)} 
-                                            className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
-                                            title="Delete unit"
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
+                                        <div className="flex items-center justify-center">
+                                            <button 
+                                                onClick={() => startEdit(apartment.id, 'unit', apartment.unit)} 
+                                                className="p-2 text-slate-300 hover:text-blue-500 hover:bg-blue-50 transition-colors opacity-0 group-hover:opacity-100"
+                                                title="Edit unit"
+                                            >
+                                                <Pencil className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDelete(apartment.id)} 
+                                                className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                                                title="Delete unit"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

@@ -75,7 +75,10 @@ export default async function SettingsPage({
     }
 
     const buildingComplete = building ? isBuildingComplete(building) : false
-    const unitsComplete = isUnitsComplete(building?.totalApartments, apartmentsData.length)
+    const unitsComplete = isUnitsComplete(
+        building?.totalApartments, 
+        apartmentsData
+    )
     const canSubscribe = profileComplete && buildingComplete && unitsComplete
 
     return (

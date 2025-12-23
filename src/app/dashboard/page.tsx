@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getOrCreateManagerBuilding, getBuildingResidents, getResidentApartment, getUnclaimedApartments, getBuilding, getBuildingApartments } from "@/app/actions/building";
 import { getApartmentDisplayName } from "@/lib/utils";
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations";
+import { isManager, isResident, can, features } from "@/lib/permissions";
+import type { SessionUser } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
 import { ResidentOnboardingFlow } from "@/features/dashboard/ResidentOnboardingFlow";
 import { ManagerOnboardingFlow } from "@/features/dashboard/ManagerOnboardingFlow";
@@ -23,13 +25,16 @@ export default async function DashboardPage() {
         return redirect("/sign-in");
     }
 
+    // Cast session user for type safety
+    const sessionUser = session.user as SessionUser
+
     // --- MANAGER LOGIC ---
     let buildingInfo = null;
     let buildingCode = "N/A";
-    let residents: any[] = [];
-    let unclaimedUnits: any[] = [];
+    let residents: Array<{ user: { id: string; name: string; email: string }; apartment: { id: number; unit: string } | null }> = [];
+    let unclaimedUnits: Array<{ id: number; unit: string }> = [];
 
-    if (session.user.role === 'manager') {
+    if (isManager(sessionUser)) {
         try {
             const building = await getOrCreateManagerBuilding(session.user.id);
             buildingInfo = building;
@@ -40,7 +45,10 @@ export default async function DashboardPage() {
             // Check if onboarding is complete
             const profileDone = isProfileComplete(session.user)
             const buildingDone = isBuildingComplete(building)
-            const unitsDone = isUnitsComplete(building.totalApartments, apartmentsData.length)
+            const unitsDone = isUnitsComplete(
+                building.totalApartments, 
+                apartmentsData
+            )
 
             if (!profileDone || !buildingDone || !unitsDone) {
                 const initialStep = !profileDone ? 'personal' : !buildingDone ? 'building' : 'units'
@@ -71,7 +79,7 @@ export default async function DashboardPage() {
     let residentBuildingInfo = null;
     let residentApartment = null;
 
-    if (session.user.role === 'resident') {
+    if (isResident(sessionUser)) {
         const hasBuildingId = !!session.user.buildingId
         const hasIban = !!session.user.iban
 
@@ -110,7 +118,7 @@ export default async function DashboardPage() {
     return (
         <div className="space-y-6">
             {/* Subscription Sync Handler - only for managers */}
-            {session.user.role === 'manager' && buildingInfo && (
+            {isManager(sessionUser) && buildingInfo && (
                 <SubscriptionSyncWrapper buildingId={buildingInfo.id} />
             )}
 
@@ -123,7 +131,7 @@ export default async function DashboardPage() {
                     {/* Placeholder for future context-aware info or ads */}
                     <div className="h-full tech-border border-dashed bg-slate-50/50 flex items-center justify-center p-6 text-center">
                         <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">
-                            {session.user.role === 'manager' ? 'MANAGER_CONSOLE_ACTIVE' : 'RESIDENT_PORTAL_ACTIVE'}
+                            {isManager(sessionUser) ? 'MANAGER_CONSOLE_ACTIVE' : 'RESIDENT_PORTAL_ACTIVE'}
                         </p>
                     </div>
                 </div>
@@ -136,12 +144,12 @@ export default async function DashboardPage() {
                     <CardHeader>
                         <CardTitle>
                             <Key className="w-3.5 h-3.5 text-slate-400" />
-                            {session.user.role === 'manager' ? 'BUILDING_INVITE_CODE' : 'RESIDENT_ACCESS'}
+                            {isManager(sessionUser) ? 'BUILDING_INVITE_CODE' : 'RESIDENT_ACCESS'}
                         </CardTitle>
                     </CardHeader>
                     <div className="p-6 flex flex-col items-center justify-center bg-blue-50/30 h-32">
-                        {session.user.role === 'manager' ? (
-                            buildingInfo?.subscriptionStatus === 'active' ? (
+                        {isManager(sessionUser) ? (
+                            can.viewInviteCode(sessionUser, buildingInfo) ? (
                                 <>
                                     <div className="text-3xl font-mono font-bold text-blue-700 tracking-widest mb-2 select-all uppercase">
                                         {buildingCode}
@@ -166,7 +174,7 @@ export default async function DashboardPage() {
                         ) : null}
                     </div>
                     <CardFooter className="text-center">
-                        {session.user.role === 'manager' 
+                        {isManager(sessionUser) 
                             ? "SHARE CODE WITH NEW RESIDENTS" 
                             : "ACTIVE_RESIDENT_SESSION"}
                     </CardFooter>
@@ -206,11 +214,11 @@ export default async function DashboardPage() {
                     <CardHeader>
                         <CardTitle>
                             <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
-                            {session.user.role === 'manager' ? 'BUILDING_METRICS' : 'BUILDING_INFO'}
+                            {isManager(sessionUser) ? 'BUILDING_METRICS' : 'BUILDING_INFO'}
                         </CardTitle>
                     </CardHeader>
                     <div className="p-4 h-32 flex flex-col justify-center">
-                        {session.user.role === 'manager' ? (
+                        {isManager(sessionUser) ? (
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="text-center border-r border-slate-100">
                                     <div className="text-2xl font-bold text-slate-700">{residents.length}</div>
@@ -229,7 +237,7 @@ export default async function DashboardPage() {
                         ) : null}
                     </div>
                     <CardFooter className="text-center uppercase">
-                        {session.user.role === 'manager' 
+                        {isManager(sessionUser) 
                             ? "88% OCCUPANCY_RATE" 
                             : "BUILDING_METADATA_LOADED"}
                     </CardFooter>
@@ -238,7 +246,7 @@ export default async function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Manager: Residents Registry - Protected by Subscription */}
-                {session.user.role === 'manager' && buildingInfo?.subscriptionStatus === 'active' && (
+                {can.manageResidents(sessionUser, buildingInfo) && (
                     <div className="lg:col-span-2">
                         <ResidentsList
                             residents={residents}
@@ -249,7 +257,7 @@ export default async function DashboardPage() {
                 )}
 
                 {/* Quick Actions simulation for Dashboard */}
-                {session.user.role === 'manager' && buildingInfo?.subscriptionStatus === 'active' && (
+                {can.manageResidents(sessionUser, buildingInfo) && (
                     <div className="space-y-4">
                         <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Operational_Quick_Actions</div>
                         <div className="grid grid-cols-1 gap-3">
@@ -266,7 +274,7 @@ export default async function DashboardPage() {
                     </div>
                 )}
 
-                {session.user.role === 'manager' && buildingInfo?.subscriptionStatus !== 'active' && (
+                {features.isResidentManagementLocked(sessionUser, buildingInfo) && (
                     <Card className="col-span-full">
                         <CardHeader>
                             <CardTitle>

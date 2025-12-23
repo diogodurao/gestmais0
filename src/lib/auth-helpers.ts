@@ -3,6 +3,8 @@ import { headers } from "next/headers"
 import { db } from "@/db"
 import { managerBuildings } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
+import { isManager, isResident } from "@/lib/permissions"
+import type { SessionUser } from "@/lib/types"
 
 // ==========================================
 // SERVER-SIDE AUTH HELPERS
@@ -35,10 +37,11 @@ export async function getSession() {
 /**
  * Require manager role or throw
  */
-export async function requireManager() {
+export async function requireManagerSession() {
     const session = await requireSession()
+    const sessionUser = session.user as SessionUser
     
-    if (session.user.role !== 'manager') {
+    if (!isManager(sessionUser)) {
         throw new Error("Unauthorized: Manager role required")
     }
 
@@ -48,10 +51,11 @@ export async function requireManager() {
 /**
  * Require resident role or throw
  */
-export async function requireResident() {
+export async function requireResidentSession() {
     const session = await requireSession()
+    const sessionUser = session.user as SessionUser
     
-    if (session.user.role !== 'resident') {
+    if (!isResident(sessionUser)) {
         throw new Error("Unauthorized: Resident role required")
     }
 
@@ -59,10 +63,20 @@ export async function requireResident() {
 }
 
 /**
+ * @deprecated Use requireManagerSession instead
+ */
+export const requireManager = requireManagerSession
+
+/**
+ * @deprecated Use requireResidentSession instead  
+ */
+export const requireResident = requireResidentSession
+
+/**
  * Verify manager has access to a specific building
  */
 export async function requireBuildingAccess(buildingId: string) {
-    const session = await requireManager()
+    const session = await requireManagerSession()
 
     const access = await db.select()
         .from(managerBuildings)
@@ -79,17 +93,5 @@ export async function requireBuildingAccess(buildingId: string) {
     return { session, access: access[0] }
 }
 
-/**
- * Get session with typed user for client-side hydration
- */
-export type SessionUser = {
-    id: string
-    name: string
-    email: string
-    role: string
-    nif?: string | null
-    iban?: string | null
-    buildingId?: string | null
-    activeBuildingId?: string | null
-    stripeCustomerId?: string | null
-}
+// Re-export SessionUser for backward compatibility
+export type { SessionUser } from "@/lib/types"

@@ -3,8 +3,10 @@ import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { DashboardHeader } from "@/components/layout/DashboardHeader"
 import { SidebarProvider } from "@/components/layout/SidebarProvider"
-import { getResidentApartment, getManagerBuildings, getBuilding } from "@/app/actions/building"
-import { isProfileComplete, isBuildingComplete } from "@/lib/validations"
+import { getResidentApartment, getManagerBuildings, getBuilding, getBuildingApartments } from "@/app/actions/building"
+import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
+import { isManager, isResident } from "@/lib/permissions"
+import type { SessionUser } from "@/lib/types"
 
 export default async function DashboardLayout({
     children,
@@ -16,11 +18,13 @@ export default async function DashboardLayout({
     })
 
     // Compute setupComplete status
-    let setupComplete = true
+    let setupComplete = false
     let managerBuildings: { building: { id: string; name: string; code: string; subscriptionStatus?: string | null }; isOwner: boolean | null }[] = []
+    let activeBuilding: { building: { id: string; name: string; code: string; subscriptionStatus?: string | null }; isOwner: boolean | null } | undefined
 
     if (session?.user) {
-        if (session.user.role === "resident") {
+        const sessionUser = session.user as SessionUser
+        if (isResident(sessionUser)) {
             // Residents need: buildingId + claimed apartment + IBAN
             const hasBuildingId = !!session.user.buildingId
             const hasIban = !!session.user.iban
@@ -30,7 +34,23 @@ export default async function DashboardLayout({
             } else {
                 setupComplete = false
             }
-        } else if (session.user.role === "manager") {
+
+            // Fetch building for resident to show in header
+            if (session.user.buildingId) {
+                const b = await getBuilding(session.user.buildingId)
+                if (b) {
+                    activeBuilding = {
+                        building: {
+                            id: b.id,
+                            name: b.name,
+                            code: b.code,
+                            subscriptionStatus: b.subscriptionStatus
+                        },
+                        isOwner: false
+                    }
+                }
+            }
+        } else if (isManager(sessionUser)) {
             // Fetch their buildings for the selector
             const buildings = await getManagerBuildings(session.user.id)
             managerBuildings = buildings.map(b => ({
@@ -43,22 +63,30 @@ export default async function DashboardLayout({
                 isOwner: b.isOwner
             }))
 
-            // Manager setup complete if: profile complete + at least one building complete
+            // Manager setup complete if: profile complete + building complete + units complete
             const profileDone = isProfileComplete(session.user)
             let buildingDone = false
+            let unitsDone = false
             
-            if (session.user.activeBuildingId) {
-                const activeBuilding = await getBuilding(session.user.activeBuildingId)
-                buildingDone = activeBuilding ? isBuildingComplete(activeBuilding) : false
-            } else if (buildings.length > 0) {
-                buildingDone = isBuildingComplete(buildings[0].building)
+            const activeBuildingId = session.user.activeBuildingId || (buildings.length > 0 ? buildings[0].building.id : null)
+            
+            if (activeBuildingId) {
+                const activeBuildingData = await getBuilding(activeBuildingId)
+                if (activeBuildingData) {
+                    buildingDone = isBuildingComplete(activeBuildingData)
+                    const apartments = await getBuildingApartments(activeBuildingId)
+                    unitsDone = isUnitsComplete(
+                        activeBuildingData.totalApartments, 
+                        apartments
+                    )
+                    
+                    activeBuilding = managerBuildings.find(b => b.building.id === activeBuildingId)
+                }
             }
 
-            setupComplete = profileDone && buildingDone
+            setupComplete = profileDone && buildingDone && unitsDone
         }
     }
-
-    const activeBuilding = managerBuildings.find(b => b.building.id === session?.user.activeBuildingId)
 
     return (
         <SidebarProvider>
@@ -70,6 +98,7 @@ export default async function DashboardLayout({
                     managerId={session?.user.id || ""}
                     activeBuilding={activeBuilding}
                     managerBuildings={managerBuildings}
+                    setupComplete={setupComplete}
                 />
 
                 <div className="flex flex-1 overflow-hidden">

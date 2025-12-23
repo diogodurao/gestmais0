@@ -13,6 +13,10 @@ async function main() {
         await db.execute(sql`ALTER TABLE building ADD COLUMN IF NOT EXISTS total_apartments INTEGER`);
         await db.execute(sql`ALTER TABLE building ADD COLUMN IF NOT EXISTS quota_mode TEXT DEFAULT 'global'`);
         await db.execute(sql`ALTER TABLE building ADD COLUMN IF NOT EXISTS monthly_quota INTEGER`);
+        await db.execute(sql`ALTER TABLE building ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT`);
+        await db.execute(sql`ALTER TABLE building ADD COLUMN IF NOT EXISTS stripe_price_id TEXT`);
+        await db.execute(sql`ALTER TABLE building ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'incomplete'`);
+        await db.execute(sql`ALTER TABLE building ADD COLUMN IF NOT EXISTS setup_complete BOOLEAN DEFAULT FALSE`);
         console.log("✅ Added Building columns");
 
         // 2. Add missing User columns

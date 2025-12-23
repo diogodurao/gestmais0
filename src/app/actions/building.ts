@@ -162,7 +162,7 @@ export async function getUnclaimedApartments(buildingId: string) {
     const result = await db.select()
         .from(apartments)
         .where(and(eq(apartments.buildingId, buildingId), isNull(apartments.residentId)))
-        .orderBy(asc(apartments.unit))
+        .orderBy(asc(apartments.id))
 
     return result
 }
@@ -193,7 +193,7 @@ export async function getBuildingApartments(buildingId: string) {
         .from(apartments)
         .leftJoin(user, eq(apartments.residentId, user.id))
         .where(eq(apartments.buildingId, buildingId))
-        .orderBy(asc(apartments.unit))
+        .orderBy(asc(apartments.id))
 
     return result
 }
@@ -219,6 +219,15 @@ export async function updateBuilding(
         .where(eq(building.id, buildingId))
         .returning()
 
+    return updated
+}
+
+export async function completeBuildingSetup(buildingId: string) {
+    await requireBuildingAccess(buildingId)
+    const [updated] = await db.update(building)
+        .set({ setupComplete: true, updatedAt: new Date() })
+        .where(eq(building.id, buildingId))
+        .returning()
     return updated
 }
 

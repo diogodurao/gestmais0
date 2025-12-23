@@ -56,8 +56,10 @@ export function isBuildingComplete(building: {
     number?: string | null
     totalApartments?: number | null
     monthlyQuota?: number | null
+    setupComplete?: boolean | null
 }): boolean {
     return Boolean(
+        building.setupComplete &&
         building.nif &&
         building.city &&
         building.street &&
@@ -71,12 +73,18 @@ export function isBuildingComplete(building: {
 }
 
 /**
- * Checks if all units have been added
+ * Checks if all units have been added and their permillages sum to 1000
  */
 export function isUnitsComplete(
     totalApartments?: number | null,
-    currentApartmentsCount?: number
+    apartments?: Array<{ apartment: { permillage: number | null } }> | null
 ): boolean {
     if (!totalApartments || totalApartments <= 0) return false
-    return (currentApartmentsCount ?? 0) === totalApartments
+    const currentCount = apartments?.length ?? 0
+    if (currentCount !== totalApartments) return false
+
+    // Sum must be exactly 1000 for any building setup to be considered valid
+    const sum = apartments?.reduce((acc, a) => acc + (Number(a.apartment.permillage) || 0), 0) ?? 0
+    const roundedSum = Math.round(sum * 100) / 100
+    return Math.abs(roundedSum - 1000) < 0.01
 }

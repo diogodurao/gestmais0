@@ -18,6 +18,7 @@ interface DashboardHeaderProps {
     managerId?: string
     activeBuilding?: ManagedBuilding
     managerBuildings?: ManagedBuilding[]
+    setupComplete?: boolean
 }
 
 export function DashboardHeader({
@@ -25,7 +26,8 @@ export function DashboardHeader({
     userRole,
     managerId = "",
     activeBuilding,
-    managerBuildings = []
+    managerBuildings = [],
+    setupComplete = false
 }: DashboardHeaderProps) {
     const { toggleSidebar, toggleDesktopCollapse } = useSidebar()
     const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -90,7 +92,7 @@ export function DashboardHeader({
 
                 <div className="h-5 w-px bg-slate-300 mx-2"></div>
 
-                {userRole === "manager" && managerBuildings.length > 0 ? (
+                {userRole === "manager" && setupComplete && managerBuildings.length > 0 ? (
                     <div className="relative">
                         <button
                             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -154,7 +156,7 @@ export function DashboardHeader({
                             </>
                         )}
                     </div>
-                ) : activeBuilding ? (
+                ) : userRole === "resident" && activeBuilding ? (
                     <div className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-slate-700">
                         <Building2 className="w-3.5 h-3.5 text-slate-500" />
                         <span>{activeBuilding.building.name}</span>
