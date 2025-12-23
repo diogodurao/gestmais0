@@ -1,3 +1,5 @@
+export { formatCurrency, parseCurrency, getMonthName } from "./format"
+
 /**
  * Extraordinary Payments Calculation Service
  * 
@@ -185,49 +187,6 @@ export function getInstallmentDate(
     }
     
     return { month, year }
-}
-
-/**
- * Format month number to Portuguese name
- */
-export function getMonthName(month: number, short: boolean = false): string {
-    const monthNames = [
-        ["Janeiro", "Jan"],
-        ["Fevereiro", "Fev"],
-        ["Março", "Mar"],
-        ["Abril", "Abr"],
-        ["Maio", "Mai"],
-        ["Junho", "Jun"],
-        ["Julho", "Jul"],
-        ["Agosto", "Ago"],
-        ["Setembro", "Set"],
-        ["Outubro", "Out"],
-        ["Novembro", "Nov"],
-        ["Dezembro", "Dez"],
-    ]
-    
-    return monthNames[month - 1]?.[short ? 1 : 0] || ""
-}
-
-/**
- * Format amount from cents to Euro string
- */
-export function formatCurrency(cents: number): string {
-    return new Intl.NumberFormat("pt-PT", {
-        style: "currency",
-        currency: "EUR",
-    }).format(cents / 100)
-}
-
-/**
- * Parse Euro string to cents
- */
-export function parseCurrency(value: string): number {
-    const cleaned = value
-        .replace(/[€\s]/g, "")
-        .replace(",", ".")
-    const num = parseFloat(cleaned)
-    return isNaN(num) ? 0 : Math.round(num * 100)
 }
 
 /**

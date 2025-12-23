@@ -35,6 +35,7 @@ interface ExtraPaymentGridProps {
     }
     payments: ApartmentPaymentData[]
     onRefresh?: () => void
+    readOnly?: boolean
 }
 
 type CellStatus = "paid" | "pending" | "overdue" | "partial"
@@ -44,7 +45,7 @@ type ToolMode = "markPaid" | "markPending" | "toggle" | null
 // MAIN COMPONENT
 // ===========================================
 
-export function ExtraPaymentGrid({ project, payments, onRefresh }: ExtraPaymentGridProps) {
+export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = false }: ExtraPaymentGridProps) {
     const [toolMode, setToolMode] = useState<ToolMode>(null)
     const [filterStatus, setFilterStatus] = useState<CellStatus | "all">("all")
     const [localPayments, setLocalPayments] = useState(payments)
@@ -71,7 +72,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh }: ExtraPaymentG
         currentStatus: CellStatus,
         expectedAmount: number
     ) => {
-        if (!toolMode) return
+        if (!toolMode || readOnly) return
 
         let newStatus: CellStatus
         let newPaidAmount: number
@@ -230,36 +231,41 @@ export function ExtraPaymentGrid({ project, payments, onRefresh }: ExtraPaymentG
                 
                 {showMobileTools && (
                     <div className="tech-border bg-white border-t-0 p-3 space-y-3">
-                        <div>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight block mb-2">
-                                Modo de Edição
-                            </span>
-                            <div className="grid grid-cols-3 gap-2">
-                                <MobileToolButton
-                                    icon={Check}
-                                    label="Pago"
-                                    active={toolMode === "markPaid"}
-                                    onClick={() => setToolMode(toolMode === "markPaid" ? null : "markPaid")}
-                                    variant="success"
-                                />
-                                <MobileToolButton
-                                    icon={X}
-                                    label="Pendente"
-                                    active={toolMode === "markPending"}
-                                    onClick={() => setToolMode(toolMode === "markPending" ? null : "markPending")}
-                                    variant="danger"
-                                />
-                                <MobileToolButton
-                                    icon={RotateCcw}
-                                    label="Alternar"
-                                    active={toolMode === "toggle"}
-                                    onClick={() => setToolMode(toolMode === "toggle" ? null : "toggle")}
-                                    variant="neutral"
-                                />
+                        {!readOnly && (
+                            <div>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight block mb-2">
+                                    Modo de Edição
+                                </span>
+                                <div className="grid grid-cols-3 gap-2">
+                                    <MobileToolButton
+                                        icon={Check}
+                                        label="Pago"
+                                        active={toolMode === "markPaid"}
+                                        onClick={() => setToolMode(toolMode === "markPaid" ? null : "markPaid")}
+                                        variant="success"
+                                    />
+                                    <MobileToolButton
+                                        icon={X}
+                                        label="Pendente"
+                                        active={toolMode === "markPending"}
+                                        onClick={() => setToolMode(toolMode === "markPending" ? null : "markPending")}
+                                        variant="danger"
+                                    />
+                                    <MobileToolButton
+                                        icon={RotateCcw}
+                                        label="Alternar"
+                                        active={toolMode === "toggle"}
+                                        onClick={() => setToolMode(toolMode === "toggle" ? null : "toggle")}
+                                        variant="neutral"
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                        <div className={cn(
+                            "flex items-center gap-2 pt-2",
+                            !readOnly && "border-t border-slate-100"
+                        )}>
                             <div className="relative flex-1">
                                 <select
                                     value={filterStatus}
@@ -296,31 +302,41 @@ export function ExtraPaymentGrid({ project, payments, onRefresh }: ExtraPaymentG
             {/* Desktop Toolbar */}
             <div className="hidden sm:flex tech-border bg-white p-3 items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight mr-2">
-                        Ferramentas:
-                    </span>
-                    
-                    <ToolButton
-                        icon={Check}
-                        label="Marcar Pago"
-                        active={toolMode === "markPaid"}
-                        onClick={() => setToolMode(toolMode === "markPaid" ? null : "markPaid")}
-                        variant="success"
-                    />
-                    <ToolButton
-                        icon={X}
-                        label="Marcar Pendente"
-                        active={toolMode === "markPending"}
-                        onClick={() => setToolMode(toolMode === "markPending" ? null : "markPending")}
-                        variant="danger"
-                    />
-                    <ToolButton
-                        icon={RotateCcw}
-                        label="Alternar"
-                        active={toolMode === "toggle"}
-                        onClick={() => setToolMode(toolMode === "toggle" ? null : "toggle")}
-                        variant="neutral"
-                    />
+                    {!readOnly ? (
+                        <>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight mr-2">
+                                Ferramentas:
+                            </span>
+                            
+                            <ToolButton
+                                icon={Check}
+                                label="Marcar Pago"
+                                active={toolMode === "markPaid"}
+                                onClick={() => setToolMode(toolMode === "markPaid" ? null : "markPaid")}
+                                variant="success"
+                            />
+                            <ToolButton
+                                icon={X}
+                                label="Marcar Pendente"
+                                active={toolMode === "markPending"}
+                                onClick={() => setToolMode(toolMode === "markPending" ? null : "markPending")}
+                                variant="danger"
+                            />
+                            <ToolButton
+                                icon={RotateCcw}
+                                label="Alternar"
+                                active={toolMode === "toggle"}
+                                onClick={() => setToolMode(toolMode === "toggle" ? null : "toggle")}
+                                variant="neutral"
+                            />
+                        </>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight mr-2">
+                                Filtros:
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -387,6 +403,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh }: ExtraPaymentG
                         project={project}
                         toolMode={toolMode}
                         onCellClick={handleCellClick}
+                        readOnly={readOnly}
                     />
                 ))}
                 
@@ -433,6 +450,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh }: ExtraPaymentG
                                     apartment={apartment}
                                     toolMode={toolMode}
                                     onCellClick={handleCellClick}
+                                    readOnly={readOnly}
                                 />
                             ))}
                         </tbody>
@@ -477,9 +495,10 @@ interface MobileApartmentCardProps {
     project: ExtraPaymentGridProps["project"]
     toolMode: ToolMode
     onCellClick: (paymentId: number, status: CellStatus, amount: number) => void
+    readOnly: boolean
 }
 
-function MobileApartmentCard({ apartment, project, toolMode, onCellClick }: MobileApartmentCardProps) {
+function MobileApartmentCard({ apartment, project, toolMode, onCellClick, readOnly }: MobileApartmentCardProps) {
     const [isExpanded, setIsExpanded] = useState(false)
     const progressPercent = apartment.totalShare > 0 
         ? Math.round((apartment.totalPaid / apartment.totalShare) * 100)
@@ -559,17 +578,17 @@ function MobileApartmentCard({ apartment, project, toolMode, onCellClick }: Mobi
                                     key={inst.id}
                                     onClick={(e) => {
                                         e.stopPropagation()
-                                        if (toolMode) onCellClick(inst.id, inst.status, inst.expectedAmount)
+                                        if (toolMode && !readOnly) onCellClick(inst.id, inst.status, inst.expectedAmount)
                                     }}
-                                    disabled={!toolMode}
+                                    disabled={!toolMode || readOnly}
                                     className={cn(
                                         "p-2 text-center transition-all border",
                                         inst.status === "paid" && "bg-emerald-50 border-emerald-200",
                                         inst.status === "overdue" && "bg-rose-50 border-rose-200",
                                         inst.status === "pending" && "bg-white border-slate-200",
                                         inst.status === "partial" && "bg-amber-50 border-amber-200",
-                                        toolMode && "active:scale-95",
-                                        !toolMode && "cursor-default"
+                                        toolMode && !readOnly && "active:scale-95",
+                                        (!toolMode || readOnly) && "cursor-default"
                                     )}
                                 >
                                     <div className="text-[8px] font-bold text-slate-500">P{idx + 1}</div>
@@ -612,10 +631,11 @@ function MobileApartmentCard({ apartment, project, toolMode, onCellClick }: Mobi
 // DESKTOP APARTMENT ROW
 // ===========================================
 
-function ApartmentRow({ apartment, toolMode, onCellClick }: {
+function ApartmentRow({ apartment, toolMode, onCellClick, readOnly }: {
     apartment: ApartmentPaymentData
     toolMode: ToolMode
     onCellClick: (paymentId: number, status: CellStatus, amount: number) => void
+    readOnly: boolean
 }) {
     return (
         <tr className="group hover:bg-slate-50/50">
@@ -631,17 +651,17 @@ function ApartmentRow({ apartment, toolMode, onCellClick }: {
             {apartment.installments.map((inst) => (
                 <td
                     key={inst.id}
-                    onClick={toolMode ? () => onCellClick(inst.id, inst.status, inst.expectedAmount) : undefined}
+                    onClick={toolMode && !readOnly ? () => onCellClick(inst.id, inst.status, inst.expectedAmount) : undefined}
                     className={cn(
                         "data-cell text-center transition-colors",
-                        toolMode && "cursor-pointer",
+                        toolMode && !readOnly && "cursor-pointer",
                         inst.status === "paid" && "bg-emerald-50 text-emerald-700",
                         inst.status === "overdue" && "bg-rose-50 text-rose-700 font-bold",
                         inst.status === "partial" && "bg-amber-50 text-amber-700",
                         inst.status === "pending" && "text-slate-400",
-                        toolMode && inst.status === "pending" && "hover:bg-emerald-100",
-                        toolMode && inst.status === "paid" && "hover:bg-rose-100",
-                        toolMode && inst.status === "overdue" && "hover:bg-emerald-100"
+                        toolMode && !readOnly && inst.status === "pending" && "hover:bg-emerald-100",
+                        toolMode && !readOnly && inst.status === "paid" && "hover:bg-rose-100",
+                        toolMode && !readOnly && inst.status === "overdue" && "hover:bg-emerald-100"
                     )}
                 >
                     {inst.status === "paid" && <span className="font-mono text-[11px]">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}

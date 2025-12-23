@@ -9,6 +9,7 @@ import { ResidentOnboardingFlow } from "@/features/dashboard/ResidentOnboardingF
 import { ManagerOnboardingFlow } from "@/features/dashboard/ManagerOnboardingFlow";
 import { ResidentsList } from "@/features/dashboard/ResidentsList";
 import { SubscriptionSyncWrapper } from "@/features/dashboard/SubscriptionSyncWrapper";
+import { PaymentStatusCard } from "@/features/dashboard/PaymentStatusCard";
 import { Key, Activity, BarChart3, Lock } from "lucide-react";
 
 export const dynamic = 'force-dynamic'
@@ -112,6 +113,21 @@ export default async function DashboardPage() {
             {session.user.role === 'manager' && buildingInfo && (
                 <SubscriptionSyncWrapper buildingId={buildingInfo.id} />
             )}
+
+            {/* Payment Status Card - For both Resident and Manager (if resident) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <PaymentStatusCard userId={session.user.id} />
+                </div>
+                <div className="lg:col-span-1 hidden lg:block">
+                    {/* Placeholder for future context-aware info or ads */}
+                    <div className="h-full tech-border border-dashed bg-slate-50/50 flex items-center justify-center p-6 text-center">
+                        <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">
+                            {session.user.role === 'manager' ? 'MANAGER_CONSOLE_ACTIVE' : 'RESIDENT_PORTAL_ACTIVE'}
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 bg-white tech-border shadow-sm">
                 

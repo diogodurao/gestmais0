@@ -34,13 +34,14 @@ import { Button } from "@/components/ui/Button"
 
 interface ExtraProjectDetailProps {
     projectId: number
+    readOnly?: boolean
 }
 
 // ===========================================
 // COMPONENT
 // ===========================================
 
-export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
+export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProjectDetailProps) {
     const router = useRouter()
     
     const [project, setProject] = useState<ProjectDetail | null>(null)
@@ -170,78 +171,80 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
                         </div>
 
                         {/* Actions Menu */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                            >
-                                <MoreVertical className="w-4 sm:w-5 h-4 sm:h-5" />
-                            </button>
+                        {!readOnly && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                    className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                                >
+                                    <MoreVertical className="w-4 sm:w-5 h-4 sm:h-5" />
+                                </button>
 
-                            {isMenuOpen && (
-                                <>
-                                    <div
-                                        className="fixed inset-0 z-10"
-                                        onClick={() => setIsMenuOpen(false)}
-                                    />
-                                    <div className="absolute right-0 mt-1 py-1 bg-white border border-slate-200 shadow-lg z-20 min-w-[180px]">
-                                        <button
-                                            onClick={() => {
-                                                setIsEditing(true)
-                                                setIsMenuOpen(false)
-                                            }}
-                                            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-700 hover:bg-slate-50 transition-colors"
-                                        >
-                                            <Pencil className="w-4 h-4" />
-                                            Editar detalhes
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                loadProject()
-                                                setIsMenuOpen(false)
-                                            }}
-                                            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-700 hover:bg-slate-50 transition-colors"
-                                        >
-                                            <RefreshCw className="w-4 h-4" />
-                                            Atualizar dados
-                                        </button>
-                                        {project.documentUrl && (
-                                            <a
-                                                href={project.documentUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
+                                {isMenuOpen && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-10"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        />
+                                        <div className="absolute right-0 mt-1 py-1 bg-white border border-slate-200 shadow-lg z-20 min-w-[180px]">
+                                            <button
+                                                onClick={() => {
+                                                    setIsEditing(true)
+                                                    setIsMenuOpen(false)
+                                                }}
                                                 className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-700 hover:bg-slate-50 transition-colors"
                                             >
-                                                <ExternalLink className="w-4 h-4" />
-                                                Ver documento
-                                            </a>
-                                        )}
-                                        <hr className="my-1 border-slate-100" />
-                                        <button
-                                            onClick={() => {
-                                                handleArchive()
-                                                setIsMenuOpen(false)
-                                            }}
-                                            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-amber-700 hover:bg-amber-50 transition-colors"
-                                        >
-                                            <Archive className="w-4 h-4" />
-                                            Arquivar projeto
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                handleDelete()
-                                                setIsMenuOpen(false)
-                                            }}
-                                            disabled={isDeleting}
-                                            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-rose-700 hover:bg-rose-50 transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                            {isDeleting ? "A eliminar..." : "Eliminar projeto"}
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                                                <Pencil className="w-4 h-4" />
+                                                Editar detalhes
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    loadProject()
+                                                    setIsMenuOpen(false)
+                                                }}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-700 hover:bg-slate-50 transition-colors"
+                                            >
+                                                <RefreshCw className="w-4 h-4" />
+                                                Atualizar dados
+                                            </button>
+                                            {project.documentUrl && (
+                                                <a
+                                                    href={project.documentUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-700 hover:bg-slate-50 transition-colors"
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                    Ver documento
+                                                </a>
+                                            )}
+                                            <hr className="my-1 border-slate-100" />
+                                            <button
+                                                onClick={() => {
+                                                    handleArchive()
+                                                    setIsMenuOpen(false)
+                                                }}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-amber-700 hover:bg-amber-50 transition-colors"
+                                            >
+                                                <Archive className="w-4 h-4" />
+                                                Arquivar projeto
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    handleDelete()
+                                                    setIsMenuOpen(false)
+                                                }}
+                                                disabled={isDeleting}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-rose-700 hover:bg-rose-50 transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                                {isDeleting ? "A eliminar..." : "Eliminar projeto"}
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -323,6 +326,7 @@ export function ExtraProjectDetail({ projectId }: ExtraProjectDetailProps) {
                 }}
                 payments={project.payments}
                 onRefresh={loadProject}
+                readOnly={readOnly}
             />
         </div>
     )

@@ -28,12 +28,16 @@ export default async function ExtraordinaryProjectDetailPage({ params }: PagePro
         notFound()
     }
 
-    await requireSession()
+    const session = await requireSession()
+    const isResident = session.user.role === 'resident'
 
     return (
         <div className="p-4 md:p-6">
             <Suspense fallback={<ProjectDetailSkeleton />}>
-                <ExtraProjectDetail projectId={projectId} />
+                <ExtraProjectDetail 
+                    projectId={projectId} 
+                    readOnly={isResident} 
+                />
             </Suspense>
         </div>
     )

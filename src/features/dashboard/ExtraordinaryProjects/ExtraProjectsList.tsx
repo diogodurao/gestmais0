@@ -20,13 +20,14 @@ import { ProgressBar } from "@/components/ui/ProgressBar"
 
 interface ExtraProjectsListProps {
     buildingId: string
+    readOnly?: boolean
 }
 
 // ===========================================
 // COMPONENT
 // ===========================================
 
-export function ExtraProjectsList({ buildingId }: ExtraProjectsListProps) {
+export function ExtraProjectsList({ buildingId, readOnly = false }: ExtraProjectsListProps) {
     const [projects, setProjects] = useState<ProjectListItem[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -74,18 +75,20 @@ export function ExtraProjectsList({ buildingId }: ExtraProjectsListProps) {
                     </p>
                 </div>
                 
-                <Link
-                    href="/dashboard/extraordinary/new"
-                    className="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-slate-700 transition-colors w-full sm:w-auto"
-                >
-                    <Plus className="w-3.5 h-3.5" />
-                    Novo Projeto
-                </Link>
+                {!readOnly && (
+                    <Link
+                        href="/dashboard/extraordinary/new"
+                        className="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-slate-700 transition-colors w-full sm:w-auto"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        Novo Projeto
+                    </Link>
+                )}
             </header>
 
             {/* Projects Grid */}
             {projects.length === 0 ? (
-                <EmptyState />
+                <EmptyState readOnly={readOnly} />
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {projects.map((project) => (
@@ -214,7 +217,7 @@ function StatusBadge({ status }: { status: string }) {
 // EMPTY STATE
 // ===========================================
 
-function EmptyState() {
+function EmptyState({ readOnly }: { readOnly?: boolean }) {
     return (
         <div className="tech-border bg-slate-50/50 p-12 text-center">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 mb-4">
@@ -224,16 +227,20 @@ function EmptyState() {
                 Sem Projetos Extraordinários
             </h3>
             <p className="text-[11px] text-slate-500 mb-4 max-w-sm mx-auto">
-                Crie um novo projeto para gerir quotas extraordinárias de obras,
-                manutenção ou outras despesas especiais do edifício.
+                {readOnly 
+                    ? "Não existem projetos extraordinários ativos para este edifício."
+                    : "Crie um novo projeto para gerir quotas extraordinárias de obras, manutenção ou outras despesas especiais do edifício."
+                }
             </p>
-            <Link
-                href="/dashboard/extraordinary/new"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider hover:bg-slate-700 transition-colors"
-            >
-                <Plus className="w-3.5 h-3.5" />
-                Criar Primeiro Projeto
-            </Link>
+            {!readOnly && (
+                <Link
+                    href="/dashboard/extraordinary/new"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider hover:bg-slate-700 transition-colors"
+                >
+                    <Plus className="w-3.5 h-3.5" />
+                    Criar Primeiro Projeto
+                </Link>
+            )}
         </div>
     )
 }
