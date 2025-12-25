@@ -1,7 +1,7 @@
 "use client"
 
 import { PaymentData } from "@/app/actions/payments"
-import { cn } from "@/components/ui/Button"
+import { cn } from "@/lib/utils"
 import { Trash2, Check, AlertCircle } from "lucide-react"
 import { MONTHS } from "@/lib/constants"
 
@@ -113,7 +113,7 @@ export function PaymentMobileCards({
                     </div>
                 )
             })}
-            
+
             {data.length === 0 && (
                 <div className="text-center py-12 text-slate-400 bg-slate-50 tech-border border-dashed uppercase font-mono text-[10px] tracking-widest">
                     [ NO_RECORDS_FOUND ]

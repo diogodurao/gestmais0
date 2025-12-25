@@ -7,16 +7,17 @@ import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/va
 import { isManager, isResident, can, features } from "@/lib/permissions";
 import type { SessionUser } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
-import { ResidentOnboardingFlow } from "@/features/dashboard/ResidentOnboardingFlow";
-import { ManagerOnboardingFlow } from "@/features/dashboard/ManagerOnboardingFlow";
-import { ResidentsList } from "@/features/dashboard/ResidentsList";
-import { SubscriptionSyncWrapper } from "@/features/dashboard/SubscriptionSyncWrapper";
-import { PaymentStatusCard } from "@/features/dashboard/PaymentStatusCard";
+import { ResidentOnboardingFlow } from "@/features/dashboard/onboarding/ResidentOnboardingFlow";
+import { ManagerOnboardingFlow } from "@/features/dashboard/onboarding/ManagerOnboardingFlow";
+import { ResidentsList } from "@/features/dashboard/residents/ResidentsList";
+import { SubscriptionSyncWrapper } from "@/features/dashboard/subscription/SubscriptionSyncWrapper";
+import { PaymentStatusCard } from "@/features/dashboard/paymentsQuotas/PaymentStatusCard";
 import { Key, Activity, BarChart3, Lock } from "lucide-react";
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
+
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -41,12 +42,12 @@ export default async function DashboardPage() {
             buildingCode = building.code;
 
             const apartmentsData = await getBuildingApartments(building.id);
-            
+
             // Check if onboarding is complete
             const profileDone = isProfileComplete(session.user)
             const buildingDone = isBuildingComplete(building)
             const unitsDone = isUnitsComplete(
-                building.totalApartments, 
+                building.totalApartments,
                 apartmentsData
             )
 
@@ -58,8 +59,8 @@ export default async function DashboardPage() {
                             id: session.user.id,
                             name: session.user.name,
                             email: session.user.email,
-                            nif: session.user.nif,
-                            iban: session.user.iban
+                            nif: session.user.nif ?? null,
+                            iban: session.user.iban ?? null
                         }}
                         building={building}
                         apartments={apartmentsData}
@@ -91,16 +92,16 @@ export default async function DashboardPage() {
             if (!hasBuildingId || !hasApartment || !hasIban) {
                 const initialStep = !hasBuildingId ? 'join' : !hasApartment ? 'claim' : 'iban'
                 const unclaimed = hasBuildingId ? await getUnclaimedApartments(session.user.buildingId!) : []
-                
+
                 return (
-                    <ResidentOnboardingFlow 
-                        user={{ 
-                            id: session.user.id, 
-                            name: session.user.name, 
+                    <ResidentOnboardingFlow
+                        user={{
+                            id: session.user.id,
+                            name: session.user.name,
                             email: session.user.email,
                             buildingId: session.user.buildingId,
                             iban: session.user.iban
-                        }} 
+                        }}
                         initialStep={initialStep}
                         unclaimedApartments={unclaimed}
                     />
@@ -138,7 +139,7 @@ export default async function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 bg-white tech-border shadow-sm">
-                
+
                 {/* 1. Invite Code / Welcome Panel */}
                 <div className="col-span-1 border-r border-slate-200 p-0">
                     <CardHeader>
@@ -174,8 +175,8 @@ export default async function DashboardPage() {
                         ) : null}
                     </div>
                     <CardFooter className="text-center">
-                        {isManager(sessionUser) 
-                            ? "SHARE CODE WITH NEW RESIDENTS" 
+                        {isManager(sessionUser)
+                            ? "SHARE CODE WITH NEW RESIDENTS"
                             : "ACTIVE_RESIDENT_SESSION"}
                     </CardFooter>
                 </div>
@@ -237,8 +238,8 @@ export default async function DashboardPage() {
                         ) : null}
                     </div>
                     <CardFooter className="text-center uppercase">
-                        {isManager(sessionUser) 
-                            ? "88% OCCUPANCY_RATE" 
+                        {isManager(sessionUser)
+                            ? "88% OCCUPANCY_RATE"
                             : "BUILDING_METADATA_LOADED"}
                     </CardFooter>
                 </div>

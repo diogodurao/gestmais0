@@ -25,7 +25,7 @@ import {
     deleteExtraordinaryProject,
     type ProjectDetail,
 } from "@/app/actions/extraordinary"
-import { ExtraPaymentGrid } from "@/features/dashboard/ExtraordinaryProjects/ExtraPaymentGrid"
+import { ExtraPaymentGrid } from "@/features/dashboard/extraordinaryProjects/ExtraPaymentGrid"
 import { Button } from "@/components/ui/Button"
 
 // ===========================================
@@ -43,7 +43,7 @@ interface ExtraProjectDetailProps {
 
 export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProjectDetailProps) {
     const router = useRouter()
-    
+
     const [project, setProject] = useState<ProjectDetail | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -54,7 +54,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
     const loadProject = async () => {
         setIsLoading(true)
         const result = await getExtraordinaryProjectDetail(projectId)
-        
+
         if (result.success) {
             setProject(result.data)
             setError(null)
@@ -70,7 +70,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
 
     const handleArchive = async () => {
         if (!confirm("Tem a certeza que deseja arquivar este projeto?")) return
-        
+
         const result = await archiveExtraordinaryProject(projectId)
         if (result.success) {
             router.push("/dashboard/extraordinary")
@@ -81,11 +81,11 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
 
     const handleDelete = async () => {
         if (!confirm("ATENÇÃO: Esta ação é irreversível. Eliminar o projeto e todos os pagamentos associados?")) return
-        
+
         setIsDeleting(true)
         const result = await deleteExtraordinaryProject(projectId)
         setIsDeleting(false)
-        
+
         if (result.success) {
             router.push("/dashboard/extraordinary")
         } else {
@@ -141,7 +141,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
                         >
                             <ArrowLeft className="w-4 sm:w-5 h-4 sm:h-5" />
                         </Link>
-                        
+
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <h1 className="text-base sm:text-lg font-bold text-slate-900 truncate">
@@ -352,23 +352,23 @@ function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        
+
         if (!formData.name.trim()) {
             setError("Nome é obrigatório")
             return
         }
-        
+
         setIsSaving(true)
         setError(null)
-        
+
         const result = await updateExtraordinaryProject({
             projectId: project.id,
             name: formData.name.trim(),
             description: formData.description.trim(),
         })
-        
+
         setIsSaving(false)
-        
+
         if (result.success) {
             onSave()
         } else {

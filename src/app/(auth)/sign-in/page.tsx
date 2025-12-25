@@ -9,7 +9,7 @@ export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true)
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-grid px-4">
             <div className="w-full max-w-sm">
                 <div className="mb-8 text-center">
                     <h1 className="text-2xl font-semibold text-gray-900">

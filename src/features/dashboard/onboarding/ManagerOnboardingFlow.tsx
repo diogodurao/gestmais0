@@ -10,14 +10,25 @@ import { Button } from "@/components/ui/Button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { isValidIban, isValidNif, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
-import { ApartmentManager } from "./ApartmentManager"
+import { ApartmentManager } from "@/features/dashboard/settings/ApartmentManager"
+import { type InferSelectModel } from "drizzle-orm"
+import { user, building, apartments } from "@/db/schema"
 
 type Step = 'personal' | 'building' | 'units' | 'complete'
 
+type UserProfile = InferSelectModel<typeof user>
+type Building = InferSelectModel<typeof building>
+type Apartment = InferSelectModel<typeof apartments>
+
+export type ApartmentWithResident = {
+    apartment: Apartment
+    resident: Pick<UserProfile, 'id' | 'name' | 'email'> | null
+}
+
 interface ManagerOnboardingFlowProps {
-    user: { id: string, name: string, email: string, nif?: string | null, iban?: string | null }
-    building: { id: string, nif?: string | null, iban?: string | null, street?: string | null, number?: string | null, city?: string | null, totalApartments?: number | null, monthlyQuota?: number | null }
-    apartments: any[]
+    user: Pick<UserProfile, 'id' | 'name' | 'email' | 'nif' | 'iban'>
+    building: Pick<Building, 'id' | 'nif' | 'iban' | 'street' | 'number' | 'city' | 'totalApartments' | 'monthlyQuota'>
+    apartments: ApartmentWithResident[]
     initialStep: Step
 }
 
@@ -62,7 +73,7 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                     iban: normalizedIban
                 })
                 setStep('building')
-            } catch (e: any) {
+            } catch (e) {
                 setError("Failed to save personal information")
             }
         })
@@ -101,7 +112,7 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                 })
                 setStep('units')
                 router.refresh()
-            } catch (e: any) {
+            } catch (e) {
                 setError("Failed to save building information")
             }
         })
@@ -158,8 +169,8 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                         </div>
                     </div>
                     <div className="p-2 flex justify-end bg-slate-50">
-                        <Button 
-                            variant="ghost" 
+                        <Button
+                            variant="ghost"
                             size="xs"
                             className="text-blue-600 font-bold"
                             disabled={isPending}
@@ -298,8 +309,8 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                         </div>
                     </div>
                     <div className="p-2 flex justify-end bg-slate-50">
-                        <Button 
-                            variant="ghost" 
+                        <Button
+                            variant="ghost"
                             size="xs"
                             className="text-blue-600 font-bold"
                             disabled={isPending}
@@ -335,13 +346,13 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                             </span>
                         </div>
                     </div>
-                    
-                    <ApartmentManager 
-                        apartments={apartments} 
-                        buildingId={building.id} 
+
+                    <ApartmentManager
+                        apartments={apartments}
+                        buildingId={building.id}
                         totalApartments={parseInt(buildingData.totalApartments)}
                     />
-                    
+
                     {/* Permillage validation warning */}
                     <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex flex-col gap-2">
                         {buildingData.quotaMode === 'permillage' && apartments.some(a => !a.apartment.permillage) && apartments.length > 0 && (
@@ -382,14 +393,14 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                                 })()}
                             </div>
                         </div>
-                        {apartments.length === parseInt(buildingData.totalApartments) && 
-                         Math.abs(apartments.reduce((acc, a) => acc + (Number(a.apartment.permillage) || 0), 0) - 1000) >= 0.01 && (
-                            <p className="text-[9px] text-rose-500 font-bold uppercase text-right leading-tight">
-                                [ Error: Sum must be exactly 1000,00 ‰ to finalize ]
-                            </p>
-                        )}
+                        {apartments.length === parseInt(buildingData.totalApartments) &&
+                            Math.abs(apartments.reduce((acc, a) => acc + (Number(a.apartment.permillage) || 0), 0) - 1000) >= 0.01 && (
+                                <p className="text-[9px] text-rose-500 font-bold uppercase text-right leading-tight">
+                                    [ Error: Sum must be exactly 1000,00 ‰ to finalize ]
+                                </p>
+                            )}
                     </div>
-                    
+
                     <div className="p-4 bg-slate-50 flex items-center justify-between border-t border-slate-200">
                         <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Status</span>
@@ -400,12 +411,12 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                                 {apartments.length} OF {buildingData.totalApartments} UNITS CONFIGURED
                             </span>
                         </div>
-                        <Button 
-                            variant="ghost" 
+                        <Button
+                            variant="ghost"
                             size="xs"
                             className="text-blue-600 font-bold"
                             disabled={
-                                isPending || 
+                                isPending ||
                                 !isUnitsComplete(
                                     parseInt(buildingData.totalApartments),
                                     apartments
@@ -440,25 +451,25 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
     )
 }
 
-function OnboardingStep({ 
-    title, 
-    isActive, 
-    isComplete, 
-    icon: Icon, 
-    children, 
+function OnboardingStep({
+    title,
+    isActive,
+    isComplete,
+    icon: Icon,
+    children,
     disabled,
     onClick
-}: { 
-    title: string, 
-    isActive: boolean, 
-    isComplete: boolean, 
-    icon: any, 
+}: {
+    title: string,
+    isActive: boolean,
+    isComplete: boolean,
+    icon: any,
     children: React.ReactNode,
     disabled?: boolean,
     onClick?: () => void
 }) {
     return (
-        <Card 
+        <Card
             className={cn(
                 "transition-all duration-300 rounded-none",
                 isActive ? "border-blue-500 z-10" : "opacity-80 grayscale-[0.2]",

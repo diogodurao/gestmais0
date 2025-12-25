@@ -5,6 +5,7 @@ import { apartments, user } from "@/db/schema"
 import { eq, and, isNull } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { requireManager, requireBuildingAccess } from "@/lib/auth-helpers"
+import { residentService } from "@/services/resident.service"
 
 export async function removeResidentFromBuilding(residentId: string, buildingId: string) {
     await requireBuildingAccess(buildingId)
@@ -29,9 +30,10 @@ export async function unclaimApartmentAction(apartmentId: number) {
 
     await requireBuildingAccess(apt[0].buildingId)
 
-    await db.update(apartments).set({ residentId: null }).where(eq(apartments.id, apartmentId))
+    await residentService.unclaimApartment(apartmentId)
 
     revalidatePath("/dashboard")
+    revalidatePath("/dashboard/settings")
     return true
 }
 

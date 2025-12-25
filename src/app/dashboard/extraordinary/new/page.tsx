@@ -4,7 +4,7 @@
  * Route: /dashboard/extraordinary/new
  */
 
-import { ExtraProjectCreate } from "@/features/dashboard/ExtraordinaryProjects/ExtraProjectCreate"
+import { ExtraProjectCreate } from "@/features/dashboard/extraordinaryProjects/ExtraProjectCreate"
 import { requireSession } from "@/lib/auth-helpers"
 import { getBuildingApartments } from "@/app/actions/building"
 import { redirect } from "next/navigation"
@@ -16,19 +16,19 @@ export const metadata = {
 
 export default async function NewExtraordinaryProjectPage() {
     const session = await requireSession()
-    
+
     // Only managers can create projects
     if (session.user.role !== 'manager') {
         redirect("/dashboard/extraordinary")
     }
-    
+
     if (!session.user.activeBuildingId) {
         redirect("/dashboard")
     }
 
     const buildingId = session.user.activeBuildingId
     const apartmentRecords = await getBuildingApartments(buildingId)
-    
+
     const formattedApartments = apartmentRecords.map(record => ({
         id: record.apartment.id,
         unit: record.apartment.unit,

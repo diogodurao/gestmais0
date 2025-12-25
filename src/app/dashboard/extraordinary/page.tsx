@@ -8,7 +8,7 @@
  */
 
 import { Suspense } from "react"
-import { ExtraProjectsList } from "@/features/dashboard/ExtraordinaryProjects/ExtraProjectsList"
+import { ExtraProjectsList } from "@/features/dashboard/extraordinaryProjects/ExtraProjectsList"
 import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
 import { getResidentApartment } from "@/app/actions/building"
@@ -21,14 +21,14 @@ export const metadata = {
 export default async function ExtraordinaryProjectsPage() {
     const session = await requireSession()
     const isManager = session.user.role === 'manager'
-    
+
     // Check for building association
     const buildingId = isManager ? session.user.activeBuildingId : session.user.buildingId
-    
+
     if (!buildingId) {
         redirect("/dashboard")
     }
-    
+
     // For residents, check if they have an apartment
     if (!isManager) {
         const apartment = await getResidentApartment(session.user.id)
@@ -40,8 +40,8 @@ export default async function ExtraordinaryProjectsPage() {
     return (
         <div className="p-4 md:p-6">
             <Suspense fallback={<ProjectsListSkeleton />}>
-                <ExtraProjectsList 
-                    buildingId={buildingId} 
+                <ExtraProjectsList
+                    buildingId={buildingId}
                     readOnly={!isManager}
                 />
             </Suspense>

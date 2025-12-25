@@ -38,3 +38,4 @@ Button.displayName = "Button"
 // Re-export cn for backward compatibility during migration
 // TODO: Remove this re-export once all imports are updated
 export { Button, cn }
+// use only : export { Button }

@@ -6,7 +6,7 @@
 
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
-import { ExtraProjectDetail } from "@/features/dashboard/ExtraordinaryProjects/ExtraProjectDetail"
+import { ExtraProjectDetail } from "@/features/dashboard/extraordinaryProjects/ExtraProjectDetail"
 import { requireSession } from "@/lib/auth-helpers"
 
 export const metadata = {
@@ -23,7 +23,7 @@ interface PageProps {
 export default async function ExtraordinaryProjectDetailPage({ params }: PageProps) {
     const { id } = await params
     const projectId = parseInt(id, 10)
-    
+
     if (isNaN(projectId)) {
         notFound()
     }
@@ -34,9 +34,9 @@ export default async function ExtraordinaryProjectDetailPage({ params }: PagePro
     return (
         <div className="p-4 md:p-6">
             <Suspense fallback={<ProjectDetailSkeleton />}>
-                <ExtraProjectDetail 
-                    projectId={projectId} 
-                    readOnly={isResident} 
+                <ExtraProjectDetail
+                    projectId={projectId}
+                    readOnly={isResident}
                 />
             </Suspense>
         </div>
@@ -55,7 +55,7 @@ function ProjectDetailSkeleton() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="grid grid-cols-4 gap-3">
                 {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="tech-border p-3">
@@ -64,7 +64,7 @@ function ProjectDetailSkeleton() {
                     </div>
                 ))}
             </div>
-            
+
             <div className="tech-border bg-white p-4">
                 <div className="h-96 bg-slate-100 skeleton" />
             </div>

@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { getPaymentMap } from "@/app/actions/payments"
-import { PaymentGrid } from "@/features/dashboard/PaymentGrid"
+import { PaymentGrid } from "@/features/dashboard/paymentsQuotas/PaymentGrid"
 import { getOrCreateManagerBuilding, getBuilding } from "@/app/actions/building"
 import { isProfileComplete, isBuildingComplete } from "@/lib/validations"
 

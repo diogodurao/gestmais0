@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { getPaymentMap } from "@/app/actions/payments"
-import { PaymentGrid } from "@/features/dashboard/PaymentGrid"
+import { PaymentGrid } from "@/features/dashboard/paymentsQuotas/PaymentGrid"
 import { getResidentApartment } from "@/app/actions/building"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
 

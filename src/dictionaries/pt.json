@@ -1,0 +1,87 @@
+{
+    "nav": {
+        "modules": "Características",
+        "pricing": "Preços",
+        "docs": "Documentação",
+        "login": "Entrar",
+        "getAccess": "Aderir"
+    },
+    "hero": {
+        "systemStatus": "SISTEMA: OPERACIONAL",
+        "titleLine1": "Gestão de Condomínios.",
+        "titleLine2": "Engenharia de Precisão.",
+        "subtitle": "Abandone o caos dos grupos de WhatsApp e talões em papel. O GestMais é o sistema financeiro de alta densidade desenhado para transparência e velocidade.",
+        "ctaPrimary": "Iniciar Sistema",
+        "dashboardPreview": "admin@gestmais.com — /dashboard/geral",
+        "paid": "PAGO",
+        "late": "ATRASO"
+    },
+    "features": {
+        "title": "Características do Sistema",
+        "cards": {
+            "finance": {
+                "title": "Situação Financeira",
+                "items": [
+                    "Acesso à situação financeira do prédio",
+                    "Visualização de quotas e despesas",
+                    "Transparência total nas contas"
+                ]
+            },
+            "occurrences": {
+                "title": "Registo de Ocorrências",
+                "items": [
+                    "Registo de avarias e incidentes",
+                    "Acompanhamento do estado de resolução",
+                    "Histórico de manutenções"
+                ]
+            },
+            "documents": {
+                "title": "Arquivo Documental",
+                "items": [
+                    "Acesso a atas e regulamentos",
+                    "Arquivo digital centralizado",
+                    "Documentação sempre disponível"
+                ]
+            }
+        }
+    },
+    "pricing": {
+        "title": "Estrutura de Custos",
+        "subtitle": "Simples. Previsível. Escalável.",
+        "card": {
+            "price": "3€",
+            "unit": "por fração / mês",
+            "feature1": "Frações Ilimitadas",
+            "feature2": "Gestão automatizada",
+            "feature3": "10 GB de Armazenamento",
+            "cta": "Obter Acesso"
+        }
+    },
+    "faq": {
+        "title": "Perguntas Frequentes",
+        "items": [
+            {
+                "question": "O GestMais é seguro?",
+                "answer": "Sim. Utilizamos encriptação de nível bancário e backups diários automáticos para garantir a segurança total dos dados do seu condomínio."
+            },
+            {
+                "question": "Posso exportar os meus dados?",
+                "answer": "Sempre. O sistema permite a exportação de todos os registos financeiros e ocorrências em formatos padrão (CSV, PDF) a qualquer momento."
+            },
+            {
+                "question": "Funciona para condomínios pequenos?",
+                "answer": "Sim. O modelo de preços por fração torna-o acessível tanto para prédios de 4 frações como para complexos com centenas de unidades."
+            },
+            {
+                "question": "Preciso de instalar algum software?",
+                "answer": "Não. O GestMais é 100% web. Aceda a partir de qualquer computador, tablet ou telemóvel sem instalações."
+            }
+        ]
+    },
+    "footer": {
+        "designedIn": "Desenvolvido em Portugal.",
+        "rights": "© 2026 GestMais Systems.",
+        "sitemap": "Mapa do Site",
+        "legal": "Legal"
+    }
+}

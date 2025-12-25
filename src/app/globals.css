@@ -65,4 +65,27 @@
   .input-cell {
     @apply w-full h-8 px-3 text-[13px] outline-none transition-all focus:bg-blue-50/30 font-sans border-none;
   }
+
+  /* LANDING PAGE UTILITIES */
+  .bg-grid {
+    background-image: linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(90deg, #cbd5e1 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center top;
+  }
+  
+  .tech-card {
+    @apply bg-white border border-slate-300 shadow-[4px_4px_0px_#e2e8f0];
+  }
+
+  .beta-badge {
+    @apply bg-slate-900 text-white text-[10px] font-bold px-1.5 py-0.5 uppercase font-mono;
+  }
+
+  .btn-primary {
+    @apply bg-slate-900 text-white font-semibold px-6 py-2.5 rounded-sm text-sm transition-all inline-flex items-center gap-2 hover:bg-slate-700 hover:-translate-y-px;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-slate-900 border border-slate-300 font-semibold px-6 py-2.5 rounded-sm text-sm transition-all hover:bg-slate-50 hover:border-slate-400;
+  }
 }

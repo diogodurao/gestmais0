@@ -7,7 +7,7 @@ import { deleteApartment } from "@/app/actions/building"
 import { Search } from "lucide-react"
 import { PaymentDesktopTable } from "./PaymentDesktopTable"
 import { PaymentMobileCards } from "./PaymentMobileCards"
-import { cn } from "@/components/ui/Button"
+import { cn } from "@/lib/utils"
 
 /**
  * ============================================================================
@@ -116,7 +116,7 @@ export function PaymentGrid({
                 {!readOnly && (
                     <div className="h-10 flex items-center px-4 gap-3 border-t border-slate-100 bg-slate-50/50 overflow-x-auto">
                         <div className="flex bg-slate-100 p-0.5 rounded-sm border border-slate-200 shrink-0">
-                            <button 
+                            <button
                                 onClick={() => setActiveTool(activeTool === 'paid' ? null : 'paid')}
                                 className={cn(
                                     "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
@@ -125,7 +125,7 @@ export function PaymentGrid({
                             >
                                 <span className="hidden sm:inline">Mark </span>Paid
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setActiveTool(activeTool === 'late' ? null : 'late')}
                                 className={cn(
                                     "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
@@ -134,7 +134,7 @@ export function PaymentGrid({
                             >
                                 <span className="hidden sm:inline">Mark </span>Late
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setActiveTool(activeTool === 'clear' ? null : 'clear')}
                                 className={cn(
                                     "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
@@ -171,7 +171,7 @@ export function PaymentGrid({
                         onDelete={handleDeleteApartment}
                     />
                 </div>
-                
+
                 {/* Mobile Cards - shown only on mobile */}
                 <div className="md:hidden">
                     <PaymentMobileCards
@@ -190,7 +190,7 @@ export function PaymentGrid({
                 <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-emerald-50 border border-emerald-200"></div> PAID</div>
                 <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-rose-50 border border-rose-200"></div> LATE</div>
                 <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-white border border-slate-200"></div> PENDING</div>
-                
+
                 {!readOnly && activeTool && (
                     <div className="flex items-center gap-2 animate-pulse basis-full md:basis-auto md:ml-4">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>

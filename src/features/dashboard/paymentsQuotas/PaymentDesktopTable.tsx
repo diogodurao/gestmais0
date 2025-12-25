@@ -1,7 +1,7 @@
 "use client"
 
 import { PaymentData } from "@/app/actions/payments"
-import { cn } from "@/components/ui/Button"
+import { cn } from "@/lib/utils"
 import { Trash2 } from "lucide-react"
 import { getPaymentStatusColor, getPaymentStatusIcon } from "@/lib/utils"
 import { MONTHS } from "@/lib/constants"
@@ -73,8 +73,8 @@ export function PaymentDesktopTable({
                                 const status = payment?.status || 'pending'
 
                                 return (
-                                    <td 
-                                        key={idx} 
+                                    <td
+                                        key={idx}
                                         className={cn(
                                             "border border-slate-300 text-center select-none h-8 transition-colors",
                                             status === 'paid' && "bg-emerald-50 text-emerald-700 font-mono font-bold",
