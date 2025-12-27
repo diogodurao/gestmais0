@@ -8,6 +8,8 @@ import { PaymentGrid } from "@/features/dashboard/payments-quotas/PaymentGrid"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { getResidentApartment } from "@/app/actions/building"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
+import { getDictionary } from "@/get-dictionary"
+import type { SessionUser } from "@/lib/types"
 
 export const dynamic = 'force-dynamic'
 
@@ -19,6 +21,10 @@ export default async function MyPaymentsPage() {
     if (!session || session.user.role !== 'resident') {
         return redirect("/dashboard")
     }
+
+    const sessionUser = session.user as unknown as SessionUser
+    const preferredLanguage = sessionUser.preferredLanguage || 'pt'
+    const dictionary = await getDictionary(preferredLanguage)
 
     // MANDATORY SETUP CHECK
     const apartment = await getResidentApartment()
@@ -44,6 +50,7 @@ export default async function MyPaymentsPage() {
                     buildingId={session.user.buildingId}
                     year={year}
                     readOnly={true}
+                    dictionary={dictionary}
                 />
             </ErrorBoundary>
         </div>

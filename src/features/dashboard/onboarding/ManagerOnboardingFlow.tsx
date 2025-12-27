@@ -8,6 +8,7 @@ import { updateUserProfile } from "@/app/actions/user"
 import { isValidIban, isValidNif, isUnitsComplete, isProfileComplete } from "@/lib/validations"
 import { type InferSelectModel } from "drizzle-orm"
 import { user, building, apartments } from "@/db/schema"
+import { type Dictionary } from "@/types/i18n"
 
 // Sub-components
 import { OnboardingStepPersonal } from "./components/OnboardingStepPersonal"
@@ -30,9 +31,10 @@ interface ManagerOnboardingFlowProps {
     building: Pick<Building, 'id' | 'nif' | 'iban' | 'street' | 'number' | 'city' | 'totalApartments' | 'monthlyQuota'>
     apartments: ApartmentWithResident[]
     initialStep: Step
+    dictionary: Dictionary
 }
 
-export function ManagerOnboardingFlow({ user, building: buildingInfo, apartments: apartmentsList, initialStep }: ManagerOnboardingFlowProps) {
+export function ManagerOnboardingFlow({ user, building: buildingInfo, apartments: apartmentsList, initialStep, dictionary }: ManagerOnboardingFlowProps) {
     const [step, setStep] = useState<Step>(initialStep)
     const [personalData, setPersonalData] = useState({
         name: user.name,
@@ -190,6 +192,7 @@ export function ManagerOnboardingFlow({ user, building: buildingInfo, apartments
                         apartments={apartmentsList}
                         handleFinalize={handleFinalize}
                         onStepClick={() => step === 'complete' && setStep('units')}
+                        dictionary={dictionary}
                     />
 
                     {error && (

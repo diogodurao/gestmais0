@@ -13,6 +13,8 @@ import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
 import { getResidentApartment } from "@/app/actions/building"
 import { ROUTES } from "@/lib/routes"
+import { getDictionary } from "@/get-dictionary"
+import type { SessionUser } from "@/lib/types"
 
 export const metadata = {
     title: "Quotas Extraordinárias | GestMais",
@@ -21,6 +23,9 @@ export const metadata = {
 
 export default async function ExtraordinaryProjectsPage() {
     const session = await requireSession()
+    const sessionUser = session.user as unknown as SessionUser
+    const preferredLanguage = sessionUser.preferredLanguage || 'pt'
+    const dictionary = await getDictionary(preferredLanguage)
     const isManager = session.user.role === 'manager'
 
     // Check for building association
@@ -44,6 +49,7 @@ export default async function ExtraordinaryProjectsPage() {
                 <ExtraProjectsList
                     buildingId={buildingId}
                     readOnly={!isManager}
+                    dictionary={dictionary}
                 />
             </Suspense>
         </div>

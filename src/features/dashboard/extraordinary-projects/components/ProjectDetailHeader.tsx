@@ -8,6 +8,7 @@ import { UI_DIMENSIONS } from "@/lib/constants/ui"
 import { formatCurrency, getMonthName } from "@/lib/extraordinary-calculations"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 import { type ProjectDetail } from "@/app/actions/extraordinary"
+import { Dictionary } from "@/types/i18n"
 
 interface ProjectDetailHeaderProps {
     project: ProjectDetail
@@ -19,6 +20,7 @@ interface ProjectDetailHeaderProps {
     setShowDeleteConfirm: (show: boolean) => void
     isDeleting: boolean
     loadProject: () => void
+    dictionary: Dictionary
 }
 
 export function ProjectDetailHeader({
@@ -30,7 +32,8 @@ export function ProjectDetailHeader({
     setShowArchiveConfirm,
     setShowDeleteConfirm,
     isDeleting,
-    loadProject
+    loadProject,
+    dictionary
 }: ProjectDetailHeaderProps) {
     const startDate = `${getMonthName(project.startMonth)} ${project.startYear}`
     const endMonth = ((project.startMonth - 1 + project.numInstallments - 1) % 12) + 1
@@ -53,7 +56,7 @@ export function ProjectDetailHeader({
                             <h1 className="text-base sm:text-lg font-bold text-slate-900 truncate">
                                 {project.name}
                             </h1>
-                            <StatusBadge status={project.status} />
+                            <StatusBadge status={project.status} dictionary={dictionary} />
                         </div>
                         <p className="text-[9px] sm:text-[10px] text-slate-400 font-mono mt-0.5">
                             #EXTRA-{project.id}

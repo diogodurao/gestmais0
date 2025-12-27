@@ -2,7 +2,7 @@
 
 import { Check, X, RotateCcw, FileText, FileSpreadsheet, ChevronDown, ChevronUp, Filter } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { t } from "@/lib/translations"
+import { Dictionary } from "@/types/i18n"
 import { type ToolMode, type CellStatus } from "../types"
 
 interface ExtraPaymentGridToolbarProps {
@@ -15,6 +15,7 @@ interface ExtraPaymentGridToolbarProps {
     setShowMobileTools: (show: boolean) => void
     handleExportPDF: () => void
     handleExportExcel: () => void
+    dictionary: Dictionary
 }
 
 export function ExtraPaymentGridToolbar({
@@ -26,7 +27,8 @@ export function ExtraPaymentGridToolbar({
     showMobileTools,
     setShowMobileTools,
     handleExportPDF,
-    handleExportExcel
+    handleExportExcel,
+    dictionary
 }: ExtraPaymentGridToolbarProps) {
     return (
         <>
@@ -37,7 +39,7 @@ export function ExtraPaymentGridToolbar({
                     className="tech-border bg-white w-full p-3 flex items-center justify-between"
                 >
                     <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">
-                        {t.extraPayment.toolsAndFilters}
+                        {dictionary.extraPayment.toolsAndFilters}
                     </span>
                     {showMobileTools ? (
                         <ChevronUp className="w-4 h-4 text-slate-400" />
@@ -51,26 +53,26 @@ export function ExtraPaymentGridToolbar({
                         {!readOnly && (
                             <div>
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight block mb-2">
-                                    {t.extraPayment.editMode}
+                                    {dictionary.extraPayment.editMode}
                                 </span>
                                 <div className="grid grid-cols-3 gap-2">
                                     <MobileToolButton
                                         icon={Check}
-                                        label={t.extraPayment.paid}
+                                        label={dictionary.extraPayment.paid}
                                         active={toolMode === "markPaid"}
                                         onClick={() => setToolMode(toolMode === "markPaid" ? null : "markPaid")}
                                         variant="success"
                                     />
                                     <MobileToolButton
                                         icon={X}
-                                        label={t.extraPayment.pending}
+                                        label={dictionary.extraPayment.pending}
                                         active={toolMode === "markPending"}
                                         onClick={() => setToolMode(toolMode === "markPending" ? null : "markPending")}
                                         variant="danger"
                                     />
                                     <MobileToolButton
                                         icon={RotateCcw}
-                                        label={t.extraPayment.toggleState}
+                                        label={dictionary.extraPayment.toggleState}
                                         active={toolMode === "toggle"}
                                         onClick={() => setToolMode(toolMode === "toggle" ? null : "toggle")}
                                         variant="neutral"
@@ -89,9 +91,9 @@ export function ExtraPaymentGridToolbar({
                                     onChange={(e) => setFilterStatus(e.target.value as CellStatus | "all")}
                                     className="w-full appearance-none pl-8 pr-8 py-2 border border-slate-200 text-[11px] bg-white focus:outline-none focus:border-slate-400"
                                 >
-                                    <option value="all">{t.extraPayment.allUnits}</option>
-                                    <option value="paid">{t.extraPayment.paidUnits}</option>
-                                    <option value="pending">{t.extraPayment.pendingUnits}</option>
+                                    <option value="all">{dictionary.extraPayment.allUnits}</option>
+                                    <option value="paid">{dictionary.extraPayment.paidUnits}</option>
+                                    <option value="pending">{dictionary.extraPayment.pendingUnits}</option>
                                 </select>
                                 <Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                                 <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
@@ -122,26 +124,26 @@ export function ExtraPaymentGridToolbar({
                     {!readOnly ? (
                         <>
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight mr-2">
-                                {t.extraPayment.tools}
+                                {dictionary.extraPayment.tools}
                             </span>
 
                             <ToolButton
                                 icon={Check}
-                                label={t.extraPayment.markPaid}
+                                label={dictionary.extraPayment.markPaid}
                                 active={toolMode === "markPaid"}
                                 onClick={() => setToolMode(toolMode === "markPaid" ? null : "markPaid")}
                                 variant="success"
                             />
                             <ToolButton
                                 icon={X}
-                                label={t.extraPayment.markPending}
+                                label={dictionary.extraPayment.markPending}
                                 active={toolMode === "markPending"}
                                 onClick={() => setToolMode(toolMode === "markPending" ? null : "markPending")}
                                 variant="danger"
                             />
                             <ToolButton
                                 icon={RotateCcw}
-                                label={t.extraPayment.toggleState}
+                                label={dictionary.extraPayment.toggleState}
                                 active={toolMode === "toggle"}
                                 onClick={() => setToolMode(toolMode === "toggle" ? null : "toggle")}
                                 variant="neutral"
@@ -150,7 +152,7 @@ export function ExtraPaymentGridToolbar({
                     ) : (
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight mr-2">
-                                {t.extraPayment.filters}
+                                {dictionary.extraPayment.filters}
                             </span>
                         </div>
                     )}
@@ -163,9 +165,9 @@ export function ExtraPaymentGridToolbar({
                             onChange={(e) => setFilterStatus(e.target.value as CellStatus | "all")}
                             className="appearance-none pl-7 pr-8 py-1.5 border border-slate-200 text-[11px] bg-white focus:outline-none focus:border-slate-400"
                         >
-                            <option value="all">{t.extraPayment.allUnits}</option>
-                            <option value="paid">{t.extraPayment.paidUnits}</option>
-                            <option value="pending">{t.extraPayment.pendingUnits}</option>
+                            <option value="all">{dictionary.extraPayment.allUnits}</option>
+                            <option value="paid">{dictionary.extraPayment.paidUnits}</option>
+                            <option value="pending">{dictionary.extraPayment.pendingUnits}</option>
                         </select>
                         <Filter className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
@@ -199,9 +201,9 @@ export function ExtraPaymentGridToolbar({
                     toolMode === "toggle" && "bg-blue-50 text-blue-700 border-blue-200"
                 )}>
                     <span className="hidden sm:inline">
-                        {toolMode === "markPaid" && `${t.extraPayment.tools}: ${t.extraPayment.markPaid} • Clique nas células para marcar`}
-                        {toolMode === "markPending" && `${t.extraPayment.tools}: ${t.extraPayment.markPending} • Clique nas células para marcar`}
-                        {toolMode === "toggle" && `${t.extraPayment.tools}: ${t.extraPayment.toggleState} • Clique nas células para alternar`}
+                        {toolMode === "markPaid" && `${dictionary.extraPayment.tools}: ${dictionary.extraPayment.markPaid} • Clique nas células para marcar`}
+                        {toolMode === "markPending" && `${dictionary.extraPayment.tools}: ${dictionary.extraPayment.markPending} • Clique nas células para marcar`}
+                        {toolMode === "toggle" && `${dictionary.extraPayment.tools}: ${dictionary.extraPayment.toggleState} • Clique nas células para alternar`}
                     </span>
                     <span className="sm:hidden">
                         {toolMode === "markPaid" && "Toque para marcar PAGO"}

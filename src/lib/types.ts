@@ -49,6 +49,7 @@ export type SessionUser = {
     activeBuildingId: string | null // For managers: currently selected building
     nif: string | null
     iban: string | null
+    preferredLanguage: 'pt' | 'en' | null
 }
 
 // ==========================================

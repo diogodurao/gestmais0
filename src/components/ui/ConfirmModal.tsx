@@ -2,7 +2,6 @@
 
 import { Modal } from "./Modal"
 import { Button } from "./Button"
-import { t } from "@/lib/translations"
 
 interface ConfirmModalProps {
     isOpen: boolean
@@ -31,7 +30,7 @@ export function ConfirmModal({
                 <p className="text-sm text-slate-600">{message}</p>
                 <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-6">
                     <Button variant="ghost" size="sm" onClick={onCancel} className="w-full sm:w-auto uppercase text-[10px] font-bold">
-                        {cancelLabel || t.common.cancel}
+                        {cancelLabel || "Cancelar"}
                     </Button>
                     <Button
                         variant={variant === "danger" ? "danger" : "primary"}
@@ -39,7 +38,7 @@ export function ConfirmModal({
                         onClick={onConfirm}
                         className="w-full sm:w-auto uppercase text-[10px] font-bold"
                     >
-                        {confirmLabel || t.common.save}
+                        {confirmLabel || "Confirmar"}
                     </Button>
                 </div>
             </div>

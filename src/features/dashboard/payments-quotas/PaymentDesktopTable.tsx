@@ -2,6 +2,7 @@
 
 import { PaymentData } from "@/app/actions/payments"
 import { cn } from "@/lib/utils"
+import { Dictionary } from "@/types/i18n"
 // import { Trash2 } from "lucide-react" // Not used in current implementation
 import { MONTHS } from "@/lib/constants"
 import { formatCurrency } from "@/lib/format"
@@ -16,6 +17,7 @@ interface PaymentDesktopTableProps {
     highlightedId: number | null
     onCellClick: (aptId: number, monthIdx: number) => void
     onDelete: (aptId: number) => void
+    dictionary: Dictionary
 }
 
 interface RowData {
@@ -26,10 +28,11 @@ interface RowData {
     highlightedId: number | null
     onCellClick: (aptId: number, monthIdx: number) => void
     formatValue: (cents: number) => string
+    dictionary: Dictionary
 }
 
 const ApartmentRow = ({ index, style, ...itemData }: RowComponentProps<RowData>) => {
-    const { data: list, monthlyQuota, readOnly, activeTool, highlightedId, onCellClick, formatValue } = itemData
+    const { data: list, monthlyQuota, readOnly, activeTool, highlightedId, onCellClick, formatValue, dictionary } = itemData
     const apt = list[index]
     if (!apt) return <></>
 
@@ -53,7 +56,7 @@ const ApartmentRow = ({ index, style, ...itemData }: RowComponentProps<RowData>)
                 "sticky left-[64px] z-10 border-r border-slate-300 px-3 py-1.5 font-medium text-slate-700 truncate w-48 shrink-0 flex items-center",
                 apt.apartmentId === highlightedId ? "bg-amber-100" : "bg-white"
             )} style={{ borderRightWidth: '2px', borderRightColor: '#cbd5e1' }}>
-                <span className="truncate">{apt.residentName || <span className="text-slate-400 italic">-- Unclaimed --</span>}</span>
+                <span className="truncate">{apt.residentName || <span className="text-slate-400 italic">-- {dictionary.extraPayment.noResident} --</span>}</span>
             </div>
             {MONTHS.map((_, idx) => {
                 const monthNum = idx + 1
@@ -100,7 +103,8 @@ export function PaymentDesktopTable({
     activeTool,
     highlightedId,
     onCellClick,
-    onDelete
+    onDelete,
+    dictionary
 }: PaymentDesktopTableProps) {
     const formatValue = (cents: number) => {
         if (cents === 0) return "-"
@@ -114,13 +118,14 @@ export function PaymentDesktopTable({
         activeTool,
         highlightedId,
         onCellClick,
-        formatValue
-    }), [data, monthlyQuota, readOnly, activeTool, highlightedId, onCellClick])
+        formatValue,
+        dictionary
+    }), [data, monthlyQuota, readOnly, activeTool, highlightedId, onCellClick, dictionary])
 
     if (data.length === 0) {
         return (
             <div className="hidden md:block border border-slate-200 rounded-lg bg-white p-8 text-center text-slate-400 font-mono uppercase text-[10px] tracking-widest">
-                [ NO_RECORDS_FOUND ]
+                [ {dictionary.common.none.toUpperCase()} ]
             </div>
         )
     }
@@ -130,13 +135,13 @@ export function PaymentDesktopTable({
             <div style={{ width: 1408, display: 'flex', flexDirection: 'column' }}>
                 {/* Header */}
                 <div className="flex bg-slate-100 border-b border-slate-300 text-[11px] font-bold uppercase tracking-wider text-slate-700 sticky top-0 z-20">
-                    <div className="sticky left-0 z-30 bg-slate-100 border-r border-slate-300 px-3 py-2 w-16 shrink-0" style={{ borderRightWidth: '2px', borderRightColor: '#cbd5e1' }}>Unit</div>
-                    <div className="sticky left-[64px] z-30 bg-slate-100 border-r border-slate-300 px-3 py-2 w-48 shrink-0" style={{ borderRightWidth: '2px', borderRightColor: '#cbd5e1' }}>Resident</div>
+                    <div className="sticky left-0 z-30 bg-slate-100 border-r border-slate-300 px-3 py-2 w-16 shrink-0" style={{ borderRightWidth: '2px', borderRightColor: '#cbd5e1' }}>{dictionary.extraPayment.unit}</div>
+                    <div className="sticky left-[64px] z-30 bg-slate-100 border-r border-slate-300 px-3 py-2 w-48 shrink-0" style={{ borderRightWidth: '2px', borderRightColor: '#cbd5e1' }}>{dictionary.extraPayment.resident}</div>
                     {MONTHS.map(m => (
                         <div key={m} className="border-r border-slate-300 px-2 py-2 text-center w-20 shrink-0">{m.slice(0, 3)}</div>
                     ))}
-                    <div className="sticky right-[96px] z-30 bg-slate-50 border-l border-slate-300 border-r border-slate-300 px-3 py-2 w-24 shrink-0 text-right" style={{ borderLeftWidth: '2px', borderLeftColor: '#cbd5e1', borderRightWidth: '2px', borderRightColor: '#cbd5e1' }}>Total</div>
-                    <div className="sticky right-0 z-30 bg-slate-50 px-3 py-2 w-24 shrink-0 text-right">Balance</div>
+                    <div className="sticky right-[96px] z-30 bg-slate-50 border-l border-slate-300 border-r border-slate-300 px-3 py-2 w-24 shrink-0 text-right" style={{ borderLeftWidth: '2px', borderLeftColor: '#cbd5e1', borderRightWidth: '2px', borderRightColor: '#cbd5e1' }}>{dictionary.extraPayment.totalPaid}</div>
+                    <div className="sticky right-0 z-30 bg-slate-50 px-3 py-2 w-24 shrink-0 text-right">{dictionary.extraPayment.debt}</div>
                 </div>
                 {/* Body */}
                 <List

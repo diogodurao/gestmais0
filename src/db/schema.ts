@@ -18,6 +18,7 @@ export const user = pgTable('user', {
     buildingId: text('building_id'), // For residents: their building
     activeBuildingId: text('active_building_id'), // For managers: currently selected building
     stripeCustomerId: text('stripe_customer_id'), // Link Stripe Customer to Manager
+    preferredLanguage: text('preferred_language').default('pt'), // 'pt' | 'en'
 });
 
 export const session = pgTable('session', {

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { ApartmentManager } from '../ApartmentManager'
 import * as buildingActions from '@/app/actions/building'
+import dictionary from '@/dictionaries/pt.json'
 
 // Mock dependencies
 vi.mock('@/app/actions/building', () => ({
@@ -51,7 +52,7 @@ describe('ApartmentManager Delete Confirmation', () => {
     })
 
     it('should open the confirm modal when delete button is clicked', () => {
-        render(<ApartmentManager apartments={mockApartments} buildingId="b1" />)
+        render(<ApartmentManager apartments={mockApartments} buildingId="b1" dictionary={dictionary as any} />)
 
         const deleteBtn = screen.getByTestId('delete-unit-button-1')
         fireEvent.click(deleteBtn)
@@ -60,7 +61,7 @@ describe('ApartmentManager Delete Confirmation', () => {
     })
 
     it('should call deleteApartment when confirm is clicked', async () => {
-        render(<ApartmentManager apartments={mockApartments} buildingId="b1" />)
+        render(<ApartmentManager apartments={mockApartments} buildingId="b1" dictionary={dictionary as any} />)
 
         const deleteBtn = screen.getByTestId('delete-unit-button-1')
         fireEvent.click(deleteBtn)

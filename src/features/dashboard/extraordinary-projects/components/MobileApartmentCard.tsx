@@ -5,9 +5,10 @@ import { ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatCurrency, getMonthName } from "@/lib/extraordinary-calculations"
 import { StatusBadge } from "@/components/ui/StatusBadge"
-import { t } from "@/lib/translations"
+// import { t } from "@/lib/translations"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
 import { type ToolMode, type CellStatus } from "../types"
+import { Dictionary } from "@/types/i18n"
 
 interface MobileApartmentCardProps {
     apartment: ApartmentPaymentData
@@ -18,9 +19,10 @@ interface MobileApartmentCardProps {
     toolMode: ToolMode
     onCellClick: (paymentId: number, status: CellStatus, amount: number) => void
     readOnly: boolean
+    dictionary: Dictionary
 }
 
-export function MobileApartmentCard({ apartment, project, toolMode, onCellClick, readOnly }: MobileApartmentCardProps) {
+export function MobileApartmentCard({ apartment, project, toolMode, onCellClick, readOnly, dictionary }: MobileApartmentCardProps) {
     const [isExpanded, setIsExpanded] = useState(false)
     const progressPercent = apartment.totalShare > 0
         ? Math.round((apartment.totalPaid / apartment.totalShare) * 100)
@@ -48,7 +50,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                                     {apartment.residentName}
                                 </span>
                             ) : (
-                                <span className="text-[11px] text-slate-400 italic">{t.extraPayment.noResident}</span>
+                                <span className="text-[11px] text-slate-400 italic">{dictionary.extraPayment.noResident}</span>
                             )}
                             <div className="text-[10px] text-slate-400 mt-0.5">
                                 {apartment.permillage.toFixed(2)}‰ • {formatCurrency(apartment.totalShare)}
@@ -57,7 +59,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <StatusBadge status={apartment.status} className="text-[8px] sm:text-[9px] px-1.5 sm:px-2" />
+                        <StatusBadge status={apartment.status} className="text-[8px] sm:text-[9px] px-1.5 sm:px-2" dictionary={dictionary} />
                         {isExpanded ? (
                             <ChevronUp className="w-4 h-4 text-slate-400" />
                         ) : (
@@ -68,12 +70,12 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
 
                 <div className="mt-2">
                     <div className="flex items-center justify-between text-[9px] mb-1">
-                        <span className="text-emerald-600 font-medium">{formatCurrency(apartment.totalPaid)} {t.extraPayment.paid}</span>
+                        <span className="text-emerald-600 font-medium">{formatCurrency(apartment.totalPaid)} {dictionary.extraPayment.paid}</span>
                         <span className={cn(
                             "font-medium",
                             apartment.balance > 0 ? "text-rose-600" : "text-slate-400"
                         )}>
-                            {apartment.balance > 0 ? `${formatCurrency(apartment.balance)} ${t.extraPayment.debt}` : "Liquidado"}
+                            {apartment.balance > 0 ? `${formatCurrency(apartment.balance)} ${dictionary.extraPayment.debt}` : "Liquidado"}
                         </span>
                     </div>
                     <div className="h-1.5 bg-slate-100 overflow-hidden">
@@ -92,7 +94,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
             {isExpanded && (
                 <div className="border-t border-slate-100 bg-slate-50/50 p-3">
                     <div className="text-[9px] font-bold text-slate-500 uppercase tracking-tight mb-2">
-                        {t.extraPayment.installments}
+                        {dictionary.extraPayment.installments}
                     </div>
                     <div className="grid grid-cols-4 gap-1.5">
                         {apartment.installments.map((inst, idx) => {
@@ -103,7 +105,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                             return (
                                 <button
                                     key={inst.id}
-                                    aria-label={`${t.extraPayment.markPaid} ${idx + 1}`}
+                                    aria-label={`${dictionary.extraPayment.markPaid} ${idx + 1}`}
                                     onClick={(e) => {
                                         e.stopPropagation()
                                         if (toolMode && !readOnly) onCellClick(inst.id, inst.status, inst.expectedAmount)
@@ -140,13 +142,13 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
 
                     <div className="flex items-center justify-center gap-3 mt-2 pt-2 border-t border-slate-200">
                         <span className="flex items-center gap-1 text-[8px] text-slate-500">
-                            <span className="w-2 h-2 bg-emerald-500" /> {t.extraPayment.paid}
+                            <span className="w-2 h-2 bg-emerald-500" /> {dictionary.extraPayment.paid}
                         </span>
                         <span className="flex items-center gap-1 text-[8px] text-slate-500">
-                            <span className="w-2 h-2 bg-slate-300" /> {t.extraPayment.pending}
+                            <span className="w-2 h-2 bg-slate-300" /> {dictionary.extraPayment.pending}
                         </span>
                         <span className="flex items-center gap-1 text-[8px] text-slate-500">
-                            <span className="w-2 h-2 bg-rose-500" /> {t.extraPayment.overdue}
+                            <span className="w-2 h-2 bg-rose-500" /> {dictionary.extraPayment.overdue}
                         </span>
                     </div>
                 </div>

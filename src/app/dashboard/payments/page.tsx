@@ -6,6 +6,8 @@ import { PaymentGrid } from "@/features/dashboard/payments-quotas/PaymentGrid"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { getOrCreateManagerBuilding, getBuilding } from "@/app/actions/building"
 import { isProfileComplete, isBuildingComplete } from "@/lib/validations"
+import { getDictionary } from "@/get-dictionary"
+import type { SessionUser } from "@/lib/types"
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +19,10 @@ export default async function PaymentsPage() {
     if (!session || session.user.role !== 'manager') {
         return redirect("/dashboard")
     }
+
+    const sessionUser = session.user as unknown as SessionUser
+    const preferredLanguage = sessionUser.preferredLanguage || 'pt'
+    const dictionary = await getDictionary(preferredLanguage)
 
     // MANDATORY SETUP CHECK
     const profileDone = isProfileComplete(session.user)
@@ -45,6 +51,7 @@ export default async function PaymentsPage() {
                     monthlyQuota={monthlyQuota}
                     buildingId={buildingId}
                     year={currentYear}
+                    dictionary={dictionary}
                 />
             </ErrorBoundary>
         </div>

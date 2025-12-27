@@ -13,11 +13,11 @@ import { ResidentsList } from "@/features/dashboard/residents/ResidentsList";
 import { SubscriptionSyncWrapper } from "@/features/dashboard/subscription/SubscriptionSyncWrapper";
 import { PaymentStatusCard } from "@/features/dashboard/payments-quotas/PaymentStatusCard";
 import { Key, Activity, BarChart3, Lock } from "lucide-react";
+import { getDictionary } from "@/get-dictionary";
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
-
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -27,13 +27,16 @@ export default async function DashboardPage() {
     }
 
     // Cast session user for type safety
-    const sessionUser = session.user as SessionUser
+    const sessionUser = session.user as unknown as SessionUser
 
     // --- MANAGER LOGIC ---
     let buildingInfo = null;
     let buildingCode = "N/A";
     let residents: Array<{ user: { id: string; name: string; email: string }; apartment: { id: number; unit: string } | null }> = [];
     let unclaimedUnits: Array<{ id: number; unit: string }> = [];
+
+    const preferredLanguage = sessionUser.preferredLanguage || 'pt'
+    const dictionary = await getDictionary(preferredLanguage)
 
     if (isManager(sessionUser)) {
         try {
@@ -59,12 +62,13 @@ export default async function DashboardPage() {
                             id: session.user.id,
                             name: session.user.name,
                             email: session.user.email,
-                            nif: session.user.nif ?? null,
-                            iban: session.user.iban ?? null
+                            nif: session.user.nif || null,
+                            iban: session.user.iban || null
                         }}
                         building={building}
                         apartments={apartmentsData}
                         initialStep={initialStep}
+                        dictionary={dictionary}
                     />
                 )
             }

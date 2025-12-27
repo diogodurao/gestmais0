@@ -6,6 +6,7 @@ import { OnboardingStepWrapper } from "./OnboardingStepWrapper"
 import { ApartmentManager, type ApartmentData } from "@/features/dashboard/settings/ApartmentManager"
 import { cn } from "@/lib/utils"
 import { isUnitsComplete } from "@/lib/validations"
+import { type Dictionary } from "@/types/i18n"
 
 interface OnboardingStepUnitsProps {
     isActive: boolean
@@ -18,6 +19,7 @@ interface OnboardingStepUnitsProps {
     apartments: ApartmentData[]
     handleFinalize: () => void
     onStepClick: () => void
+    dictionary: Dictionary
 }
 
 export function OnboardingStepUnits({
@@ -30,7 +32,8 @@ export function OnboardingStepUnits({
     quotaMode,
     apartments,
     handleFinalize,
-    onStepClick
+    onStepClick,
+    dictionary
 }: OnboardingStepUnitsProps) {
     return (
         <OnboardingStepWrapper
@@ -60,6 +63,7 @@ export function OnboardingStepUnits({
                         apartments={apartments}
                         buildingId={buildingId}
                         totalApartments={totalApartments}
+                        dictionary={dictionary}
                     />
                 </div>
 

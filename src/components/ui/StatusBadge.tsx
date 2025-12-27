@@ -1,7 +1,5 @@
 import { cn } from "@/lib/utils"
 import { PaymentStatus, ProjectStatus } from "@/lib/types"
-import { t } from "@/lib/translations"
-
 // ===========================================
 // TYPES
 // ===========================================
@@ -15,6 +13,7 @@ interface StatusBadgeProps {
     status: StatusType
     size?: "xs" | "sm" | "md"
     className?: string
+    dictionary: Dictionary
 }
 
 // ===========================================
@@ -43,27 +42,27 @@ const styles: Record<StatusType, string> = {
     critical: "bg-rose-100 text-rose-700 border-rose-200",
 }
 
-const getLabel = (status: StatusType): string => {
+const getLabel = (status: StatusType, dictionary: Dictionary): string => {
     switch (status) {
         // Project statuses
-        case "active": return "Ativo"
-        case "completed": return "Concluído"
-        case "cancelled": return "Cancelado"
-        case "archived": return "Arquivado"
+        case "active": return "Ativo" // TODO: Add to dictionary
+        case "completed": return "Concluído" // TODO: Add to dictionary
+        case "cancelled": return "Cancelado" // TODO: Add to dictionary
+        case "archived": return "Arquivado" // TODO: Add to dictionary
 
         // Payment statuses
-        case "paid": return t.extraPayment.paid
-        case "pending": return t.extraPayment.pending
-        case "overdue": return t.extraPayment.overdue
-        case "partial": return t.extraPayment.partial
+        case "paid": return dictionary.extraPayment.paid
+        case "pending": return dictionary.extraPayment.pending
+        case "overdue": return dictionary.extraPayment.overdue
+        case "partial": return dictionary.extraPayment.partial
 
         // Apartment payment statuses
-        case "complete": return "Liquidado"
+        case "complete": return "Liquidado" // TODO: Add to dictionary
 
         // Overall statuses
-        case "ok": return "Em dia"
-        case "warning": return t.extraPayment.pending
-        case "critical": return "Em atraso"
+        case "ok": return "Em dia" // TODO: Add to dictionary
+        case "warning": return dictionary.extraPayment.pending
+        case "critical": return "Em atraso" // TODO: Add to dictionary
 
         default: return status as string
     }
@@ -75,11 +74,13 @@ const sizes = {
     md: "px-2.5 py-1 text-[10px]",
 }
 
+import { Dictionary } from "@/types/i18n"
+
 // ===========================================
 // COMPONENT
 // ===========================================
 
-export function StatusBadge({ status, size = "sm", className }: StatusBadgeProps) {
+export function StatusBadge({ status, size = "sm", className, dictionary }: StatusBadgeProps) {
     return (
         <span className={cn(
             "inline-block font-bold uppercase tracking-wider border",
@@ -87,7 +88,7 @@ export function StatusBadge({ status, size = "sm", className }: StatusBadgeProps
             styles[status] || styles.pending,
             className
         )}>
-            {getLabel(status)}
+            {getLabel(status, dictionary)}
         </span>
     )
 }

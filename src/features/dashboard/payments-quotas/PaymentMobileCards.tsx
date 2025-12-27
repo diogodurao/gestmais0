@@ -2,7 +2,9 @@
 
 import { PaymentData } from "@/app/actions/payments"
 import { cn } from "@/lib/utils"
+// import { Trash2, Check, AlertCircle } from "lucide-react" // Trash2 removed from props but still imported? No, check usages.
 import { Trash2, Check, AlertCircle } from "lucide-react"
+import { Dictionary } from "@/types/i18n"
 import { MONTHS } from "@/lib/constants"
 import { formatCurrency } from "@/lib/format"
 
@@ -13,6 +15,7 @@ interface PaymentMobileCardsProps {
     highlightedId: number | null
     onCellClick: (aptId: number, monthIdx: number) => void
     onDelete: (aptId: number) => void
+    dictionary: Dictionary
 }
 
 /**
@@ -25,7 +28,8 @@ export function PaymentMobileCards({
     activeTool,
     highlightedId,
     onCellClick,
-    onDelete
+    onDelete,
+    dictionary
 }: PaymentMobileCardsProps) {
 
     return (
@@ -47,7 +51,7 @@ export function PaymentMobileCards({
                         {/* Header */}
                         <div className="flex justify-between items-start mb-3 pb-3 border-b border-slate-200">
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Unit</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{dictionary.extraPayment.unit}</span>
                                 <span className="text-xl font-bold text-slate-900">{apt.unit}</span>
                                 {apt.residentName && (
                                     <span className="text-xs text-slate-500 font-medium mt-0.5">{apt.residentName}</span>
@@ -62,7 +66,7 @@ export function PaymentMobileCards({
                                     <span className={cn(
                                         "text-[9px] font-bold uppercase",
                                         hasDebt ? "text-rose-500" : "text-emerald-500"
-                                    )}>Balance</span>
+                                    )}>{dictionary.paymentGrid.collected}</span>
                                     <span className={cn(
                                         "text-sm font-bold font-mono",
                                         hasDebt ? "text-rose-600" : "text-emerald-600"
@@ -118,7 +122,7 @@ export function PaymentMobileCards({
 
             {data.length === 0 && (
                 <div className="text-center py-12 text-slate-400 bg-slate-50 tech-border border-dashed uppercase font-mono text-[10px] tracking-widest">
-                    [ NO_RECORDS_FOUND ]
+                    [ {dictionary.common.none.toUpperCase()} ]
                 </div>
             )}
         </div>

@@ -10,6 +10,8 @@ import { LayoutGrid, Building2 } from "lucide-react"
 import { getApartmentDisplayName } from "@/lib/utils"
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
+import { getDictionary } from "@/get-dictionary"
+import { type SessionUser } from "@/lib/types"
 
 export const dynamic = 'force-dynamic'
 
@@ -62,7 +64,11 @@ export default async function SettingsPage({
         nif: session.user.nif,
         iban: session.user.iban,
         unitName: unitName,
+        preferredLanguage: (session.user as unknown as SessionUser).preferredLanguage || 'pt'
     }
+
+    const preferredLanguage = (session.user as unknown as SessionUser).preferredLanguage || 'pt'
+    const dictionary = await getDictionary(preferredLanguage)
 
     const profileComplete = isProfileComplete(session.user)
     const managerActiveBuildingId = session.user.activeBuildingId ?? null
@@ -119,7 +125,13 @@ export default async function SettingsPage({
                                     <span className="text-[10px] font-mono text-slate-400">{apartmentsData.length} / {building.totalApartments || 0}</span>
                                 </CardHeader>
                                 <div className="p-0">
-                                    <ApartmentManager apartments={apartmentsData} buildingId={building.id} buildingComplete={buildingComplete} totalApartments={building.totalApartments} />
+                                    <ApartmentManager
+                                        apartments={apartmentsData}
+                                        buildingId={building.id}
+                                        buildingComplete={buildingComplete}
+                                        totalApartments={building.totalApartments}
+                                        dictionary={dictionary}
+                                    />
                                 </div>
                             </Card>
                         </div>
@@ -133,6 +145,7 @@ export default async function SettingsPage({
                                 canSubscribe={canSubscribe}
                                 profileComplete={profileComplete}
                                 buildingComplete={buildingComplete}
+                                dictionary={dictionary}
                             />
                         </div>
                     </>

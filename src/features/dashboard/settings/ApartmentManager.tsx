@@ -12,7 +12,7 @@ import { type InferSelectModel } from "drizzle-orm"
 import { user, apartments } from "@/db/schema"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
-import { t } from "@/lib/translations"
+import { type Dictionary } from "@/types/i18n"
 
 type Apartment = InferSelectModel<typeof apartments>
 type UserProfile = InferSelectModel<typeof user>
@@ -26,12 +26,14 @@ export function ApartmentManager({
     apartments,
     buildingId,
     buildingComplete = true,
-    totalApartments
+    totalApartments,
+    dictionary
 }: {
     apartments: ApartmentData[];
     buildingId: string;
     buildingComplete?: boolean;
-    totalApartments?: number | null
+    totalApartments?: number | null;
+    dictionary: Dictionary
 }) {
     const router = useRouter()
     const { toast } = useToast()
@@ -48,8 +50,8 @@ export function ApartmentManager({
 
     const { execute: saveApartment } = useAsyncAction(updateApartment, {
         onSuccess: () => router.refresh(),
-        successMessage: t.extraPayment.updateSuccess,
-        errorMessage: t.common.error
+        successMessage: dictionary.extraPayment.updateSuccess,
+        errorMessage: dictionary.common.error
     })
 
     const { execute: addApartment } = useAsyncAction(createApartment, {
@@ -57,20 +59,20 @@ export function ApartmentManager({
             setNewRow({ unit: "", permillage: "" })
             router.refresh()
         },
-        successMessage: t.common.success,
-        errorMessage: t.common.error
+        successMessage: dictionary.common.success,
+        errorMessage: dictionary.common.error
     })
 
     const { execute: removeApartment } = useAsyncAction(deleteApartment, {
         onSuccess: () => router.refresh(),
-        successMessage: t.extraPayment.deleteSuccess,
-        errorMessage: t.common.error
+        successMessage: dictionary.extraPayment.deleteSuccess,
+        errorMessage: dictionary.common.error
     })
 
     const { execute: unclaimResident } = useAsyncAction(unclaimApartmentAction, {
         onSuccess: () => router.refresh(),
-        successMessage: t.common.success,
-        errorMessage: t.common.error
+        successMessage: dictionary.common.success,
+        errorMessage: dictionary.common.error
     })
 
     useEffect(() => {
@@ -137,7 +139,7 @@ export function ApartmentManager({
     const handleAddRow = async (): Promise<void> => {
         if (!newRow.unit.trim() || !newRow.permillage.trim()) {
             toast({
-                title: t.common.error,
+                title: dictionary.common.error,
                 description: "Both unit and permillage are required.",
                 variant: "destructive"
             })
@@ -149,7 +151,7 @@ export function ApartmentManager({
 
         if (isNaN(parsedPerm) || parsedPerm <= 0) {
             toast({
-                title: t.common.error,
+                title: dictionary.common.error,
                 description: "Permillage must be a valid positive number.",
                 variant: "destructive"
             })
@@ -215,7 +217,7 @@ export function ApartmentManager({
                 onClick={() => startEdit(id, field, value)}
                 className="w-full h-full px-3 py-2 cursor-text hover:bg-blue-50/50 transition-colors font-mono text-[11px] uppercase"
             >
-                {value || <span className="text-slate-300 italic normal-case">{id === 'new' ? t.common.search : placeholder}</span>}
+                {value || <span className="text-slate-300 italic normal-case">{id === 'new' ? dictionary.common.search : placeholder}</span>}
             </div>
         )
     }
@@ -234,11 +236,11 @@ export function ApartmentManager({
                     <table className="w-full border-collapse text-[11px]">
                         <thead>
                             <tr className="bg-slate-100 border-b border-slate-200">
-                                <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200 w-1/3">{t.extraPayment.unit}</th>
+                                <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200 w-1/3">{dictionary.extraPayment.unit}</th>
                                 <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200 w-28">
-                                    <span className="flex items-center gap-1">{t.extraPayment.permillage} <span className="text-slate-400 font-normal">‰</span></span>
+                                    <span className="flex items-center gap-1">{dictionary.extraPayment.permillage} <span className="text-slate-400 font-normal">‰</span></span>
                                 </th>
-                                <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200">{t.extraPayment.resident}</th>
+                                <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200">{dictionary.extraPayment.resident}</th>
                                 <th className="text-center py-2 px-2 font-bold text-slate-500 uppercase tracking-tighter w-16"></th>
                             </tr>
                         </thead>
@@ -339,8 +341,8 @@ export function ApartmentManager({
             </CardContent>
             <ConfirmModal
                 isOpen={isDeleteModalOpen}
-                title={t.paymentGrid.deleteApartment}
-                message={t.paymentGrid.deleteMessage}
+                title={dictionary.paymentGrid.deleteApartment}
+                message={dictionary.paymentGrid.deleteMessage}
                 onConfirm={confirmDelete}
                 onCancel={() => setIsDeleteModalOpen(false)}
                 variant="danger"

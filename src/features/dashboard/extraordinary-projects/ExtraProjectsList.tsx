@@ -16,6 +16,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 import { SkeletonHeader, SkeletonGrid } from "@/components/ui/Skeletons"
 import { Skeleton } from "@/components/ui/Skeleton"
+import { Dictionary } from "@/types/i18n"
 
 // ===========================================
 // TYPES
@@ -24,13 +25,14 @@ import { Skeleton } from "@/components/ui/Skeleton"
 interface ExtraProjectsListProps {
     buildingId: string
     readOnly?: boolean
+    dictionary: Dictionary
 }
 
 // ===========================================
 // COMPONENT
 // ===========================================
 
-export function ExtraProjectsList({ buildingId, readOnly = false }: ExtraProjectsListProps) {
+export function ExtraProjectsList({ buildingId, readOnly = false, dictionary }: ExtraProjectsListProps) {
     const [projects, setProjects] = useState<ProjectListItem[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -103,7 +105,7 @@ export function ExtraProjectsList({ buildingId, readOnly = false }: ExtraProject
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {projects.map((project) => (
-                        <ProjectCard key={project.id} project={project} />
+                        <ProjectCard key={project.id} project={project} dictionary={dictionary} />
                     ))}
                 </div>
             )}
@@ -115,7 +117,7 @@ export function ExtraProjectsList({ buildingId, readOnly = false }: ExtraProject
 // PROJECT CARD
 // ===========================================
 
-function ProjectCard({ project }: { project: ProjectListItem }) {
+function ProjectCard({ project, dictionary }: { project: ProjectListItem, dictionary: Dictionary }) {
     const startDate = `${getMonthName(project.startMonth, true)} ${project.startYear}`
     const endMonth = ((project.startMonth - 1 + project.numInstallments - 1) % 12) + 1
     const endYear = project.startYear + Math.floor((project.startMonth - 1 + project.numInstallments - 1) / 12)
@@ -137,7 +139,7 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
                             #EXTRA-{project.id}
                         </span>
                     </div>
-                    <StatusBadge status={project.status} />
+                    <StatusBadge status={project.status} dictionary={dictionary} />
                 </div>
             </div>
 

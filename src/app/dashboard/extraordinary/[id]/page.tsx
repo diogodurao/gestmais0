@@ -8,6 +8,8 @@ import { Suspense } from "react"
 import { notFound } from "next/navigation"
 import { ExtraProjectDetail } from "@/features/dashboard/extraordinary-projects/ExtraProjectDetail"
 import { requireSession } from "@/lib/auth-helpers"
+import { getDictionary } from "@/get-dictionary"
+import { SessionUser } from "@/lib/types"
 
 export const metadata = {
     title: "Projeto Extraordinário | GestMais",
@@ -29,6 +31,9 @@ export default async function ExtraordinaryProjectDetailPage({ params }: PagePro
     }
 
     const session = await requireSession()
+    const sessionUser = session.user as unknown as SessionUser
+    const preferredLanguage = sessionUser.preferredLanguage || 'pt'
+    const dictionary = await getDictionary(preferredLanguage)
     const isResident = session.user.role === 'resident'
 
     return (
@@ -37,6 +42,7 @@ export default async function ExtraordinaryProjectDetailPage({ params }: PagePro
                 <ExtraProjectDetail
                     projectId={projectId}
                     readOnly={isResident}
+                    dictionary={dictionary}
                 />
             </Suspense>
         </div>

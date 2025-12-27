@@ -18,18 +18,13 @@ import { StatusBadge } from "@/components/ui/StatusBadge"
 import { SummaryCard } from "@/components/ui/SummaryCard"
 import { SkeletonHeader, SkeletonCard } from "@/components/ui/Skeletons"
 import { Skeleton } from "@/components/ui/Skeleton"
-
-// ===========================================
-// TYPES
-// ===========================================
-
-
+import { Dictionary } from "@/types/i18n"
 
 // ===========================================
 // MAIN COMPONENT
 // ===========================================
 
-export function ResidentExtraPayments() {
+export function ResidentExtraPayments({ dictionary }: { dictionary: Dictionary }) {
     const [projects, setProjects] = useState<ResidentProjectPayment[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -125,7 +120,7 @@ export function ResidentExtraPayments() {
             ) : (
                 <div className="space-y-4">
                     {projects.map((project) => (
-                        <ProjectPaymentCard key={project.projectId} project={project} />
+                        <ProjectPaymentCard key={project.projectId} project={project} dictionary={dictionary} />
                     ))}
                 </div>
             )}
@@ -137,7 +132,7 @@ export function ResidentExtraPayments() {
 // PROJECT PAYMENT CARD
 // ===========================================
 
-function ProjectPaymentCard({ project }: { project: ResidentProjectPayment }) {
+function ProjectPaymentCard({ project, dictionary }: { project: ResidentProjectPayment, dictionary: Dictionary }) {
     const [isExpanded, setIsExpanded] = useState(false)
 
     const progressPercent = project.totalShare > 0
@@ -165,7 +160,7 @@ function ProjectPaymentCard({ project }: { project: ResidentProjectPayment }) {
                             <h3 className="text-[12px] sm:text-[13px] font-bold text-slate-900 truncate">
                                 {project.projectName}
                             </h3>
-                            <StatusBadge status={isPaid ? "complete" : "partial"} />
+                            <StatusBadge status={isPaid ? "complete" : "partial"} dictionary={dictionary} />
                         </div>
                         <div className="flex items-center gap-2 sm:gap-3 mt-1 text-[9px] sm:text-[10px] text-slate-500 flex-wrap">
                             <span className="flex items-center gap-1">
@@ -278,9 +273,6 @@ function InstallmentCell({ installment }: InstallmentCellProps) {
         </div>
     )
 }
-
-
-
 
 // ===========================================
 // EMPTY STATE

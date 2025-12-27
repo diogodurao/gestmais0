@@ -23,7 +23,7 @@ export default async function DashboardLayout({
     let activeBuilding: { building: { id: string; name: string; code: string; subscriptionStatus?: string | null }; isOwner: boolean | null } | undefined
 
     if (session?.user) {
-        const sessionUser = session.user as SessionUser
+        const sessionUser = session.user as unknown as SessionUser
         if (isResident(sessionUser)) {
             // Residents need: buildingId + claimed apartment + IBAN
             const hasBuildingId = !!session.user.buildingId
@@ -86,16 +86,6 @@ export default async function DashboardLayout({
 
             setupComplete = profileDone && buildingDone && unitsDone
         }
-    }
-
-    if (!setupComplete) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex flex-col">
-                <main className="flex-1 w-full h-full">
-                    {children}
-                </main>
-            </div>
-        )
     }
 
     return (

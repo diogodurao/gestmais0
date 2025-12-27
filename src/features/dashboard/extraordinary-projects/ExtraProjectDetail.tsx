@@ -21,7 +21,7 @@ import { SkeletonCard } from "@/components/ui/Skeletons"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { useAsyncData } from "@/hooks/useAsyncData"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
-import { t } from "@/lib/translations"
+import { Dictionary } from "@/types/i18n"
 
 // Sub-components
 import { ProjectDetailHeader } from "./components/ProjectDetailHeader"
@@ -34,13 +34,14 @@ import { ProjectDetailStats } from "./components/ProjectDetailStats"
 interface ExtraProjectDetailProps {
     projectId: number
     readOnly?: boolean
+    dictionary: Dictionary
 }
 
 // ===========================================
 // COMPONENT
 // ===========================================
 
-export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProjectDetailProps) {
+export function ExtraProjectDetail({ projectId, readOnly = false, dictionary }: ExtraProjectDetailProps) {
     const router = useRouter()
 
     const {
@@ -60,13 +61,13 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
 
     const { execute: archiveAction } = useAsyncAction(archiveExtraordinaryProject, {
         onSuccess: () => router.push(ROUTES.DASHBOARD.EXTRAORDINARY),
-        errorMessage: t.common.error
+        errorMessage: dictionary.common.error
     })
 
     const { execute: deleteAction, isPending: isDeleting } = useAsyncAction(deleteExtraordinaryProject, {
         onSuccess: () => router.push(ROUTES.DASHBOARD.EXTRAORDINARY),
-        successMessage: t.extraPayment.deleteSuccess,
-        errorMessage: t.common.error
+        successMessage: dictionary.extraPayment.deleteSuccess,
+        errorMessage: dictionary.common.error
     })
 
     const handleArchive = async (): Promise<void> => {
@@ -107,7 +108,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
                     className="inline-flex items-center gap-2 mt-4 text-[11px] text-blue-600 hover:underline"
                 >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    {t.common.back}
+                    {dictionary.common.back}
                 </Link>
             </div>
         )
@@ -155,6 +156,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
                 setShowDeleteConfirm={setShowDeleteConfirm}
                 isDeleting={isDeleting}
                 loadProject={loadProject}
+                dictionary={dictionary}
             />
 
             <ProjectDetailStats stats={project.stats} />
@@ -162,7 +164,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
             {/* Payment Grid */}
             <ErrorBoundary fallback={
                 <div className="tech-border p-8 text-center bg-white">
-                    <p className="text-rose-600 mb-2">{t.paymentGrid.refreshed.replace(':', '')} {t.common.error}</p>
+                    <p className="text-rose-600 mb-2">{dictionary.paymentGrid.refreshed.replace(':', '')} {dictionary.common.error}</p>
                     <button
                         onClick={() => window.location.reload()}
                         className="text-sm text-blue-600 hover:underline"
@@ -184,6 +186,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
                     payments={project.payments}
                     onRefresh={loadProject}
                     readOnly={readOnly}
+                    dictionary={dictionary}
                 />
             </ErrorBoundary>
         </div>
