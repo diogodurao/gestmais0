@@ -1,4 +1,10 @@
-export type PaymentStatus = "paid" | "late" | "pending"
+export type PaymentStatus = "paid" | "pending" | "overdue" | "partial"
+
+export type ProjectStatus = "active" | "completed" | "cancelled" | "archived"
+
+export type UserRole = "manager" | "resident"
+
+
 
 /**
  * Payment data for a single apartment in the payment grid
@@ -15,11 +21,7 @@ export type PaymentData = {
     }[]
 }
 
-/**
- * @deprecated Use PaymentData instead - this type had a mismatch
- * with the actual data structure from server actions
- */
-export type PaymentGridData = PaymentData
+
 
 // ==========================================
 // BUILDING TYPES
@@ -33,7 +35,7 @@ export type BuildingStatus = "active" | "inactive" | "pending"
 // USER & SESSION TYPES
 // ==========================================
 
-export type UserRole = "manager" | "resident"
+
 
 /**
  * Session user type - use this for type-safe session access
@@ -53,20 +55,20 @@ export type SessionUser = {
 // SUBSCRIPTION TYPES
 // ==========================================
 
-export type SubscriptionStatus = 
-    | "active" 
-    | "canceled" 
-    | "incomplete" 
-    | "incomplete_expired" 
-    | "past_due" 
-    | "paused" 
-    | "trialing" 
+export type SubscriptionStatus =
+    | "active"
+    | "canceled"
+    | "incomplete"
+    | "incomplete_expired"
+    | "past_due"
+    | "paused"
+    | "trialing"
     | "unpaid"
 
 // ==========================================
 // API RESPONSE TYPES
 // ==========================================
 
-export type ActionResult<T> = 
+export type ActionResult<T> =
     | { success: true; data: T }
     | { success: false; error: string }

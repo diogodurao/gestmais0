@@ -3,6 +3,7 @@
  * 
  * Add this to your Sidebar.tsx navigation items
  */
+import { ROUTES } from "@/lib/routes"
 
 import {
     LayoutDashboard,
@@ -36,30 +37,26 @@ export interface NavItem {
 
 export const managerNavItems: NavItem[] = [
     {
-        href: "/dashboard",
+        href: ROUTES.DASHBOARD.HOME,
         label: "Painel",
         icon: LayoutDashboard,
         requiresSetup: true,
     },
     {
-        href: "/dashboard/payments",
+        href: ROUTES.DASHBOARD.PAYMENTS,
         label: "Quotas",
         icon: CreditCard,
         requiresSetup: true,
     },
-    // =====================
-    // ADD THIS ITEM ⬇️
-    // =====================
     {
-        href: "/dashboard/extraordinary",
+        href: ROUTES.DASHBOARD.EXTRAORDINARY,
         label: "Quotas Extra",
         icon: Hammer,
         requiresSetup: true,
         requiresSubscription: true,
     },
-    // =====================
     {
-        href: "/dashboard/settings",
+        href: ROUTES.DASHBOARD.SETTINGS,
         label: "Definições",
         icon: Settings,
         requiresSetup: true,
@@ -72,7 +69,7 @@ export const managerNavItems: NavItem[] = [
 
 export const residentNavItems: NavItem[] = [
     {
-        href: "/dashboard",
+        href: ROUTES.DASHBOARD.HOME,
         label: "Painel",
         icon: LayoutDashboard,
     },
@@ -82,12 +79,12 @@ export const residentNavItems: NavItem[] = [
         icon: CreditCard,
     },
     {
-        href: "/dashboard/extraordinary",
+        href: ROUTES.DASHBOARD.EXTRAORDINARY,
         label: "Quotas Extra",
         icon: Hammer,
     },
     {
-        href: "/dashboard/settings",
+        href: ROUTES.DASHBOARD.SETTINGS,
         label: "Definições",
         icon: Settings,
     },

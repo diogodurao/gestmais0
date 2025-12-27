@@ -29,7 +29,7 @@ export default async function DashboardLayout({
             const hasBuildingId = !!session.user.buildingId
             const hasIban = !!session.user.iban
             if (hasBuildingId && hasIban) {
-                const apartment = await getResidentApartment(session.user.id)
+                const apartment = await getResidentApartment()
                 setupComplete = !!apartment
             } else {
                 setupComplete = false
@@ -52,7 +52,7 @@ export default async function DashboardLayout({
             }
         } else if (isManager(sessionUser)) {
             // Fetch their buildings for the selector
-            const buildings = await getManagerBuildings(session.user.id)
+            const buildings = await getManagerBuildings()
             managerBuildings = buildings.map(b => ({
                 building: {
                     id: b.building.id,
@@ -67,25 +67,35 @@ export default async function DashboardLayout({
             const profileDone = isProfileComplete(session.user)
             let buildingDone = false
             let unitsDone = false
-            
+
             const activeBuildingId = session.user.activeBuildingId || (buildings.length > 0 ? buildings[0].building.id : null)
-            
+
             if (activeBuildingId) {
                 const activeBuildingData = await getBuilding(activeBuildingId)
                 if (activeBuildingData) {
                     buildingDone = isBuildingComplete(activeBuildingData)
                     const apartments = await getBuildingApartments(activeBuildingId)
                     unitsDone = isUnitsComplete(
-                        activeBuildingData.totalApartments, 
+                        activeBuildingData.totalApartments,
                         apartments
                     )
-                    
+
                     activeBuilding = managerBuildings.find(b => b.building.id === activeBuildingId)
                 }
             }
 
             setupComplete = profileDone && buildingDone && unitsDone
         }
+    }
+
+    if (!setupComplete) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col">
+                <main className="flex-1 w-full h-full">
+                    {children}
+                </main>
+            </div>
+        )
     }
 
     return (

@@ -36,7 +36,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
         if (error) setError("")
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault()
         setError("")
 
@@ -57,20 +57,25 @@ export function ProfileSettings({ user }: { user: UserData }) {
 
         setIsSaving(true)
         try {
-            await updateUserProfile(formData)
-            setShowSuccess(true)
-            setTimeout(() => setShowSuccess(false), 3000)
+            const result = await updateUserProfile(formData)
+
+            if (result.success) {
+                setShowSuccess(true)
+                setTimeout(() => setShowSuccess(false), 3000)
+            } else {
+                setError(result.error || "Update failed")
+            }
         } catch (error) {
             console.error("Failed to update profile", error)
-            setError("Update failed")
+            setError("An unexpected error occurred")
         } finally {
             setIsSaving(false)
         }
     }
 
-    const hasChanges = 
-        formData.name !== user.name || 
-        formData.nif !== (user.nif || "") || 
+    const hasChanges =
+        formData.name !== user.name ||
+        formData.nif !== (user.nif || "") ||
         formData.iban !== (user.iban || "")
 
     return (
@@ -93,40 +98,40 @@ export function ProfileSettings({ user }: { user: UserData }) {
                         )}
                     </div>
                 </CardHeader>
-                
+
                 <form onSubmit={handleSubmit} className="p-0">
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
                         <div className="label-col border-none">Full Name</div>
                         <div className="value-col border-none">
-                            <input 
-                                type="text" 
-                                value={formData.name} 
+                            <input
+                                type="text"
+                                value={formData.name}
                                 onChange={e => handleChange("name", e.target.value)}
-                                className="input-cell h-8" 
+                                className="input-cell h-8"
                             />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100 border-t">
                         <div className="label-col border-none">Email Address</div>
                         <div className="value-col border-none bg-slate-50">
-                            <input 
-                                type="text" 
-                                value={user.email} 
-                                readOnly 
-                                className="input-cell border-none h-8 bg-transparent text-slate-500 cursor-not-allowed" 
+                            <input
+                                type="text"
+                                value={user.email}
+                                readOnly
+                                className="input-cell border-none h-8 bg-transparent text-slate-500 cursor-not-allowed"
                             />
                         </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2">
                         <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b md:border-b-0 md:border-r border-slate-100 border-t md:border-t-0">
                             <div className="label-col border-none">NIF (Tax ID)</div>
                             <div className="value-col border-none relative">
-                                <input 
-                                    type="text" 
-                                    value={formData.nif} 
+                                <input
+                                    type="text"
+                                    value={formData.nif}
                                     onChange={e => handleChange("nif", e.target.value)}
-                                    className="input-cell border-none h-8 font-mono" 
+                                    className="input-cell border-none h-8 font-mono"
                                     maxLength={9}
                                 />
                                 {isValidNif(formData.nif) && (
@@ -139,11 +144,11 @@ export function ProfileSettings({ user }: { user: UserData }) {
                         <div className="grid grid-cols-1 md:grid-cols-[80px_1fr] border-t md:border-t-0">
                             <div className="label-col border-none">IBAN</div>
                             <div className="value-col border-none">
-                                <input 
-                                    type="text" 
-                                    value={formData.iban} 
+                                <input
+                                    type="text"
+                                    value={formData.iban}
                                     onChange={e => handleChange("iban", e.target.value)}
-                                    className="input-cell border-none h-8 font-mono" 
+                                    className="input-cell border-none h-8 font-mono"
                                 />
                             </div>
                         </div>
@@ -153,11 +158,11 @@ export function ProfileSettings({ user }: { user: UserData }) {
                         <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-t border-slate-100">
                             <div className="label-col border-none">Assigned Unit</div>
                             <div className="value-col border-none bg-slate-50">
-                                <input 
-                                    type="text" 
-                                    value={user.unitName} 
-                                    readOnly 
-                                    className="input-cell border-none h-8 bg-transparent text-slate-500 font-bold" 
+                                <input
+                                    type="text"
+                                    value={user.unitName}
+                                    readOnly
+                                    className="input-cell border-none h-8 bg-transparent text-slate-500 font-bold"
                                 />
                             </div>
                         </div>

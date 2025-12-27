@@ -41,13 +41,13 @@ export default function Error({
                 </div>
 
                 <div className="pt-4 space-y-2">
-                    <Button onClick={() => reset()} className="w-full bg-slate-900 hover:bg-slate-800">
+                    <Button onClick={() => reset()} fullWidth>
                         Try Again
                     </Button>
                     <Button
                         onClick={() => window.location.href = '/dashboard'}
                         variant="outline"
-                        className="w-full"
+                        fullWidth
                     >
                         Go to Dashboard
                     </Button>

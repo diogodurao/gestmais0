@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
@@ -11,9 +11,11 @@ import {
     FileText,
     Upload,
     AlertCircle,
-    Loader2,
     Euro,
+    File,
+    X,
 } from "lucide-react"
+import { Button } from "@/components/ui/Button"
 import Link from "next/link"
 import {
     calculateExtraordinaryPayments,
@@ -23,6 +25,8 @@ import {
     validateProjectInput,
 } from "@/lib/extraordinary-calculations"
 import { createExtraordinaryProject } from "@/app/actions/extraordinary"
+import { ROUTES } from "@/lib/routes"
+import { PROJECT_DEFAULTS } from "@/lib/constants/project"
 
 // ===========================================
 // TYPES
@@ -55,22 +59,23 @@ interface FormData {
 
 export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreateProps) {
     const router = useRouter()
-    
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
     const currentDate = new Date()
     const currentMonth = currentDate.getMonth() + 1
     const currentYear = currentDate.getFullYear()
-    
+
     const [formData, setFormData] = useState<FormData>({
         name: "",
         description: "",
         totalBudget: "",
-        numInstallments: 12,
+        numInstallments: PROJECT_DEFAULTS.INSTALLMENTS,
         startMonth: currentMonth,
         startYear: currentYear,
         documentUrl: "",
         documentName: "",
     })
-    
+
     const [errors, setErrors] = useState<string[]>([])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [showPreview, setShowPreview] = useState(false)
@@ -84,7 +89,7 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
             formData.startMonth,
             formData.startYear,
             apartments
-          )
+        )
         : null
 
     const handleInputChange = (
@@ -100,9 +105,52 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
         setErrors([])
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            if (file.type !== "application/pdf") {
+                setErrors(["Apenas ficheiros PDF são permitidos"])
+                return
+            }
+            setFormData((prev) => ({
+                ...prev,
+                documentName: file.name,
+                documentUrl: "mock-url-" + Date.now(), // Simulated URL
+            }))
+        }
+    }
+
+    const handleDrop = (e: React.DragEvent) => {
         e.preventDefault()
-        
+        const file = e.dataTransfer.files?.[0]
+        if (file) {
+            if (file.type !== "application/pdf") {
+                setErrors(["Apenas ficheiros PDF são permitidos"])
+                return
+            }
+            setFormData((prev) => ({
+                ...prev,
+                documentName: file.name,
+                documentUrl: "mock-url-" + Date.now(),
+            }))
+        }
+    }
+
+    const removeFile = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        setFormData((prev) => ({
+            ...prev,
+            documentName: "",
+            documentUrl: "",
+        }))
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ""
+        }
+    }
+
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+        e.preventDefault()
+
         const validation = validateProjectInput({
             name: formData.name,
             totalBudget: budgetCents,
@@ -110,19 +158,19 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
             startMonth: formData.startMonth,
             startYear: formData.startYear,
         })
-        
+
         if (!validation.valid) {
             setErrors(validation.errors)
             return
         }
-        
+
         if (apartments.length === 0) {
             setErrors(["Não existem frações definidas no edifício"])
             return
         }
 
         setIsSubmitting(true)
-        
+
         const result = await createExtraordinaryProject({
             buildingId,
             name: formData.name.trim(),
@@ -134,13 +182,13 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
             documentUrl: formData.documentUrl || undefined,
             documentName: formData.documentName || undefined,
         })
-        
+
         setIsSubmitting(false)
-        
+
         if (result.success) {
-            router.push(`/dashboard/extraordinary/${result.data.projectId}`)
+            router.push(`${ROUTES.DASHBOARD.EXTRAORDINARY}/${result.data.projectId}`)
         } else {
-            setErrors([result.error])
+            setErrors([result.error || "Failed to create project"])
         }
     }
 
@@ -149,7 +197,7 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
             {/* Header */}
             <header className="flex items-center gap-4">
                 <Link
-                    href="/dashboard/extraordinary"
+                    href={ROUTES.DASHBOARD.EXTRAORDINARY}
                     className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                 >
                     <ArrowLeft className="w-5 h-5" />
@@ -358,14 +406,55 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
                         <span className="text-slate-400 font-normal">(opcional)</span>
                     </h2>
 
-                    <div className="border-2 border-dashed border-slate-200 rounded-sm p-6 text-center hover:border-slate-300 transition-colors cursor-pointer">
-                        <Upload className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="text-[11px] text-slate-500">
-                            Arraste um PDF ou clique para selecionar
-                        </p>
-                        <p className="text-[10px] text-slate-400 mt-1">
-                            O documento será guardado para consulta
-                        </p>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept=".pdf"
+                        className="hidden"
+                    />
+
+                    <div
+                        onClick={() => fileInputRef.current?.click()}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={handleDrop}
+                        className={cn(
+                            "border-2 border-dashed rounded-sm p-6 text-center transition-colors cursor-pointer",
+                            formData.documentName
+                                ? "border-emerald-200 bg-emerald-50/50"
+                                : "border-slate-200 hover:border-slate-300"
+                        )}
+                    >
+                        {formData.documentName ? (
+                            <div className="flex flex-col items-center">
+                                <File className="w-8 h-8 text-emerald-500 mb-2" />
+                                <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-tight">
+                                    Documento Selecionado
+                                </p>
+                                <div className="mt-1 flex items-center gap-2">
+                                    <span className="text-[11px] text-emerald-600 font-mono italic">
+                                        {formData.documentName}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={removeFile}
+                                        className="p-1 hover:bg-emerald-100 rounded-full text-emerald-600 transition-colors"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <Upload className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-[11px] text-slate-500">
+                                    Arraste um PDF ou clique para selecionar
+                                </p>
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    O documento será guardado para consulta
+                                </p>
+                            </>
+                        )}
                     </div>
                 </section>
 
@@ -461,24 +550,20 @@ export function ExtraProjectCreate({ buildingId, apartments }: ExtraProjectCreat
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
                     <Link
-                        href="/dashboard/extraordinary"
+                        href={ROUTES.DASHBOARD.EXTRAORDINARY}
                         className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 hover:text-slate-800 border border-slate-300 hover:bg-slate-50 transition-colors"
                     >
                         Cancelar
                     </Link>
-                    <button
+                    <Button
                         type="submit"
                         disabled={isSubmitting || budgetCents === 0}
-                        className={cn(
-                            "px-6 py-2 text-[11px] font-bold uppercase tracking-wider text-white transition-colors flex items-center gap-2",
-                            isSubmitting || budgetCents === 0
-                                ? "bg-slate-400 cursor-not-allowed"
-                                : "bg-slate-800 hover:bg-slate-700"
-                        )}
+                        isLoading={isSubmitting}
+                        size="sm"
+                        className="px-6"
                     >
-                        {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                         {isSubmitting ? "A criar..." : "Criar Projeto"}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </div>

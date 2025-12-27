@@ -1,9 +1,10 @@
 import { db } from "@/db"
+import { PaymentStatus } from "@/lib/types"
 import { payments, apartments, user, building, extraordinaryProjects, extraordinaryPayments } from "@/db/schema"
 import { eq, and, asc, lte, sql, sum, count, inArray } from "drizzle-orm"
 import { getInstallmentDate } from "@/lib/extraordinary-calculations"
 
-export type PaymentStatus = 'paid' | 'pending' | 'late'
+
 
 export interface PaymentData {
     apartmentId: number

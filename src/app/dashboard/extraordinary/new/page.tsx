@@ -4,7 +4,7 @@
  * Route: /dashboard/extraordinary/new
  */
 
-import { ExtraProjectCreate } from "@/features/dashboard/extraordinaryProjects/ExtraProjectCreate"
+import { ExtraProjectCreate } from "@/features/dashboard/extraordinary-projects/ExtraProjectCreate"
 import { requireSession } from "@/lib/auth-helpers"
 import { getBuildingApartments } from "@/app/actions/building"
 import { redirect } from "next/navigation"

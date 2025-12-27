@@ -8,6 +8,11 @@ import { Search } from "lucide-react"
 import { PaymentDesktopTable } from "./PaymentDesktopTable"
 import { PaymentMobileCards } from "./PaymentMobileCards"
 import { cn } from "@/lib/utils"
+import { t } from "@/lib/translations"
+import { formatCurrency } from "@/lib/format"
+import { useToast } from "@/hooks/use-toast"
+import { ConfirmModal } from "@/components/ui/ConfirmModal"
+import { useAsyncAction } from "@/hooks/useAsyncAction"
 
 /**
  * ============================================================================
@@ -32,11 +37,24 @@ export function PaymentGrid({
     readOnly?: boolean
 }) {
     const router = useRouter()
+    const { toast } = useToast()
     const [searchTerm, setSearchTerm] = useState("")
     const [highlightedId, setHighlightedId] = useState<number | null>(null)
     const [activeTool, setActiveTool] = useState<PaymentStatus | 'clear' | null>(null)
-    const [isSaving, setIsSaving] = useState(false)
     const [mounted, setMounted] = useState(false)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null)
+
+    const { execute: updateStatus, isPending: isSaving } = useAsyncAction(updatePaymentStatus, {
+        onSuccess: () => router.refresh(),
+        errorMessage: t.common.error
+    })
+
+    const { execute: removeApartment } = useAsyncAction(deleteApartment, {
+        onSuccess: () => router.refresh(),
+        successMessage: t.extraPayment.deleteSuccess,
+        errorMessage: t.common.error
+    })
 
     useEffect(() => {
         setMounted(true)
@@ -57,56 +75,53 @@ export function PaymentGrid({
         if (match) setHighlightedId(match.apartmentId)
     }
 
-    const handleDeleteApartment = async (aptId: number) => {
-        if (!confirm("Are you sure? This will delete all payments for this apartment.")) return
-        try {
-            await deleteApartment(aptId)
-            router.refresh()
-        } catch (error) {
-            console.error(error)
-            alert("Failed to delete apartment.")
-        }
+    const handleDeleteClick = (aptId: number) => {
+        setDeleteTargetId(aptId)
+        setShowDeleteConfirm(true)
     }
 
-    const handleCellClick = async (aptId: number, monthIdx: number) => {
-        if (!activeTool) return
+    const handleDeleteConfirm = async (): Promise<void> => {
+        if (!deleteTargetId) return
+        await removeApartment(deleteTargetId)
+        setShowDeleteConfirm(false)
+        setDeleteTargetId(null)
+    }
 
-        setIsSaving(true)
-        try {
-            const status = activeTool === 'clear' ? 'pending' : activeTool
-            await updatePaymentStatus(aptId, monthIdx + 1, year, status as PaymentStatus)
-            router.refresh()
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setIsSaving(false)
-        }
+    const handleCellClick = async (aptId: number, monthIdx: number): Promise<void> => {
+        if (!activeTool) return
+        const status = activeTool === 'clear' ? 'pending' : activeTool
+        await updateStatus(aptId, monthIdx + 1, year, status as PaymentStatus)
     }
 
     const totalCollected = data.reduce((acc, apt) => acc + apt.totalPaid, 0)
     const totalOverdue = data.reduce((acc, apt) => acc + apt.balance, 0)
 
-    const formatCurrency = (cents: number) => {
-        return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(cents / 100)
-    }
 
     return (
         <div className="flex flex-col h-full min-h-0 bg-white tech-border overflow-hidden">
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                title={t.paymentGrid.deleteApartment}
+                message={t.paymentGrid.deleteMessage}
+                onConfirm={handleDeleteConfirm}
+                onCancel={() => setShowDeleteConfirm(false)}
+                variant="danger"
+            />
             <header className="bg-white border-b border-slate-300 flex flex-col shrink-0 z-30">
                 {/* Top row - Title and Stats */}
                 <div className="h-12 flex items-center px-4 justify-between">
                     <div className="flex flex-col">
-                        <span className="font-bold text-slate-800 text-sm leading-tight">Master Ledger</span>
-                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-tighter">{year}_FINANCIAL_YEAR</span>
+                        <span className="font-bold text-slate-800 text-sm leading-tight">{t.paymentGrid.masterLedger}</span>
+                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-tighter">{year}{t.paymentGrid.financialYear}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-sm">
-                            <span className="text-[8px] sm:text-[9px] font-bold uppercase hidden xs:inline">Collected</span>
+                            <span className="text-[8px] sm:text-[9px] font-bold uppercase hidden xs:inline">{t.paymentGrid.collected}</span>
                             <span className="font-mono font-bold text-[10px] sm:text-xs">{formatCurrency(totalCollected)}</span>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-sm">
-                            <span className="text-[8px] sm:text-[9px] font-bold uppercase hidden xs:inline">Overdue</span>
+                            <span className="text-[8px] sm:text-[9px] font-bold uppercase hidden xs:inline">{t.paymentGrid.overdue}</span>
                             <span className="font-mono font-bold text-[10px] sm:text-xs">{formatCurrency(totalOverdue)}</span>
                         </div>
                     </div>
@@ -123,16 +138,16 @@ export function PaymentGrid({
                                     activeTool === 'paid' ? "bg-emerald-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
                                 )}
                             >
-                                <span className="hidden sm:inline">Mark </span>Paid
+                                <span className="hidden sm:inline">Marcar </span>{t.extraPayment.paid}
                             </button>
                             <button
-                                onClick={() => setActiveTool(activeTool === 'late' ? null : 'late')}
+                                onClick={() => setActiveTool(activeTool === 'overdue' ? null : 'overdue')}
                                 className={cn(
                                     "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
-                                    activeTool === 'late' ? "bg-rose-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
+                                    activeTool === 'overdue' ? "bg-rose-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
                                 )}
                             >
-                                <span className="hidden sm:inline">Mark </span>Late
+                                <span className="hidden sm:inline">Marcar </span>{t.extraPayment.overdue}
                             </button>
                             <button
                                 onClick={() => setActiveTool(activeTool === 'clear' ? null : 'clear')}
@@ -141,14 +156,14 @@ export function PaymentGrid({
                                     activeTool === 'clear' ? "bg-slate-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
                                 )}
                             >
-                                Clear
+                                {t.paymentGrid.clear}
                             </button>
                         </div>
 
                         <form onSubmit={handleSearch} className="relative shrink-0">
                             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
                             <input
-                                placeholder="FIND..."
+                                placeholder={t.paymentGrid.search}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="bg-white border border-slate-200 text-[10px] pl-7 pr-2 py-1 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 w-20 sm:w-28 uppercase"
@@ -168,7 +183,7 @@ export function PaymentGrid({
                         activeTool={activeTool}
                         highlightedId={highlightedId}
                         onCellClick={handleCellClick}
-                        onDelete={handleDeleteApartment}
+                        onDelete={handleDeleteClick}
                     />
                 </div>
 
@@ -180,26 +195,26 @@ export function PaymentGrid({
                         activeTool={activeTool}
                         highlightedId={highlightedId}
                         onCellClick={handleCellClick}
-                        onDelete={handleDeleteApartment}
+                        onDelete={handleDeleteClick}
                     />
                 </div>
             </div>
 
             <footer className="bg-slate-50 border-t border-slate-300 p-2 flex flex-wrap items-center gap-2 md:gap-4 text-[10px] text-slate-500 shrink-0">
-                <span className="font-bold text-slate-700">LEGEND:</span>
-                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-emerald-50 border border-emerald-200"></div> PAID</div>
-                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-rose-50 border border-rose-200"></div> LATE</div>
-                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-white border border-slate-200"></div> PENDING</div>
+                <span className="font-bold text-slate-700">{t.paymentGrid.legend}</span>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-emerald-50 border border-emerald-200"></div> {t.extraPayment.paid.toUpperCase()}</div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-rose-50 border border-rose-200"></div> {t.extraPayment.overdue.toUpperCase()}</div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-white border border-slate-200"></div> {t.extraPayment.pending.toUpperCase()}</div>
 
                 {!readOnly && activeTool && (
                     <div className="flex items-center gap-2 animate-pulse basis-full md:basis-auto md:ml-4">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                        <span className="font-bold text-blue-600 uppercase text-[9px]">EDIT: TAP TO {activeTool.toUpperCase()}</span>
+                        <span className="font-bold text-blue-600 uppercase text-[9px]">{t.paymentGrid.editTap} {activeTool.toUpperCase()}</span>
                     </div>
                 )}
 
                 <div className="ml-auto font-mono text-[9px] uppercase hidden sm:block">
-                    Refreshed: {mounted ? new Date().toLocaleTimeString() : "--:--:--"}
+                    {t.paymentGrid.refreshed} {mounted ? new Date().toLocaleTimeString() : "--:--:--"}
                 </div>
             </footer>
         </div>

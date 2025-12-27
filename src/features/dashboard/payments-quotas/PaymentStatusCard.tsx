@@ -15,11 +15,13 @@ import {
     Euro,
 } from "lucide-react"
 import { formatCurrency } from "@/lib/extraordinary-calculations"
-import { 
-    getResidentPaymentStatus, 
+import {
+    getResidentPaymentStatus,
     getApartmentPaymentStatus,
-    type PaymentStatusSummary 
+    type PaymentStatusSummary
 } from "@/app/actions/payment-status"
+import { SkeletonCard, SkeletonCompactCard } from "@/components/ui/Skeletons"
+import { QuotaSection } from "./components/QuotaSection"
 
 // ===========================================
 // TYPES
@@ -36,45 +38,60 @@ interface PaymentStatusCardProps {
 // MAIN COMPONENT
 // ===========================================
 
-export function PaymentStatusCard({ 
-    userId, 
+export function PaymentStatusCard({
+    userId,
     apartmentId,
     variant = "full",
-    className 
+    className
 }: PaymentStatusCardProps) {
     const [data, setData] = useState<PaymentStatusSummary | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-    const loadStatus = async () => {
+    const loadStatus = async (signal?: AbortSignal): Promise<void> => {
         setIsLoading(true)
         setError(null)
-        
+
         let result
-        if (userId) {
-            result = await getResidentPaymentStatus(userId)
-        } else if (apartmentId) {
-            result = await getApartmentPaymentStatus(apartmentId)
-        } else {
-            setError("Sem identificador de utilizador ou fração")
-            setIsLoading(false)
-            return
+        try {
+            if (userId) {
+                result = await getResidentPaymentStatus(userId)
+            } else if (apartmentId) {
+                result = await getApartmentPaymentStatus(apartmentId)
+            } else {
+                setError("Sem identificador de utilizador ou fração")
+                setIsLoading(false)
+                return
+            }
+
+            if (signal?.aborted) return
+
+            if (result.success) {
+                setData(result.data)
+            } else {
+                setError(result.error)
+            }
+        } catch (err) {
+            if (signal?.aborted) return
+            setError("Erro ao carregar dados")
+        } finally {
+            if (!signal?.aborted) {
+                setIsLoading(false)
+            }
         }
-        
-        if (result.success) {
-            setData(result.data)
-        } else {
-            setError(result.error)
-        }
-        setIsLoading(false)
     }
 
     useEffect(() => {
-        loadStatus()
+        const controller = new AbortController()
+        loadStatus(controller.signal)
+        return () => controller.abort()
     }, [userId, apartmentId])
 
     if (isLoading) {
-        return <PaymentStatusSkeleton variant={variant} className={className} />
+        if (variant === "compact") {
+            return <SkeletonCompactCard className={className} />
+        }
+        return <SkeletonCard className={className} />
     }
 
     if (error || !data) {
@@ -187,8 +204,8 @@ export function PaymentStatusCard({
                             {data.statusMessage}
                         </p>
                     </div>
-                    <button 
-                        onClick={loadStatus}
+                    <button
+                        onClick={() => loadStatus()}
                         className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white/50 transition-colors flex-shrink-0"
                         title="Atualizar"
                     >
@@ -210,8 +227,8 @@ export function PaymentStatusCard({
                         </div>
                         <span className={cn(
                             "text-base sm:text-lg font-bold font-mono",
-                            data.status === "critical" ? "text-rose-600" : 
-                            data.status === "warning" ? "text-amber-600" : "text-slate-700"
+                            data.status === "critical" ? "text-rose-600" :
+                                data.status === "warning" ? "text-amber-600" : "text-slate-700"
                         )}>
                             {formatCurrency(data.totalBalance)}
                         </span>
@@ -237,7 +254,7 @@ export function PaymentStatusCard({
                     <QuotaSection
                         icon={Hammer}
                         title={data.isBuildingSummary ? "Total Quotas Extraordinárias" : "Quotas Extraordinárias"}
-                        subtitle={data.extraordinaryQuotas.activeProjects > 0 
+                        subtitle={data.extraordinaryQuotas.activeProjects > 0
                             ? `${data.extraordinaryQuotas.activeProjects} projeto${data.extraordinaryQuotas.activeProjects > 1 ? "s" : ""} ativo${data.extraordinaryQuotas.activeProjects > 1 ? "s" : ""}`
                             : undefined
                         }
@@ -274,7 +291,7 @@ export function PaymentStatusCard({
                         })}
                     </span>
                     {data.totalBalance > 0 && (
-                        <Link 
+                        <Link
                             href="/dashboard/payments"
                             className="text-blue-600 hover:underline font-medium"
                         >
@@ -287,137 +304,5 @@ export function PaymentStatusCard({
     )
 }
 
-// ===========================================
-// QUOTA SECTION
-// ===========================================
-
-interface QuotaSectionProps {
-    icon: React.ComponentType<{ className?: string }>
-    title: string
-    subtitle?: string
-    paid: number
-    due: number
-    balance: number
-    overdueCount: number
-    overdueLabel: string
-    linkHref: string
-}
-
-function QuotaSection({
-    icon: Icon,
-    title,
-    subtitle,
-    paid,
-    due,
-    balance,
-    overdueCount,
-    overdueLabel,
-    linkHref,
-}: QuotaSectionProps) {
-    const progressPercent = due > 0 ? Math.round((paid / due) * 100) : 100
-
-    return (
-        <Link 
-            href={linkHref}
-            className="block p-2 sm:p-3 border border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 transition-colors group"
-        >
-            <div className="flex items-start justify-between gap-2">
-                <div className="flex items-start gap-2 min-w-0">
-                    <Icon className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
-                    <div className="min-w-0">
-                        <p className="text-[10px] sm:text-[11px] font-bold text-slate-700 uppercase tracking-tight">
-                            {title}
-                        </p>
-                        {subtitle && (
-                            <p className="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">
-                                {subtitle}
-                            </p>
-                        )}
-                    </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 flex-shrink-0" />
-            </div>
-
-            {/* Progress bar */}
-            <div className="mt-2">
-                <div className="h-1.5 bg-slate-200 overflow-hidden">
-                    <div 
-                        className={cn(
-                            "h-full transition-all",
-                            progressPercent >= 100 ? "bg-emerald-500" :
-                            progressPercent >= 50 ? "bg-amber-500" : "bg-rose-500"
-                        )}
-                        style={{ width: `${Math.min(progressPercent, 100)}%` }}
-                    />
-                </div>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-2 flex items-center justify-between text-[9px] sm:text-[10px]">
-                <span className="text-slate-500">
-                    Pago: <span className="font-mono font-medium text-emerald-600">{formatCurrency(paid)}</span>
-                    <span className="text-slate-300 mx-1">/</span>
-                    <span className="font-mono text-slate-600">{formatCurrency(due)}</span>
-                </span>
-                {balance > 0 ? (
-                    <span className={cn(
-                        "font-bold",
-                        overdueCount > 0 ? "text-rose-600" : "text-amber-600"
-                    )}>
-                        {overdueCount > 0 && `${overdueCount} ${overdueLabel} • `}
-                        {formatCurrency(balance)} em falta
-                    </span>
-                ) : (
-                    <span className="text-emerald-600 font-medium">Liquidado</span>
-                )}
-            </div>
-        </Link>
-    )
-}
-
-// ===========================================
-// SKELETON
-// ===========================================
-
-function PaymentStatusSkeleton({ 
-    variant = "full",
-    className 
-}: { 
-    variant?: "full" | "compact"
-    className?: string 
-}) {
-    if (variant === "compact") {
-        return (
-            <div className={cn("tech-border bg-slate-50 p-3 sm:p-4", className)}>
-                <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-slate-200 skeleton" />
-                    <div className="flex-1">
-                        <div className="h-4 w-3/4 bg-slate-200 skeleton" />
-                        <div className="h-3 w-1/3 bg-slate-100 skeleton mt-1" />
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    return (
-        <div className={cn("tech-border bg-white overflow-hidden", className)}>
-            <div className="p-4 bg-slate-50 border-b border-slate-100">
-                <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-slate-200 skeleton" />
-                    <div className="flex-1">
-                        <div className="h-4 w-16 bg-slate-200 skeleton" />
-                        <div className="h-4 w-full bg-slate-200 skeleton mt-2" />
-                        <div className="h-4 w-2/3 bg-slate-200 skeleton mt-1" />
-                    </div>
-                </div>
-            </div>
-            <div className="p-4 space-y-3">
-                <div className="h-12 bg-slate-100 skeleton" />
-                <div className="h-20 bg-slate-50 skeleton" />
-            </div>
-        </div>
-    )
-}
 
 export default PaymentStatusCard

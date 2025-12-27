@@ -13,6 +13,9 @@ import {
 import { formatCurrency, getMonthName } from "@/lib/extraordinary-calculations"
 import { getExtraordinaryProjects, type ProjectListItem } from "@/app/actions/extraordinary"
 import { ProgressBar } from "@/components/ui/ProgressBar"
+import { StatusBadge } from "@/components/ui/StatusBadge"
+import { SkeletonHeader, SkeletonGrid } from "@/components/ui/Skeletons"
+import { Skeleton } from "@/components/ui/Skeleton"
 
 // ===========================================
 // TYPES
@@ -36,7 +39,7 @@ export function ExtraProjectsList({ buildingId, readOnly = false }: ExtraProject
         async function loadProjects() {
             setIsLoading(true)
             const result = await getExtraordinaryProjects(buildingId)
-            
+
             if (result.success) {
                 setProjects(result.data)
                 setError(null)
@@ -45,12 +48,20 @@ export function ExtraProjectsList({ buildingId, readOnly = false }: ExtraProject
             }
             setIsLoading(false)
         }
-        
+
         loadProjects()
     }, [buildingId])
 
     if (isLoading) {
-        return <ProjectsListSkeleton />
+        return (
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <SkeletonHeader />
+                    <Skeleton className="h-9 w-32" />
+                </div>
+                <SkeletonGrid />
+            </div>
+        )
     }
 
     if (error) {
@@ -74,7 +85,7 @@ export function ExtraProjectsList({ buildingId, readOnly = false }: ExtraProject
                         Projetos de obras e pagamentos especiais
                     </p>
                 </div>
-                
+
                 {!readOnly && (
                     <Link
                         href="/dashboard/extraordinary/new"
@@ -109,7 +120,7 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
     const endMonth = ((project.startMonth - 1 + project.numInstallments - 1) % 12) + 1
     const endYear = project.startYear + Math.floor((project.startMonth - 1 + project.numInstallments - 1) / 12)
     const endDate = `${getMonthName(endMonth, true)} ${endYear}`
-    
+
     return (
         <Link
             href={`/dashboard/extraordinary/${project.id}`}
@@ -177,41 +188,13 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
                         {project.numInstallments}x
                     </span>
                 </div>
-                
+
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
             </div>
         </Link>
     )
 }
 
-// ===========================================
-// STATUS BADGE
-// ===========================================
-
-function StatusBadge({ status }: { status: string }) {
-    const styles: Record<string, string> = {
-        active: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        completed: "bg-blue-50 text-blue-700 border-blue-200",
-        cancelled: "bg-slate-100 text-slate-500 border-slate-200",
-        archived: "bg-slate-100 text-slate-500 border-slate-200",
-    }
-
-    const labels: Record<string, string> = {
-        active: "Ativo",
-        completed: "Concluído",
-        cancelled: "Cancelado",
-        archived: "Arquivado",
-    }
-
-    return (
-        <span className={cn(
-            "px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border",
-            styles[status] || styles.active
-        )}>
-            {labels[status] || status}
-        </span>
-    )
-}
 
 // ===========================================
 // EMPTY STATE
@@ -227,7 +210,7 @@ function EmptyState({ readOnly }: { readOnly?: boolean }) {
                 Sem Projetos Extraordinários
             </h3>
             <p className="text-[11px] text-slate-500 mb-4 max-w-sm mx-auto">
-                {readOnly 
+                {readOnly
                     ? "Não existem projetos extraordinários ativos para este edifício."
                     : "Crie um novo projeto para gerir quotas extraordinárias de obras, manutenção ou outras despesas especiais do edifício."
                 }
@@ -245,40 +228,6 @@ function EmptyState({ readOnly }: { readOnly?: boolean }) {
     )
 }
 
-// ===========================================
-// LOADING SKELETON
-// ===========================================
 
-function ProjectsListSkeleton() {
-    return (
-        <div className="space-y-4">
-            <header className="flex items-center justify-between">
-                <div>
-                    <div className="h-6 w-48 bg-slate-200 rounded skeleton" />
-                    <div className="h-4 w-64 bg-slate-100 rounded mt-1 skeleton" />
-                </div>
-                <div className="h-9 w-32 bg-slate-200 rounded skeleton" />
-            </header>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="tech-border bg-white">
-                        <div className="p-4 border-b border-slate-100">
-                            <div className="h-5 w-3/4 bg-slate-200 rounded skeleton" />
-                            <div className="h-3 w-20 bg-slate-100 rounded mt-2 skeleton" />
-                        </div>
-                        <div className="p-4">
-                            <div className="h-8 w-32 bg-slate-200 rounded skeleton mb-3" />
-                            <div className="h-2 w-full bg-slate-200 rounded skeleton" />
-                        </div>
-                        <div className="px-4 py-3 border-t border-slate-100">
-                            <div className="h-4 w-full bg-slate-100 rounded skeleton" />
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
-}
 
 export default ExtraProjectsList

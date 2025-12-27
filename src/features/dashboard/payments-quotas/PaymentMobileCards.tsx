@@ -4,6 +4,7 @@ import { PaymentData } from "@/app/actions/payments"
 import { cn } from "@/lib/utils"
 import { Trash2, Check, AlertCircle } from "lucide-react"
 import { MONTHS } from "@/lib/constants"
+import { formatCurrency } from "@/lib/format"
 
 interface PaymentMobileCardsProps {
     data: PaymentData[]
@@ -26,12 +27,11 @@ export function PaymentMobileCards({
     onCellClick,
     onDelete
 }: PaymentMobileCardsProps) {
-    const formatCurrency = (cents: number) => {
-        return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(cents / 100)
-    }
 
     return (
         <div className="space-y-3 p-3">
+            <div id="disabled-reason-readonly" className="sr-only">Disabled in read-only mode</div>
+            <div id="disabled-reason-notool" className="sr-only">Select a tool from the header to mark status</div>
             {data.map(apt => {
                 const hasDebt = apt.balance > 0
 
@@ -92,6 +92,8 @@ export function PaymentMobileCards({
                                         key={m}
                                         onClick={() => !readOnly && activeTool && onCellClick(apt.apartmentId, idx)}
                                         disabled={readOnly || !activeTool}
+                                        aria-label={`${m} - ${apt.unit} - ${status === 'paid' ? 'Paid' : status === 'late' ? 'Late' : 'Pending'}`}
+                                        aria-describedby={readOnly ? "disabled-reason-readonly" : !activeTool ? "disabled-reason-notool" : undefined}
                                         className={cn(
                                             "flex flex-col items-center justify-center py-2 px-1 tech-border transition-all rounded-sm",
                                             status === 'paid' && "bg-emerald-50 border-emerald-200 text-emerald-700",

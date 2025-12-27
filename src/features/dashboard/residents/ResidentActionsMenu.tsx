@@ -8,6 +8,8 @@ import { removeResidentFromBuilding, updateResidentUnit } from "@/app/actions/re
 import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import { getApartmentDisplayName } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
+import { ConfirmModal } from "@/components/ui/ConfirmModal"
 
 type Resident = {
     user: {
@@ -26,18 +28,21 @@ type Apartment = {
     unit: string
 }
 
-export function ResidentActionsMenu({ 
-    resident, 
-    buildingId, 
-    unclaimedApartments 
-}: { 
+export function ResidentActionsMenu({
+    resident,
+    buildingId,
+    unclaimedApartments
+}: {
     resident: Resident
     buildingId: string
     unclaimedApartments: Apartment[]
 }) {
     const router = useRouter()
+    const { toast } = useToast()
     const [isOpen, setIsOpen] = useState(false)
     const [showAssignModal, setShowAssignModal] = useState(false)
+    const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+    const [showUnassignConfirm, setShowUnassignConfirm] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const buttonRef = useRef<HTMLButtonElement>(null)
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
@@ -61,46 +66,84 @@ export function ResidentActionsMenu({
         return () => window.removeEventListener('scroll', handleScroll, true)
     }, [isOpen])
 
-    const handleRemove = async () => {
-        if (!confirm(`Are you sure you want to remove ${resident.user.name} from the building?`)) return
-        
+    const handleRemove = async (): Promise<void> => {
         setIsLoading(true)
         try {
-            await removeResidentFromBuilding(resident.user.id, buildingId)
-            setIsOpen(false)
-            router.refresh()
+            const result = await removeResidentFromBuilding(resident.user.id, buildingId)
+            if (result.success) {
+                setIsOpen(false)
+                router.refresh()
+            } else {
+                toast({
+                    title: "Error",
+                    description: result.error || "Failed to remove resident",
+                    variant: "destructive",
+                })
+            }
         } catch (error) {
             console.error("Failed to remove resident", error)
-            alert("Failed to remove resident")
+            toast({
+                title: "Error",
+                description: "An unexpected error occurred",
+                variant: "destructive",
+            })
         } finally {
             setIsLoading(false)
+            setShowRemoveConfirm(false)
         }
     }
 
-    const handleUnassignUnit = async () => {
-        if (!confirm(`Unassign ${resident.user.name} from their unit?`)) return
-        
+    const handleUnassignUnit = async (): Promise<void> => {
         setIsLoading(true)
         try {
-            await updateResidentUnit(resident.user.id, null)
-            setIsOpen(false)
-            router.refresh()
+            const result = await updateResidentUnit(resident.user.id, null)
+            if (result.success) {
+                setIsOpen(false)
+                router.refresh()
+            } else {
+                console.error("Failed to unassign unit", result.error)
+                toast({
+                    title: "Error",
+                    description: result.error || "Failed to unassign unit",
+                    variant: "destructive",
+                })
+            }
         } catch (error) {
             console.error("Failed to unassign unit", error)
+            toast({
+                title: "Error",
+                description: "Failed to unassign unit",
+                variant: "destructive",
+            })
         } finally {
             setIsLoading(false)
+            setShowUnassignConfirm(false)
         }
     }
 
-    const handleAssignUnit = async (apartmentId: number) => {
+    const handleAssignUnit = async (apartmentId: number): Promise<void> => {
         setIsLoading(true)
         try {
-            await updateResidentUnit(resident.user.id, apartmentId)
-            setShowAssignModal(false)
-            setIsOpen(false)
-            router.refresh()
+            const result = await updateResidentUnit(resident.user.id, apartmentId)
+            if (result.success) {
+                setShowAssignModal(false)
+                setIsOpen(false)
+                router.refresh()
+            } else {
+                console.error("Failed to assign unit", result.error)
+                toast({
+                    title: "Error",
+                    description: result.error || "Failed to assign unit",
+                    variant: "destructive",
+                })
+            }
         } catch (error) {
             console.error("Failed to assign unit", error)
+            toast({
+                title: "Error",
+                description: "Failed to assign unit",
+                variant: "destructive",
+            })
         } finally {
             setIsLoading(false)
         }
@@ -108,9 +151,9 @@ export function ResidentActionsMenu({
 
     return (
         <div className="relative">
-            <button 
+            <button
                 ref={buttonRef}
-                onClick={toggleOpen} 
+                onClick={toggleOpen}
                 className="p-1 hover:bg-gray-100 rounded-full transition-colors"
             >
                 <MoreVertical className="w-4 h-4 text-gray-400" />
@@ -118,11 +161,11 @@ export function ResidentActionsMenu({
 
             {isOpen && typeof document !== 'undefined' && createPortal(
                 <>
-                    <div 
-                        className="fixed inset-0 z-60" 
+                    <div
+                        className="fixed inset-0 z-60"
                         onClick={() => setIsOpen(false)}
                     />
-                    <div 
+                    <div
                         className="absolute bg-white tech-border shadow-lg z-70 py-1 w-48"
                         style={{
                             top: `${menuPosition.top}px`,
@@ -145,7 +188,10 @@ export function ResidentActionsMenu({
 
                         {resident.apartment && (
                             <button
-                                onClick={handleUnassignUnit}
+                                onClick={() => {
+                                    setIsOpen(false)
+                                    setShowUnassignConfirm(true)
+                                }}
                                 className="w-full text-left px-4 py-1.5 text-xs text-amber-600 hover:bg-amber-50 flex items-center gap-2 uppercase font-medium"
                             >
                                 <UserX className="w-3.5 h-3.5" />
@@ -156,7 +202,10 @@ export function ResidentActionsMenu({
                         <div className="h-px bg-slate-100 my-1" />
 
                         <button
-                            onClick={handleRemove}
+                            onClick={() => {
+                                setIsOpen(false)
+                                setShowRemoveConfirm(true)
+                            }}
                             className="w-full text-left px-4 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 uppercase font-medium"
                         >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -167,6 +216,24 @@ export function ResidentActionsMenu({
                 document.body
             )}
 
+            <ConfirmModal
+                isOpen={showRemoveConfirm}
+                title="Remove Resident"
+                message={`Are you sure you want to remove ${resident.user.name} from the building?`}
+                onConfirm={handleRemove}
+                onCancel={() => setShowRemoveConfirm(false)}
+                variant="danger"
+            />
+
+            <ConfirmModal
+                isOpen={showUnassignConfirm}
+                title="Unassign Unit"
+                message={`Unassign ${resident.user.name} from their unit?`}
+                onConfirm={handleUnassignUnit}
+                onCancel={() => setShowUnassignConfirm(false)}
+                variant="neutral"
+            />
+
             {/* Assign Unit Modal */}
             <Modal
                 isOpen={showAssignModal}
@@ -175,7 +242,7 @@ export function ResidentActionsMenu({
             >
                 <div className="space-y-4">
                     <p className="text-[11px] font-bold text-slate-500 uppercase">Select available unit from registry:</p>
-                    
+
                     <div className="max-h-[300px] overflow-y-auto tech-border bg-slate-50">
                         {unclaimedApartments.length === 0 ? (
                             <p className="text-[10px] text-slate-400 font-mono uppercase text-center py-8">[ NO_AVAILABLE_UNITS ]</p>
@@ -197,11 +264,11 @@ export function ResidentActionsMenu({
                             ))
                         )}
                     </div>
-                    
+
                     <div className="flex justify-end pt-2">
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setShowAssignModal(false)}
                         >
                             Cancel

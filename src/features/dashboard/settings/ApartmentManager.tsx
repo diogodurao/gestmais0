@@ -10,11 +10,14 @@ import { cn } from "@/lib/utils"
 import { Trash2, UserMinus, Layers, Pencil } from "lucide-react"
 import { type InferSelectModel } from "drizzle-orm"
 import { user, apartments } from "@/db/schema"
+import { ConfirmModal } from "@/components/ui/ConfirmModal"
+import { useAsyncAction } from "@/hooks/useAsyncAction"
+import { t } from "@/lib/translations"
 
 type Apartment = InferSelectModel<typeof apartments>
 type UserProfile = InferSelectModel<typeof user>
 
-type ApartmentData = {
+export type ApartmentData = {
     apartment: Apartment
     resident: Pick<UserProfile, 'id' | 'name' | 'email'> | null
 }
@@ -35,9 +38,40 @@ export function ApartmentManager({
     const [editingCell, setEditingCell] = useState<{ id: number | 'new'; field: 'unit' | 'permillage' } | null>(null)
     const [newRow, setNewRow] = useState({ unit: "", permillage: "" })
     const [editValue, setEditValue] = useState("")
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [apartmentToDelete, setApartmentToDelete] = useState<number | null>(null)
+    const [isUnclaimModalOpen, setIsUnclaimModalOpen] = useState(false)
+    const [unclaimTarget, setUnclaimTarget] = useState<{ id: number; name: string } | null>(null)
     const inputRef = useRef<HTMLInputElement>(null)
 
     const isLimitReached = totalApartments ? apartments.length >= totalApartments : false
+
+    const { execute: saveApartment } = useAsyncAction(updateApartment, {
+        onSuccess: () => router.refresh(),
+        successMessage: t.extraPayment.updateSuccess,
+        errorMessage: t.common.error
+    })
+
+    const { execute: addApartment } = useAsyncAction(createApartment, {
+        onSuccess: () => {
+            setNewRow({ unit: "", permillage: "" })
+            router.refresh()
+        },
+        successMessage: t.common.success,
+        errorMessage: t.common.error
+    })
+
+    const { execute: removeApartment } = useAsyncAction(deleteApartment, {
+        onSuccess: () => router.refresh(),
+        successMessage: t.extraPayment.deleteSuccess,
+        errorMessage: t.common.error
+    })
+
+    const { execute: unclaimResident } = useAsyncAction(unclaimApartmentAction, {
+        onSuccess: () => router.refresh(),
+        successMessage: t.common.success,
+        errorMessage: t.common.error
+    })
 
     useEffect(() => {
         if (editingCell && inputRef.current) {
@@ -51,7 +85,7 @@ export function ApartmentManager({
         setEditValue(currentValue)
     }
 
-    const handleSave = async () => {
+    const handleSave = async (): Promise<void> => {
         if (!editingCell) return
 
         const { id, field } = editingCell
@@ -64,32 +98,18 @@ export function ApartmentManager({
         }
 
         // Update existing apartment
-        try {
-            const data: Partial<Apartment> = {}
-            if (field === 'unit') data.unit = editValue
-            if (field === 'permillage') {
-                const cleanPerm = editValue.replace(',', '.')
-                const parsedPerm = parseFloat(cleanPerm)
-                data.permillage = editValue && !isNaN(parsedPerm) ? parsedPerm : null
-            }
-            await updateApartment(id, data)
-            router.refresh()
-            toast({
-                title: "Apartment Updated",
-                description: `Unit ${id} has been updated.`,
-            })
-        } catch (e) {
-            const message = e instanceof Error ? e.message : "Update failed"
-            toast({
-                title: "Error",
-                description: message,
-                variant: "destructive"
-            })
+        const data: Partial<Apartment> = {}
+        if (field === 'unit') data.unit = editValue
+        if (field === 'permillage') {
+            const cleanPerm = editValue.replace(',', '.')
+            const parsedPerm = parseFloat(cleanPerm)
+            data.permillage = editValue && !isNaN(parsedPerm) ? parsedPerm : null
         }
+        await saveApartment(id, data)
         setEditingCell(null)
     }
 
-    const handleKeyDown = async (e: React.KeyboardEvent) => {
+    const handleKeyDown = async (e: React.KeyboardEvent): Promise<void> => {
         if (e.key === 'Enter') {
             e.preventDefault()
             await handleSave()
@@ -114,10 +134,10 @@ export function ApartmentManager({
         }
     }
 
-    const handleAddRow = async () => {
+    const handleAddRow = async (): Promise<void> => {
         if (!newRow.unit.trim() || !newRow.permillage.trim()) {
             toast({
-                title: "Missing Input",
+                title: t.common.error,
                 description: "Both unit and permillage are required.",
                 variant: "destructive"
             })
@@ -129,83 +149,48 @@ export function ApartmentManager({
 
         if (isNaN(parsedPerm) || parsedPerm <= 0) {
             toast({
-                title: "Invalid Input",
+                title: t.common.error,
                 description: "Permillage must be a valid positive number.",
                 variant: "destructive"
             })
             return
         }
 
-        try {
-            await createApartment(buildingId, {
-                unit: newRow.unit.trim(),
-                permillage: parsedPerm
-            })
-            setNewRow({ unit: "", permillage: "" })
-            router.refresh()
-            toast({
-                title: "Apartment Added",
-                description: `Unit ${newRow.unit.trim()} has been successfully created.`,
-            })
-        } catch (e) {
-            const message = e instanceof Error ? e.message : "Failed to add unit"
-            toast({
-                title: "Error",
-                description: message,
-                variant: "destructive"
-            })
-        }
+        await addApartment(buildingId, {
+            unit: newRow.unit.trim(),
+            permillage: parsedPerm
+        })
     }
 
     const isNewRowValid = newRow.unit.trim() && newRow.permillage.trim() && !isNaN(parseFloat(newRow.permillage.replace(',', '.')))
 
-    const handleDelete = async (id: number) => {
-        toast({
-            title: "Delete Apartment",
-            description: "Are you sure you want to delete this unit and all its payments?",
-            variant: "destructive",
-            action: (
-                <button
-                    onClick={async () => {
-                        try {
-                            await deleteApartment(id)
-                            router.refresh()
-                            toast({
-                                title: "Apartment Deleted",
-                                description: "The apartment and its associated data have been removed.",
-                            })
-                        } catch {
-                            toast({
-                                title: "Error",
-                                description: "Failed to delete apartment.",
-                                variant: "destructive"
-                            })
-                        }
-                    }}
-                    className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-transparent px-3 text-sm font-medium transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                    Delete
-                </button>
-            ),
-        })
+    const handleDeleteClick = (id: number) => {
+        setApartmentToDelete(id)
+        setIsDeleteModalOpen(true)
     }
 
-    const handleUnclaim = async (id: number, name: string) => {
-        if (!confirm(`Disconnect ${name} from this unit?`)) return
-        try {
-            await unclaimApartmentAction(id)
-            router.refresh()
-            toast({
-                title: "Resident Unclaimed",
-                description: `${name} has been disconnected from the unit.`,
-            })
-        } catch {
-            toast({
-                title: "Error",
-                description: "Failed to unclaim resident.",
-                variant: "destructive"
-            })
-        }
+    const confirmDelete = async (): Promise<void> => {
+        if (!apartmentToDelete) return
+        await removeApartment(apartmentToDelete)
+        setIsDeleteModalOpen(false)
+        setApartmentToDelete(null)
+    }
+
+    const handleDelete = async (id: number): Promise<void> => {
+        setApartmentToDelete(id)
+        setIsDeleteModalOpen(true)
+    }
+
+    const handleUnclaim = (id: number, name: string): void => {
+        setUnclaimTarget({ id, name })
+        setIsUnclaimModalOpen(true)
+    }
+
+    const confirmUnclaim = async (): Promise<void> => {
+        if (!unclaimTarget) return
+        await unclaimResident(unclaimTarget.id)
+        setIsUnclaimModalOpen(false)
+        setUnclaimTarget(null)
     }
 
     const renderCell = (id: number | 'new', field: 'unit' | 'permillage', value: string, placeholder: string) => {
@@ -230,7 +215,7 @@ export function ApartmentManager({
                 onClick={() => startEdit(id, field, value)}
                 className="w-full h-full px-3 py-2 cursor-text hover:bg-blue-50/50 transition-colors font-mono text-[11px] uppercase"
             >
-                {value || <span className="text-slate-300 italic normal-case">{placeholder}</span>}
+                {value || <span className="text-slate-300 italic normal-case">{id === 'new' ? t.common.search : placeholder}</span>}
             </div>
         )
     }
@@ -249,11 +234,11 @@ export function ApartmentManager({
                     <table className="w-full border-collapse text-[11px]">
                         <thead>
                             <tr className="bg-slate-100 border-b border-slate-200">
-                                <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200 w-1/3">Unit</th>
+                                <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200 w-1/3">{t.extraPayment.unit}</th>
                                 <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200 w-28">
-                                    <span className="flex items-center gap-1">Permillage <span className="text-slate-400 font-normal">‰</span></span>
+                                    <span className="flex items-center gap-1">{t.extraPayment.permillage} <span className="text-slate-400 font-normal">‰</span></span>
                                 </th>
-                                <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200">Resident</th>
+                                <th className="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-tighter border-r border-slate-200">{t.extraPayment.resident}</th>
                                 <th className="text-center py-2 px-2 font-bold text-slate-500 uppercase tracking-tighter w-16"></th>
                             </tr>
                         </thead>
@@ -298,6 +283,7 @@ export function ApartmentManager({
                                                 onClick={() => handleDelete(apartment.id)}
                                                 className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
                                                 title="Delete unit"
+                                                data-testid={`delete-unit-button-${apartment.id}`}
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
@@ -351,6 +337,22 @@ export function ApartmentManager({
                     </div>
                 )}
             </CardContent>
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title={t.paymentGrid.deleteApartment}
+                message={t.paymentGrid.deleteMessage}
+                onConfirm={confirmDelete}
+                onCancel={() => setIsDeleteModalOpen(false)}
+                variant="danger"
+            />
+            <ConfirmModal
+                isOpen={isUnclaimModalOpen}
+                title="Desconectar Residente"
+                message={`Tem a certeza que deseja desconectar ${unclaimTarget?.name} desta fração?`}
+                onConfirm={confirmUnclaim}
+                onCancel={() => setIsUnclaimModalOpen(false)}
+                variant="neutral"
+            />
         </Card>
     )
 }

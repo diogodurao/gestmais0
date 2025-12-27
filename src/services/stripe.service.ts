@@ -90,9 +90,10 @@ export class StripeService {
 
             return { status: 'incomplete', synced: false, message: 'Payment received but subscription not yet active. Please wait a moment and retry.' }
 
-        } catch (error: any) {
+        } catch (error) {
             console.error("[syncSubscriptionStatus] Error:", error)
-            return { status: 'incomplete', synced: false, message: error.message || 'Failed to verify subscription' }
+            const message = error instanceof Error ? error.message : 'Failed to verify subscription'
+            return { status: 'incomplete', synced: false, message }
         }
     }
 
@@ -145,8 +146,10 @@ export class StripeService {
                 cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?canceled=true`,
                 metadata: { buildingId, userId },
             })
-        } catch (error: any) {
-            if (error.code === 'resource_missing' && stripeCustomerId) {
+        } catch (error) {
+            // Safely check for Stripe error code
+            const stripeError = error as { code?: string }
+            if (stripeError.code === 'resource_missing' && stripeCustomerId) {
                 stripeCustomerId = await createCustomer()
                 checkoutSession = await stripe.checkout.sessions.create({
                     customer: stripeCustomerId,

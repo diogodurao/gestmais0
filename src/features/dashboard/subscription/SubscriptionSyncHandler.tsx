@@ -1,19 +1,21 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { syncSubscriptionStatus } from "@/app/actions/stripe"
 import { CheckCircle, Loader2, AlertCircle, RefreshCw } from "lucide-react"
+import { TIMING } from "@/lib/constants/timing"
 
 export function SubscriptionSyncHandler({ buildingId }: { buildingId: string | null }) {
     const searchParams = useSearchParams()
+    const router = useRouter()
     const [status, setStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle')
     const [message, setMessage] = useState("")
     const [retryCount, setRetryCount] = useState(0)
 
     const isSuccess = searchParams.get('success') === 'true'
 
-    const doSync = useCallback(async () => {
+    const doSync = useCallback(async (): Promise<void> => {
         if (!buildingId) {
             setStatus('error')
             setMessage("No building ID found")
@@ -21,37 +23,44 @@ export function SubscriptionSyncHandler({ buildingId }: { buildingId: string | n
         }
 
         setStatus('syncing')
-        
+
         try {
-            console.log("[Sync] Starting sync for building:", buildingId)
+            if (process.env.NODE_ENV === 'development') {
+                console.log("[Sync] Starting sync for building:", buildingId)
+            }
             const result = await syncSubscriptionStatus(buildingId)
-            console.log("[Sync] Result:", result)
-            
+            if (process.env.NODE_ENV === 'development') {
+                console.log("[Sync] Result:", result)
+            }
+
             if (result.status === 'active') {
                 setStatus('success')
                 setMessage("Subscription activated successfully!")
-                
+
                 // Force a hard navigation to clear query params and refresh data
                 setTimeout(() => {
-                    window.location.href = '/dashboard'
-                }, 1500)
+                    router.refresh()
+                    router.push('/dashboard')
+                }, TIMING.REDIRECT_DELAY)
             } else {
                 setStatus('error')
                 setMessage(result.message || "Subscription not yet active. Click retry to check again.")
             }
         } catch (error: any) {
-            console.error("[Sync] Error:", error)
+            if (process.env.NODE_ENV === 'development') {
+                console.error("[Sync] Error:", error)
+            }
             setStatus('error')
             setMessage(error.message || "Failed to verify subscription. Click retry to try again.")
         }
-    }, [buildingId])
+    }, [buildingId, router])
 
     useEffect(() => {
         if (isSuccess && buildingId && status === 'idle') {
             // Initial delay to allow webhook to process
             const timer = setTimeout(() => {
                 doSync()
-            }, 2500)
+            }, TIMING.SYNC_INITIAL_DELAY)
 
             return () => clearTimeout(timer)
         }
@@ -63,19 +72,19 @@ export function SubscriptionSyncHandler({ buildingId }: { buildingId: string | n
     }
 
     const handleManualRefresh = () => {
-        window.location.href = '/dashboard'
+        router.refresh()
+        router.push('/dashboard')
     }
 
     if (!isSuccess || !buildingId) return null
 
     return (
-        <div className={`mb-6 p-4 rounded-lg border ${
-            status === 'success' 
-                ? 'bg-green-50 border-green-200' 
-                : status === 'error'
+        <div className={`mb-6 p-4 rounded-lg border ${status === 'success'
+            ? 'bg-green-50 border-green-200'
+            : status === 'error'
                 ? 'bg-amber-50 border-amber-200'
                 : 'bg-blue-50 border-blue-200'
-        }`}>
+            }`}>
             <div className="flex items-start gap-3">
                 {status === 'idle' || status === 'syncing' ? (
                     <>
@@ -86,7 +95,7 @@ export function SubscriptionSyncHandler({ buildingId }: { buildingId: string | n
                         </div>
                     </>
                 ) : null}
-                
+
                 {status === 'success' && (
                     <>
                         <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
@@ -96,7 +105,7 @@ export function SubscriptionSyncHandler({ buildingId }: { buildingId: string | n
                         </div>
                     </>
                 )}
-                
+
                 {status === 'error' && (
                     <>
                         <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
@@ -104,14 +113,14 @@ export function SubscriptionSyncHandler({ buildingId }: { buildingId: string | n
                             <p className="font-medium text-amber-900">Payment verification pending</p>
                             <p className="text-sm text-amber-700 mb-3">{message}</p>
                             <div className="flex gap-2">
-                                <button 
+                                <button
                                     onClick={handleRetry}
                                     className="inline-flex items-center gap-1 text-sm bg-amber-100 text-amber-800 px-3 py-1.5 rounded-md hover:bg-amber-200 transition-colors"
                                 >
                                     <RefreshCw className="w-3 h-3" />
                                     Retry ({retryCount})
                                 </button>
-                                <button 
+                                <button
                                     onClick={handleManualRefresh}
                                     className="text-sm text-amber-700 underline hover:text-amber-900"
                                 >

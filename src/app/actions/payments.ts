@@ -1,7 +1,9 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { paymentService, type PaymentStatus, type PaymentData } from "@/services/payment.service"
+import { paymentService, type PaymentData } from "@/services/payment.service"
+import { type PaymentStatus, ActionResult } from "@/lib/types"
+import { ROUTES } from "@/lib/routes"
 
 /**
  * ============================================================================
@@ -12,9 +14,13 @@ import { paymentService, type PaymentStatus, type PaymentData } from "@/services
  * 
  * NOT RELATED TO STRIPE.
  */
+import { requireBuildingAccess, requireApartmentAccess } from "@/lib/auth-helpers"
+import { updatePaymentStatusSchema, bulkUpdatePaymentsSchema } from "@/lib/zod-schemas"
+
 export type { PaymentStatus, PaymentData }
 
 export async function getPaymentMap(buildingId: string, year: number): Promise<{ gridData: PaymentData[], monthlyQuota: number }> {
+    await requireBuildingAccess(buildingId)
     return await paymentService.getPaymentMap(buildingId, year)
 }
 
@@ -24,10 +30,27 @@ export async function updatePaymentStatus(
     year: number,
     status: PaymentStatus,
     amount?: number
-) {
-    const result = await paymentService.updatePaymentStatus(apartmentId, month, year, status, amount)
-    revalidatePath("/dashboard/payments")
-    return result
+): Promise<ActionResult<any>> {
+    await requireApartmentAccess(apartmentId)
+
+    try {
+        // Validate inputs
+        const validated = updatePaymentStatusSchema.safeParse({
+            apartmentId,
+            month,
+            year,
+            status,
+            amount
+        })
+
+        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+
+        const result = await paymentService.updatePaymentStatus(apartmentId, month, year, status, amount)
+        revalidatePath(ROUTES.DASHBOARD.PAYMENTS)
+        return { success: true, data: result }
+    } catch (error) {
+        return { success: false, error: "Failed to update payment status" }
+    }
 }
 
 export async function bulkUpdatePayments(
@@ -36,15 +59,31 @@ export async function bulkUpdatePayments(
     startMonth: number,
     endMonth: number,
     status: PaymentStatus
-) {
-    const monthsToUpdate = Array.from({ length: endMonth - startMonth + 1 }, (_, i) => startMonth + i)
+): Promise<ActionResult<boolean>> {
+    await requireApartmentAccess(apartmentId)
 
-    if (monthsToUpdate.length === 0) return true
+    try {
+        const validated = bulkUpdatePaymentsSchema.safeParse({
+            apartmentId,
+            year,
+            startMonth,
+            endMonth,
+            status
+        })
 
-    for (const month of monthsToUpdate) {
-        await paymentService.updatePaymentStatus(apartmentId, month, year, status)
+        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+
+        const monthsToUpdate = Array.from({ length: endMonth - startMonth + 1 }, (_, i) => startMonth + i)
+
+        if (monthsToUpdate.length === 0) return { success: true, data: true }
+
+        for (const month of monthsToUpdate) {
+            await paymentService.updatePaymentStatus(apartmentId, month, year, status)
+        }
+
+        revalidatePath(ROUTES.DASHBOARD.PAYMENTS)
+        return { success: true, data: true }
+    } catch (error) {
+        return { success: false, error: "Failed to bulk update payments" }
     }
-
-    revalidatePath("/dashboard/payments")
-    return true
 }

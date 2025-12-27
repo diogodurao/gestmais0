@@ -8,10 +8,11 @@
  */
 
 import { Suspense } from "react"
-import { ExtraProjectsList } from "@/features/dashboard/extraordinaryProjects/ExtraProjectsList"
+import { ExtraProjectsList } from "@/features/dashboard/extraordinary-projects/ExtraProjectsList"
 import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
 import { getResidentApartment } from "@/app/actions/building"
+import { ROUTES } from "@/lib/routes"
 
 export const metadata = {
     title: "Quotas Extraordinárias | GestMais",
@@ -26,14 +27,14 @@ export default async function ExtraordinaryProjectsPage() {
     const buildingId = isManager ? session.user.activeBuildingId : session.user.buildingId
 
     if (!buildingId) {
-        redirect("/dashboard")
+        redirect(ROUTES.DASHBOARD.HOME)
     }
 
     // For residents, check if they have an apartment
     if (!isManager) {
-        const apartment = await getResidentApartment(session.user.id)
+        const apartment = await getResidentApartment()
         if (!apartment) {
-            redirect("/dashboard")
+            redirect(ROUTES.DASHBOARD.HOME)
         }
     }
 

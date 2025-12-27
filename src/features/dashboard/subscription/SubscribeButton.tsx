@@ -5,6 +5,7 @@ import { createCheckoutSession, syncSubscriptionStatus } from "@/app/actions/str
 import { useTransition, useState } from "react"
 import { RefreshCw, CheckCircle, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { t } from "@/lib/translations"
 
 interface SubscribeButtonProps {
     buildingId: string
@@ -16,7 +17,7 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
     const [isPending, startTransition] = useTransition()
 
     const handleSubscribe = () => {
-        startTransition(async () => {
+        startTransition(async (): Promise<void> => {
             try {
                 const url = await createCheckoutSession(buildingId)
                 if (url) {
@@ -35,7 +36,7 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
         <div className="space-y-3 w-full max-w-sm">
             <div className="flex justify-between items-center bg-slate-50 p-3 tech-border">
                 <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total_Calculation</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.subscription.totalCalculation}</p>
                     <p className="text-[11px] text-slate-600 font-mono">{quantity} UNITS × €{(pricePerUnit / 100).toFixed(2)}</p>
                 </div>
                 <p className="text-xl font-bold font-mono text-slate-900">€{total}</p>
@@ -48,9 +49,9 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
                 size="lg"
                 className="h-12 text-sm tracking-widest"
             >
-                {isPending ? "REDIRECTING_TO_STRIPE..." : "COMMIT_SUBSCRIPTION"}
+                {isPending ? t.subscription.redirecting : t.subscription.commitSubscription}
             </Button>
-            <p className="text-[9px] text-center text-slate-400 uppercase font-bold tracking-tighter">Secure_Transaction // Stripe_Gateway</p>
+            <p className="text-[9px] text-center text-slate-400 uppercase font-bold tracking-tighter">{t.subscription.secureTransaction}</p>
         </div>
     )
 }
@@ -66,15 +67,16 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
 
     const handleSync = () => {
         setResult(null)
-        startTransition(async () => {
+        startTransition(async (): Promise<void> => {
             try {
                 const res = await syncSubscriptionStatus(buildingId)
                 setResult({ status: res.status ?? undefined, message: res.message })
                 if (res.status === 'active') {
                     router.refresh()
                 }
-            } catch (error: any) {
-                setResult({ status: 'error', message: error.message })
+            } catch (error) {
+                const msg = error instanceof Error ? error.message : "Unknown error"
+                setResult({ status: 'error', message: msg })
             }
         })
     }
@@ -84,7 +86,7 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
             <div className="flex items-start gap-3">
                 <RefreshCw className="w-4 h-4 text-blue-600 mt-0.5" />
                 <div className="flex-1">
-                    <p className="text-[11px] font-bold text-blue-900 uppercase">AWAITING_PAYMENT_SYNC?</p>
+                    <p className="text-[11px] font-bold text-blue-900 uppercase">{t.subscription.awaitingSync}</p>
                     <p className="text-[10px] text-blue-700/70 mb-2 uppercase tracking-tight">
                         If payment is complete but state is unchanged, trigger manual synchronization.
                     </p>
@@ -95,14 +97,14 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
                         disabled={isPending}
                         className="text-blue-700 border-blue-200 hover:bg-blue-100"
                     >
-                        {isPending ? "SYNCING..." : "SYNC_PAYMENT_STATE"}
+                        {isPending ? t.subscription.syncing : t.subscription.syncPayment}
                     </Button>
                     {result && (
                         <div className={`mt-2 flex items-center gap-1 text-[10px] font-bold uppercase ${result.status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
                             {result.status === 'active' ? (
-                                <><CheckCircle className="w-3 h-3" /> State_Active</>
+                                <><CheckCircle className="w-3 h-3" /> {t.subscription.stateActive}</>
                             ) : (
-                                <><AlertCircle className="w-3 h-3" /> {result.message || 'No_Session_Found'}</>
+                                <><AlertCircle className="w-3 h-3" /> {result.message || t.subscription.noSession}</>
                             )}
                         </div>
                     )}

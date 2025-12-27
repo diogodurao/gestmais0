@@ -5,6 +5,7 @@ import { authClient } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
+import { ROUTES } from "@/lib/routes"
 
 export function LoginForm() {
     const [loading, setLoading] = useState(false)
@@ -16,7 +17,7 @@ export function LoginForm() {
         password: ""
     })
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault()
         setLoading(true)
         setError("")
@@ -25,18 +26,18 @@ export function LoginForm() {
             await authClient.signIn.email({
                 email: formData.email,
                 password: formData.password,
-                callbackURL: "/dashboard"
+                callbackURL: ROUTES.DASHBOARD.HOME
             }, {
                 onRequest: () => {
-                    console.log("LOGIN REQUEST STARTED")
+
                     setLoading(true)
                 },
                 onSuccess: () => {
-                    console.log("LOGIN SUCCESS - REDIRECTING TO /dashboard")
+
                     router.push("/dashboard")
                 },
                 onError: (ctx) => {
-                    console.error("LOGIN ERROR", ctx)
+
                     setError(ctx.error.message || "Failed to sign in")
                     setLoading(false)
                 }

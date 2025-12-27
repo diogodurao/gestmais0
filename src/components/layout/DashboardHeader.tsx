@@ -1,11 +1,22 @@
 "use client"
 
-import { ChevronDown, Building2, Plus, AlertCircle, Menu } from "lucide-react"
+import { ChevronDown, Building2, Plus, AlertCircle, Menu, LogOut, Settings, User as UserIcon } from "lucide-react"
 import { useState, useTransition } from "react"
+import Link from "next/link"
+import { ROUTES } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 import { switchActiveBuilding, createNewBuilding } from "@/app/actions/building"
 import { useRouter } from "next/navigation"
 import { useSidebar } from "./SidebarProvider"
+import { authClient } from "@/lib/auth-client"
+import {
+    Dropdown,
+    DropdownTrigger,
+    DropdownContent,
+    DropdownItem,
+    DropdownSeparator,
+    DropdownLabel
+} from "@/components/ui/Dropdown"
 
 type ManagedBuilding = {
     building: { id: string; name: string; code: string; subscriptionStatus?: string | null }
@@ -47,7 +58,7 @@ export function DashboardHeader({
         if (!managerId) return
         setIsCreating(true)
         try {
-            await createNewBuilding(managerId, "New Building", "")
+            await createNewBuilding("New Building", "")
             setDropdownOpen(false)
             router.refresh()
         } catch (error) {
@@ -55,6 +66,12 @@ export function DashboardHeader({
         } finally {
             setIsCreating(false)
         }
+    }
+
+    const handleSignOut = async () => {
+        await authClient.signOut()
+        router.push("/sign-in")
+        router.refresh()
     }
 
     const initials = userName
@@ -85,10 +102,10 @@ export function DashboardHeader({
                     <Menu className="w-4 h-4" />
                 </button>
 
-                <div className="flex items-center font-bold tracking-tight text-sm ml-1">
+                <Link href={ROUTES.DASHBOARD.HOME} className="flex items-center font-bold tracking-tight text-sm ml-1 hover:opacity-80 transition-opacity">
                     <span className="text-slate-400 font-normal">GEST</span>
                     <span className="text-slate-800">MAIS+</span>
-                </div>
+                </Link>
 
                 <div className="h-5 w-px bg-slate-300 mx-2"></div>
 
@@ -164,15 +181,28 @@ export function DashboardHeader({
                 ) : null}
             </div>
 
-            <div className="flex items-center gap-3">
-                <div className="text-right leading-3 hidden sm:block">
-                    <div className="text-[11px] font-bold text-slate-700">{userName}</div>
-                    <div className="text-[9px] text-slate-500 uppercase tracking-widest">{userRole} Access</div>
-                </div>
-                <div className="w-7 h-7 bg-blue-600 text-white rounded-sm flex items-center justify-center text-xs font-bold shadow-sm">
-                    {initials}
-                </div>
-            </div>
+            <Dropdown>
+                <DropdownTrigger className="flex items-center gap-3 hover:bg-slate-100 px-2 py-1 rounded-sm transition-colors outline-none">
+                    <div className="text-right leading-3 hidden sm:block">
+                        <div className="text-[11px] font-bold text-slate-700">{userName}</div>
+                        <div className="text-[9px] text-slate-500 uppercase tracking-widest">{userRole} Access</div>
+                    </div>
+                    <div className="w-7 h-7 bg-blue-600 text-white rounded-sm flex items-center justify-center text-xs font-bold shadow-sm">
+                        {initials}
+                    </div>
+                </DropdownTrigger>
+                <DropdownContent align="end" className="w-48">
+                    <DropdownLabel>My Account</DropdownLabel>
+                    <DropdownItem icon={<Settings className="w-4 h-4" />} onClick={() => router.push(ROUTES.DASHBOARD.SETTINGS)}>
+                        Settings
+                    </DropdownItem>
+                    <DropdownSeparator />
+                    <DropdownItem icon={<LogOut className="w-4 h-4" />} destructive onClick={handleSignOut}>
+                        Sign Out
+                    </DropdownItem>
+                </DropdownContent>
+            </Dropdown>
         </header>
+
     )
 }

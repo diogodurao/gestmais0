@@ -63,6 +63,9 @@ export default async function Image() {
 
                 <div
                     style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
                         fontSize: '60px',
                         fontWeight: 900,
                         textAlign: 'center',
@@ -72,9 +75,8 @@ export default async function Image() {
                         letterSpacing: '-0.025em',
                     }}
                 >
-                    Engenharia de Precisão
-                    <br />
-                    para Condomínios.
+                    <span>Engenharia de Precisão</span>
+                    <span>para Condomínios.</span>
                 </div>
 
                 <div

@@ -12,6 +12,8 @@ import {
 // TYPES
 // ===========================================
 
+import { PaymentStatus, ProjectStatus } from "@/lib/types"
+
 export interface CreateProjectInput {
     buildingId: string
     name: string
@@ -30,12 +32,12 @@ export interface UpdateProjectInput {
     description?: string
     documentUrl?: string
     documentName?: string
-    status?: string
+    status?: ProjectStatus
 }
 
 export interface UpdatePaymentInput {
     paymentId: number
-    status: "paid" | "pending" | "overdue" | "partial"
+    status: PaymentStatus
     paidAmount?: number
     paymentMethod?: string
     notes?: string
@@ -48,7 +50,7 @@ export interface ProjectListItem {
     numInstallments: number
     startMonth: number
     startYear: number
-    status: string
+    status: ProjectStatus
     createdAt: Date
     totalCollected: number
     progressPercent: number
@@ -65,7 +67,7 @@ export interface ProjectDetail {
     startYear: number
     documentUrl: string | null
     documentName: string | null
-    status: string
+    status: ProjectStatus
     createdAt: Date
     payments: ApartmentPaymentData[]
     stats: {
@@ -209,7 +211,7 @@ export class ExtraordinaryService {
                 data: { projectId: result.id }
             }
         } catch (error) {
-            console.error("Error creating extraordinary project:", error)
+
             return {
                 success: false,
                 error: "Erro ao criar projeto. Tente novamente."
@@ -251,7 +253,7 @@ export class ExtraordinaryService {
 
             return { success: true, data: undefined }
         } catch (error) {
-            console.error("Error updating project:", error)
+
             return {
                 success: false,
                 error: "Erro ao atualizar projeto."
@@ -308,14 +310,14 @@ export class ExtraordinaryService {
                     ...project,
                     totalCollected,
                     progressPercent,
-                    status: project.status || 'active',
+                    status: (project.status || 'active') as ProjectStatus,
                     createdAt: project.createdAt || new Date(),
                 }
             })
 
             return { success: true, data: projectsWithStats }
         } catch (error) {
-            console.error("Error fetching projects:", error)
+
             return {
                 success: false,
                 error: "Erro ao carregar projetos."
@@ -415,7 +417,7 @@ export class ExtraordinaryService {
                 startYear: project.startYear,
                 documentUrl: project.documentUrl,
                 documentName: project.documentName,
-                status: project.status || 'active',
+                status: (project.status || 'active') as ProjectStatus,
                 createdAt: project.createdAt || new Date(),
                 payments: apartmentsList,
                 stats: {
@@ -429,7 +431,7 @@ export class ExtraordinaryService {
 
             return { success: true, data: result }
         } catch (error) {
-            console.error("Error fetching project detail:", error)
+
             return {
                 success: false,
                 error: "Erro ao carregar detalhes do projeto."
@@ -532,7 +534,7 @@ export class ExtraordinaryService {
 
             return { success: true, data: results }
         } catch (error) {
-            console.error("Error fetching resident payments:", error)
+
             return {
                 success: false,
                 error: "Erro ao carregar pagamentos."
@@ -579,7 +581,7 @@ export class ExtraordinaryService {
 
             return { success: true, data: undefined }
         } catch (error) {
-            console.error("Error updating payment:", error)
+
             return {
                 success: false,
                 error: "Erro ao atualizar pagamento."
@@ -622,7 +624,7 @@ export class ExtraordinaryService {
 
             return { success: true, data: { updated: paymentsToUpdate.length } }
         } catch (error) {
-            console.error("Error bulk updating payments:", error)
+
             return {
                 success: false,
                 error: "Erro ao atualizar pagamentos."
@@ -646,7 +648,7 @@ export class ExtraordinaryService {
 
             return { success: true, data: undefined }
         } catch (error) {
-            console.error("Error archiving project:", error)
+
             return {
                 success: false,
                 error: "Erro ao arquivar projeto."
@@ -674,7 +676,7 @@ export class ExtraordinaryService {
 
             return { success: true, data: undefined }
         } catch (error) {
-            console.error("Error deleting project:", error)
+
             return {
                 success: false,
                 error: "Erro ao eliminar projeto."
@@ -739,7 +741,7 @@ export class ExtraordinaryService {
 
             return { success: true, data: { recalculated: updatedCount } }
         } catch (error) {
-            console.error("Error recalculating payments:", error)
+
             return {
                 success: false,
                 error: "Erro ao recalcular pagamentos."

@@ -13,6 +13,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 
 export const dynamic = 'force-dynamic'
 
+import { ROUTES } from "@/lib/routes"
+
 export default async function SettingsPage({
     searchParams
 }: {
@@ -36,17 +38,20 @@ export default async function SettingsPage({
             buildingDone = b ? isBuildingComplete(b) : false
         }
         if (!profileDone || !buildingDone) {
-            return redirect("/dashboard")
+            return redirect(ROUTES.DASHBOARD.HOME)
         }
     } else {
         // Resident setup check
-        const apartment = await getResidentApartment(session.user.id)
+        const apartment = await getResidentApartment()
         if (!session.user.buildingId || !apartment || !session.user.iban) {
-            return redirect("/dashboard")
+            return redirect(ROUTES.DASHBOARD.HOME)
         }
     }
 
-    const userApartment = await getResidentApartment(session.user.id)
+    let userApartment = null
+    if (session.user.role === 'resident') {
+        userApartment = await getResidentApartment()
+    }
     const unitName = userApartment ? getApartmentDisplayName(userApartment) : null
 
     const userData = {
@@ -62,8 +67,8 @@ export default async function SettingsPage({
     const profileComplete = isProfileComplete(session.user)
     const managerActiveBuildingId = session.user.activeBuildingId ?? null
     let building = null
-    let apartmentsData: any[] = []
-    let unclaimedUnits: any[] = []
+    let apartmentsData: Awaited<ReturnType<typeof getBuildingApartments>> = []
+    let unclaimedUnits: Awaited<ReturnType<typeof getUnclaimedApartments>> = []
 
     if (session.user.role === 'manager' && managerActiveBuildingId) {
         building = await getBuilding(managerActiveBuildingId)

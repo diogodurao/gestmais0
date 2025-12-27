@@ -4,7 +4,8 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { getPaymentMap } from "@/app/actions/payments"
-import { PaymentGrid } from "@/features/dashboard/paymentsQuotas/PaymentGrid"
+import { PaymentGrid } from "@/features/dashboard/payments-quotas/PaymentGrid"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { getResidentApartment } from "@/app/actions/building"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
 
@@ -20,7 +21,7 @@ export default async function MyPaymentsPage() {
     }
 
     // MANDATORY SETUP CHECK
-    const apartment = await getResidentApartment(session.user.id)
+    const apartment = await getResidentApartment()
     if (!session.user.buildingId || !apartment || !session.user.iban) {
         return redirect("/dashboard")
     }
@@ -32,13 +33,19 @@ export default async function MyPaymentsPage() {
 
     return (
         <div className="max-w-[1400px] mx-auto">
-            <PaymentGrid
-                data={gridData}
-                monthlyQuota={monthlyQuota}
-                buildingId={session.user.buildingId}
-                year={year}
-                readOnly={true}
-            />
+            <ErrorBoundary fallback={
+                <div className="p-8 text-center">
+                    <p className="text-rose-600">Erro ao carregar os seus pagamentos</p>
+                </div>
+            }>
+                <PaymentGrid
+                    data={gridData}
+                    monthlyQuota={monthlyQuota}
+                    buildingId={session.user.buildingId}
+                    year={year}
+                    readOnly={true}
+                />
+            </ErrorBoundary>
         </div>
     )
 }

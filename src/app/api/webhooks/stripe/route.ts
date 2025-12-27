@@ -19,9 +19,10 @@ export async function POST(req: Request) {
             signature,
             process.env.STRIPE_WEBHOOK_SECRET as string
         );
-    } catch (error: any) {
-        console.error("[Stripe Webhook] Signature verification failed:", error.message);
-        return new Response(`Webhook Error: ${error.message}`, { status: 400 });
+    } catch (error) {
+        const errMsg = error instanceof Error ? error.message : "Unknown error"
+        console.error("[Stripe Webhook] Signature verification failed:", errMsg);
+        return new Response(`Webhook Error: ${errMsg}`, { status: 400 });
     }
 
     console.log("[Stripe Webhook] Event type:", event.type);
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
                 stripePriceId: session.metadata?.priceId
             })
             .where(eq(building.id, buildingId));
-        
+
         console.log("[Stripe Webhook] Building updated to active status");
     }
 
@@ -69,10 +70,10 @@ export async function POST(req: Request) {
     // Handle invoice.payment_succeeded to keep status active?
     // Often not strictly needed if we trust the initial checkout, but good for renewals.
     if (event.type === "invoice.payment_succeeded") {
-        const invoice = event.data.object as any;
+        const invoice = event.data.object as Stripe.Invoice & { subscription?: string | Stripe.Subscription | null };
         const subscriptionId = typeof invoice.subscription === 'string'
             ? invoice.subscription
-            : invoice.subscription?.id;
+            : (invoice.subscription as Stripe.Subscription)?.id;
         // Ensure it's active
         const buildingRecord = await db.query.building.findFirst({
             where: eq(building.stripeSubscriptionId, subscriptionId)

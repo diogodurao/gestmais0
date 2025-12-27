@@ -2,7 +2,8 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { getPaymentMap } from "@/app/actions/payments"
-import { PaymentGrid } from "@/features/dashboard/paymentsQuotas/PaymentGrid"
+import { PaymentGrid } from "@/features/dashboard/payments-quotas/PaymentGrid"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { getOrCreateManagerBuilding, getBuilding } from "@/app/actions/building"
 import { isProfileComplete, isBuildingComplete } from "@/lib/validations"
 
@@ -19,7 +20,7 @@ export default async function PaymentsPage() {
 
     // MANDATORY SETUP CHECK
     const profileDone = isProfileComplete(session.user)
-    const building = await getOrCreateManagerBuilding(session.user.id)
+    const building = await getOrCreateManagerBuilding()
     const buildingDone = isBuildingComplete(building)
 
     if (!profileDone || !buildingDone) {
@@ -34,12 +35,18 @@ export default async function PaymentsPage() {
 
     return (
         <div className="max-w-[1400px] mx-auto h-full">
-            <PaymentGrid
-                data={gridData}
-                monthlyQuota={monthlyQuota}
-                buildingId={buildingId}
-                year={currentYear}
-            />
+            <ErrorBoundary fallback={
+                <div className="p-8 text-center">
+                    <p className="text-rose-600">Erro ao carregar grelha de pagamentos</p>
+                </div>
+            }>
+                <PaymentGrid
+                    data={gridData}
+                    monthlyQuota={monthlyQuota}
+                    buildingId={buildingId}
+                    year={currentYear}
+                />
+            </ErrorBoundary>
         </div>
     )
 }

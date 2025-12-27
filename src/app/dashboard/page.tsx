@@ -11,7 +11,7 @@ import { ResidentOnboardingFlow } from "@/features/dashboard/onboarding/Resident
 import { ManagerOnboardingFlow } from "@/features/dashboard/onboarding/ManagerOnboardingFlow";
 import { ResidentsList } from "@/features/dashboard/residents/ResidentsList";
 import { SubscriptionSyncWrapper } from "@/features/dashboard/subscription/SubscriptionSyncWrapper";
-import { PaymentStatusCard } from "@/features/dashboard/paymentsQuotas/PaymentStatusCard";
+import { PaymentStatusCard } from "@/features/dashboard/payments-quotas/PaymentStatusCard";
 import { Key, Activity, BarChart3, Lock } from "lucide-react";
 
 export const dynamic = 'force-dynamic'
@@ -37,7 +37,7 @@ export default async function DashboardPage() {
 
     if (isManager(sessionUser)) {
         try {
-            const building = await getOrCreateManagerBuilding(session.user.id);
+            const building = await getOrCreateManagerBuilding();
             buildingInfo = building;
             buildingCode = building.code;
 
@@ -85,7 +85,7 @@ export default async function DashboardPage() {
         const hasIban = !!session.user.iban
 
         try {
-            residentApartment = await getResidentApartment(session.user.id)
+            residentApartment = await getResidentApartment()
             const hasApartment = !!residentApartment
 
             // Check if onboarding is complete

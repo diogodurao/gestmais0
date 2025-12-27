@@ -3,7 +3,14 @@
  */
 export function isValidNif(nif?: string | null): boolean {
     if (!nif) return false
-    return /^\d{9}$/.test(nif)
+    if (!/^\d{9}$/.test(nif)) return false
+
+    const weights = [9, 8, 7, 6, 5, 4, 3, 2, 1]
+    const sum = nif.split('').reduce((acc, digit, i) =>
+        acc + parseInt(digit) * weights[i], 0)
+
+    // Check if the modulo 11 of the sum is 0
+    return sum % 11 === 0
 }
 
 /**

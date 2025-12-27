@@ -1,7 +1,12 @@
 import { ChevronDown } from "lucide-react";
 
 interface FaqProps {
-    dict: any;
+    dict: {
+        faq: {
+            title: string;
+            items: { question: string; answer: string }[];
+        }
+    };
 }
 
 export function Faq({ dict }: FaqProps) {
@@ -15,7 +20,7 @@ export function Faq({ dict }: FaqProps) {
                 </div>
 
                 <div className="space-y-4">
-                    {dict.faq.items.map((item: any, i: number) => (
+                    {dict.faq.items.map((item, i) => (
                         <details
                             key={i}
                             className="group tech-card bg-white [&_summary::-webkit-details-marker]:hidden"

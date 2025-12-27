@@ -14,20 +14,22 @@ import {
 import { formatCurrency, getMonthName } from "@/lib/extraordinary-calculations"
 import { getResidentExtraordinaryPayments, type ResidentProjectPayment } from "@/app/actions/extraordinary"
 import { ProgressBar } from "@/components/ui/ProgressBar"
+import { StatusBadge } from "@/components/ui/StatusBadge"
+import { SummaryCard } from "@/components/ui/SummaryCard"
+import { SkeletonHeader, SkeletonCard } from "@/components/ui/Skeletons"
+import { Skeleton } from "@/components/ui/Skeleton"
 
 // ===========================================
 // TYPES
 // ===========================================
 
-interface ResidentExtraPaymentsProps {
-    userId: string
-}
+
 
 // ===========================================
 // MAIN COMPONENT
 // ===========================================
 
-export function ResidentExtraPayments({ userId }: ResidentExtraPaymentsProps) {
+export function ResidentExtraPayments() {
     const [projects, setProjects] = useState<ResidentProjectPayment[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -35,8 +37,8 @@ export function ResidentExtraPayments({ userId }: ResidentExtraPaymentsProps) {
     useEffect(() => {
         async function loadPayments() {
             setIsLoading(true)
-            const result = await getResidentExtraordinaryPayments(userId)
-            
+            const result = await getResidentExtraordinaryPayments()
+
             if (result.success) {
                 setProjects(result.data)
                 setError(null)
@@ -45,12 +47,25 @@ export function ResidentExtraPayments({ userId }: ResidentExtraPaymentsProps) {
             }
             setIsLoading(false)
         }
-        
+
         loadPayments()
-    }, [userId])
+    }, [])
 
     if (isLoading) {
-        return <LoadingSkeleton />
+        return (
+            <div className="space-y-6">
+                <SkeletonHeader />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="tech-border p-3 h-20 bg-slate-50" />
+                    ))}
+                </div>
+                <div className="space-y-4">
+                    <SkeletonCard />
+                    <SkeletonCard />
+                </div>
+            </div>
+        )
     }
 
     if (error) {
@@ -124,14 +139,14 @@ export function ResidentExtraPayments({ userId }: ResidentExtraPaymentsProps) {
 
 function ProjectPaymentCard({ project }: { project: ResidentProjectPayment }) {
     const [isExpanded, setIsExpanded] = useState(false)
-    
-    const progressPercent = project.totalShare > 0 
-        ? Math.round((project.totalPaid / project.totalShare) * 100) 
+
+    const progressPercent = project.totalShare > 0
+        ? Math.round((project.totalPaid / project.totalShare) * 100)
         : 0
-    
+
     const isPaid = project.balance === 0
     const startDate = `${getMonthName(project.startMonth, true)} ${project.startYear}`
-    
+
     // Calculate end date
     const endMonth = ((project.startMonth - 1 + project.numInstallments - 1) % 12) + 1
     const endYear = project.startYear + Math.floor((project.startMonth - 1 + project.numInstallments - 1) / 12)
@@ -140,7 +155,7 @@ function ProjectPaymentCard({ project }: { project: ResidentProjectPayment }) {
     return (
         <div className="tech-border bg-white overflow-hidden">
             {/* Header */}
-            <div 
+            <div
                 className="p-3 sm:p-4 cursor-pointer hover:bg-slate-50 transition-colors"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
@@ -150,7 +165,7 @@ function ProjectPaymentCard({ project }: { project: ResidentProjectPayment }) {
                             <h3 className="text-[12px] sm:text-[13px] font-bold text-slate-900 truncate">
                                 {project.projectName}
                             </h3>
-                            <StatusBadge isPaid={isPaid} />
+                            <StatusBadge status={isPaid ? "complete" : "partial"} />
                         </div>
                         <div className="flex items-center gap-2 sm:gap-3 mt-1 text-[9px] sm:text-[10px] text-slate-500 flex-wrap">
                             <span className="flex items-center gap-1">
@@ -162,7 +177,7 @@ function ProjectPaymentCard({ project }: { project: ResidentProjectPayment }) {
                             <span className="font-mono">Fr: {project.apartmentUnit}</span>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 sm:gap-4">
                         <div className="text-right">
                             <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tight block">
@@ -233,7 +248,7 @@ interface InstallmentCellProps {
 function InstallmentCell({ installment }: InstallmentCellProps) {
     const isPaid = installment.status === "paid"
     const isOverdue = installment.status === "overdue"
-    
+
     return (
         <div className={cn(
             "tech-border p-1.5 sm:p-2 text-center transition-colors",
@@ -264,67 +279,8 @@ function InstallmentCell({ installment }: InstallmentCellProps) {
     )
 }
 
-// ===========================================
-// SUMMARY CARD
-// ===========================================
 
-interface SummaryCardProps {
-    label: string
-    value: string
-    variant: "success" | "warning" | "neutral"
-    icon: React.ComponentType<{ className?: string }>
-}
 
-function SummaryCard({ label, value, variant, icon: Icon }: SummaryCardProps) {
-    const variants = {
-        success: "bg-emerald-50 border-emerald-200",
-        warning: "bg-amber-50 border-amber-200",
-        neutral: "bg-slate-50 border-slate-200",
-    }
-    
-    const iconColors = {
-        success: "text-emerald-600",
-        warning: "text-amber-600",
-        neutral: "text-slate-500",
-    }
-    
-    const valueColors = {
-        success: "text-emerald-700",
-        warning: "text-amber-700",
-        neutral: "text-slate-800",
-    }
-
-    return (
-        <div className={cn("tech-border p-2 sm:p-3", variants[variant])}>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-                <Icon className={cn("w-3 sm:w-4 h-3 sm:h-4", iconColors[variant])} />
-                <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-tight">
-                    {label}
-                </span>
-            </div>
-            <p className={cn("text-lg sm:text-xl font-bold font-mono mt-0.5 sm:mt-1", valueColors[variant])}>
-                {value}
-            </p>
-        </div>
-    )
-}
-
-// ===========================================
-// STATUS BADGE
-// ===========================================
-
-function StatusBadge({ isPaid }: { isPaid: boolean }) {
-    return (
-        <span className={cn(
-            "px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border",
-            isPaid 
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : "bg-amber-50 text-amber-700 border-amber-200"
-        )}>
-            {isPaid ? "Liquidado" : "Em curso"}
-        </span>
-    )
-}
 
 // ===========================================
 // EMPTY STATE
@@ -342,37 +298,6 @@ function EmptyState() {
             <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
                 Não existem projetos extraordinários com pagamentos associados à sua fração.
             </p>
-        </div>
-    )
-}
-
-// ===========================================
-// LOADING SKELETON
-// ===========================================
-
-function LoadingSkeleton() {
-    return (
-        <div className="space-y-6">
-            <div>
-                <div className="h-6 w-64 bg-slate-200 skeleton" />
-                <div className="h-4 w-80 bg-slate-100 skeleton mt-1" />
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="tech-border p-3 h-20 skeleton" />
-                ))}
-            </div>
-            
-            <div className="space-y-4">
-                {[1, 2].map((i) => (
-                    <div key={i} className="tech-border bg-white p-4">
-                        <div className="h-5 w-48 bg-slate-200 skeleton mb-2" />
-                        <div className="h-3 w-32 bg-slate-100 skeleton mb-4" />
-                        <div className="h-2 w-full bg-slate-200 skeleton" />
-                    </div>
-                ))}
-            </div>
         </div>
     )
 }

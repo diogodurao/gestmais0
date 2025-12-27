@@ -1,19 +1,22 @@
 import { ButtonHTMLAttributes, forwardRef } from "react"
+import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: "primary" | "secondary" | "outline" | "ghost" | "danger"
     size?: "xs" | "sm" | "md" | "lg"
     fullWidth?: boolean
+    isLoading?: boolean
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = "primary", size = "md", fullWidth, ...props }, ref) => {
+    ({ className, variant = "primary", size = "md", fullWidth, isLoading, children, disabled, ...props }, ref) => {
         return (
             <button
                 ref={ref}
+                disabled={disabled || isLoading}
                 className={cn(
-                    "inline-flex items-center justify-center rounded-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:opacity-50 disabled:pointer-events-none uppercase tracking-tight",
+                    "inline-flex items-center justify-center rounded-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:opacity-50 disabled:pointer-events-none uppercase tracking-tight gap-2",
                     {
                         "bg-slate-900 text-white hover:bg-slate-800 border border-slate-900": variant === "primary",
                         "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200": variant === "secondary",
@@ -29,13 +32,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     className
                 )}
                 {...props}
-            />
+            >
+                {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {children}
+            </button>
         )
     }
 )
 Button.displayName = "Button"
 
-// Re-export cn for backward compatibility during migration
-// TODO: Remove this re-export once all imports are updated
-export { Button, cn }
-// use only : export { Button }
+export { Button }

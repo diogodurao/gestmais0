@@ -6,7 +6,7 @@
 
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
-import { ExtraProjectDetail } from "@/features/dashboard/extraordinaryProjects/ExtraProjectDetail"
+import { ExtraProjectDetail } from "@/features/dashboard/extraordinary-projects/ExtraProjectDetail"
 import { requireSession } from "@/lib/auth-helpers"
 
 export const metadata = {

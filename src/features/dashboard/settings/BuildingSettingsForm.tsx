@@ -44,7 +44,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         if (error) setError("")
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault()
         setIsSaving(true)
         setError("")
@@ -53,7 +53,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         const parsedTotalUnits = parseInt(formData.totalApartments)
 
         try {
-            await updateBuilding(building.id, {
+            const result = await updateBuilding(building.id, {
                 ...formData,
                 name: `${formData.street} ${formData.number}`, // Auto-generate name
                 iban: formData.iban || null,
@@ -63,7 +63,11 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                 monthlyQuota: isNaN(parsedQuota) ? 0 : Math.round(parsedQuota * 100),
                 totalApartments: isNaN(parsedTotalUnits) ? 0 : parsedTotalUnits,
             })
-            router.refresh()
+            if (result.success) {
+                router.refresh()
+            } else {
+                setError(result.error || "Update failed")
+            }
         } catch (error) {
             console.error("Failed to update building", error)
             setError("Update failed")
@@ -82,7 +86,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     </CardTitle>
                     <button type="button" className="text-[10px] text-blue-600 hover:underline">Edit Mode</button>
                 </CardHeader>
-                
+
                 <form onSubmit={handleSubmit} className="p-0">
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
                         <div className="label-col border-none">Building Code</div>
@@ -94,11 +98,11 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
                         <div className="label-col border-none">Street Line</div>
                         <div className="value-col border-none">
-                            <input 
-                                type="text" 
-                                value={formData.street} 
-                                onChange={e => handleChange("street", e.target.value)} 
-                                className="input-cell h-8" 
+                            <input
+                                type="text"
+                                value={formData.street}
+                                onChange={e => handleChange("street", e.target.value)}
+                                className="input-cell h-8"
                             />
                         </div>
                     </div>
@@ -106,18 +110,18 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
                         <div className="label-col border-none">Number / City</div>
                         <div className="value-col border-none grid grid-cols-2">
-                            <input 
-                                type="text" 
-                                value={formData.number} 
-                                onChange={e => handleChange("number", e.target.value)} 
-                                className="input-cell h-8 border-r border-slate-100" 
+                            <input
+                                type="text"
+                                value={formData.number}
+                                onChange={e => handleChange("number", e.target.value)}
+                                className="input-cell h-8 border-r border-slate-100"
                                 placeholder="Nº"
                             />
-                            <input 
-                                type="text" 
-                                value={formData.city} 
-                                onChange={e => handleChange("city", e.target.value)} 
-                                className="input-cell h-8" 
+                            <input
+                                type="text"
+                                value={formData.city}
+                                onChange={e => handleChange("city", e.target.value)}
+                                className="input-cell h-8"
                                 placeholder="CITY"
                             />
                         </div>
@@ -126,11 +130,11 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
                         <div className="label-col border-none">Building NIF</div>
                         <div className="value-col border-none">
-                            <input 
-                                type="text" 
-                                value={formData.nif} 
-                                onChange={e => handleChange("nif", e.target.value)} 
-                                className="input-cell h-8 font-mono" 
+                            <input
+                                type="text"
+                                value={formData.nif}
+                                onChange={e => handleChange("nif", e.target.value)}
+                                className="input-cell h-8 font-mono"
                                 maxLength={9}
                             />
                         </div>
@@ -139,11 +143,11 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
                         <div className="label-col border-none">Building IBAN</div>
                         <div className="value-col border-none">
-                            <input 
-                                type="text" 
-                                value={formData.iban} 
-                                onChange={e => handleChange("iban", e.target.value)} 
-                                className="input-cell h-8 font-mono uppercase" 
+                            <input
+                                type="text"
+                                value={formData.iban}
+                                onChange={e => handleChange("iban", e.target.value)}
+                                className="input-cell h-8 font-mono uppercase"
                             />
                         </div>
                     </div>
@@ -156,22 +160,22 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         <div className="label-col border-none">Calculation Mode</div>
                         <div className="value-col border-none p-2 flex flex-col sm:flex-row gap-4 bg-white">
                             <label className="flex items-center gap-2 cursor-pointer">
-                                <input 
-                                    type="radio" 
-                                    name="quota" 
-                                    checked={formData.quotaMode === "global"} 
-                                    onChange={() => handleChange("quotaMode", "global")} 
-                                    className="w-3.5 h-3.5 accent-blue-600" 
+                                <input
+                                    type="radio"
+                                    name="quota"
+                                    checked={formData.quotaMode === "global"}
+                                    onChange={() => handleChange("quotaMode", "global")}
+                                    className="w-3.5 h-3.5 accent-blue-600"
                                 />
                                 <span className="text-xs">Global Fixed (Equal)</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
-                                <input 
-                                    type="radio" 
-                                    name="quota" 
-                                    checked={formData.quotaMode === "permillage"} 
-                                    onChange={() => handleChange("quotaMode", "permillage")} 
-                                    className="w-3.5 h-3.5 accent-blue-600" 
+                                <input
+                                    type="radio"
+                                    name="quota"
+                                    checked={formData.quotaMode === "permillage"}
+                                    onChange={() => handleChange("quotaMode", "permillage")}
+                                    className="w-3.5 h-3.5 accent-blue-600"
                                 />
                                 <span className="text-xs">Permillage Based</span>
                             </label>
@@ -181,11 +185,11 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr]">
                         <div className="label-col border-none">Base Value (€)</div>
                         <div className="value-col border-none relative">
-                            <input 
-                                type="number" 
-                                value={monthlyQuotaStr} 
+                            <input
+                                type="number"
+                                value={monthlyQuotaStr}
                                 onChange={e => setMonthlyQuotaStr(e.target.value)}
-                                className="input-cell h-8 font-mono font-bold text-slate-700" 
+                                className="input-cell h-8 font-mono font-bold text-slate-700"
                                 placeholder="0.00"
                             />
                             <div className="absolute right-2 top-1.5 flex flex-col pointer-events-none opacity-50">
@@ -196,7 +200,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     </div>
 
                     <div className="p-3 flex justify-end border-t border-slate-100">
-                        <Button type="submit" size="xs" disabled={isSaving} variant="primary">
+                        <Button type="submit" size="xs" isLoading={isSaving} variant="primary">
                             Save Changes
                         </Button>
                     </div>

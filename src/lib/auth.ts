@@ -8,10 +8,7 @@ export const auth = betterAuth({
         provider: "pg",
         schema: schema,
     }),
-    trustedOrigins: [
-        "http://localhost:3000",
-        "http://172.20.10.3:3000" // Mobile testing
-    ],
+    // trustedOrigins removed - rely on BETTER_AUTH_URL env var
     emailAndPassword: {
         enabled: true,
     },

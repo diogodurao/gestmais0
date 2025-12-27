@@ -6,14 +6,14 @@
 /**
  * Basic PDF export using browser's print functionality
  */
-export async function exportExtraPaymentsToPDF(
+export async function exportExtraPaymentsToPDF<T extends Record<string, unknown>>(
     title: string,
     buildingName: string,
     totalBudget: number,
-    data: any[]
+    data: T[]
 ) {
-    console.log(`Exporting PDF: ${title} for ${buildingName}`);
-    
+
+
     // In a production environment, we would use libraries like jspdf and jspdf-autotable here.
     // For now, we trigger the browser's print dialog as a fallback.
     if (typeof window !== "undefined") {
@@ -24,7 +24,7 @@ export async function exportExtraPaymentsToPDF(
 /**
  * Basic Excel export using CSV format
  */
-export async function exportToExcel({
+export async function exportToExcel<T extends Record<string, unknown>>({
     filename,
     title,
     columns,
@@ -32,10 +32,10 @@ export async function exportToExcel({
 }: {
     filename: string;
     title: string;
-    columns: Array<{ header: string; key: string; format?: "currency" }>;
-    data: any[];
+    columns: Array<{ header: string; key: keyof T & string; format?: "currency" }>;
+    data: T[];
 }) {
-    console.log(`Exporting Excel (CSV): ${filename}`);
+
 
     if (typeof window === "undefined") return;
 
@@ -44,18 +44,19 @@ export async function exportToExcel({
     const rows = data.map(item => {
         return columns.map(col => {
             const value = item[col.key];
-            
+
             if (value === null || value === undefined) return '""';
-            
+
             if (col.format === "currency") {
                 // Simplified currency formatting for CSV (value is in cents)
-                return (value / 100).toFixed(2);
+                const numValue = typeof value === 'number' ? value : Number(value);
+                return (isNaN(numValue) ? "0.00" : (numValue / 100).toFixed(2));
             }
-            
+
             if (typeof value === "string") {
                 return `"${value.replace(/"/g, '""')}"`;
             }
-            
+
             return value;
         }).join(",");
     });
@@ -63,7 +64,7 @@ export async function exportToExcel({
     const csvContent = [headers, ...rows].join("\n");
     const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", `${filename}.csv`);

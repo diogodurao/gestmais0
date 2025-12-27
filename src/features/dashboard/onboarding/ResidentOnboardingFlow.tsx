@@ -2,22 +2,20 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Building2, Home, CreditCard, Check, AlertCircle, Loader2 } from "lucide-react"
+import { Building2, Home, CreditCard, Check, AlertCircle, Loader2, ArrowRight, Terminal } from "lucide-react"
 import { joinBuilding, claimApartment, getUnclaimedApartments } from "@/app/actions/building"
 import { updateUserProfile } from "@/app/actions/user"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
-import { Input } from "@/components/ui/Input"
 import { isValidIban } from "@/lib/validations"
-import { getApartmentDisplayName, getFloorLabel } from "@/lib/utils"
+import { getApartmentDisplayName } from "@/lib/utils"
 
 type Step = 'join' | 'claim' | 'iban' | 'complete'
 
 interface ResidentOnboardingFlowProps {
     user: { id: string, name: string, email: string, buildingId?: string | null, iban?: string | null }
     initialStep: Step
-    unclaimedApartments: any[]
+    unclaimedApartments: { id: number; unit: string; permillage?: number | null }[]
 }
 
 export function ResidentOnboardingFlow({ user, initialStep, unclaimedApartments: initialUnclaimed }: ResidentOnboardingFlowProps) {
@@ -30,34 +28,45 @@ export function ResidentOnboardingFlow({ user, initialStep, unclaimedApartments:
     const [isPending, startTransition] = useTransition()
     const router = useRouter()
 
-    const handleJoin = async (code: string) => {
+    const handleJoin = async (code: string): Promise<void> => {
         setError("")
-        startTransition(async () => {
+        startTransition(async (): Promise<void> => {
             try {
-                const b = await joinBuilding(user.id, code)
-                setBuildingId(b.id)
-                const units = await getUnclaimedApartments(b.id)
-                setUnclaimedUnits(units)
-                setStep('claim')
-            } catch (e: any) {
-                setError(e.message || "Invalid building code")
+                const result = await joinBuilding(code)
+                if (result.success) {
+                    const b = result.data
+                    setBuildingId(b.id)
+                    const units = await getUnclaimedApartments(b.id)
+                    setUnclaimedUnits(units)
+                    setStep('claim')
+                } else {
+                    setError(result.error || "Failed to join building")
+                }
+            } catch (e) {
+                const message = e instanceof Error ? e.message : "An error occurred"
+                setError(message)
             }
         })
     }
 
-    const handleClaim = async (unitId: number) => {
+    const handleClaim = async (unitId: number): Promise<void> => {
         setError("")
-        startTransition(async () => {
+        startTransition(async (): Promise<void> => {
             try {
-                await claimApartment(unitId)
-                setStep('iban')
-            } catch (e: any) {
-                setError(e.message || "Failed to claim unit")
+                const result = await claimApartment(unitId)
+                if (result.success) {
+                    setStep('iban')
+                } else {
+                    setError(result.error || "Failed to claim unit")
+                }
+            } catch (e) {
+                const message = e instanceof Error ? e.message : "An unexpected error occurred"
+                setError(message)
             }
         })
     }
 
-    const handleIban = async (ibanValue: string) => {
+    const handleIban = async (ibanValue: string): Promise<void> => {
         setError("")
         const normalized = ibanValue.toUpperCase().replace(/\s/g, "")
         if (!isValidIban(normalized)) {
@@ -65,184 +74,240 @@ export function ResidentOnboardingFlow({ user, initialStep, unclaimedApartments:
             return
         }
 
-        startTransition(async () => {
+        startTransition(async (): Promise<void> => {
             try {
-                await updateUserProfile({ name: user.name, iban: normalized })
-                setStep('complete')
-                router.refresh()
-            } catch (e: any) {
-                setError("Failed to save IBAN")
+                const result = await updateUserProfile({ name: user.name, iban: normalized })
+                if (result.success) {
+                    setStep('complete')
+                    router.refresh()
+                } else {
+                    setError(result.error || "Failed to save IBAN")
+                }
+            } catch (e) {
+                setError("An unexpected error occurred")
             }
         })
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-4 py-8">
-            <div className="mb-8 px-4">
-                <h1 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">Setup_Required</h1>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Complete your resident profile to continue</p>
+        <div className="bg-grid min-h-screen flex flex-col items-center py-12 px-4">
+            <div className="w-full max-w-2xl space-y-8">
+                <div className="text-center space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-300 rounded-full text-xs font-mono text-slate-600 mb-2">
+                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        RESIDENT_PORTAL_V1
+                    </div>
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Resident Access Terminal</h1>
+                    <p className="text-slate-500 max-w-lg mx-auto">Complete your profile to access building management services.</p>
+                </div>
+
+                <div className="space-y-4">
+                    {/* STEP 1: JOIN BUILDING */}
+                    <OnboardingStep
+                        title="01 // System_Entry"
+                        isActive={step === 'join'}
+                        isComplete={!!buildingId}
+                        icon={Building2}
+                        onClick={() => step !== 'join' && setStep('join')}
+                    >
+                        <div className="p-8 bg-white flex flex-col items-center text-center space-y-6">
+                            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">
+                                Enter Building Invite Code
+                            </h3>
+
+                            <div className="w-full max-w-[280px]">
+                                <input
+                                    placeholder="000000"
+                                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 text-center text-4xl font-mono tracking-[0.2em] py-4 rounded-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all uppercase placeholder:text-slate-200"
+                                    maxLength={6}
+                                    disabled={isPending}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleJoin(e.currentTarget.value)
+                                    }}
+                                />
+                            </div>
+
+                            <Button
+                                variant="primary"
+                                className="w-full max-w-[280px]"
+                                disabled={isPending}
+                                onClick={(e) => {
+                                    const input = e.currentTarget.parentElement?.querySelector('input')
+                                    if (input) handleJoin(input.value)
+                                }}
+                            >
+                                {isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Connect to Building"}
+                            </Button>
+                        </div>
+                    </OnboardingStep>
+
+                    {/* STEP 2: CLAIM UNIT */}
+                    <OnboardingStep
+                        title="02 // Unit_Allocation"
+                        isActive={step === 'claim'}
+                        isComplete={step === 'iban' || step === 'complete'}
+                        icon={Home}
+                        disabled={!buildingId}
+                        onClick={() => !buildingId ? undefined : setStep('claim')}
+                    >
+                        <div className="p-6 bg-white space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Your Unit</label>
+                                <select
+                                    className="input-sharp w-full h-12 text-lg font-bold uppercase cursor-pointer"
+                                    value={selectedUnitId || ""}
+                                    onChange={(e) => setSelectedUnitId(e.target.value ? parseInt(e.target.value) : null)}
+                                    disabled={isPending}
+                                >
+                                    <option value="">-- SELECT APARTMENT --</option>
+                                    {unclaimedUnits.map(unit => (
+                                        <option key={unit.id} value={unit.id}>
+                                            {getApartmentDisplayName(unit).toUpperCase()}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="flex justify-end pt-2">
+                                <Button
+                                    variant="primary"
+                                    disabled={!selectedUnitId || isPending}
+                                    onClick={() => selectedUnitId && handleClaim(selectedUnitId)}
+                                >
+                                    Confirm Allocation
+                                    {isPending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
+                                </Button>
+                            </div>
+                        </div>
+                    </OnboardingStep>
+
+                    {/* STEP 3: IBAN SETUP */}
+                    <OnboardingStep
+                        title="03 // Financial_Setup"
+                        isActive={step === 'iban'}
+                        isComplete={step === 'complete'}
+                        icon={CreditCard}
+                        disabled={step === 'join' || step === 'claim'}
+                        onClick={() => (step === 'join' || step === 'claim') ? undefined : setStep('iban')}
+                    >
+                        <div className="p-6 bg-white space-y-4">
+                            <div className="p-4 bg-blue-50 border border-blue-100 mb-2">
+                                <div className="flex gap-3">
+                                    <div className="p-1 bg-blue-100 rounded-sm h-fit">
+                                        <CreditCard className="w-4 h-4 text-blue-700" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="text-xs font-bold text-blue-900 uppercase">Direct Debit Setup</h4>
+                                        <p className="text-xs text-blue-800/80">
+                                            Connect your IBAN for automated quota settlement. This can be changed later in settings.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">IBAN Number</label>
+                                <input
+                                    placeholder="PT50..."
+                                    className="input-sharp w-full font-mono uppercase text-lg"
+                                    value={iban}
+                                    onChange={(e) => setIban(e.target.value)}
+                                    disabled={isPending}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleIban(e.currentTarget.value)
+                                    }}
+                                />
+                            </div>
+
+                            <div className="flex justify-end pt-4">
+                                <Button
+                                    variant="primary"
+                                    disabled={iban.length < 15 || isPending}
+                                    onClick={() => handleIban(iban)}
+                                >
+                                    Complete Setup
+                                    {isPending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
+                                </Button>
+                            </div>
+                        </div>
+                    </OnboardingStep>
+
+                    {error && (
+                        <div className="p-4 bg-rose-50 border border-rose-200 flex items-center gap-3 animate-in fade-in slide-in-from-top-1 shadow-sm">
+                            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                            <span className="text-xs font-bold text-rose-700 uppercase tracking-wide">{error}</span>
+                        </div>
+                    )}
+                </div>
             </div>
-
-            {/* STEP 1: JOIN BUILDING */}
-            <OnboardingStep
-                title="1. JOIN_BUILDING"
-                isActive={step === 'join'}
-                isComplete={!!buildingId}
-                icon={Building2}
-                onClick={() => step !== 'join' && setStep('join')}
-            >
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_80px]">
-                    <div className="value-col">
-                        <input
-                            placeholder="CODE_E.G._8K92LA"
-                            className="input-cell font-mono tracking-[0.2em] uppercase text-center"
-                            maxLength={6}
-                            disabled={isPending}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleJoin(e.currentTarget.value)
-                            }}
-                        />
-                    </div>
-                    <Button 
-                        variant="ghost"
-                        className="h-8 border-l border-slate-200 rounded-none text-blue-600 hover:bg-blue-50"
-                        disabled={isPending}
-                        onClick={(e) => {
-                            const input = e.currentTarget.parentElement?.querySelector('input')
-                            if (input) handleJoin(input.value)
-                        }}
-                    >
-                        {isPending && step === 'join' ? <Loader2 className="w-3 h-3 animate-spin" /> : "SAVE"}
-                    </Button>
-                </div>
-            </OnboardingStep>
-
-            {/* STEP 2: CLAIM UNIT */}
-            <OnboardingStep
-                title="2. SELECT_UNIT"
-                isActive={step === 'claim'}
-                isComplete={step === 'iban' || step === 'complete'}
-                icon={Home}
-                disabled={!buildingId}
-                onClick={() => !buildingId ? undefined : setStep('claim')}
-            >
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_80px]">
-                    <div className="value-col">
-                        <select
-                            className="input-cell bg-transparent cursor-pointer font-bold uppercase"
-                            value={selectedUnitId || ""}
-                            onChange={(e) => setSelectedUnitId(e.target.value ? parseInt(e.target.value) : null)}
-                            disabled={isPending}
-                        >
-                            <option value="">SELECT_UNIT...</option>
-                            {unclaimedUnits.map(unit => (
-                                <option key={unit.id} value={unit.id}>
-                                    {getApartmentDisplayName(unit).toUpperCase()}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <Button 
-                        variant="ghost"
-                        className="h-8 border-l border-slate-200 rounded-none text-blue-600 hover:bg-blue-50"
-                        disabled={!selectedUnitId || isPending}
-                        onClick={() => selectedUnitId && handleClaim(selectedUnitId)}
-                    >
-                        {isPending && step === 'claim' ? <Loader2 className="w-3 h-3 animate-spin" /> : "SAVE"}
-                    </Button>
-                </div>
-            </OnboardingStep>
-
-            {/* STEP 3: IBAN SETUP */}
-            <OnboardingStep
-                title="3. FINANCIAL_SETUP"
-                isActive={step === 'iban'}
-                isComplete={step === 'complete'}
-                icon={CreditCard}
-                disabled={step === 'join' || step === 'claim'}
-                onClick={() => (step === 'join' || step === 'claim') ? undefined : setStep('iban')}
-            >
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_80px]">
-                    <div className="value-col">
-                        <input
-                            placeholder="IBAN_NUMBER"
-                            className="input-cell font-mono uppercase"
-                            value={iban}
-                            onChange={(e) => setIban(e.target.value)}
-                            disabled={isPending}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleIban(e.currentTarget.value)
-                            }}
-                        />
-                    </div>
-                    <Button 
-                        variant="ghost"
-                        className="h-8 border-l border-slate-200 rounded-none text-blue-600 hover:bg-blue-50"
-                        disabled={iban.length < 15 || isPending}
-                        onClick={() => handleIban(iban)}
-                    >
-                        {isPending && step === 'iban' ? <Loader2 className="w-3 h-3 animate-spin" /> : "SAVE"}
-                    </Button>
-                </div>
-            </OnboardingStep>
-
-            {error && (
-                <div className="px-4 py-3 bg-rose-50 border border-rose-200 flex items-center gap-3 animate-in fade-in slide-in-from-top-1">
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span className="text-[11px] font-bold text-rose-700 uppercase">{error}</span>
-                </div>
-            )}
         </div>
     )
 }
 
-function OnboardingStep({ 
-    title, 
-    isActive, 
-    isComplete, 
-    icon: Icon, 
-    children, 
+function OnboardingStep({
+    title,
+    isActive,
+    isComplete,
+    icon: Icon,
+    children,
     disabled,
     onClick
-}: { 
-    title: string, 
-    isActive: boolean, 
-    isComplete: boolean, 
-    icon: any, 
+}: {
+    title: string,
+    isActive: boolean,
+    isComplete: boolean,
+    icon: React.ComponentType<{ className?: string }>,
     children: React.ReactNode,
     disabled?: boolean,
     onClick?: () => void
 }) {
     return (
-        <Card 
+        <div
             className={cn(
-                "transition-all duration-300 rounded-none",
-                isActive ? "border-blue-500 z-10" : "opacity-80 grayscale-[0.2]",
-                !isActive && !disabled && "cursor-pointer hover:border-slate-400",
-                disabled && "pointer-events-none opacity-40"
+                "tech-card transition-all duration-300 relative overflow-hidden",
+                !isActive && !disabled && "cursor-pointer hover:border-slate-400 opacity-60 hover:opacity-100",
+                disabled && "opacity-40 pointer-events-none grayscale"
             )}
             onClick={onClick}
         >
-            <CardHeader className={cn(
-                "py-1.5 bg-slate-50",
-                !isActive && "bg-slate-50/50"
+            {/* Status Indicator Line */}
+            <div className={cn(
+                "absolute top-0 left-0 w-1 h-full transition-colors",
+                isActive ? "bg-blue-600" : isComplete ? "bg-emerald-500" : "bg-slate-200"
+            )}></div>
+
+            <div className={cn(
+                "flex items-center justify-between px-6 py-4 border-b border-slate-200",
+                isActive ? "bg-slate-50/50" : "bg-slate-50"
             )}>
-                <CardTitle className={cn("text-[9px] tracking-[0.15em] uppercase", isActive ? "text-slate-900" : "text-slate-500")}>
-                    <Icon className={cn("w-3 h-3", isActive ? "text-blue-600" : "text-slate-400")} />
-                    {title}
-                </CardTitle>
-                {isComplete && (
-                    <div className="flex items-center gap-1.5 text-emerald-500">
-                        <span className="text-[8px] font-bold uppercase tracking-tighter">Verified</span>
-                        <Check className="w-2.5 h-2.5" />
+                <div className="flex items-center gap-3">
+                    <div className={cn(
+                        "w-8 h-8 flex items-center justify-center border rounded-sm",
+                        isActive ? "bg-blue-50 border-blue-200 text-blue-600" : "bg-white border-slate-200 text-slate-400"
+                    )}>
+                        <Icon className="w-4 h-4" />
+                    </div>
+                    <span className={cn(
+                        "font-mono font-bold text-sm uppercase tracking-wider",
+                        isActive ? "text-slate-900" : "text-slate-500"
+                    )}>
+                        {title}
+                    </span>
+                </div>
+
+                {isComplete && !isActive && (
+                    <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full border border-emerald-100">
+                        <Check className="w-3 h-3" />
+                        <span className="text-[10px] font-bold uppercase tracking-wide">Verified</span>
                     </div>
                 )}
-            </CardHeader>
+            </div>
+
             {isActive && (
-                <div className="p-0 border-t border-slate-200">
+                <div className="animate-in fade-in zoom-in-95 duration-200">
                     {children}
                 </div>
             )}
-        </Card>
+        </div>
     )
 }

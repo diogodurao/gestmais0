@@ -8,6 +8,19 @@
 // CURRENCY
 // ===========================================
 
+// Reusable formatters to avoid recreation on every render
+const currencyFormatter = new Intl.NumberFormat("pt-PT", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+})
+
+const compactCurrencyFormatter = new Intl.NumberFormat("pt-PT", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+})
+
 /**
  * Format cents to Euro currency string
  * @param cents Amount in cents (integer)
@@ -15,12 +28,7 @@
  */
 export function formatCurrency(cents: number): string {
     const euros = cents / 100
-    return new Intl.NumberFormat("pt-PT", {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(euros)
+    return currencyFormatter.format(euros)
 }
 
 /**
@@ -31,7 +39,7 @@ export function formatCurrency(cents: number): string {
 export function parseCurrency(value: string): number {
     // Remove currency symbols and whitespace
     let cleaned = value.replace(/[€\s]/g, "").trim()
-    
+
     // Handle European format (1.234,56)
     if (cleaned.includes(",")) {
         // If both . and , exist, assume European format
@@ -41,10 +49,10 @@ export function parseCurrency(value: string): number {
             cleaned = cleaned.replace(",", ".")
         }
     }
-    
+
     const parsed = parseFloat(cleaned)
     if (isNaN(parsed)) return 0
-    
+
     return Math.round(parsed * 100)
 }
 
@@ -55,10 +63,7 @@ export function parseCurrency(value: string): number {
  */
 export function formatCurrencyCompact(cents: number): string {
     const euros = cents / 100
-    return new Intl.NumberFormat("pt-PT", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(euros)
+    return compactCurrencyFormatter.format(euros)
 }
 
 // ===========================================
@@ -88,13 +93,13 @@ export function getMonthName(month: number, short = false): string {
  */
 export function formatDate(date: Date | string, format: "short" | "medium" | "long" = "medium"): string {
     const d = typeof date === "string" ? new Date(date) : date
-    
+
     const formats: Record<"short" | "medium" | "long", Intl.DateTimeFormatOptions> = {
         short: { day: "2-digit", month: "2-digit", year: "2-digit" },
         medium: { day: "2-digit", month: "short", year: "numeric" },
         long: { day: "numeric", month: "long", year: "numeric" },
     }
-    
+
     return new Intl.DateTimeFormat("pt-PT", formats[format]).format(d)
 }
 
