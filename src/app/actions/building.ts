@@ -5,40 +5,42 @@ import { building, user, apartments, payments } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
 
 export async function getOrCreateManagerBuilding(userId: string, userNif: string) {
-    const existingUser = await db.select().from(user).where(eq(user.id, userId)).limit(1)
-    if (!existingUser.length) throw new Error("User not found")
-    const currentUser = existingUser[0]
+    return await db.transaction(async (tx) => {
+        const existingUser = await tx.select().from(user).where(eq(user.id, userId)).limit(1)
+        if (!existingUser.length) throw new Error("User not found")
+        const currentUser = existingUser[0]
 
-    const currentBuildings = await db.select().from(building).where(eq(building.managerId, userId))
-    let activeBuilding = currentBuildings.find(b => b.id === currentUser.buildingId) || null
-    let buildings = [...currentBuildings]
+        const currentBuildings = await tx.select().from(building).where(eq(building.managerId, userId))
+        let activeBuilding = currentBuildings.find(b => b.id === currentUser.buildingId) || null
+        let buildings = [...currentBuildings]
 
-    if (!activeBuilding) {
-        if (!currentBuildings.length) {
-            const { customAlphabet } = await import("nanoid")
-            const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
-            const code = nanoidCode()
+        if (!activeBuilding) {
+            if (!currentBuildings.length) {
+                const { customAlphabet } = await import("nanoid")
+                const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
+                const code = nanoidCode()
 
-            const [newBuilding] = await db.insert(building).values({
-                id: crypto.randomUUID(),
-                name: "My Condominium",
-                nif: userNif || "N/A",
-                code,
-                managerId: userId,
-            }).returning()
+                const [newBuilding] = await tx.insert(building).values({
+                    id: crypto.randomUUID(),
+                    name: "My Condominium",
+                    nif: userNif || "N/A",
+                    code,
+                    managerId: userId,
+                }).returning()
 
-            activeBuilding = newBuilding
-            buildings = [newBuilding]
-        } else {
-            activeBuilding = currentBuildings[0]
+                activeBuilding = newBuilding
+                buildings = [newBuilding]
+            } else {
+                activeBuilding = currentBuildings[0]
+            }
+
+            await tx.update(user)
+                .set({ buildingId: activeBuilding.id })
+                .where(eq(user.id, userId))
         }
 
-        await db.update(user)
-            .set({ buildingId: activeBuilding.id })
-            .where(eq(user.id, userId))
-    }
-
-    return { activeBuilding, buildings }
+        return { activeBuilding, buildings }
+    })
 }
 
 export async function joinBuilding(userId: string, code: string) {
@@ -84,23 +86,25 @@ export async function setActiveBuilding(managerId: string, buildingId: string) {
 }
 
 export async function createBuildingForManager(managerId: string, name: string, nif: string | null) {
-    const { customAlphabet } = await import("nanoid")
-    const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
-    const code = nanoidCode()
+    return await db.transaction(async (tx) => {
+        const { customAlphabet } = await import("nanoid")
+        const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
+        const code = nanoidCode()
 
-    const [newBuilding] = await db.insert(building).values({
-        id: crypto.randomUUID(),
-        name: name || "New Building",
-        nif: nif || "N/A",
-        code,
-        managerId,
-    }).returning()
+        const [newBuilding] = await tx.insert(building).values({
+            id: crypto.randomUUID(),
+            name: name || "New Building",
+            nif: nif || "N/A",
+            code,
+            managerId,
+        }).returning()
 
-    await db.update(user)
-        .set({ buildingId: newBuilding.id })
-        .where(eq(user.id, managerId))
+        await tx.update(user)
+            .set({ buildingId: newBuilding.id })
+            .where(eq(user.id, managerId))
 
-    return newBuilding
+        return newBuilding
+    })
 }
 
 export async function getResidentBuildingDetails(buildingId: string) {
@@ -139,13 +143,15 @@ export async function createApartment(buildingId: string, unit: string) {
 }
 
 export async function deleteApartment(apartmentId: number) {
-    // Delete related payments first (cascade usually handles this if defined, but explicit is safer for MVP)
-    await db.delete(payments).where(eq(payments.apartmentId, apartmentId))
+    return await db.transaction(async (tx) => {
+        // Delete related payments first (cascade usually handles this if defined, but explicit is safer for MVP)
+        await tx.delete(payments).where(eq(payments.apartmentId, apartmentId))
 
-    // Delete apartment
-    await db.delete(apartments).where(eq(apartments.id, apartmentId))
+        // Delete apartment
+        await tx.delete(apartments).where(eq(apartments.id, apartmentId))
 
-    return true
+        return true
+    })
 }
 
 import { headers } from "next/headers"
@@ -277,24 +283,26 @@ export async function bulkCreateApartments(buildingId: string, unitsString: stri
         .filter(Boolean)
     if (!units.length) throw new Error("No units provided")
 
-    const created: typeof apartments.$inferSelect[] = []
+    return await db.transaction(async (tx) => {
+        const created: typeof apartments.$inferSelect[] = []
 
-    for (const unit of units) {
-        const existing = await db.select().from(apartments).where(and(
-            eq(apartments.buildingId, buildingId),
-            eq(apartments.unit, unit)
-        )).limit(1)
+        for (const unit of units) {
+            const existing = await tx.select().from(apartments).where(and(
+                eq(apartments.buildingId, buildingId),
+                eq(apartments.unit, unit)
+            )).limit(1)
 
-        if (!existing.length) {
-            const [newApt] = await db.insert(apartments).values({
-                buildingId,
-                unit,
-            }).returning()
-            created.push(newApt)
+            if (!existing.length) {
+                const [newApt] = await tx.insert(apartments).values({
+                    buildingId,
+                    unit,
+                }).returning()
+                created.push(newApt)
+            }
         }
-    }
 
-    return created
+        return created
+    })
 }
 
 export async function updateApartment(
