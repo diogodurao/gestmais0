@@ -22,7 +22,7 @@ export function InviteCodeCard({
             <CardHeader>
                 <CardTitle>
                     <Key className="w-3.5 h-3.5 text-slate-400" />
-                    {isManager ? 'BUILDING_INVITE_CODE' : 'RESIDENT_ACCESS'}
+                    {isManager ? "CÓDIGO_CONVITE" : "ACESSO_RESIDENTE"}
                 </CardTitle>
             </CardHeader>
             <div className="p-6 flex flex-col items-center justify-center bg-blue-50/30 flex-1 min-h-[128px]">
@@ -33,13 +33,15 @@ export function InviteCodeCard({
                                 {inviteCode}
                             </div>
                             <div className="text-[10px] uppercase font-bold text-blue-600/70">
-                                Active Invite Code
+                                Código de Convite Ativo
                             </div>
                         </>
                     ) : (
                         <div className="text-center">
                             <Lock className="w-6 h-6 text-slate-300 mx-auto mb-2" />
-                            <span className="text-[10px] uppercase font-bold text-slate-400">Subscription Required</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400">
+                                Subscrição Necessária
+                            </span>
                         </div>
                     )
                 ) : residentApartment ? (
@@ -47,14 +49,16 @@ export function InviteCodeCard({
                         <div className="text-3xl font-mono font-bold text-slate-800 tracking-tight mb-1">
                             {getApartmentDisplayName(residentApartment)}
                         </div>
-                        <div className="text-[10px] uppercase font-bold text-slate-400">Assigned_Unit</div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400">
+                            Fração Atribuída
+                        </div>
                     </>
                 ) : null}
             </div>
             <CardFooter className="text-center">
                 {isManager
-                    ? "SHARE CODE WITH NEW RESIDENTS"
-                    : "ACTIVE_RESIDENT_SESSION"}
+                    ? "PARTILHE O CÓDIGO COM NOVOS RESIDENTES"
+                    : "SESSÃO_RESIDENTE_ATIVA"}
             </CardFooter>
         </div>
     )

@@ -13,7 +13,6 @@ interface StatusBadgeProps {
     status: StatusType
     size?: "xs" | "sm" | "md"
     className?: string
-    dictionary: Dictionary
 }
 
 // ===========================================
@@ -42,27 +41,27 @@ const styles: Record<StatusType, string> = {
     critical: "bg-rose-100 text-rose-700 border-rose-200",
 }
 
-const getLabel = (status: StatusType, dictionary: Dictionary): string => {
+const getLabel = (status: StatusType): string => {
     switch (status) {
         // Project statuses
-        case "active": return "Ativo" // TODO: Add to dictionary
-        case "completed": return "Concluído" // TODO: Add to dictionary
-        case "cancelled": return "Cancelado" // TODO: Add to dictionary
-        case "archived": return "Arquivado" // TODO: Add to dictionary
+        case "active": return "Ativo"
+        case "completed": return "Concluído"
+        case "cancelled": return "Cancelado"
+        case "archived": return "Arquivado"
 
         // Payment statuses
-        case "paid": return dictionary.extraPayment.paid
-        case "pending": return dictionary.extraPayment.pending
-        case "overdue": return dictionary.extraPayment.overdue
-        case "partial": return dictionary.extraPayment.partial
+        case "paid": return "Pago"
+        case "pending": return "Pendente"
+        case "overdue": return "Atraso"
+        case "partial": return "Parcial"
 
         // Apartment payment statuses
-        case "complete": return "Liquidado" // TODO: Add to dictionary
+        case "complete": return "Liquidado"
 
         // Overall statuses
-        case "ok": return "Em dia" // TODO: Add to dictionary
-        case "warning": return dictionary.extraPayment.pending
-        case "critical": return "Em atraso" // TODO: Add to dictionary
+        case "ok": return "Em dia"
+        case "warning": return "Pendente"
+        case "critical": return "Em atraso"
 
         default: return status as string
     }
@@ -74,13 +73,11 @@ const sizes = {
     md: "px-2.5 py-1 text-[10px]",
 }
 
-import { Dictionary } from "@/types/i18n"
-
 // ===========================================
 // COMPONENT
 // ===========================================
 
-export function StatusBadge({ status, size = "sm", className, dictionary }: StatusBadgeProps) {
+export function StatusBadge({ status, size = "sm", className }: StatusBadgeProps) {
     return (
         <span className={cn(
             "inline-block font-bold uppercase tracking-wider border",
@@ -88,7 +85,7 @@ export function StatusBadge({ status, size = "sm", className, dictionary }: Stat
             styles[status] || styles.pending,
             className
         )}>
-            {getLabel(status, dictionary)}
+            {getLabel(status)}
         </span>
     )
 }

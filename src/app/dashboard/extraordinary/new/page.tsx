@@ -32,7 +32,7 @@ export default async function NewExtraordinaryProjectPage() {
     const formattedApartments = apartmentRecords.map(record => ({
         id: record.apartment.id,
         unit: record.apartment.unit,
-        permillage: record.apartment.permillage,
+        permillage: record.apartment.permillage || 0,
         residentName: record.resident?.name || null
     }))
 

@@ -10,8 +10,6 @@ import { LayoutGrid, Building2 } from "lucide-react"
 import { getApartmentDisplayName } from "@/lib/utils"
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
-import { getDictionary } from "@/get-dictionary"
-import { type SessionUser } from "@/lib/types"
 
 export const dynamic = 'force-dynamic'
 
@@ -63,12 +61,8 @@ export default async function SettingsPage({
         role: session.user.role || 'resident',
         nif: session.user.nif,
         iban: session.user.iban,
-        unitName: unitName,
-        preferredLanguage: (session.user as unknown as SessionUser).preferredLanguage || 'pt'
+        unitName: unitName
     }
-
-    const preferredLanguage = (session.user as unknown as SessionUser).preferredLanguage || 'pt'
-    const dictionary = await getDictionary(preferredLanguage)
 
     const profileComplete = isProfileComplete(session.user)
     const managerActiveBuildingId = session.user.activeBuildingId ?? null
@@ -126,11 +120,15 @@ export default async function SettingsPage({
                                 </CardHeader>
                                 <div className="p-0">
                                     <ApartmentManager
-                                        apartments={apartmentsData}
+                                        apartments={apartmentsData.map(a => ({
+                                            id: a.apartment.id,
+                                            unit: a.apartment.unit,
+                                            permillage: a.apartment.permillage || 0,
+                                            resident: a.resident ? { id: a.resident.id, name: a.resident.name } : null
+                                        }))}
                                         buildingId={building.id}
                                         buildingComplete={buildingComplete}
                                         totalApartments={building.totalApartments}
-                                        dictionary={dictionary}
                                     />
                                 </div>
                             </Card>
@@ -145,7 +143,6 @@ export default async function SettingsPage({
                                 canSubscribe={canSubscribe}
                                 profileComplete={profileComplete}
                                 buildingComplete={buildingComplete}
-                                dictionary={dictionary}
                             />
                         </div>
                     </>

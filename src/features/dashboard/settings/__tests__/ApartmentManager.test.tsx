@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { ApartmentManager } from '../ApartmentManager'
 import * as buildingActions from '@/app/actions/building'
-import dictionary from '@/dictionaries/pt.json'
 
 // Mock dependencies
 vi.mock('@/app/actions/building', () => ({
@@ -30,15 +29,9 @@ vi.mock('@/hooks/use-toast', () => ({
 describe('ApartmentManager Delete Confirmation', () => {
     const mockApartments = [
         {
-            apartment: {
-                id: 1,
-                unit: 'A',
-                permillage: 100,
-                buildingId: 'b1',
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                residentId: null
-            },
+            id: 1,
+            unit: 'A',
+            permillage: 100,
             resident: null,
         },
     ]
@@ -52,7 +45,7 @@ describe('ApartmentManager Delete Confirmation', () => {
     })
 
     it('should open the confirm modal when delete button is clicked', () => {
-        render(<ApartmentManager apartments={mockApartments} buildingId="b1" dictionary={dictionary as any} />)
+        render(<ApartmentManager apartments={mockApartments as any} buildingId="b1" totalApartments={10} />)
 
         const deleteBtn = screen.getByTestId('delete-unit-button-1')
         fireEvent.click(deleteBtn)
@@ -61,7 +54,7 @@ describe('ApartmentManager Delete Confirmation', () => {
     })
 
     it('should call deleteApartment when confirm is clicked', async () => {
-        render(<ApartmentManager apartments={mockApartments} buildingId="b1" dictionary={dictionary as any} />)
+        render(<ApartmentManager apartments={mockApartments as any} buildingId="b1" totalApartments={10} />)
 
         const deleteBtn = screen.getByTestId('delete-unit-button-1')
         fireEvent.click(deleteBtn)

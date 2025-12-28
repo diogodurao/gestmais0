@@ -13,7 +13,7 @@ export default function AuthPage() {
             <div className="w-full max-w-sm">
                 <div className="mb-8 text-center">
                     <h1 className="text-2xl font-semibold text-gray-900">
-                        {isLogin ? "Sign In" : "Create Account"}
+                        {isLogin ? "Entrar" : "Criar Conta"}
                     </h1>
                 </div>
 
@@ -26,7 +26,7 @@ export default function AuthPage() {
                                 onClick={() => setIsLogin(!isLogin)}
                                 className="text-sm text-gray-600 hover:text-black font-medium transition-colors"
                             >
-                                {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}
+                                {isLogin ? "Ainda não tens conta? Regista-te" : "Já tens uma conta? Entra"}
                             </button>
                         </div>
                     </CardContent>

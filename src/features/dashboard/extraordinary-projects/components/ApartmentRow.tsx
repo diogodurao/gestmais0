@@ -5,7 +5,6 @@ import { formatCurrency, getMonthName } from "@/lib/extraordinary-calculations"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
 import { type ToolMode, type CellStatus } from "../types"
-import { Dictionary } from "@/types/i18n"
 
 interface ApartmentRowProps {
     apartment: ApartmentPaymentData
@@ -14,7 +13,6 @@ interface ApartmentRowProps {
     readOnly: boolean
     startMonth: number
     startYear: number
-    dictionary: Dictionary
 }
 
 export function ApartmentRow({
@@ -23,8 +21,7 @@ export function ApartmentRow({
     onCellClick,
     readOnly,
     startMonth,
-    startYear,
-    dictionary
+    startYear
 }: ApartmentRowProps) {
     return (
         <tr className="group hover:bg-slate-50/50">
@@ -48,7 +45,7 @@ export function ApartmentRow({
                         key={inst.id}
                         role={isInteractive ? "button" : undefined}
                         tabIndex={isInteractive ? 0 : undefined}
-                        aria-label={`${isInteractive ? dictionary.extraPayment.markPaid : ''} ${monthName}/${year} ${dictionary.extraPayment.status}: ${inst.status}`}
+                        aria-label={`${isInteractive ? 'Marcar Pago' : ''} ${monthName}/${year} Estado: ${inst.status}`}
                         onClick={isInteractive ? () => onCellClick(inst.id, inst.status, inst.expectedAmount) : undefined}
                         onKeyDown={isInteractive ? (e) => (e.key === 'Enter' || e.key === ' ') && onCellClick(inst.id, inst.status, inst.expectedAmount) : undefined}
                         className={cn(
@@ -65,7 +62,7 @@ export function ApartmentRow({
                     >
                         {inst.status === "paid" && <span className="font-mono text-[11px]">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
                         {inst.status === "partial" && <span className="font-mono text-[10px]">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
-                        {inst.status === "overdue" && <span className="text-[9px] font-bold uppercase">{dictionary.extraPayment.overdue}</span>}
+                        {inst.status === "overdue" && <span className="text-[9px] font-bold uppercase">EM ATRASO</span>}
                         {inst.status === "pending" && "—"}
                     </td>
                 )
@@ -79,7 +76,7 @@ export function ApartmentRow({
                 {formatCurrency(apartment.balance)}
             </td>
             <td className="data-cell text-center">
-                <StatusBadge status={apartment.status} className="text-[8px] sm:text-[9px] px-1.5 sm:px-2" dictionary={dictionary} />
+                <StatusBadge status={apartment.status} className="text-[8px] sm:text-[9px] px-1.5 sm:px-2" />
             </td>
         </tr>
     )

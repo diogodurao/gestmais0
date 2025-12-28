@@ -30,7 +30,7 @@ export async function updatePaymentStatus(
     year: number,
     status: PaymentStatus,
     amount?: number
-): Promise<ActionResult<any>> {
+): Promise<ActionResult<undefined>> {
     await requireApartmentAccess(apartmentId)
 
     try {
@@ -45,10 +45,10 @@ export async function updatePaymentStatus(
 
         if (!validated.success) return { success: false, error: validated.error.issues[0].message }
 
-        const result = await paymentService.updatePaymentStatus(apartmentId, month, year, status, amount)
+        await paymentService.updatePaymentStatus(apartmentId, month, year, status, amount)
         revalidatePath(ROUTES.DASHBOARD.PAYMENTS)
-        return { success: true, data: result }
-    } catch (error) {
+        return { success: true, data: undefined }
+    } catch {
         return { success: false, error: "Failed to update payment status" }
     }
 }
@@ -83,7 +83,7 @@ export async function bulkUpdatePayments(
 
         revalidatePath(ROUTES.DASHBOARD.PAYMENTS)
         return { success: true, data: true }
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to bulk update payments" }
     }
 }

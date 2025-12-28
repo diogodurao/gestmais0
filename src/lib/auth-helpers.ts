@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { db } from "@/db"
-import { managerBuildings, apartments, extraordinaryProjects } from "@/db/schema"
+import { managerBuildings, apartments } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
 import { isManager, isResident } from "@/lib/permissions"
 import type { SessionUser } from "@/lib/types"
@@ -94,39 +94,25 @@ export async function requireBuildingAccess(buildingId: string) {
 }
 
 /**
- * Verify manager has access to a specific apartment
+ * Verify manager has access to a specific apartment (via building)
  */
 export async function requireApartmentAccess(apartmentId: number) {
-    const session = await requireManagerSession()
+    await requireManagerSession()
 
-    const apt = await db.select({ buildingId: apartments.buildingId })
-        .from(apartments)
-        .where(eq(apartments.id, apartmentId))
-        .limit(1)
+    // 1. Get apartment to find buildingId
+    const apartment = await db.query.apartments.findFirst({
+        where: eq(apartments.id, apartmentId),
+        columns: {
+            buildingId: true
+        }
+    })
 
-    if (!apt.length) {
+    if (!apartment) {
         throw new Error("Apartment not found")
     }
 
-    return await requireBuildingAccess(apt[0].buildingId)
-}
-
-/**
- * Verify manager has access to a specific extraordinary project
- */
-export async function requireProjectAccess(projectId: number) {
-    const session = await requireManagerSession()
-
-    const project = await db.select({ buildingId: extraordinaryProjects.buildingId })
-        .from(extraordinaryProjects)
-        .where(eq(extraordinaryProjects.id, projectId))
-        .limit(1)
-
-    if (!project.length) {
-        throw new Error("Project not found")
-    }
-
-    return await requireBuildingAccess(project[0].buildingId)
+    // 2. Verify building access
+    return await requireBuildingAccess(apartment.buildingId)
 }
 
 // Re-export SessionUser for backward compatibility

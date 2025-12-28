@@ -1,26 +1,28 @@
 import { ChevronDown } from "lucide-react";
 
-interface FaqProps {
-    dict: {
-        faq: {
-            title: string;
-            items: { question: string; answer: string }[];
+export function Faq() {
+    const items = [
+        {
+            question: "Como funciona a importação de dados?",
+            answer: "Pode importar a lista de frações e residentes via CSV ou configurar manualmente no nosso assistente passo-a-passo."
+        },
+        {
+            question: "Os residentes têm acesso a quê?",
+            answer: "Os residentes têm acesso a todas as informações do prédio, incluindo situação financeira, histórico, ocorrências, calendário do prédio, etc..."
         }
-    };
-}
+    ];
 
-export function Faq({ dict }: FaqProps) {
     return (
         <section id="faq" className="py-24 bg-white relative border-b border-slate-200">
             <div className="max-w-3xl mx-auto px-6 relative z-10">
                 <div className="mb-12 text-center">
                     <h2 className="text-2xl font-bold text-slate-900 inline-block px-4 py-1 border border-slate-300 shadow-sm bg-slate-50">
-                        {dict.faq.title}
+                        Perguntas Frequentes
                     </h2>
                 </div>
 
                 <div className="space-y-4">
-                    {dict.faq.items.map((item, i) => (
+                    {items.map((item, i) => (
                         <details
                             key={i}
                             className="group tech-card bg-white [&_summary::-webkit-details-marker]:hidden"

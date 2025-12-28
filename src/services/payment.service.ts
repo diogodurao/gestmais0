@@ -181,7 +181,7 @@ export class PaymentService {
         userId: string
     ): Promise<{ success: true; data: PaymentStatusSummary } | { success: false; error: string }> {
         try {
-            // 1. Get user and check role
+            // 1. Get user
             const userResult = await db
                 .select()
                 .from(user)
@@ -197,107 +197,7 @@ export class PaymentService {
             const currentMonth = now.getMonth() + 1
             const currentYear = now.getFullYear()
 
-            // 2. IF MANAGER: Return Building Summary
-            if (currentUser.role === 'manager') {
-                const buildingId = currentUser.activeBuildingId
-                if (!buildingId) return { success: false, error: "Nenhum condomínio ativo selecionado" }
-
-                const buildingResult = await db.select().from(building).where(eq(building.id, buildingId)).limit(1)
-                const currentBuilding = buildingResult[0]
-                const monthlyQuota = currentBuilding.monthlyQuota || 0
-
-                // Regular Quotas Summary
-                const regPayments = await db
-                    .select({
-                        totalPaid: sum(payments.amount),
-                        countPaid: count(payments.id),
-                    })
-                    .from(payments)
-                    .innerJoin(apartments, eq(payments.apartmentId, apartments.id))
-                    .where(and(
-                        eq(apartments.buildingId, buildingId),
-                        eq(payments.year, currentYear),
-                        lte(payments.month, currentMonth),
-                        eq(payments.status, 'paid')
-                    ))
-
-                const totalAptsResult = await db.select({ count: count() }).from(apartments).where(eq(apartments.buildingId, buildingId))
-                const totalApts = totalAptsResult[0].count
-
-                const totalDueRegular = totalApts * monthlyQuota * currentMonth
-                const totalPaidRegular = Number(regPayments[0].totalPaid) || 0
-                const regBalance = Math.max(0, totalDueRegular - totalPaidRegular)
-
-                // Extraordinary Summary
-                const extraProjResult = await db.select().from(extraordinaryProjects).where(and(eq(extraordinaryProjects.buildingId, buildingId), eq(extraordinaryProjects.status, 'active')))
-
-                let extraTotalDue = 0
-                let extraTotalPaid = 0
-                let extraOverdueCount = 0
-
-                if (extraProjResult.length > 0) {
-                    const projectIds = extraProjResult.map(p => p.id)
-                    const allPayments = await db
-                        .select()
-                        .from(extraordinaryPayments)
-                        .where(inArray(extraordinaryPayments.projectId, projectIds))
-
-                    const paymentsByProject = new Map<number, typeof allPayments>()
-                    for (const p of allPayments) {
-                        if (!paymentsByProject.has(p.projectId)) {
-                            paymentsByProject.set(p.projectId, [])
-                        }
-                        paymentsByProject.get(p.projectId)!.push(p)
-                    }
-
-                    for (const proj of extraProjResult) {
-                        const payments = paymentsByProject.get(proj.id) || []
-                        for (const p of payments) {
-                            const { month, year } = getInstallmentDate(p.installment, proj.startMonth, proj.startYear)
-                            const isDue = year < currentYear || (year === currentYear && month <= currentMonth)
-                            if (isDue) {
-                                extraTotalDue += p.expectedAmount
-                                extraTotalPaid += (p.paidAmount || 0)
-                                if (p.status !== 'paid' && (p.paidAmount || 0) < p.expectedAmount) extraOverdueCount++
-                            }
-                        }
-                    }
-                }
-
-                const extraBalance = extraTotalDue - extraTotalPaid
-                const totalBalance = regBalance + extraBalance
-
-                return {
-                    success: true,
-                    data: {
-                        residentName: "Gestor",
-                        apartmentUnit: currentBuilding.name,
-                        isBuildingSummary: true,
-                        status: totalBalance > 0 ? "warning" : "ok",
-                        statusMessage: totalBalance > 0
-                            ? `O condomínio tem ${totalBalance / 100}€ em pagamentos pendentes.`
-                            : "As contas do condomínio estão em dia.",
-                        regularQuotas: {
-                            totalDueToDate: totalDueRegular,
-                            totalPaid: totalPaidRegular,
-                            balance: regBalance,
-                            overdueMonths: 0,
-                            currentMonthPaid: true,
-                        },
-                        extraordinaryQuotas: {
-                            activeProjects: extraProjResult.length || 0,
-                            totalDueToDate: extraTotalDue,
-                            totalPaid: extraTotalPaid,
-                            balance: extraBalance,
-                            overdueInstallments: extraOverdueCount,
-                        },
-                        totalBalance,
-                        lastUpdated: new Date(),
-                    }
-                }
-            }
-
-            // 3. IF RESIDENT: Return Personal Summary
+            // 2. Return Personal Summary
             const apartmentResult = await db
                 .select({
                     id: apartments.id,
@@ -433,6 +333,114 @@ export class PaymentService {
         } catch (error) {
             console.error("Error fetching payment status:", error)
             return { success: false, error: "Erro ao carregar estado dos pagamentos" }
+        }
+    }
+
+    async getBuildingPaymentStatus(
+        buildingId: string
+    ): Promise<{ success: true; data: PaymentStatusSummary } | { success: false; error: string }> {
+        try {
+            const now = new Date()
+            const currentMonth = now.getMonth() + 1
+            const currentYear = now.getFullYear()
+
+            const buildingResult = await db.select().from(building).where(eq(building.id, buildingId)).limit(1)
+            if (!buildingResult.length) return { success: false, error: "Condomínio não encontrado" }
+            const currentBuilding = buildingResult[0]
+            const monthlyQuota = currentBuilding.monthlyQuota || 0
+
+            // Regular Quotas Summary
+            const regPayments = await db
+                .select({
+                    totalPaid: sum(payments.amount),
+                    countPaid: count(payments.id),
+                })
+                .from(payments)
+                .innerJoin(apartments, eq(payments.apartmentId, apartments.id))
+                .where(and(
+                    eq(apartments.buildingId, buildingId),
+                    eq(payments.year, currentYear),
+                    lte(payments.month, currentMonth),
+                    eq(payments.status, 'paid')
+                ))
+
+            const totalAptsResult = await db.select({ count: count() }).from(apartments).where(eq(apartments.buildingId, buildingId))
+            const totalApts = totalAptsResult[0].count
+
+            const totalDueRegular = totalApts * monthlyQuota * currentMonth
+            const totalPaidRegular = Number(regPayments[0].totalPaid) || 0
+            const regBalance = Math.max(0, totalDueRegular - totalPaidRegular)
+
+            // Extraordinary Summary
+            const extraProjResult = await db.select().from(extraordinaryProjects).where(and(eq(extraordinaryProjects.buildingId, buildingId), eq(extraordinaryProjects.status, 'active')))
+
+            let extraTotalDue = 0
+            let extraTotalPaid = 0
+            let extraOverdueCount = 0
+
+            if (extraProjResult.length > 0) {
+                const projectIds = extraProjResult.map(p => p.id)
+                const allPayments = await db
+                    .select()
+                    .from(extraordinaryPayments)
+                    .where(inArray(extraordinaryPayments.projectId, projectIds))
+
+                const paymentsByProject = new Map<number, typeof allPayments>()
+                for (const p of allPayments) {
+                    if (!paymentsByProject.has(p.projectId)) {
+                        paymentsByProject.set(p.projectId, [])
+                    }
+                    paymentsByProject.get(p.projectId)!.push(p)
+                }
+
+                for (const proj of extraProjResult) {
+                    const payments = paymentsByProject.get(proj.id) || []
+                    for (const p of payments) {
+                        const { month, year } = getInstallmentDate(p.installment, proj.startMonth, proj.startYear)
+                        const isDue = year < currentYear || (year === currentYear && month <= currentMonth)
+                        if (isDue) {
+                            extraTotalDue += p.expectedAmount
+                            extraTotalPaid += (p.paidAmount || 0)
+                            if (p.status !== 'paid' && (p.paidAmount || 0) < p.expectedAmount) extraOverdueCount++
+                        }
+                    }
+                }
+            }
+
+            const extraBalance = extraTotalDue - extraTotalPaid
+            const totalBalance = regBalance + extraBalance
+
+            return {
+                success: true,
+                data: {
+                    residentName: "Gestor",
+                    apartmentUnit: currentBuilding.name,
+                    isBuildingSummary: true,
+                    status: totalBalance > 0 ? "warning" : "ok",
+                    statusMessage: totalBalance > 0
+                        ? `O condomínio tem ${totalBalance / 100}€ em pagamentos pendentes.`
+                        : "As contas do condomínio estão em dia.",
+                    regularQuotas: {
+                        totalDueToDate: totalDueRegular,
+                        totalPaid: totalPaidRegular,
+                        balance: regBalance,
+                        overdueMonths: 0,
+                        currentMonthPaid: true,
+                    },
+                    extraordinaryQuotas: {
+                        activeProjects: extraProjResult.length || 0,
+                        totalDueToDate: extraTotalDue,
+                        totalPaid: extraTotalPaid,
+                        balance: extraBalance,
+                        overdueInstallments: extraOverdueCount,
+                    },
+                    totalBalance,
+                    lastUpdated: new Date(),
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching building payment status:", error)
+            return { success: false, error: "Erro ao carregar estado do condomínio" }
         }
     }
 

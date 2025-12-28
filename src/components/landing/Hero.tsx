@@ -2,33 +2,37 @@ import Link from "next/link";
 import { Terminal } from "lucide-react";
 
 interface HeroProps {
-    dict: any;
-    lang: string;
+    cityName?: string;
 }
 
-export function Hero({ dict, lang }: HeroProps) {
+export function Hero({ cityName }: HeroProps) {
+    const titleLine1 = cityName ? `Gestão em ${cityName}.` : "Gestão de Condomínio.";
+    const subtitle = cityName
+        ? `Abandone o caos. O GestMais é o sistema operacional para condomínios em ${cityName}, desenhado para transparência e velocidade.`
+        : "Abandone o caos de grupos de WhatsApp e recibos em papel. O GestMais é o livro financeiro de alta densidade desenhado para transparência e velocidade.";
+
     return (
         <header className="pt-32 pb-20 px-6 lg:px-12 bg-grid min-h-screen flex flex-col items-center justify-center text-center relative">
             <div className="max-w-3xl z-10">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-300 rounded-full text-xs font-mono text-slate-600 mb-6">
                     <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                    {dict.hero.systemStatus}
+                    ESTADO DO SISTEMA: OPERACIONAL
                 </div>
 
                 <h1 className="text-4xl md:text-6xl font-bold text-slate-900 tracking-tight mb-6 leading-tight">
-                    {dict.hero.titleLine1}
+                    {titleLine1}
                     <br />
-                    <span className="text-slate-400">{dict.hero.titleLine2}</span>
+                    <span className="text-slate-400">Engenharia de Precisão.</span>
                 </h1>
 
                 <p className="text-lg text-slate-600 mb-8 max-w-xl mx-auto leading-relaxed">
-                    {dict.hero.subtitle}
+                    {subtitle}
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <Link href="/sign-in" className="btn-primary cursor-pointer">
                         <Terminal className="w-4 h-4" />
-                        {dict.hero.ctaPrimary}
+                        Iniciar Sistema
                     </Link>
                 </div>
             </div>
@@ -42,7 +46,7 @@ export function Hero({ dict, lang }: HeroProps) {
                         <div className="w-3 h-3 rounded-full bg-slate-300"></div>
                     </div>
                     <div className="text-[10px] font-mono text-slate-400">
-                        {dict.hero.dashboardPreview}
+                        admin@gestmais.com — /dashboard/overview
                     </div>
                     <div className="w-10"></div>
                 </div>
@@ -64,19 +68,19 @@ export function Hero({ dict, lang }: HeroProps) {
                             <div className="h-10 border-b border-slate-100 flex items-center px-4 justify-between">
                                 <div className="w-1/3 h-3 bg-slate-100 rounded-sm"></div>
                                 <div className="w-16 h-5 bg-emerald-50 text-emerald-700 text-[10px] flex items-center justify-center font-bold">
-                                    {dict.hero.paid}
+                                    PAGO
                                 </div>
                             </div>
                             <div className="h-10 border-b border-slate-100 flex items-center px-4 justify-between">
                                 <div className="w-1/4 h-3 bg-slate-100 rounded-sm"></div>
                                 <div className="w-16 h-5 bg-emerald-50 text-emerald-700 text-[10px] flex items-center justify-center font-bold">
-                                    {dict.hero.paid}
+                                    PAGO
                                 </div>
                             </div>
                             <div className="h-10 border-b border-slate-100 flex items-center px-4 justify-between">
                                 <div className="w-1/3 h-3 bg-slate-100 rounded-sm"></div>
                                 <div className="w-16 h-5 bg-rose-50 text-rose-700 text-[10px] flex items-center justify-center font-bold">
-                                    {dict.hero.late}
+                                    ATRASO
                                 </div>
                             </div>
                         </div>

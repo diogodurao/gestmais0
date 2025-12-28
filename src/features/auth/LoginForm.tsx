@@ -29,24 +29,19 @@ export function LoginForm() {
                 callbackURL: ROUTES.DASHBOARD.HOME
             }, {
                 onRequest: () => {
-
                     setLoading(true)
                 },
                 onSuccess: () => {
-
                     router.push("/dashboard")
                 },
                 onError: (ctx) => {
-
-                    setError(ctx.error.message || "Failed to sign in")
+                    setError(ctx.error.message || "Credenciais inválidas")
                     setLoading(false)
                 }
             })
         } catch (err) {
-            setError("An unexpected error occurred")
-            setLoading(false) // Ensure loading is reset even for unexpected errors outside authClient callbacks
-        } finally {
-            // setLoading(false) // Moved to onError callback or handled by onSuccess navigation
+            setError("Ocorreu um erro")
+            setLoading(false)
         }
     }
 
@@ -55,13 +50,13 @@ export function LoginForm() {
             <Input
                 label="Email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="tiago123@gmail.com"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             />
             <Input
-                label="Password"
+                label="Palavra-passe"
                 type="password"
                 placeholder="••••••••"
                 required
@@ -72,7 +67,7 @@ export function LoginForm() {
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <Button type="submit" fullWidth disabled={loading}>
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? "A entrar..." : "Entrar"}
             </Button>
         </form>
     )

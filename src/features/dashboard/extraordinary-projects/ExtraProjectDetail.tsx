@@ -21,7 +21,6 @@ import { SkeletonCard } from "@/components/ui/Skeletons"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { useAsyncData } from "@/hooks/useAsyncData"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
-import { Dictionary } from "@/types/i18n"
 
 // Sub-components
 import { ProjectDetailHeader } from "./components/ProjectDetailHeader"
@@ -34,14 +33,13 @@ import { ProjectDetailStats } from "./components/ProjectDetailStats"
 interface ExtraProjectDetailProps {
     projectId: number
     readOnly?: boolean
-    dictionary: Dictionary
 }
 
 // ===========================================
 // COMPONENT
 // ===========================================
 
-export function ExtraProjectDetail({ projectId, readOnly = false, dictionary }: ExtraProjectDetailProps) {
+export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProjectDetailProps) {
     const router = useRouter()
 
     const {
@@ -61,13 +59,13 @@ export function ExtraProjectDetail({ projectId, readOnly = false, dictionary }: 
 
     const { execute: archiveAction } = useAsyncAction(archiveExtraordinaryProject, {
         onSuccess: () => router.push(ROUTES.DASHBOARD.EXTRAORDINARY),
-        errorMessage: dictionary.common.error
+        errorMessage: "Erro ao arquivar projeto"
     })
 
     const { execute: deleteAction, isPending: isDeleting } = useAsyncAction(deleteExtraordinaryProject, {
         onSuccess: () => router.push(ROUTES.DASHBOARD.EXTRAORDINARY),
-        successMessage: dictionary.extraPayment.deleteSuccess,
-        errorMessage: dictionary.common.error
+        successMessage: "Projeto eliminado com sucesso",
+        errorMessage: "Erro ao eliminar projeto"
     })
 
     const handleArchive = async (): Promise<void> => {
@@ -108,7 +106,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false, dictionary }: 
                     className="inline-flex items-center gap-2 mt-4 text-[11px] text-blue-600 hover:underline"
                 >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    {dictionary.common.back}
+                    Voltar
                 </Link>
             </div>
         )
@@ -119,6 +117,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false, dictionary }: 
             {/* Edit Modal */}
             {isEditing && (
                 <EditProjectModal
+                    isOpen={true}
                     project={project}
                     onClose={() => setIsEditing(false)}
                     onSave={() => {
@@ -156,7 +155,6 @@ export function ExtraProjectDetail({ projectId, readOnly = false, dictionary }: 
                 setShowDeleteConfirm={setShowDeleteConfirm}
                 isDeleting={isDeleting}
                 loadProject={loadProject}
-                dictionary={dictionary}
             />
 
             <ProjectDetailStats stats={project.stats} />
@@ -164,7 +162,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false, dictionary }: 
             {/* Payment Grid */}
             <ErrorBoundary fallback={
                 <div className="tech-border p-8 text-center bg-white">
-                    <p className="text-rose-600 mb-2">{dictionary.paymentGrid.refreshed.replace(':', '')} {dictionary.common.error}</p>
+                    <p className="text-rose-600 mb-2">Erro ao carregar pagamentos</p>
                     <button
                         onClick={() => window.location.reload()}
                         className="text-sm text-blue-600 hover:underline"
@@ -186,7 +184,6 @@ export function ExtraProjectDetail({ projectId, readOnly = false, dictionary }: 
                     payments={project.payments}
                     onRefresh={loadProject}
                     readOnly={readOnly}
-                    dictionary={dictionary}
                 />
             </ErrorBoundary>
         </div>

@@ -1,87 +1,141 @@
 "use client"
 
-import { User, Loader2, ArrowRight } from "lucide-react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
-import { OnboardingStepWrapper } from "./OnboardingStepWrapper"
-import { isValidNif } from "@/lib/validations"
+import { Check } from "lucide-react"
+import { updateUserProfile } from "@/app/actions/user"
+import { isValidNif, isValidIban } from "@/lib/validations"
 
-export type PersonalData = {
+export type UserData = {
+    id: string
     name: string
-    nif: string
-    iban: string
+    email: string
+    nif: string | null
+    iban: string | null
 }
+
+export type PersonalData = UserData
 
 interface OnboardingStepPersonalProps {
-    isActive: boolean
-    isComplete: boolean
-    isPending: boolean
-    personalData: PersonalData
-    setPersonalData: React.Dispatch<React.SetStateAction<PersonalData>>
-    handleSave: () => void
-    onStepClick: () => void
+    user: UserData
+    onComplete: () => void
 }
 
-export function OnboardingStepPersonal({
-    isActive,
-    isComplete,
-    isPending,
-    personalData,
-    setPersonalData,
-    handleSave,
-    onStepClick
-}: OnboardingStepPersonalProps) {
+export function OnboardingStepPersonal({ user, onComplete }: OnboardingStepPersonalProps) {
+    const router = useRouter()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState("")
+
+    const [formData, setFormData] = useState({
+        name: user.name,
+        nif: user.nif || "",
+        iban: user.iban || ""
+    })
+
+    const handleChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }))
+        if (error) setError("")
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setError("")
+
+        if (!formData.name.trim()) {
+            setError("Campo obrigatório")
+            return
+        }
+
+        if (formData.nif && !isValidNif(formData.nif)) {
+            setError("NIF inválido (deve ter 9 dígitos)")
+            return
+        }
+
+        if (formData.iban && !isValidIban(formData.iban)) {
+            setError("O IBAN deve começar com PT50 e ter 21 dígitos")
+            return
+        }
+
+        setIsLoading(true)
+
+        try {
+            const result = await updateUserProfile(formData)
+            if (result.success) {
+                router.refresh()
+                onComplete()
+            } else {
+                setError(result.error || "Ocorreu um erro inesperado")
+            }
+        } catch (err) {
+            setError("Ocorreu um erro inesperado")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
-        <OnboardingStepWrapper
-            title="01 // Personal_Identity"
-            isActive={isActive}
-            isComplete={isComplete}
-            icon={User}
-            onClick={onStepClick}
-        >
-            <div className="p-6 bg-white space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full Name</label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                        Nome Completo *
+                    </label>
+                    <input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => handleChange("name", e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:border-blue-400"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                        NIF Pessoal *
+                    </label>
+                    <div className="relative">
                         <input
-                            value={personalData.name}
-                            onChange={(e) => setPersonalData((prev) => ({ ...prev, name: e.target.value }))}
-                            className="input-sharp w-full"
-                            disabled={isPending}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Personal NIF</label>
-                        <input
-                            value={personalData.nif}
-                            onChange={(e) => setPersonalData((prev) => ({ ...prev, nif: e.target.value }))}
-                            className="input-sharp w-full font-mono"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={formData.nif}
+                            onChange={(e) => handleChange("nif", e.target.value.replace(/\D/g, ''))}
+                            className="w-full px-3 py-2 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400"
                             maxLength={9}
-                            disabled={isPending}
                         />
-                    </div>
-                    <div className="col-span-1 md:col-span-2 space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Personal IBAN</label>
-                        <input
-                            value={personalData.iban}
-                            onChange={(e) => setPersonalData((prev) => ({ ...prev, iban: e.target.value }))}
-                            className="input-sharp w-full font-mono uppercase"
-                            disabled={isPending}
-                        />
+                        {isValidNif(formData.nif) && (
+                            <Check className="absolute right-2 top-2.5 w-4 h-4 text-emerald-500" />
+                        )}
                     </div>
                 </div>
 
-                <div className="flex justify-end pt-2">
-                    <Button
-                        variant="primary"
-                        className="gap-2"
-                        disabled={isPending}
-                        onClick={handleSave}
-                    >
-                        Save & Continue
-                        {isPending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <ArrowRight className="w-4 h-4 ml-2" />}
-                    </Button>
+                <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                        IBAN Pessoal
+                    </label>
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={formData.iban}
+                            onChange={(e) => handleChange("iban", e.target.value.toUpperCase())}
+                            className="w-full px-3 py-2 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400 uppercase"
+                        />
+                        {isValidIban(formData.iban) && (
+                            <Check className="absolute right-2 top-2.5 w-4 h-4 text-emerald-500" />
+                        )}
+                    </div>
                 </div>
             </div>
-        </OnboardingStepWrapper>
+
+            {error && (
+                <p className="text-xs text-rose-600 font-bold">{error}</p>
+            )}
+
+            <div className="flex justify-end">
+                <Button type="submit" disabled={isLoading}>
+                    {isLoading ? "A guardar..." : "GUARDAR E CONTINUAR"}
+                </Button>
+            </div>
+        </form>
     )
 }

@@ -6,7 +6,6 @@ import { updateBuilding } from "@/app/actions/building"
 import { Button } from "@/components/ui/Button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Building2 } from "lucide-react"
-import { isBuildingComplete } from "@/lib/validations"
 
 type Building = {
     id: string
@@ -55,7 +54,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         try {
             const result = await updateBuilding(building.id, {
                 ...formData,
-                name: `${formData.street} ${formData.number}`, // Auto-generate name
+                name: `${formData.street} ${formData.number}`,
                 iban: formData.iban || null,
                 city: formData.city || null,
                 street: formData.street || null,
@@ -66,11 +65,11 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
             if (result.success) {
                 router.refresh()
             } else {
-                setError(result.error || "Update failed")
+                setError(result.error || "Ocorreu um erro inesperado")
             }
         } catch (error) {
             console.error("Failed to update building", error)
-            setError("Update failed")
+            setError("Ocorreu um erro inesperado")
         } finally {
             setIsSaving(false)
         }
@@ -82,21 +81,23 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                 <CardHeader>
                     <CardTitle>
                         <Building2 className="w-3.5 h-3.5" />
-                        BUILDING_PARAMETERS
+                        Parâmetros do Edifício
                     </CardTitle>
-                    <button type="button" className="text-[10px] text-blue-600 hover:underline">Edit Mode</button>
+                    <button type="button" className="text-[10px] text-blue-600 hover:underline">
+                        Modo Edição
+                    </button>
                 </CardHeader>
 
                 <form onSubmit={handleSubmit} className="p-0">
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
-                        <div className="label-col border-none">Building Code</div>
+                        <div className="label-col border-none">Código do Edifício</div>
                         <div className="value-col border-none bg-slate-50 text-slate-500 px-3 py-1.5 font-mono text-xs uppercase">
                             {building.code}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
-                        <div className="label-col border-none">Street Line</div>
+                        <div className="label-col border-none">Rua / Avenida</div>
                         <div className="value-col border-none">
                             <input
                                 type="text"
@@ -108,7 +109,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
-                        <div className="label-col border-none">Number / City</div>
+                        <div className="label-col border-none">Nº / Cidade</div>
                         <div className="value-col border-none grid grid-cols-2">
                             <input
                                 type="text"
@@ -122,13 +123,13 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                 value={formData.city}
                                 onChange={e => handleChange("city", e.target.value)}
                                 className="input-cell h-8"
-                                placeholder="CITY"
+                                placeholder="CIDADE"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
-                        <div className="label-col border-none">Building NIF</div>
+                        <div className="label-col border-none">NIF do Edifício</div>
                         <div className="value-col border-none">
                             <input
                                 type="text"
@@ -141,7 +142,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
-                        <div className="label-col border-none">Building IBAN</div>
+                        <div className="label-col border-none">IBAN do Edifício</div>
                         <div className="value-col border-none">
                             <input
                                 type="text"
@@ -153,11 +154,11 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     </div>
 
                     <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
-                        FINANCIAL CONFIGURATION
+                        Configuração Financeira
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
-                        <div className="label-col border-none">Calculation Mode</div>
+                        <div className="label-col border-none">Modo de Cálculo</div>
                         <div className="value-col border-none p-2 flex flex-col sm:flex-row gap-4 bg-white">
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
@@ -167,7 +168,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                     onChange={() => handleChange("quotaMode", "global")}
                                     className="w-3.5 h-3.5 accent-blue-600"
                                 />
-                                <span className="text-xs">Global Fixed (Equal)</span>
+                                <span className="text-xs">Valor Fixo Global</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
@@ -177,13 +178,13 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                     onChange={() => handleChange("quotaMode", "permillage")}
                                     className="w-3.5 h-3.5 accent-blue-600"
                                 />
-                                <span className="text-xs">Permillage Based</span>
+                                <span className="text-xs">Baseado em Permilagem</span>
                             </label>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr]">
-                        <div className="label-col border-none">Base Value (€)</div>
+                        <div className="label-col border-none">Valor Base (€)</div>
                         <div className="value-col border-none relative">
                             <input
                                 type="number"
@@ -192,16 +193,12 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                 className="input-cell h-8 font-mono font-bold text-slate-700"
                                 placeholder="0.00"
                             />
-                            <div className="absolute right-2 top-1.5 flex flex-col pointer-events-none opacity-50">
-                                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 15l7-7 7 7" /></svg>
-                                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M19 9l-7 7-7-7" /></svg>
-                            </div>
                         </div>
                     </div>
 
                     <div className="p-3 flex justify-end border-t border-slate-100">
                         <Button type="submit" size="xs" isLoading={isSaving} variant="primary">
-                            Save Changes
+                            Guardar Alterações
                         </Button>
                     </div>
                 </form>

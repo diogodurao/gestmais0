@@ -1,140 +1,165 @@
-import { useState } from "react"
-import { X, Loader2 } from "lucide-react"
-import { type ProjectDetail, updateExtraordinaryProject } from "@/app/actions/extraordinary"
-import { Button } from "@/components/ui/Button"
-import { formatCurrency } from "@/lib/extraordinary-calculations"
+"use client"
 
-interface EditProjectModalProps {
-    project: ProjectDetail
-    onClose: () => void
-    onSave: () => void
+import { useState, useEffect } from "react"
+import { X } from "lucide-react"
+import { Button } from "@/components/ui/Button"
+import { updateExtraordinaryProject } from "@/app/actions/extraordinary"
+import { useRouter } from "next/navigation"
+
+type Project = {
+    id: number
+    name: string
+    description: string | null
+    totalBudget: number
+    numInstallments: number
+    startMonth: number
+    startYear: number
 }
 
-export function EditProjectModal({ project, onClose, onSave }: EditProjectModalProps) {
+interface EditProjectModalProps {
+    isOpen: boolean
+    onClose: () => void
+    onSave?: () => void
+    project: Project
+}
+
+export function EditProjectModal({ isOpen, onClose, onSave, project }: EditProjectModalProps) {
+    const router = useRouter()
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState("")
+
     const [formData, setFormData] = useState({
         name: project.name,
-        description: project.description || "",
+        description: project.description || ""
     })
-    const [isSaving, setIsSaving] = useState(false)
-    const [error, setError] = useState<string | null>(null)
 
-    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+    useEffect(() => {
+        setFormData({
+            name: project.name,
+            description: project.description || ""
+        })
+    }, [project])
+
+    if (!isOpen) return null
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        setError("")
 
         if (!formData.name.trim()) {
-            setError("Nome é obrigatório")
+            setError("O nome do projeto é obrigatório")
             return
         }
 
-        setIsSaving(true)
-        setError(null)
+        setIsLoading(true)
+        try {
+            const result = await updateExtraordinaryProject({
+                projectId: project.id,
+                name: formData.name,
+                description: formData.description || undefined
+            })
 
-        const result = await updateExtraordinaryProject({
-            projectId: project.id,
-            name: formData.name.trim(),
-            description: formData.description.trim(),
-        })
-
-        setIsSaving(false)
-
-        if (result.success) {
-            onSave()
-        } else {
-            setError(result.error)
+            if (result.success) {
+                onClose()
+                if (onSave) onSave()
+                router.refresh()
+            } else {
+                setError(result.error || "Ocorreu um erro inesperado")
+            }
+        } catch (err) {
+            setError("Ocorreu um erro inesperado")
+        } finally {
+            setIsLoading(false)
         }
     }
 
+    const budgetDisplay = (project.totalBudget / 100).toLocaleString("pt-PT", {
+        style: "currency",
+        currency: "EUR"
+    })
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white tech-border shadow-xl w-full max-w-md">
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
-                    <h3 className="text-[12px] font-bold text-slate-800 uppercase tracking-tight">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white tech-border w-full max-w-md">
+                <div className="flex items-center justify-between p-4 border-b border-slate-200">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
                         Editar Projeto
-                    </h3>
+                    </h2>
                     <button
                         onClick={onClose}
-                        className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
-                        aria-label="Fechar modal"
+                        className="p-1 hover:bg-slate-100 rounded transition-colors"
                     >
-                        <X className="w-4 h-4" />
+                        <X className="w-4 h-4 text-slate-400" />
                     </button>
                 </div>
 
-                {/* Form */}
                 <form onSubmit={handleSubmit} className="p-4 space-y-4">
                     <div>
-                        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-tight mb-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
                             Nome do Projeto *
                         </label>
                         <input
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-200 text-[12px] focus:outline-none focus:border-slate-400"
-                            required
+                            className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:border-blue-400"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-tight mb-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
                             Descrição
                         </label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                             rows={3}
-                            className="w-full px-3 py-2 border border-slate-200 text-[12px] focus:outline-none focus:border-slate-400 resize-none"
+                            className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:border-blue-400 resize-none"
                         />
                     </div>
 
-                    {/* Read-only fields */}
-                    <div className="bg-slate-50 p-3 tech-border border-dashed space-y-2">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                            Campos fixos (não editáveis)
+                    <div className="bg-slate-50 p-3 border border-slate-200">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">
+                            Campos Fixos (Não Editáveis)
                         </p>
-                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
                             <div>
-                                <span className="text-slate-500">Orçamento:</span>
-                                <span className="font-mono font-bold text-slate-700 ml-1">
-                                    {formatCurrency(project.totalBudget)}
-                                </span>
+                                <span className="text-slate-400">Orçamento:</span>
+                                <span className="ml-1 font-mono font-bold">{budgetDisplay}</span>
                             </div>
                             <div>
-                                <span className="text-slate-500">Prestações:</span>
-                                <span className="font-bold text-slate-700 ml-1">
-                                    {project.numInstallments}
+                                <span className="text-slate-400">Prestações:</span>
+                                <span className="ml-1 font-mono font-bold">{project.numInstallments}</span>
+                            </div>
+                            <div className="col-span-2">
+                                <span className="text-slate-400">Data de Início:</span>
+                                <span className="ml-1 font-mono font-bold">
+                                    {project.startMonth}/{project.startYear}
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     {error && (
-                        <p className="text-[11px] text-rose-600 font-bold">{error}</p>
+                        <p className="text-[10px] text-rose-600 font-bold uppercase">{error}</p>
                     )}
 
-                    <div className="flex items-center justify-end gap-2 pt-2">
+                    <div className="flex gap-2 justify-end pt-2">
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             onClick={onClose}
+                            disabled={isLoading}
                         >
                             Cancelar
                         </Button>
                         <Button
                             type="submit"
                             size="sm"
-                            disabled={isSaving}
+                            disabled={isLoading}
                         >
-                            {isSaving ? (
-                                <>
-                                    <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                                    A guardar...
-                                </>
-                            ) : (
-                                "Guardar"
-                            )}
+                            {isLoading ? "A guardar..." : "Guardar"}
                         </Button>
                     </div>
                 </form>

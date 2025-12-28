@@ -52,13 +52,12 @@ export function ResidentActionsMenu({
             const rect = buttonRef.current.getBoundingClientRect()
             setMenuPosition({
                 top: rect.bottom + window.scrollY,
-                left: rect.right + window.scrollX - 192 // 192px = w-48
+                left: rect.right + window.scrollX - 192
             })
         }
         setIsOpen(!isOpen)
     }
 
-    // Close on scroll to avoid detached menu
     useEffect(() => {
         if (!isOpen) return
         const handleScroll = () => setIsOpen(false)
@@ -75,16 +74,16 @@ export function ResidentActionsMenu({
                 router.refresh()
             } else {
                 toast({
-                    title: "Error",
-                    description: result.error || "Failed to remove resident",
+                    title: "Erro",
+                    description: result.error || "Ocorreu um erro inesperado",
                     variant: "destructive",
                 })
             }
         } catch (error) {
             console.error("Failed to remove resident", error)
             toast({
-                title: "Error",
-                description: "An unexpected error occurred",
+                title: "Erro",
+                description: "Ocorreu um erro inesperado",
                 variant: "destructive",
             })
         } finally {
@@ -101,18 +100,16 @@ export function ResidentActionsMenu({
                 setIsOpen(false)
                 router.refresh()
             } else {
-                console.error("Failed to unassign unit", result.error)
                 toast({
-                    title: "Error",
-                    description: result.error || "Failed to unassign unit",
+                    title: "Erro",
+                    description: result.error || "Ocorreu um erro inesperado",
                     variant: "destructive",
                 })
             }
         } catch (error) {
-            console.error("Failed to unassign unit", error)
             toast({
-                title: "Error",
-                description: "Failed to unassign unit",
+                title: "Erro",
+                description: "Ocorreu um erro inesperado",
                 variant: "destructive",
             })
         } finally {
@@ -130,18 +127,16 @@ export function ResidentActionsMenu({
                 setIsOpen(false)
                 router.refresh()
             } else {
-                console.error("Failed to assign unit", result.error)
                 toast({
-                    title: "Error",
-                    description: result.error || "Failed to assign unit",
+                    title: "Erro",
+                    description: result.error || "Ocorreu um erro inesperado",
                     variant: "destructive",
                 })
             }
         } catch (error) {
-            console.error("Failed to assign unit", error)
             toast({
-                title: "Error",
-                description: "Failed to assign unit",
+                title: "Erro",
+                description: "Ocorreu um erro inesperado",
                 variant: "destructive",
             })
         } finally {
@@ -173,7 +168,7 @@ export function ResidentActionsMenu({
                         }}
                     >
                         <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 mb-1">
-                            Resident_Ops
+                            Operações
                         </div>
                         <button
                             onClick={() => {
@@ -183,7 +178,7 @@ export function ResidentActionsMenu({
                             className="w-full text-left px-4 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 uppercase font-medium"
                         >
                             <Home className="w-3.5 h-3.5 text-slate-400" />
-                            {resident.apartment ? "Change_Unit" : "Assign_Unit"}
+                            {resident.apartment ? "Mudar Fração" : "Atribuir Fração"}
                         </button>
 
                         {resident.apartment && (
@@ -195,7 +190,7 @@ export function ResidentActionsMenu({
                                 className="w-full text-left px-4 py-1.5 text-xs text-amber-600 hover:bg-amber-50 flex items-center gap-2 uppercase font-medium"
                             >
                                 <UserX className="w-3.5 h-3.5" />
-                                Unassign_Unit
+                                Remover da Fração
                             </button>
                         )}
 
@@ -209,7 +204,7 @@ export function ResidentActionsMenu({
                             className="w-full text-left px-4 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 uppercase font-medium"
                         >
                             <Trash2 className="w-3.5 h-3.5" />
-                            Purge_Resident
+                            Remover
                         </button>
                     </div>
                 </>,
@@ -218,8 +213,8 @@ export function ResidentActionsMenu({
 
             <ConfirmModal
                 isOpen={showRemoveConfirm}
-                title="Remove Resident"
-                message={`Are you sure you want to remove ${resident.user.name} from the building?`}
+                title="Remover Residente"
+                message={`Tem a certeza que deseja remover ${resident.user.name} deste edifício? Esta ação não pode ser desfeita.`}
                 onConfirm={handleRemove}
                 onCancel={() => setShowRemoveConfirm(false)}
                 variant="danger"
@@ -227,25 +222,28 @@ export function ResidentActionsMenu({
 
             <ConfirmModal
                 isOpen={showUnassignConfirm}
-                title="Unassign Unit"
-                message={`Unassign ${resident.user.name} from their unit?`}
+                title="Remover da Fração"
+                message={`Tem a certeza que deseja remover ${resident.user.name} da sua fração atual?`}
                 onConfirm={handleUnassignUnit}
                 onCancel={() => setShowUnassignConfirm(false)}
                 variant="neutral"
             />
 
-            {/* Assign Unit Modal */}
             <Modal
                 isOpen={showAssignModal}
                 onClose={() => setShowAssignModal(false)}
-                title={`UPDATE_ASSIGNMENT: ${resident.user.name.toUpperCase()}`}
+                title={`Atribuir Fração: ${resident.user.name.toUpperCase()}`}
             >
                 <div className="space-y-4">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase">Select available unit from registry:</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase">
+                        Selecione uma fração disponível
+                    </p>
 
                     <div className="max-h-[300px] overflow-y-auto tech-border bg-slate-50">
                         {unclaimedApartments.length === 0 ? (
-                            <p className="text-[10px] text-slate-400 font-mono uppercase text-center py-8">[ NO_AVAILABLE_UNITS ]</p>
+                            <p className="text-[10px] text-slate-400 font-mono uppercase text-center py-8">
+                                [ Sem frações disponíveis ]
+                            </p>
                         ) : (
                             unclaimedApartments.map(apt => (
                                 <button
@@ -258,7 +256,7 @@ export function ResidentActionsMenu({
                                         {getApartmentDisplayName(apt)}
                                     </span>
                                     <span className="text-[10px] font-bold text-slate-400 group-hover:text-blue-600 uppercase tracking-tighter">
-                                        [ SELECT ]
+                                        [ SELECIONAR ]
                                     </span>
                                 </button>
                             ))
@@ -271,7 +269,7 @@ export function ResidentActionsMenu({
                             size="sm"
                             onClick={() => setShowAssignModal(false)}
                         >
-                            Cancel
+                            Cancelar
                         </Button>
                     </div>
                 </div>

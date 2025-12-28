@@ -9,7 +9,6 @@ import {
 } from "@/app/actions/extraordinary"
 import { useToast } from "@/hooks/use-toast"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
-import { Dictionary } from "@/types/i18n"
 
 // Sub-components
 import { BudgetProgress } from "./components/BudgetProgress"
@@ -20,7 +19,7 @@ import { ApartmentRow } from "./components/ApartmentRow"
 // Types
 import { type ExtraPaymentGridProps, type ToolMode, type CellStatus } from "./types"
 
-export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = false, dictionary }: ExtraPaymentGridProps & { dictionary: Dictionary }) {
+export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = false }: ExtraPaymentGridProps) {
     const { toast } = useToast()
     const [toolMode, setToolMode] = useState<ToolMode>(null)
     const [filterStatus, setFilterStatus] = useState<CellStatus | "all">("all")
@@ -28,8 +27,8 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
     const [showMobileTools, setShowMobileTools] = useState(false)
 
     const { execute: updatePayment } = useAsyncAction(updateExtraordinaryPayment, {
-        successMessage: dictionary.extraPayment.updateSuccess,
-        errorMessage: dictionary.common.error,
+        successMessage: "Pagamento atualizado com sucesso",
+        errorMessage: "Ocorreu um erro inesperado",
         onError: () => setLocalPayments(payments) // Rollback on error
     })
 
@@ -159,20 +158,19 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                 totalCollected={totalCollected}
                 totalBudget={project.totalBudget}
                 progressPercent={progressPercent}
-                dictionary={dictionary}
             />
 
             <ExtraPaymentGridToolbar
+                isManager={!readOnly}
                 readOnly={readOnly}
                 toolMode={toolMode}
-                setToolMode={setToolMode}
-                filterStatus={filterStatus}
-                setFilterStatus={setFilterStatus}
+                onToolModeChange={setToolMode}
+                filterMode={filterStatus}
+                onFilterModeChange={setFilterStatus}
                 showMobileTools={showMobileTools}
                 setShowMobileTools={setShowMobileTools}
                 handleExportPDF={handleExportPDF}
                 handleExportExcel={handleExportExcel}
-                dictionary={dictionary}
             />
 
             {/* Mobile Card View */}
@@ -188,14 +186,13 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                         toolMode={toolMode}
                         onCellClick={handleCellClick}
                         readOnly={readOnly}
-                        dictionary={dictionary}
                     />
                 ))}
 
                 <div className="tech-border bg-slate-100 p-3">
                     <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-tight">
-                        <span className="text-slate-500">{dictionary.extraPayment.allUnits} {localPayments.length}</span>
-                        <span className="text-emerald-700">{formatCurrency(totalCollected)} {dictionary.extraPayment.collected}</span>
+                        <span className="text-slate-500">Unidades: {localPayments.length}</span>
+                        <span className="text-emerald-700">{formatCurrency(totalCollected)} Angariado</span>
                     </div>
                 </div>
             </div>
@@ -206,10 +203,10 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                     <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
                         <thead>
                             <tr>
-                                <th className="header-cell w-16 text-center sticky left-0 bg-slate-100 z-10">{dictionary.extraPayment.unit}</th>
-                                <th className="header-cell w-40">{dictionary.extraPayment.resident}</th>
+                                <th className="header-cell w-16 text-center sticky left-0 bg-slate-100 z-10">Fração</th>
+                                <th className="header-cell w-40">Residente</th>
                                 <th className="header-cell w-20 text-right">‰</th>
-                                <th className="header-cell w-28 text-right">{dictionary.extraPayment.totalShare}</th>
+                                <th className="header-cell w-28 text-right">Quota Total</th>
                                 {Array.from({ length: project.numInstallments }, (_, i) => {
                                     let month = project.startMonth + i
                                     let year = project.startYear
@@ -223,9 +220,9 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                                         </th>
                                     )
                                 })}
-                                <th className="header-cell w-28 text-right">{dictionary.extraPayment.paid}</th>
-                                <th className="header-cell w-28 text-right">{dictionary.extraPayment.debt}</th>
-                                <th className="header-cell w-24 text-center">{dictionary.extraPayment.status}</th>
+                                <th className="header-cell w-28 text-right">Pago</th>
+                                <th className="header-cell w-28 text-right">Em Dívida</th>
+                                <th className="header-cell w-24 text-center">Estado</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -238,14 +235,13 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                                     readOnly={readOnly}
                                     startMonth={project.startMonth}
                                     startYear={project.startYear}
-                                    dictionary={dictionary}
                                 />
                             ))}
                         </tbody>
                         <tfoot>
                             <tr className="bg-slate-100 font-bold">
                                 <td className="data-cell sticky left-0 bg-slate-100 z-10">TOTAL</td>
-                                <td className="data-cell">{localPayments.length} {dictionary.extraPayment.allUnits}</td>
+                                <td className="data-cell">{localPayments.length} Frações</td>
                                 <td className="data-cell text-right">{localPayments.reduce((sum, p) => sum + p.permillage, 0).toFixed(2)}‰</td>
                                 <td className="data-cell text-right font-mono">{formatCurrency(project.totalBudget)}</td>
                                 {Array.from({ length: project.numInstallments }, (_, i) => {

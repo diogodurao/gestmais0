@@ -12,6 +12,7 @@ interface ConfirmModalProps {
     variant?: "danger" | "neutral"
     confirmLabel?: string
     cancelLabel?: string
+    isLoading?: boolean
 }
 
 export function ConfirmModal({
@@ -22,14 +23,21 @@ export function ConfirmModal({
     onCancel,
     variant = "neutral",
     confirmLabel,
-    cancelLabel
+    cancelLabel,
+    isLoading
 }: ConfirmModalProps) {
     return (
-        <Modal isOpen={isOpen} onClose={onCancel} title={title}>
+        <Modal isOpen={isOpen} onClose={isLoading ? () => { } : onCancel} title={title}>
             <div className="space-y-4 text-center sm:text-left">
                 <p className="text-sm text-slate-600">{message}</p>
                 <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-6">
-                    <Button variant="ghost" size="sm" onClick={onCancel} className="w-full sm:w-auto uppercase text-[10px] font-bold">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onCancel}
+                        className="w-full sm:w-auto uppercase text-[10px] font-bold"
+                        disabled={isLoading}
+                    >
                         {cancelLabel || "Cancelar"}
                     </Button>
                     <Button
@@ -37,6 +45,7 @@ export function ConfirmModal({
                         size="sm"
                         onClick={onConfirm}
                         className="w-full sm:w-auto uppercase text-[10px] font-bold"
+                        isLoading={isLoading}
                     >
                         {confirmLabel || "Confirmar"}
                     </Button>

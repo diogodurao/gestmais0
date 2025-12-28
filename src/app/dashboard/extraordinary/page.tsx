@@ -11,10 +11,8 @@ import { Suspense } from "react"
 import { ExtraProjectsList } from "@/features/dashboard/extraordinary-projects/ExtraProjectsList"
 import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
-import { getResidentApartment } from "@/app/actions/building"
+import { getResidentApartment, getBuildingApartments } from "@/app/actions/building"
 import { ROUTES } from "@/lib/routes"
-import { getDictionary } from "@/get-dictionary"
-import type { SessionUser } from "@/lib/types"
 
 export const metadata = {
     title: "Quotas Extraordinárias | GestMais",
@@ -23,9 +21,6 @@ export const metadata = {
 
 export default async function ExtraordinaryProjectsPage() {
     const session = await requireSession()
-    const sessionUser = session.user as unknown as SessionUser
-    const preferredLanguage = sessionUser.preferredLanguage || 'pt'
-    const dictionary = await getDictionary(preferredLanguage)
     const isManager = session.user.role === 'manager'
 
     // Check for building association
@@ -43,13 +38,20 @@ export default async function ExtraordinaryProjectsPage() {
         }
     }
 
+    const rawApartments = isManager ? await getBuildingApartments(buildingId) : []
+    const apartments = rawApartments.map(a => ({
+        id: a.apartment.id,
+        unit: a.apartment.unit,
+        permillage: a.apartment.permillage || 0
+    }))
+
     return (
         <div className="p-4 md:p-6">
             <Suspense fallback={<ProjectsListSkeleton />}>
                 <ExtraProjectsList
                     buildingId={buildingId}
+                    apartments={apartments}
                     readOnly={!isManager}
-                    dictionary={dictionary}
                 />
             </Suspense>
         </div>

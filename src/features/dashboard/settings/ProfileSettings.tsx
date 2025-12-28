@@ -42,15 +42,15 @@ export function ProfileSettings({ user }: { user: UserData }) {
 
         if (isManager) {
             if (!formData.name.trim()) {
-                setError("Name is required")
+                setError("Obrigatório")
                 return
             }
             if (formData.nif && !isValidNif(formData.nif)) {
-                setError("NIF must be 9 digits")
+                setError("Deve ter 9 dígitos numéricos")
                 return
             }
             if (formData.iban && !isValidIban(formData.iban)) {
-                setError("IBAN format invalid")
+                setError("IBAN inválido")
                 return
             }
         }
@@ -63,11 +63,11 @@ export function ProfileSettings({ user }: { user: UserData }) {
                 setShowSuccess(true)
                 setTimeout(() => setShowSuccess(false), 3000)
             } else {
-                setError(result.error || "Update failed")
+                setError(result.error || "Ocorreu um erro")
             }
         } catch (error) {
             console.error("Failed to update profile", error)
-            setError("An unexpected error occurred")
+            setError("Ocorreu um erro")
         } finally {
             setIsSaving(false)
         }
@@ -84,16 +84,16 @@ export function ProfileSettings({ user }: { user: UserData }) {
                 <CardHeader>
                     <CardTitle>
                         <User className="w-3.5 h-3.5" />
-                        USER_PROFILE_DATA
+                        DADOS_PERFIL_UTILIZADOR
                     </CardTitle>
                     <div className="flex items-center gap-3">
                         {profileComplete ? (
                             <span className="text-[10px] text-green-600 font-mono flex items-center gap-1">
-                                <Check className="w-3 h-3" /> Validated
+                                <Check className="w-3 h-3" /> VALIDADO
                             </span>
                         ) : (
                             <span className="text-[10px] text-amber-600 font-mono flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" /> Incomplete
+                                <AlertCircle className="w-3 h-3" /> INCOMPLETO
                             </span>
                         )}
                     </div>
@@ -101,7 +101,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
 
                 <form onSubmit={handleSubmit} className="p-0">
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
-                        <div className="label-col border-none">Full Name</div>
+                        <div className="label-col border-none">Nome Completo</div>
                         <div className="value-col border-none">
                             <input
                                 type="text"
@@ -112,7 +112,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100 border-t">
-                        <div className="label-col border-none">Email Address</div>
+                        <div className="label-col border-none">Endereço de Email</div>
                         <div className="value-col border-none bg-slate-50">
                             <input
                                 type="text"
@@ -125,7 +125,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
 
                     <div className="grid grid-cols-1 md:grid-cols-2">
                         <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b md:border-b-0 md:border-r border-slate-100 border-t md:border-t-0">
-                            <div className="label-col border-none">NIF (Tax ID)</div>
+                            <div className="label-col border-none">NIF</div>
                             <div className="value-col border-none relative">
                                 <input
                                     type="text"
@@ -156,7 +156,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
 
                     {user.unitName && (
                         <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-t border-slate-100">
-                            <div className="label-col border-none">Assigned Unit</div>
+                            <div className="label-col border-none">Fração Atribuída</div>
                             <div className="value-col border-none bg-slate-50">
                                 <input
                                     type="text"
@@ -170,7 +170,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
 
                     <div className="p-3 flex justify-end">
                         <Button type="submit" size="xs" disabled={isSaving || !hasChanges}>
-                            {isSaving ? "Saving..." : "Save Changes"}
+                            {isSaving ? "A GUARDAR..." : "GUARDAR ALTERAÇÕES"}
                         </Button>
                     </div>
                 </form>

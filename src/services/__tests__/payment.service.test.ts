@@ -78,31 +78,71 @@ describe('PaymentService', () => {
         })
     })
     describe('getResidentPaymentStatus', () => {
-        it('should return building summary for manager', async () => {
-            const userId = 'm1'
-
+        it('should return personal summary for resident', async () => {
+            const userId = 'r1'
             const mockSelect = vi.fn()
 
             // 1. User Query
             mockSelect.mockReturnValueOnce({
                 from: vi.fn().mockReturnValueOnce({
                     where: vi.fn().mockReturnValueOnce({
-                        limit: vi.fn().mockResolvedValueOnce([{
-                            id: userId,
-                            role: 'manager',
-                            activeBuildingId: 'b1',
-                            name: 'Manager'
-                        }])
+                        limit: vi.fn().mockResolvedValueOnce([{ id: userId, role: 'resident', name: 'Resident' }])
                     })
                 })
             })
 
-            // 2. Building Query
+            // 2. Apartment Query
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    innerJoin: vi.fn().mockReturnValueOnce({
+                        where: vi.fn().mockReturnValueOnce({
+                            limit: vi.fn().mockResolvedValueOnce([{ id: 1, unit: '1A', buildingId: 'b1', monthlyQuota: 5000 }])
+                        })
+                    })
+                })
+            })
+
+            // 3. Regular Payments
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    where: vi.fn().mockResolvedValueOnce([{ status: 'paid', amount: 5000, month: 1, year: 2024 }])
+                })
+            })
+
+            // 4. Extra Payments
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    innerJoin: vi.fn().mockReturnValueOnce({
+                        where: vi.fn().mockResolvedValueOnce([])
+                    })
+                })
+            })
+
+            // Inject mock
+            // @ts-ignore
+            db.select = mockSelect
+
+            const result = await service.getResidentPaymentStatus(userId)
+
+            expect(result.success).toBe(true)
+            if (result.success) {
+                expect(result.data.isBuildingSummary).toBeUndefined()
+                expect(result.data.apartmentUnit).toBe("1A")
+            }
+        })
+    })
+
+    describe('getBuildingPaymentStatus', () => {
+        it('should return building summary', async () => {
+            const buildingId = 'b1'
+            const mockSelect = vi.fn()
+
+            // 1. Building Query
             mockSelect.mockReturnValueOnce({
                 from: vi.fn().mockReturnValueOnce({
                     where: vi.fn().mockReturnValueOnce({
                         limit: vi.fn().mockResolvedValueOnce([{
-                            id: 'b1',
+                            id: buildingId,
                             name: 'Building 1',
                             monthlyQuota: 5000
                         }])
@@ -110,7 +150,7 @@ describe('PaymentService', () => {
                 })
             })
 
-            // 3. Regular Payments Summary Query
+            // 2. Regular Payments Summary Query
             mockSelect.mockReturnValueOnce({
                 from: vi.fn().mockReturnValueOnce({
                     innerJoin: vi.fn().mockReturnValueOnce({
@@ -122,13 +162,14 @@ describe('PaymentService', () => {
                 })
             })
 
-            // 4. Total Apartments Query
+            // 3. Total Apartments Query
             mockSelect.mockReturnValueOnce({
                 from: vi.fn().mockReturnValueOnce({
                     where: vi.fn().mockResolvedValueOnce([{ count: 10 }])
                 })
             })
 
+            // 4. Extra Projects Query
             mockSelect.mockReturnValueOnce({
                 from: vi.fn().mockReturnValueOnce({
                     where: vi.fn().mockResolvedValueOnce([]) // No active projects
@@ -139,7 +180,7 @@ describe('PaymentService', () => {
             // @ts-ignore
             db.select = mockSelect
 
-            const result = await service.getResidentPaymentStatus(userId)
+            const result = await service.getBuildingPaymentStatus(buildingId)
 
             expect(result.success).toBe(true)
             if (result.success) {

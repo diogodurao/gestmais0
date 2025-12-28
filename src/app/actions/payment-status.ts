@@ -25,3 +25,13 @@ export async function getApartmentPaymentStatus(apartmentId: number) {
 
     return await paymentService.getApartmentPaymentStatus(apartmentId)
 }
+
+export async function getBuildingPaymentStatus(buildingId: string) {
+    const session = await requireSession()
+
+    if (session.user.role !== "manager") {
+        throw new Error("Apenas gestores podem ver estado do condomínio")
+    }
+
+    return await paymentService.getBuildingPaymentStatus(buildingId)
+}
