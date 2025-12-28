@@ -45,6 +45,12 @@ export default async function DashboardPage() {
 
             const apartmentsData = await getBuildingApartments(building.id);
 
+            // Check if manager has claimed a unit
+            // We need to check if the valid apartments list contains one assigned to the current user
+            const managerApt = apartmentsData.find(a => a.resident?.id === session.user.id)
+            const currentManagerUnitId = managerApt ? managerApt.apartment.id : null
+            const claimDone = !!currentManagerUnitId
+
             // Check if onboarding is complete
             const profileDone = isProfileComplete(session.user)
             const buildingDone = isBuildingComplete(building)
@@ -53,8 +59,8 @@ export default async function DashboardPage() {
                 apartmentsData
             )
 
-            if (!profileDone || !buildingDone || !unitsDone) {
-                const initialStep = !profileDone ? 'personal' : !buildingDone ? 'building' : 'units'
+            if (!profileDone || !buildingDone || !unitsDone || !claimDone) {
+                const initialStep = !profileDone ? 'personal' : !buildingDone ? 'building' : !unitsDone ? 'units' : 'claim'
                 return (
                     <ManagerOnboardingFlow
                         user={{
@@ -71,6 +77,7 @@ export default async function DashboardPage() {
                             permillage: a.apartment.permillage || 0
                         }))}
                         initialStep={initialStep}
+                        currentManagerUnitId={currentManagerUnitId}
                     />
                 )
             }

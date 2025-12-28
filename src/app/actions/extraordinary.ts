@@ -93,8 +93,20 @@ export async function updateExtraordinaryProject(
 export async function getExtraordinaryProjects(
     buildingId: string
 ) {
-    const { requireBuildingAccess } = await import("@/lib/auth-helpers")
-    await requireBuildingAccess(buildingId)
+    const session = await requireSession()
+
+    // Check if user is manager or resident of this building
+    if (session.user.role === 'manager') {
+        const { requireBuildingAccess } = await import("@/lib/auth-helpers")
+        await requireBuildingAccess(buildingId)
+    } else if (session.user.role === 'resident') {
+        if (session.user.buildingId !== buildingId) {
+            throw new Error("Unauthorized: You are not a resident of this building")
+        }
+    } else {
+        throw new Error("Unauthorized")
+    }
+
     return await extraordinaryService.getExtraordinaryProjects(buildingId)
 }
 
@@ -105,8 +117,33 @@ export async function getExtraordinaryProjects(
 export async function getExtraordinaryProjectDetail(
     projectId: number
 ) {
-    const { requireProjectAccess } = await import("@/lib/auth-helpers")
-    await requireProjectAccess(projectId)
+    const session = await requireSession()
+
+    if (session.user.role === 'manager') {
+        const { requireProjectAccess } = await import("@/lib/auth-helpers")
+        await requireProjectAccess(projectId)
+    } else if (session.user.role === 'resident') {
+        // We need to verify the project belongs to the resident's building
+        // We can fetch the detail and then check, or check before.
+        // Checking before is safer to avoid leaking data if unauthorized.
+        const { db } = await import("@/db")
+        const { extraordinaryProjects } = await import("@/db/schema")
+        const { eq } = await import("drizzle-orm")
+
+        const project = await db.select({ buildingId: extraordinaryProjects.buildingId })
+            .from(extraordinaryProjects)
+            .where(eq(extraordinaryProjects.id, projectId))
+            .limit(1)
+
+        if (!project.length) throw new Error("Project not found")
+
+        if (session.user.buildingId !== project[0].buildingId) {
+            throw new Error("Unauthorized: Project not in your building")
+        }
+    } else {
+        throw new Error("Unauthorized")
+    }
+
     return await extraordinaryService.getExtraordinaryProjectDetail(projectId)
 }
 

@@ -38,28 +38,29 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
     const [isLoading, setIsLoading] = useState(true)
     const [showCreate, setShowCreate] = useState(false)
 
-    useEffect(() => {
-        let isMounted = true
-
-        const loadProjects = async () => {
-            try {
-                const result = await getExtraordinaryProjects(buildingId)
-                if (isMounted && result.success && result.data) {
-                    setProjects(result.data)
-                }
-            } catch (error) {
-                console.error("Failed to load projects", error)
-            } finally {
-                if (isMounted) setIsLoading(false)
+    const fetchProjects = async () => {
+        try {
+            setIsLoading(true)
+            const result = await getExtraordinaryProjects(buildingId)
+            if (result.success && result.data) {
+                setProjects(result.data)
             }
+        } catch (error) {
+            console.error("Failed to load projects", error)
+        } finally {
+            setIsLoading(false)
         }
+    }
 
-        loadProjects()
-
-        return () => {
-            isMounted = false
-        }
+    useEffect(() => {
+        fetchProjects()
     }, [buildingId])
+
+    const handleCreateSuccess = () => {
+        setShowCreate(false)
+        fetchProjects()
+        router.refresh() // Keep this to update server components if needed
+    }
 
     if (showCreate && isManager) {
         return (
@@ -67,6 +68,7 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                 buildingId={buildingId}
                 apartments={apartments}
                 onCancel={() => setShowCreate(false)}
+                onSuccess={handleCreateSuccess}
             />
         )
     }
@@ -112,7 +114,8 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                                 onClick={() => setShowCreate(true)}
                             >
                                 <Plus className="w-3 h-3 mr-1" />
-                                Criar Primeiro Projeto
+                                <span className="hidden sm:inline">Criar Primeiro Projeto</span>
+                                <span className="sm:hidden">Criar</span>
                             </Button>
                         )}
                     </div>

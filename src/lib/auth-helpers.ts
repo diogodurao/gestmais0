@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { db } from "@/db"
-import { managerBuildings, apartments } from "@/db/schema"
+import { managerBuildings, apartments, extraordinaryProjects } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
 import { isManager, isResident } from "@/lib/permissions"
 import type { SessionUser } from "@/lib/types"
@@ -113,6 +113,28 @@ export async function requireApartmentAccess(apartmentId: number) {
 
     // 2. Verify building access
     return await requireBuildingAccess(apartment.buildingId)
+}
+
+/**
+ * Verify manager has access to a specific extraordinary project (via building)
+ */
+export async function requireProjectAccess(projectId: number) {
+    await requireManagerSession()
+
+    // 1. Get project to find buildingId
+    const project = await db.query.extraordinaryProjects.findFirst({
+        where: eq(extraordinaryProjects.id, projectId),
+        columns: {
+            buildingId: true
+        }
+    })
+
+    if (!project) {
+        throw new Error("Project not found")
+    }
+
+    // 2. Verify building access
+    return await requireBuildingAccess(project.buildingId)
 }
 
 // Re-export SessionUser for backward compatibility

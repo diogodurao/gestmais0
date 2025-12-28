@@ -92,8 +92,8 @@ export default async function SettingsPage({
                 {/* Header bar within content for quick save simulation */}
                 <div className="flex items-center justify-between mb-2">
                     <div>
-                        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-800">System_Configuration</h1>
-                        <p className="text-[9px] sm:text-[10px] font-mono text-slate-500 uppercase">Operational_Parameters_v0.2</p>
+                        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-800">Definições</h1>
+                        <p className="text-[9px] sm:text-[10px] font-mono text-slate-500 uppercase">Parametros do sistema</p>
                     </div>
                 </div>
 
@@ -114,7 +114,7 @@ export default async function SettingsPage({
                                 <CardHeader>
                                     <CardTitle>
                                         <LayoutGrid className="w-3.5 h-3.5" />
-                                        UNIT_INVENTORY_MANAGER
+                                        Frações
                                     </CardTitle>
                                     <span className="text-[10px] font-mono text-slate-400">{apartmentsData.length} / {building.totalApartments || 0}</span>
                                 </CardHeader>
@@ -153,7 +153,7 @@ export default async function SettingsPage({
                         <CardHeader>
                             <CardTitle>
                                 <Building2 className="w-3.5 h-3.5" />
-                                JOIN_BUILDING_SESSION
+                                Entrar na sua fração
                             </CardTitle>
                         </CardHeader>
                         <CardContent>

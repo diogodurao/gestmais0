@@ -3,7 +3,7 @@ import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { DashboardHeader } from "@/components/layout/DashboardHeader"
 import { SidebarProvider } from "@/components/layout/SidebarProvider"
-import { getResidentApartment, getManagerBuildings, getBuilding, getBuildingApartments } from "@/app/actions/building"
+import { getResidentApartment, getManagerBuildings, getBuilding, getBuildingApartments, getResidentBuildingDetails } from "@/app/actions/building"
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
 import { isManager, isResident } from "@/lib/permissions"
 import type { SessionUser } from "@/lib/types"
@@ -37,8 +37,9 @@ export default async function DashboardLayout({
 
             // Fetch building for resident to show in header
             if (session.user.buildingId) {
-                const b = await getBuilding(session.user.buildingId)
-                if (b) {
+                const details = await getResidentBuildingDetails(session.user.buildingId)
+                if (details?.building) {
+                    const b = details.building
                     activeBuilding = {
                         building: {
                             id: b.id,

@@ -285,22 +285,22 @@ export function ResidentOnboardingFlow({
                                 <div className="text-center">
                                     <CreditCard className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                                     <h2 className="text-sm font-bold text-slate-700 uppercase mb-2">
-                                        Configuração de Débito Direto
+                                        Configuração do IBAN
                                     </h2>
                                     <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                                        Adicione o seu IBAN para facilitar o pagamento das quotas via débito direto (opcional).
+                                        Adicione o seu IBAN para automatizar a informação relativa aos pagamentos.
                                     </p>
                                 </div>
 
                                 <div>
                                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                                        Número IBAN (opcional)
+                                        Número IBAN
                                     </label>
                                     <input
                                         type="text"
                                         value={iban}
                                         onChange={(e) => setIban(e.target.value.toUpperCase())}
-                                        placeholder="PT50 0000 0000 0000 0000 0000 0"
+                                        placeholder="PT50 1234 4321 5678 9012 3456 7"
                                         className="w-full px-4 py-3 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400 uppercase"
                                     />
                                 </div>

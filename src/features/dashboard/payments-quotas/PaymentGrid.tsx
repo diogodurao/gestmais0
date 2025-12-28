@@ -1,83 +1,198 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { updatePaymentStatus, PaymentData, PaymentStatus } from "@/app/actions/payments"
+import { useDebouncedCallback } from "use-debounce"
+import { updatePaymentStatus, PaymentData } from "@/app/actions/payments"
 import { deleteApartment } from "@/app/actions/building"
-import { Search } from "lucide-react"
 import { PaymentDesktopTable } from "./PaymentDesktopTable"
 import { PaymentMobileCards } from "./PaymentMobileCards"
-import { cn } from "@/lib/utils"
-import { formatCurrency } from "@/lib/format"
-import { useToast } from "@/hooks/use-toast"
+import { PaymentGridHeader } from "./components/PaymentGridHeader"
+import { PaymentGridToolbar } from "./components/PaymentGridToolbar"
+import { PaymentGridFooter } from "./components/PaymentGridFooter"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
+import { useToast } from "@/hooks/use-toast"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
+import { type ToolType, type FilterMode, type PaymentStats, TOOL_TO_STATUS } from "./types"
 
-/**
- * ============================================================================
- * RESIDENT QUOTA PAYMENTS (MANAGEMENT GRID)
- * ============================================================================
- * This component is for managers to track if residents have paid their monthly
- * condominium fees. It updates the 'payments' table.
- * 
- * IT IS NOT RELATED TO THE STRIPE SUBSCRIPTION / SAAS PAYMENTS.
- */
+interface PaymentGridProps {
+    data: PaymentData[]
+    monthlyQuota: number
+    buildingId: string
+    year: number
+    readOnly?: boolean
+}
+
 export function PaymentGrid({
     data,
     monthlyQuota,
     buildingId,
     year,
     readOnly = false,
-}: {
-    data: PaymentData[],
-    monthlyQuota: number,
-    buildingId: string,
-    year: number,
-    readOnly?: boolean
-}) {
+}: PaymentGridProps) {
     const router = useRouter()
     const { toast } = useToast()
+    
+    // Local state for optimistic updates
+    const [localData, setLocalData] = useState<PaymentData[]>(data)
     const [searchTerm, setSearchTerm] = useState("")
     const [highlightedId, setHighlightedId] = useState<number | null>(null)
-    const [activeTool, setActiveTool] = useState<PaymentStatus | 'clear' | null>(null)
-    const [mounted, setMounted] = useState(false)
+    const [activeTool, setActiveTool] = useState<ToolType>(null)
+    const [filterMode, setFilterMode] = useState<FilterMode>("all")
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null)
 
-    const { execute: updateStatus, isPending: isSaving } = useAsyncAction(updatePaymentStatus, {
-        onSuccess: () => router.refresh(),
-        errorMessage: "Ocorreu um erro inesperado"
-    })
-
-    const { execute: removeApartment } = useAsyncAction(deleteApartment, {
-        onSuccess: () => router.refresh(),
-        successMessage: "Residente removido com sucesso",
-        errorMessage: "Ocorreu um erro inesperado"
-    })
-
+    // Sync local data when props change (after server refresh)
     useEffect(() => {
-        setMounted(true)
+        setLocalData(data)
+    }, [data])
+
+    // Clear highlight after delay
+    useEffect(() => {
         if (highlightedId !== null) {
             const timer = setTimeout(() => setHighlightedId(null), 3000)
             return () => clearTimeout(timer)
         }
     }, [highlightedId])
 
-    const filteredData = data.filter(apt =>
-        apt.unit.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    // Async actions with rollback on error
+    const { execute: updateStatus, isPending: isSaving } = useAsyncAction(updatePaymentStatus, {
+        onSuccess: () => {
+            router.refresh()
+        },
+        onError: () => {
+            // Rollback to server state on error
+            setLocalData(data)
+            toast({
+                title: "Erro",
+                description: "Não foi possível atualizar o pagamento",
+                variant: "destructive"
+            })
+        }
+    })
 
-    const handleSearch = (e: React.FormEvent) => {
+    const { execute: removeApartment } = useAsyncAction(deleteApartment, {
+        onSuccess: () => {
+            router.refresh()
+            toast({
+                title: "Sucesso",
+                description: "Fração removida com sucesso"
+            })
+        },
+        onError: () => {
+            toast({
+                title: "Erro",
+                description: "Não foi possível remover a fração",
+                variant: "destructive"
+            })
+        }
+    })
+
+    // Filter and search logic (memoized)
+    const filteredData = useMemo(() => {
+        let result = localData
+
+        // Apply search filter
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase()
+            result = result.filter(apt =>
+                apt.unit.toLowerCase().includes(term) ||
+                apt.residentName?.toLowerCase().includes(term)
+            )
+        }
+
+        // Apply status filter
+        if (filterMode !== "all") {
+            result = result.filter(apt => {
+                if (filterMode === "paid") return apt.balance === 0
+                if (filterMode === "late") return apt.balance > 0
+                if (filterMode === "pending") {
+                    const hasAnyPending = Object.values(apt.payments).some(p => p.status === 'pending')
+                    return hasAnyPending
+                }
+                return true
+            })
+        }
+
+        return result
+    }, [localData, searchTerm, filterMode])
+
+    // Calculate stats (memoized)
+    const stats = useMemo<PaymentStats>(() => {
+        const totalCollected = localData.reduce((acc, apt) => acc + apt.totalPaid, 0)
+        const totalOverdue = localData.reduce((acc, apt) => acc + apt.balance, 0)
+        const paidCount = localData.filter(apt => apt.balance === 0).length
+        const overdueCount = localData.filter(apt => apt.balance > 0).length
+        return { totalCollected, totalOverdue, paidCount, overdueCount, total: localData.length }
+    }, [localData])
+
+    // Debounced cell click handler - prevents rapid-fire API calls
+    const handleCellClick = useDebouncedCallback(async (
+        aptId: number,
+        monthIdx: number
+    ): Promise<void> => {
+        if (!activeTool || readOnly) return
+
+        const dbStatus = TOOL_TO_STATUS[activeTool]
+        const monthNum = monthIdx + 1
+
+        // Optimistic update - update UI immediately
+        setLocalData(prev => prev.map(apt => {
+            if (apt.apartmentId !== aptId) return apt
+
+            const newPayments = {
+                ...apt.payments,
+                [monthNum]: {
+                    status: dbStatus,
+                    amount: dbStatus === 'paid' ? monthlyQuota : 0
+                }
+            }
+
+            // Recalculate totals
+            const totalPaid = Object.values(newPayments).reduce((sum, p) => 
+                sum + (p.status === 'paid' ? (p.amount || monthlyQuota) : 0), 0
+            )
+            const expectedTotal = 12 * monthlyQuota
+            const balance = Math.max(0, expectedTotal - totalPaid)
+
+            return {
+                ...apt,
+                payments: newPayments,
+                totalPaid,
+                balance
+            }
+        }))
+
+        // Fire API call (errors handled by useAsyncAction with rollback)
+        await updateStatus(aptId, monthNum, year, dbStatus as any)
+    }, 150)
+
+    // Search handler
+    const handleSearch = useCallback((e: React.FormEvent) => {
         e.preventDefault()
         if (!searchTerm) return
+        
         const match = filteredData[0]
-        if (match) setHighlightedId(match.apartmentId)
-    }
+        if (match) {
+            setHighlightedId(match.apartmentId)
+            toast({
+                title: "Fração encontrada",
+                description: `${match.unit} - ${match.residentName || 'Sem residente'}`,
+            })
+        } else {
+            toast({
+                title: "Não encontrado",
+                description: "Nenhuma fração corresponde à pesquisa",
+                variant: "destructive"
+            })
+        }
+    }, [searchTerm, filteredData, toast])
 
-    const handleDeleteClick = (aptId: number) => {
+    // Delete handlers
+    const handleDeleteClick = useCallback((aptId: number) => {
         setDeleteTargetId(aptId)
         setShowDeleteConfirm(true)
-    }
+    }, [])
 
     const handleDeleteConfirm = async (): Promise<void> => {
         if (!deleteTargetId) return
@@ -86,133 +201,63 @@ export function PaymentGrid({
         setDeleteTargetId(null)
     }
 
-    const handleCellClick = async (aptId: number, monthIdx: number): Promise<void> => {
-        if (!activeTool) return
-        const status = activeTool === 'clear' ? 'pending' : activeTool
-        await updateStatus(aptId, monthIdx + 1, year, status as PaymentStatus)
-    }
-
-    const totalCollected = data.reduce((acc, apt) => acc + apt.totalPaid, 0)
-    const totalOverdue = data.reduce((acc, apt) => acc + apt.balance, 0)
-
-
     return (
         <div className="flex flex-col h-full min-h-0 bg-white tech-border overflow-hidden">
             <ConfirmModal
                 isOpen={showDeleteConfirm}
-                title="Eliminar Fração?"
-                message="Tem a certeza que deseja eliminar esta fração? Esta ação é irreversível."
+                title="Eliminar Fração"
+                message="Tem a certeza que deseja eliminar esta fração? Todos os pagamentos associados serão também eliminados. Esta ação é irreversível."
                 onConfirm={handleDeleteConfirm}
                 onCancel={() => setShowDeleteConfirm(false)}
                 variant="danger"
+                confirmLabel="Eliminar"
+                cancelLabel="Cancelar"
             />
-            <header className="bg-white border-b border-slate-300 flex flex-col shrink-0 z-30">
-                {/* Top row - Title and Stats */}
-                <div className="h-12 flex items-center px-4 justify-between">
-                    <div className="flex flex-col">
-                        <span className="font-bold text-slate-800 text-sm leading-tight">Mapa de Pagamentos</span>
-                        <span className="text-[10px] text-slate-500 font-mono uppercase tracking-tighter">{year} Exercício</span>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-sm">
-                            <span className="text-[8px] sm:text-[9px] font-bold uppercase hidden xs:inline">Cobrado</span>
-                            <span className="font-mono font-bold text-[10px] sm:text-xs">{formatCurrency(totalCollected)}</span>
-                        </div>
-                        <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-sm">
-                            <span className="text-[8px] sm:text-[9px] font-bold uppercase hidden xs:inline">Em Dívida</span>
-                            <span className="font-mono font-bold text-[10px] sm:text-xs">{formatCurrency(totalOverdue)}</span>
-                        </div>
-                    </div>
-                </div>
+            <PaymentGridHeader
+                year={year}
+                stats={stats}
+            />
 
-                {/* Bottom row - Tools (only if not readOnly) */}
-                {!readOnly && (
-                    <div className="h-10 flex items-center px-4 gap-3 border-t border-slate-100 bg-slate-50/50 overflow-x-auto">
-                        <div className="flex bg-slate-100 p-0.5 rounded-sm border border-slate-200 shrink-0">
-                            <button
-                                onClick={() => setActiveTool(activeTool === 'paid' ? null : 'paid')}
-                                className={cn(
-                                    "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
-                                    activeTool === 'paid' ? "bg-emerald-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
-                                )}
-                            >
-                                <span className="hidden sm:inline">Marcar </span>Pago
-                            </button>
-                            <button
-                                onClick={() => setActiveTool(activeTool === 'overdue' ? null : 'overdue')}
-                                className={cn(
-                                    "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
-                                    activeTool === 'overdue' ? "bg-rose-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
-                                )}
-                            >
-                                <span className="hidden sm:inline">Marcar </span>Em Dívida
-                            </button>
-                            <button
-                                onClick={() => setActiveTool(activeTool === 'clear' ? null : 'clear')}
-                                className={cn(
-                                    "px-2 sm:px-3 py-1 rounded-sm font-semibold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap",
-                                    activeTool === 'clear' ? "bg-slate-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
-                                )}
-                            >
-                                Limpar
-                            </button>
-                        </div>
+            {!readOnly && (
+                <PaymentGridToolbar
+                    activeTool={activeTool}
+                    onToolChange={setActiveTool}
+                    filterMode={filterMode}
+                    onFilterChange={setFilterMode}
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onSearchSubmit={handleSearch}
+                    isSaving={isSaving}
+                />
+            )}
 
-                        <form onSubmit={handleSearch} className="relative shrink-0">
-                            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                            <input
-                                placeholder="PROCURAR..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-white border border-slate-200 text-[10px] pl-7 pr-2 py-1 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 w-20 sm:w-28 uppercase"
-                            />
-                        </form>
-                    </div>
-                )}
-            </header>
-
+            {/* Content */}
             <div className="flex-1 overflow-auto relative">
-                {/* Desktop Table - hidden on mobile */}
-                <div className="hidden md:block h-full">
-                    <PaymentDesktopTable
-                        data={filteredData}
-                        monthlyQuota={monthlyQuota}
-                        readOnly={readOnly}
-                        activeTool={activeTool}
-                        highlightedId={highlightedId}
-                        onCellClick={handleCellClick}
-                        onDelete={handleDeleteClick}
-                    />
-                </div>
+                <PaymentDesktopTable
+                    data={filteredData}
+                    monthlyQuota={monthlyQuota}
+                    readOnly={readOnly}
+                    activeTool={activeTool}
+                    highlightedId={highlightedId}
+                    onCellClick={handleCellClick}
+                    onDelete={handleDeleteClick}
+                />
 
-                {/* Mobile Cards - shown only on mobile */}
                 <div className="md:hidden">
                     <PaymentMobileCards
                         data={filteredData}
+                        monthlyQuota={monthlyQuota}
                         isEditing={!readOnly && !!activeTool}
-                        onPaymentClick={(payment, aptId) => activeTool && handleCellClick(aptId, payment.month - 1)}
+                        activeTool={activeTool}
+                        onCellClick={handleCellClick}
                     />
                 </div>
             </div>
 
-            <footer className="bg-slate-50 border-t border-slate-300 p-2 flex flex-wrap items-center gap-2 md:gap-4 text-[10px] text-slate-500 shrink-0">
-                <span className="font-bold text-slate-700">LEGENDA:</span>
-                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-emerald-50 border border-emerald-200"></div> PAGO (LIQUIDADO)</div>
-                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-rose-50 border border-rose-200"></div> EM DÍVIDA</div>
-                <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-white border border-slate-200"></div> PENDENTE</div>
-
-                {!readOnly && activeTool && (
-                    <div className="flex items-center gap-2 animate-pulse basis-full md:basis-auto md:ml-4">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                        <span className="font-bold text-blue-600 uppercase text-[9px]">Toque para Editar {activeTool.toUpperCase()}</span>
-                    </div>
-                )}
-
-                <div className="ml-auto font-mono text-[9px] uppercase hidden sm:block">
-                    Atualizado às {mounted ? new Date().toLocaleTimeString() : "--:--:--"}
-                </div>
-            </footer>
+            <PaymentGridFooter />
         </div>
     )
 }
+
+export default PaymentGrid

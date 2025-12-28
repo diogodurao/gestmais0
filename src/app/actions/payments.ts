@@ -14,13 +14,26 @@ import { ROUTES } from "@/lib/routes"
  * 
  * NOT RELATED TO STRIPE.
  */
-import { requireBuildingAccess, requireApartmentAccess } from "@/lib/auth-helpers"
+import { requireBuildingAccess, requireApartmentAccess, requireSession } from "@/lib/auth-helpers"
 import { updatePaymentStatusSchema, bulkUpdatePaymentsSchema } from "@/lib/zod-schemas"
 
 export type { PaymentStatus, PaymentData }
 
 export async function getPaymentMap(buildingId: string, year: number): Promise<{ gridData: PaymentData[], monthlyQuota: number }> {
-    await requireBuildingAccess(buildingId)
+    const session = await requireSession()
+
+    // Check if user is manager or resident of this building
+    if (session.user.role === 'manager') {
+        const { requireBuildingAccess } = await import("@/lib/auth-helpers")
+        await requireBuildingAccess(buildingId)
+    } else if (session.user.role === 'resident') {
+        if (session.user.buildingId !== buildingId) {
+            throw new Error("Unauthorized: You are not a resident of this building")
+        }
+    } else {
+        throw new Error("Unauthorized")
+    }
+
     return await paymentService.getPaymentMap(buildingId, year)
 }
 

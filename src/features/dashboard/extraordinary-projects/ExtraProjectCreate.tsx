@@ -17,9 +17,10 @@ interface ExtraProjectCreateProps {
     buildingId: string
     apartments: Apartment[]
     onCancel?: () => void
+    onSuccess?: () => void
 }
 
-export function ExtraProjectCreate({ buildingId, apartments, onCancel }: ExtraProjectCreateProps) {
+export function ExtraProjectCreate({ buildingId, apartments, onCancel, onSuccess }: ExtraProjectCreateProps) {
     const router = useRouter()
 
     const handleCancel = () => {
@@ -115,8 +116,12 @@ export function ExtraProjectCreate({ buildingId, apartments, onCancel }: ExtraPr
             })
 
             if (result.success) {
-                router.refresh()
-                handleCancel()
+                if (onSuccess) {
+                    onSuccess()
+                } else {
+                    router.refresh()
+                    handleCancel()
+                }
             } else {
                 setError(result.error || "Ocorreu um erro inesperado")
             }

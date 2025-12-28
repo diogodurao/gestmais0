@@ -130,6 +130,198 @@ describe('PaymentService', () => {
                 expect(result.data.apartmentUnit).toBe("1A")
             }
         })
+
+        it('should correctly report mixed status (Regular OK, Extra OFF)', async () => {
+            const userId = 'r2'
+            const mockSelect = vi.fn()
+
+            // 1. User Query
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    where: vi.fn().mockReturnValueOnce({
+                        limit: vi.fn().mockResolvedValueOnce([{ id: userId, role: 'resident', name: 'Resident Mixed' }])
+                    })
+                })
+            })
+
+            // 2. Apartment Query
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    innerJoin: vi.fn().mockReturnValueOnce({
+                        where: vi.fn().mockReturnValueOnce({
+                            limit: vi.fn().mockResolvedValueOnce([{ id: 2, unit: '2B', buildingId: 'b1', monthlyQuota: 5000 }])
+                        })
+                    })
+                })
+            })
+
+            // 3. Regular Payments (PAID for current month)
+            const now = new Date()
+            const currentMonth = now.getMonth() + 1
+            const currentYear = now.getFullYear()
+
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    where: vi.fn().mockResolvedValueOnce([
+                        // Simulate all months paid
+                        ...Array.from({ length: currentMonth }, (_, i) => ({
+                            status: 'paid',
+                            amount: 5000,
+                            month: i + 1,
+                            year: currentYear
+                        }))
+                    ])
+                })
+            })
+
+            // 4. Extra Payments (One Active Project, Unpaid Installment)
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    innerJoin: vi.fn().mockReturnValueOnce({
+                        where: vi.fn().mockResolvedValueOnce([
+                            {
+                                projectId: 101,
+                                projectName: "Roof Repair",
+                                projectStatus: "active",
+                                startMonth: 1,
+                                startYear: currentYear,
+                                paymentId: 501,
+                                installmentNumber: 1,
+                                expectedAmount: 20000, // 200 euros
+                                paidAmount: 0,
+                                paymentStatus: 'pending' // Due and unpaid
+                            }
+                        ])
+                    })
+                })
+            })
+
+            // Inject mock
+            // @ts-ignore
+            db.select = mockSelect
+
+            const result = await service.getResidentPaymentStatus(userId)
+
+            expect(result.success).toBe(true)
+            if (result.success) {
+                // Verify data structure expected by component
+                expect(result.data.regularQuotas.overdueMonths).toBe(0)
+                expect(result.data.regularQuotas.balance).toBe(0)
+
+                expect(result.data.extraordinaryQuotas.activeProjects).toBe(1)
+                expect(result.data.extraordinaryQuotas.overdueInstallments).toBeGreaterThan(0)
+                expect(result.data.extraordinaryQuotas.balance).toBe(20000)
+
+                // Overall status should reflect the extra debt
+                expect(result.data.status).not.toBe('ok')
+            }
+        })
+
+        it('should correctly handle year transition logic (Project Start Dec 2024, Current Jan 2025)', async () => {
+            // If we are in Jan 2025, and project started Dec 2024 (12/2024).
+            // Installment 1 (Dec 2024) -> Due (Overdue)
+            // Installment 2 (Jan 2025) -> Due (Current)
+            // Installment 3 (Feb 2025) -> Future (Not Due)
+
+            const userId = 'r3'
+            const mockSelect = vi.fn()
+
+            // 1. User Query
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    where: vi.fn().mockReturnValueOnce({
+                        limit: vi.fn().mockResolvedValueOnce([{ id: userId, role: 'resident', name: 'Time Traveler' }])
+                    })
+                })
+            })
+
+            // 2. Apartment Query
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    innerJoin: vi.fn().mockReturnValueOnce({
+                        where: vi.fn().mockReturnValueOnce({
+                            limit: vi.fn().mockResolvedValueOnce([{ id: 3, unit: '3C', buildingId: 'b1', monthlyQuota: 5000 }])
+                        })
+                    })
+                })
+            })
+
+            // 3. Regular Payments (Simulate all paid to simplify)
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    where: vi.fn().mockResolvedValueOnce([])
+                })
+            })
+
+            // 4. Extra Payments
+            // Mock Date to be Jan 15, 2025
+            vi.setSystemTime(new Date(2025, 0, 15))
+
+            mockSelect.mockReturnValueOnce({
+                from: vi.fn().mockReturnValueOnce({
+                    innerJoin: vi.fn().mockReturnValueOnce({
+                        where: vi.fn().mockResolvedValueOnce([
+                            // Installment 1: Dec 2024 (Due, Unpaid)
+                            {
+                                projectId: 200,
+                                projectName: "Old Project",
+                                projectStatus: "active",
+                                startMonth: 12,
+                                startYear: 2024,
+                                paymentId: 601,
+                                installmentNumber: 1,
+                                expectedAmount: 1000,
+                                paidAmount: 0,
+                                paymentStatus: 'pending'
+                            },
+                            // Installment 2: Jan 2025 (Due, Unpaid)
+                            {
+                                projectId: 200,
+                                projectName: "Old Project",
+                                projectStatus: "active",
+                                startMonth: 12,
+                                startYear: 2024,
+                                paymentId: 602,
+                                installmentNumber: 2,
+                                expectedAmount: 1000,
+                                paidAmount: 0,
+                                paymentStatus: 'pending'
+                            },
+                            // Installment 3: Feb 2025 (Future, Unpaid)
+                            {
+                                projectId: 200,
+                                projectName: "Old Project",
+                                projectStatus: "active",
+                                startMonth: 12,
+                                startYear: 2024,
+                                paymentId: 603,
+                                installmentNumber: 3,
+                                expectedAmount: 1000,
+                                paidAmount: 0,
+                                paymentStatus: 'pending'
+                            }
+                        ])
+                    })
+                })
+            })
+
+            // Inject mock
+            // @ts-ignore
+            db.select = mockSelect
+
+            const result = await service.getResidentPaymentStatus(userId)
+
+            expect(result.success).toBe(true)
+            if (result.success) {
+                // Should count Inst 1 and Inst 2 as Due (Total 2000)
+                // Inst 3 is NOT due.
+                expect(result.data.extraordinaryQuotas.totalDueToDate).toBe(2000)
+                expect(result.data.extraordinaryQuotas.balance).toBe(2000)
+                expect(result.data.extraordinaryQuotas.overdueInstallments).toBeGreaterThanOrEqual(1)
+            }
+
+            vi.useRealTimers()
+        })
     })
 
     describe('getBuildingPaymentStatus', () => {

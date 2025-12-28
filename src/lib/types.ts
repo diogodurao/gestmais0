@@ -1,4 +1,4 @@
-export type PaymentStatus = "paid" | "pending" | "overdue" | "partial"
+export type PaymentStatus = "paid" | "pending" | "late" | "partial"
 
 export type ProjectStatus = "active" | "completed" | "cancelled" | "archived"
 

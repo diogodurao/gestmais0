@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { OnboardingStepUnits } from "@/features/dashboard/onboarding/components/OnboardingStepUnits"
 import { Button } from "@/components/ui/Button"
-import { completeOnboarding } from "@/app/actions/onboarding"
 
 export function UnitsStepClient({
     buildingId,
@@ -24,26 +23,13 @@ export function UnitsStepClient({
     // Javascript float precision issues fix
     const isPermillageValid = Math.abs(totalPermillage - 1000) < 0.01
     const hasUnits = apartments.length > 0
-    const canFinalize = hasUnits && isPermillageValid
+    // We allow proceeding even if permillage is not perfect but strongly suggest it? 
+    // Usually only if perfectly 1000.
+    const canContinue = hasUnits && isPermillageValid
 
-    const handleFinalize = async () => {
-        if (!canFinalize) return
-
-        setIsLoading(true)
-        try {
-            const result = await completeOnboarding(userId)
-            if (result.success) {
-                router.push("/dashboard")
-                router.refresh()
-            } else {
-                console.error(result.error)
-                // Optionally show error toast/message
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setIsLoading(false)
-        }
+    const handleContinue = () => {
+        router.push("/onboarding/manager/claim")
+        router.refresh()
     }
 
     return (
@@ -65,10 +51,10 @@ export function UnitsStepClient({
                 <Button
                     size="lg"
                     fullWidth
-                    onClick={handleFinalize}
-                    disabled={!canFinalize || isLoading}
+                    onClick={handleContinue}
+                    disabled={!canContinue}
                 >
-                    {isLoading ? "A CARREGAR..." : "FINALIZAR E ENTRAR"}
+                    GUARDAR E CONTINUAR
                 </Button>
             </div>
         </div>

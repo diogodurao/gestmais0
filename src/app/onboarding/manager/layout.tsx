@@ -28,6 +28,12 @@ export default function ManagerOnboardingLayout({
             path: '/onboarding/manager/units',
             number: 3,
             title: "Registo de Frações",
+        },
+        {
+            id: 'claim',
+            path: '/onboarding/manager/claim',
+            number: 4,
+            title: "Reivindicar Fração",
         }
     ]
 
@@ -35,6 +41,7 @@ export default function ManagerOnboardingLayout({
         if (pathname.includes('/personal')) return 0
         if (pathname.includes('/building')) return 1
         if (pathname.includes('/units')) return 2
+        if (pathname.includes('/claim')) return 3
         return 0
     }
 

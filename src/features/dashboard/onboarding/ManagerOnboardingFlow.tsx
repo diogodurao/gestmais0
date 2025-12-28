@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button"
 import { OnboardingStepPersonal, type PersonalData } from "@/features/dashboard/onboarding/components/OnboardingStepPersonal"
 import { OnboardingStepBuilding } from "@/features/dashboard/onboarding/components/OnboardingStepBuilding"
 import { OnboardingStepUnits, type Apartment } from "@/features/dashboard/onboarding/components/OnboardingStepUnits"
+import { OnboardingStepManagerUnit } from "@/features/dashboard/onboarding/components/OnboardingStepManagerUnit"
 import { completeOnboarding } from "@/app/actions/onboarding"
 
 // We alias the imported types to match what we need or just use them directly
@@ -45,9 +46,10 @@ interface ManagerOnboardingFlowProps {
     building: BuildingData | null
     apartments: SimpleApartment[]
     initialStep?: string
+    currentManagerUnitId?: number | null
 }
 
-export function ManagerOnboardingFlow({ user, building, apartments, initialStep }: ManagerOnboardingFlowProps) {
+export function ManagerOnboardingFlow({ user, building, apartments, initialStep, currentManagerUnitId }: ManagerOnboardingFlowProps) {
     const router = useRouter()
 
     // Map string step to number
@@ -56,12 +58,14 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
             case 'personal': return 1
             case 'building': return 2
             case 'units': return 3
+            case 'claim': return 4
             default: return 1
         }
     }
 
     const [currentStep, setCurrentStep] = useState(getStepNumber(initialStep))
     const [isLoading, setIsLoading] = useState(false)
+    const [claimedUnitId, setClaimedUnitId] = useState<number | null>(currentManagerUnitId || null)
 
     const totalPermillage = apartments.reduce((sum, apt) => sum + apt.permillage, 0)
     const isPermillageValid = Math.abs(totalPermillage - 1000) < 0.01
@@ -81,6 +85,11 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
             number: 3,
             title: "Registo de Frações",
             isComplete: apartments.length > 0 && isPermillageValid
+        },
+        {
+            number: 4,
+            title: "Reivindicar Fração",
+            isComplete: Boolean(claimedUnitId)
         }
     ]
 
@@ -116,7 +125,7 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                         Configuração do Condomínio
                     </h1>
                     <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
-                        Vamos configurar o seu condomínio em 3 passos simples. Pode alterar estas definições mais tarde.
+                        Vamos configurar o seu condomínio em 4 passos simples. Pode alterar estas definições mais tarde.
                     </p>
                 </div>
 
@@ -169,6 +178,27 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
                                 buildingId={building.id}
                                 apartments={apartments}
                                 totalApartments={building.totalApartments || 0}
+                            // No direct onComplete prop in Units step usually, it has buttons inside
+                            // but we might need to adjust OnboardingStepUnits to support continuing
+                            // Actually it seems UnitsStepClient was managing next step.
+                            // Here ManagerOnboardingFlow manages it manually if OnboardingStepUnits does not emit event.
+                            // But usually OnboardingStepUnits allows adding units.
+                            // We should probably add a "Continue" button here outside OR OnboardingStepUnits needs a prop.
+                            // Let's assume user clicks "Next" by clicking the step or a button below.
+                            // Wait, OnboardingStepUnits in ManagerOnboardingFlow does NOT expose an onComplete for navigation unlike Personal.
+                            // We rely on user clicking next or the bottom button.
+                            // BUT the bottom button is "FINALIZE".
+                            // We need "CONTINUE" if step 3.
+                            // I'll leave OnboardingStepUnits as is and rely on the button below.
+                            />
+                        )}
+                        {currentStep === 4 && (
+                            <OnboardingStepManagerUnit
+                                apartments={apartments}
+                                currentManagerUnitId={claimedUnitId}
+                                onClaimSuccess={(unitId) => {
+                                    setClaimedUnitId(unitId)
+                                }}
                             />
                         )}
                     </CardContent>
@@ -176,13 +206,23 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep 
 
                 {/* Finalize Button */}
                 <div className="flex justify-center">
-                    <Button
-                        size="lg"
-                        disabled={!canFinalize || isLoading}
-                        onClick={handleFinalize}
-                    >
-                        {isLoading ? "A CARREGAR..." : "FINALIZAR E ENTRAR"}
-                    </Button>
+                    {currentStep < 4 ? (
+                        <Button
+                            size="lg"
+                            onClick={() => setCurrentStep(currentStep + 1)}
+                            disabled={!steps[currentStep - 1].isComplete}
+                        >
+                            CONTINUAR
+                        </Button>
+                    ) : (
+                        <Button
+                            size="lg"
+                            disabled={!canFinalize || isLoading}
+                            onClick={handleFinalize}
+                        >
+                            {isLoading ? "A CARREGAR..." : "FINALIZAR E ENTRAR"}
+                        </Button>
+                    )}
                 </div>
 
                 {/* Status Summary */}
