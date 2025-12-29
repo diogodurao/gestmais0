@@ -68,8 +68,8 @@ const getLabel = (status: StatusType): string => {
 }
 
 const sizes = {
-    xs: "px-1.5 py-0.5 text-[8px]",
-    sm: "px-2 py-0.5 text-[9px]",
+    xs: "px-1.5 py-0.5 text-micro",
+    sm: "px-2 py-0.5 text-micro",
     md: "px-2.5 py-1 text-[10px]",
 }
 

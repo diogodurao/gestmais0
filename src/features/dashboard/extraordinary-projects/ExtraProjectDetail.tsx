@@ -100,12 +100,12 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
     if (error || !project) {
         return (
             <div className="tech-border p-8 text-center">
-                <p className="text-[12px] text-rose-600">{error || "Projeto não encontrado"}</p>
+                <p className="text-body text-rose-600">{error || "Projeto não encontrado"}</p>
                 <Link
                     href={ROUTES.DASHBOARD.EXTRAORDINARY}
-                    className="inline-flex items-center gap-2 mt-4 text-[11px] text-blue-600 hover:underline"
+                    className="inline-flex items-center gap-2 mt-4 text-body text-blue-600 hover:underline"
                 >
-                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <ArrowLeft className="w-4 h-4" />
                     Voltar
                 </Link>
             </div>

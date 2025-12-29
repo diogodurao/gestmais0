@@ -40,24 +40,24 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                         <div className="shrink-0 w-10 h-10 bg-slate-100 flex items-center justify-center">
-                            <span className="text-[13px] font-bold text-slate-700">{apartment.unit}</span>
+                            <span className="text-content font-bold text-slate-700">{apartment.unit}</span>
                         </div>
                         <div className="min-w-0 flex-1">
                             {apartment.residentName ? (
-                                <span className="text-[12px] font-medium text-slate-800 truncate block">
+                                <span className="text-body sm:text-content font-medium text-slate-800 truncate block">
                                     {apartment.residentName}
                                 </span>
                             ) : (
-                                <span className="text-[11px] text-slate-400 italic">Sem residente</span>
+                                <span className="text-body text-slate-400 italic">Sem residente</span>
                             )}
-                            <div className="text-[10px] text-slate-400 mt-0.5">
+                            <div className="text-label text-slate-400 mt-0.5">
                                 {apartment.permillage.toFixed(2)}‰ • {formatCurrency(apartment.totalShare)}
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <StatusBadge status={apartment.status} className="text-[8px] sm:text-[9px] px-1.5 sm:px-2" />
+                        <StatusBadge status={apartment.status} className="text-micro px-1.5 sm:px-2" />
                         {isExpanded ? (
                             <ChevronUp className="w-4 h-4 text-slate-400" />
                         ) : (
@@ -67,7 +67,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                 </div>
 
                 <div className="mt-2">
-                    <div className="flex items-center justify-between text-[9px] mb-1">
+                    <div className="flex items-center justify-between text-micro mb-1">
                         <span className="text-emerald-600 font-medium">{formatCurrency(apartment.totalPaid)} Pago</span>
                         <span className={cn(
                             "font-medium",
@@ -91,7 +91,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
 
             {isExpanded && (
                 <div className="border-t border-slate-100 bg-slate-50/50 p-3">
-                    <div className="text-[9px] font-bold text-slate-500 uppercase tracking-tight mb-2">
+                    <div className="text-micro font-bold text-slate-500 uppercase tracking-tight mb-2">
                         PRESTAÇÕES
                     </div>
                     <div className="grid grid-cols-4 gap-1.5">
@@ -119,12 +119,12 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                                         (!toolMode || readOnly) && "cursor-default"
                                     )}
                                 >
-                                    <div className="text-[8px] font-bold text-slate-500">P{idx + 1}</div>
+                                    <div className="text-micro font-bold text-slate-500">P{idx + 1}</div>
                                     <div className="text-[7px] text-slate-400">
                                         {getMonthName(month, true)}/{String(year).slice(-2)}
                                     </div>
                                     <div className={cn(
-                                        "text-[10px] font-mono font-bold mt-0.5",
+                                        "text-label font-mono font-bold mt-0.5",
                                         inst.status === "paid" && "text-emerald-700",
                                         inst.status === "late" && "text-rose-700",
                                         inst.status === "pending" && "text-slate-500",
@@ -139,13 +139,13 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                     </div>
 
                     <div className="flex items-center justify-center gap-3 mt-2 pt-2 border-t border-slate-200">
-                        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+                        <span className="flex items-center gap-1 text-micro text-slate-500">
                             <span className="w-2 h-2 bg-emerald-500" /> Pago
                         </span>
-                        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+                        <span className="flex items-center gap-1 text-micro text-slate-500">
                             <span className="w-2 h-2 bg-slate-300" /> Pendente
                         </span>
-                        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+                        <span className="flex items-center gap-1 text-micro text-slate-500">
                             <span className="w-2 h-2 bg-rose-500" /> Em Atraso
                         </span>
                     </div>

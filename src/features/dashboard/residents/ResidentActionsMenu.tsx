@@ -167,7 +167,7 @@ export function ResidentActionsMenu({
                             left: `${menuPosition.left}px`
                         }}
                     >
-                        <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 mb-1">
+                        <div className="px-3 py-1 text-label font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 mb-1">
                             Operações
                         </div>
                         <button
@@ -175,9 +175,9 @@ export function ResidentActionsMenu({
                                 setIsOpen(false)
                                 setShowAssignModal(true)
                             }}
-                            className="w-full text-left px-4 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 uppercase font-medium"
+                            className="w-full text-left px-4 py-1.5 text-body text-slate-700 hover:bg-slate-50 flex items-center gap-2 uppercase font-medium"
                         >
-                            <Home className="w-3.5 h-3.5 text-slate-400" />
+                            <Home className="w-4 h-4 text-slate-400" />
                             {resident.apartment ? "Mudar Fração" : "Atribuir Fração"}
                         </button>
 
@@ -187,9 +187,9 @@ export function ResidentActionsMenu({
                                     setIsOpen(false)
                                     setShowUnassignConfirm(true)
                                 }}
-                                className="w-full text-left px-4 py-1.5 text-xs text-amber-600 hover:bg-amber-50 flex items-center gap-2 uppercase font-medium"
+                                className="w-full text-left px-4 py-1.5 text-body text-amber-600 hover:bg-amber-50 flex items-center gap-2 uppercase font-medium"
                             >
-                                <UserX className="w-3.5 h-3.5" />
+                                <UserX className="w-4 h-4" />
                                 Remover da Fração
                             </button>
                         )}
@@ -201,9 +201,9 @@ export function ResidentActionsMenu({
                                 setIsOpen(false)
                                 setShowRemoveConfirm(true)
                             }}
-                            className="w-full text-left px-4 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 uppercase font-medium"
+                            className="w-full text-left px-4 py-1.5 text-body text-rose-600 hover:bg-rose-50 flex items-center gap-2 uppercase font-medium"
                         >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                             Remover
                         </button>
                     </div>
@@ -235,13 +235,13 @@ export function ResidentActionsMenu({
                 title={`Atribuir Fração: ${resident.user.name.toUpperCase()}`}
             >
                 <div className="space-y-4">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase">
+                    <p className="text-body font-bold text-slate-500 uppercase">
                         Selecione uma fração disponível
                     </p>
 
                     <div className="max-h-[300px] overflow-y-auto tech-border bg-slate-50">
                         {unclaimedApartments.length === 0 ? (
-                            <p className="text-[10px] text-slate-400 font-mono uppercase text-center py-8">
+                            <p className="text-label text-slate-400 font-mono uppercase text-center py-8">
                                 [ Sem frações disponíveis ]
                             </p>
                         ) : (
@@ -250,12 +250,12 @@ export function ResidentActionsMenu({
                                     key={apt.id}
                                     onClick={() => handleAssignUnit(apt.id)}
                                     disabled={isLoading}
-                                    className="w-full text-left px-3 py-2 text-xs hover:bg-white border-b border-slate-200 last:border-b-0 flex justify-between items-center group transition-colors"
+                                    className="w-full text-left px-3 py-2 text-body hover:bg-white border-b border-slate-200 last:border-b-0 flex justify-between items-center group transition-colors"
                                 >
                                     <span className="font-bold text-slate-700 uppercase font-mono">
                                         {getApartmentDisplayName(apt)}
                                     </span>
-                                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-blue-600 uppercase tracking-tighter">
+                                    <span className="text-label font-bold text-slate-400 group-hover:text-blue-600 uppercase tracking-tighter">
                                         [ SELECIONAR ]
                                     </span>
                                 </button>

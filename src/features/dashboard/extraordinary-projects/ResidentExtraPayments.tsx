@@ -53,7 +53,7 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <Layers className="w-3.5 h-3.5" />
+                    <Layers className="w-4 h-4" />
                     As Minhas Quotas Extraordinárias
                 </CardTitle>
             </CardHeader>
@@ -63,7 +63,7 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
                     <div className="p-4 border-r border-slate-100 text-center">
                         <div className="flex items-center justify-center gap-1 text-rose-500 mb-1">
                             <TrendingDown className="w-3 h-3" />
-                            <span className="text-[10px] font-bold uppercase">Total em Dívida</span>
+                            <span className="text-label font-bold uppercase">Total em Dívida</span>
                         </div>
                         <div className="text-xl font-bold font-mono text-rose-600">
                             {(totalDebt / 100).toLocaleString("pt-PT", {
@@ -75,7 +75,7 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
                     <div className="p-4 text-center">
                         <div className="flex items-center justify-center gap-1 text-emerald-500 mb-1">
                             <TrendingUp className="w-3 h-3" />
-                            <span className="text-[10px] font-bold uppercase">Total Pago</span>
+                            <span className="text-label font-bold uppercase">Total Pago</span>
                         </div>
                         <div className="text-xl font-bold font-mono text-emerald-600">
                             {(totalPaid / 100).toLocaleString("pt-PT", {
@@ -89,13 +89,13 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
                 {/* Project List */}
                 {isLoading ? (
                     <div className="p-8 text-center">
-                        <div className="animate-pulse text-[10px] text-slate-400 uppercase">
+                        <div className="animate-pulse text-label text-slate-400 uppercase">
                             A carregar...
                         </div>
                     </div>
                 ) : payments.length === 0 ? (
                     <div className="p-8 text-center">
-                        <p className="text-xs text-slate-400">
+                        <p className="text-body text-slate-400">
                             Não existem projetos extraordinários ativos ou passados neste condomínio.
                         </p>
                     </div>
@@ -104,10 +104,10 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
                         {payments.map((payment, idx) => (
                             <div key={idx} className="p-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-sm font-bold text-slate-700 uppercase">
+                                    <h3 className="text-content font-bold text-slate-700 uppercase">
                                         {payment.projectName}
                                     </h3>
-                                    <span className={`text-xs font-bold font-mono ${payment.balance > 0 ? "text-rose-600" : "text-emerald-600"
+                                    <span className={`text-body font-bold font-mono ${payment.balance > 0 ? "text-rose-600" : "text-emerald-600"
                                         }`}>
                                         {payment.balance > 0
                                             ? `-${(payment.balance / 100).toLocaleString("pt-PT", { style: "currency", currency: "EUR" })}`
@@ -119,7 +119,7 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
                                     {payment.installments.map((inst, instIdx) => (
                                         <span
                                             key={instIdx}
-                                            className={`text-[9px] font-mono px-1.5 py-0.5 ${inst.status === "paid"
+                                            className={`text-micro font-mono px-1.5 py-0.5 ${inst.status === "paid"
                                                 ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
                                                 : inst.status === "late"
                                                     ? "bg-rose-50 text-rose-600 border border-rose-100"

@@ -85,7 +85,7 @@ export function ProjectDetailHeader({
                         size="xs"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                     >
-                        <MoreVertical className="w-3.5 h-3.5" />
+                        <MoreVertical className="w-4 h-4" />
                     </Button>
 
                     {isMenuOpen && (
@@ -102,7 +102,7 @@ export function ProjectDetailHeader({
                                     }}
                                     className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                                 >
-                                    <Edit className="w-3.5 h-3.5 text-slate-400" />
+                                    <Edit className="w-4 h-4 text-slate-400" />
                                     Editar Detalhes
                                 </button>
 
@@ -113,7 +113,7 @@ export function ProjectDetailHeader({
                                     }}
                                     className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                                 >
-                                    <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+                                    <RefreshCw className="w-4 h-4 text-slate-400" />
                                     Atualizar Dados
                                 </button>
 
@@ -125,7 +125,7 @@ export function ProjectDetailHeader({
                                         className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
-                                        <FileText className="w-3.5 h-3.5 text-slate-400" />
+                                        <FileText className="w-4 h-4 text-slate-400" />
                                         Ver Documento
                                     </a>
                                 )}
@@ -139,7 +139,7 @@ export function ProjectDetailHeader({
                                     }}
                                     className="w-full text-left px-3 py-2 text-xs text-amber-600 hover:bg-amber-50 flex items-center gap-2"
                                 >
-                                    <Archive className="w-3.5 h-3.5" />
+                                    <Archive className="w-4 h-4" />
                                     Arquivar Projeto
                                 </button>
 
@@ -150,7 +150,7 @@ export function ProjectDetailHeader({
                                     }}
                                     className="w-full text-left px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2"
                                 >
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <Trash2 className="w-4 h-4" />
                                     Eliminar Projeto
                                 </button>
                             </div>

@@ -39,11 +39,11 @@ export function QuotaSection({
                 <div className="flex items-start gap-2 min-w-0">
                     <Icon className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
                     <div className="min-w-0">
-                        <p className="text-[10px] sm:text-[11px] font-bold text-slate-700 uppercase tracking-tight">
+                        <p className="text-label sm:text-body font-bold text-slate-700 uppercase tracking-tight">
                             {title}
                         </p>
                         {subtitle && (
-                            <p className="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">
+                            <p className="text-micro sm:text-label text-slate-500 mt-0.5">
                                 {subtitle}
                             </p>
                         )}
@@ -67,7 +67,7 @@ export function QuotaSection({
             </div>
 
             {/* Stats */}
-            <div className="mt-2 flex items-center justify-between text-[9px] sm:text-[10px]">
+            <div className="mt-2 flex items-center justify-between text-micro sm:text-label">
                 <span className="text-slate-500">
                     Pago: <span className="font-mono font-medium text-emerald-600">{formatCurrency(paid)}</span>
                     <span className="text-slate-300 mx-1">/</span>

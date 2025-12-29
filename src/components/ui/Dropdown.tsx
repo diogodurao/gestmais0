@@ -1,10 +1,10 @@
 "use client"
 
-import { 
-    createContext, 
-    useContext, 
-    useState, 
-    useRef, 
+import {
+    createContext,
+    useContext,
+    useState,
+    useRef,
     useEffect,
     ReactNode,
     HTMLAttributes,
@@ -68,7 +68,7 @@ interface DropdownTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const DropdownTrigger = forwardRef<HTMLButtonElement, DropdownTriggerProps>(
     ({ className, children, asChild, ...props }, ref) => {
         const { isOpen, setIsOpen, triggerRef } = useDropdown()
-        
+
         return (
             <button
                 ref={triggerRef}
@@ -110,7 +110,7 @@ const DropdownContent = forwardRef<HTMLDivElement, DropdownContentProps>(
             const handleClickOutside = (event: MouseEvent) => {
                 const target = event.target as Node
                 if (
-                    contentRef.current && 
+                    contentRef.current &&
                     !contentRef.current.contains(target) &&
                     triggerRef.current &&
                     !triggerRef.current.contains(target)
@@ -128,7 +128,7 @@ const DropdownContent = forwardRef<HTMLDivElement, DropdownContentProps>(
 
             document.addEventListener("mousedown", handleClickOutside)
             document.addEventListener("keydown", handleEscape)
-            
+
             return () => {
                 document.removeEventListener("mousedown", handleClickOutside)
                 document.removeEventListener("keydown", handleEscape)
@@ -189,7 +189,7 @@ const DropdownItem = forwardRef<HTMLButtonElement, DropdownItemProps>(
                 disabled={disabled}
                 onClick={handleClick}
                 className={cn(
-                    "w-full text-left px-3 py-1.5 text-[11px] font-medium transition-colors flex items-center gap-2",
+                    "w-full text-left px-3 py-1.5 text-body font-medium transition-colors flex items-center gap-2",
                     "focus:outline-none focus:bg-slate-100",
                     {
                         "text-slate-700 hover:bg-slate-50": !destructive && !disabled,
@@ -234,7 +234,7 @@ const DropdownLabel = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>
             <div
                 ref={ref}
                 className={cn(
-                    "px-3 py-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider",
+                    "px-3 py-1.5 text-micro font-bold text-slate-400 uppercase tracking-wider",
                     className
                 )}
                 {...props}
@@ -244,11 +244,11 @@ const DropdownLabel = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>
 )
 DropdownLabel.displayName = "DropdownLabel"
 
-export { 
-    Dropdown, 
-    DropdownTrigger, 
-    DropdownContent, 
-    DropdownItem, 
+export {
+    Dropdown,
+    DropdownTrigger,
+    DropdownContent,
+    DropdownItem,
     DropdownSeparator,
     DropdownLabel
 }

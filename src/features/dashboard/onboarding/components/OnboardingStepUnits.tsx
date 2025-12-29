@@ -114,7 +114,7 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
                                     onClick={() => handleDeleteUnit(apt.id)}
                                     className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
                                 >
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <Trash2 className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>

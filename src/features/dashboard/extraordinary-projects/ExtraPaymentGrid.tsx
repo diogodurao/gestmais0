@@ -190,7 +190,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                 ))}
 
                 <div className="tech-border bg-slate-100 p-3">
-                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-tight">
+                    <div className="flex items-center justify-between text-label font-bold uppercase tracking-tight">
                         <span className="text-slate-500">Unidades: {localPayments.length}</span>
                         <span className="text-emerald-700">{formatCurrency(totalCollected)} Angariado</span>
                     </div>
@@ -200,7 +200,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
             {/* Desktop Table View */}
             <div className="hidden sm:block tech-border bg-white overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
+                    <table className="w-full text-left border-collapse whitespace-nowrap text-body">
                         <thead>
                             <tr>
                                 <th className="header-cell w-16 text-center sticky left-0 bg-slate-100 z-10">Fração</th>
@@ -213,8 +213,8 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                                     while (month > 12) { month -= 12; year++ }
                                     return (
                                         <th key={i} className="header-cell w-20 text-center">
-                                            <div className="text-[10px]">P{i + 1}</div>
-                                            <div className="text-[8px] text-slate-400 font-normal">
+                                            <div className="text-label">P{i + 1}</div>
+                                            <div className="text-micro text-slate-400 font-normal">
                                                 {getMonthName(month, true)}/{String(year).slice(-2)}
                                             </div>
                                         </th>
@@ -248,7 +248,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                                     const paidCount = localPayments.filter((p) => p.installments[i]?.status === "paid").length
                                     const total = localPayments.length
                                     return (
-                                        <td key={i} className="data-cell text-center text-[10px]">
+                                        <td key={i} className="data-cell text-center text-label">
                                             <span className={cn(
                                                 paidCount === total ? "text-emerald-600" :
                                                     paidCount > 0 ? "text-amber-600" : "text-slate-400"
@@ -260,7 +260,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                                 })}
                                 <td className="data-cell text-right font-mono text-emerald-700">{formatCurrency(totalCollected)}</td>
                                 <td className="data-cell text-right font-mono text-rose-700">{formatCurrency(project.totalBudget - totalCollected)}</td>
-                                <td className="data-cell text-center"><span className="text-[10px]">{progressPercent}%</span></td>
+                                <td className="data-cell text-center"><span className="text-label">{progressPercent}%</span></td>
                             </tr>
                         </tfoot>
                     </table>

@@ -51,27 +51,27 @@ function ApartmentRow({ index, style, data }: ListChildComponentProps<RowData>) 
             )}
         >
             {/* Unit Cell - Sticky */}
-            <div 
+            <div
                 className={cn(
-                    "sticky left-0 z-10 border-r-2 border-slate-300 px-2 font-bold text-slate-900 flex items-center text-xs",
+                    "sticky left-0 z-10 border-r-2 border-slate-300 px-2 font-bold text-slate-900 flex items-center text-body",
                     isHighlighted ? "bg-amber-100" : "bg-white group-hover:bg-blue-50/30"
                 )}
                 style={{ width: UNIT_WIDTH, minWidth: UNIT_WIDTH }}
             >
                 {apt.unit}
             </div>
-            
+
             {/* Resident Cell - Sticky */}
-            <div 
+            <div
                 className={cn(
-                    "sticky z-10 border-r-2 border-slate-300 px-2 text-slate-700 truncate flex items-center text-xs",
+                    "sticky z-10 border-r-2 border-slate-300 px-2 text-slate-700 truncate flex items-center text-body",
                     isHighlighted ? "bg-amber-100" : "bg-white group-hover:bg-blue-50/30"
                 )}
                 style={{ left: UNIT_WIDTH, width: RESIDENT_WIDTH, minWidth: RESIDENT_WIDTH }}
             >
-                {apt.residentName || <span className="text-slate-400 italic text-[10px]">Sem residente</span>}
+                {apt.residentName || <span className="text-slate-400 italic text-label">Sem residente</span>}
             </div>
-            
+
             {/* Month Cells */}
             {MONTHS_PT.map((monthName, idx) => {
                 const monthNum = idx + 1
@@ -86,7 +86,7 @@ function ApartmentRow({ index, style, data }: ListChildComponentProps<RowData>) 
                         onClick={() => isInteractive && onCellClick(apt.apartmentId, idx)}
                         aria-label={`${monthName} - ${apt.unit} - ${status === 'paid' ? 'Pago' : status === 'late' ? 'Em atraso' : 'Pendente'}`}
                         className={cn(
-                            "border-r border-slate-200 text-center text-[10px] font-mono transition-all flex items-center justify-center",
+                            "border-r border-slate-200 text-center text-label font-mono transition-all flex items-center justify-center",
                             status === 'paid' && "bg-emerald-50 text-emerald-700 font-bold",
                             status === 'late' && "bg-rose-50 text-rose-700 font-bold",
                             status === 'pending' && "text-slate-400",
@@ -99,19 +99,19 @@ function ApartmentRow({ index, style, data }: ListChildComponentProps<RowData>) 
                     </button>
                 )
             })}
-            
+
             {/* Total Paid - Sticky Right */}
-            <div 
-                className="sticky z-10 border-l-2 border-r border-slate-300 px-2 text-right font-mono font-bold text-emerald-700 bg-slate-50 flex items-center justify-end text-xs"
+            <div
+                className="sticky z-10 border-l-2 border-r border-slate-300 px-2 text-right font-mono font-bold text-emerald-700 bg-slate-50 flex items-center justify-end text-body"
                 style={{ right: TOTAL_WIDTH, width: TOTAL_WIDTH, minWidth: TOTAL_WIDTH }}
             >
                 {formatCurrency(apt.totalPaid)}
             </div>
-            
+
             {/* Balance - Sticky Right */}
-            <div 
+            <div
                 className={cn(
-                    "sticky right-0 z-10 px-2 text-right font-mono font-bold flex items-center justify-end text-xs",
+                    "sticky right-0 z-10 px-2 text-right font-mono font-bold flex items-center justify-end text-body",
                     apt.balance > 0 ? "text-rose-600 bg-rose-50" : "text-slate-400 bg-slate-50"
                 )}
                 style={{ width: TOTAL_WIDTH, minWidth: TOTAL_WIDTH }}
@@ -142,7 +142,7 @@ export function PaymentDesktopTable({
                 setListHeight(Math.max(300, Math.min(availableHeight, 600)))
             }
         }
-        
+
         updateHeight()
         window.addEventListener('resize', updateHeight)
         return () => window.removeEventListener('resize', updateHeight)
@@ -165,10 +165,10 @@ export function PaymentDesktopTable({
         return (
             <div className="hidden md:flex items-center justify-center h-64 border border-dashed border-slate-300 bg-slate-50/50 rounded-sm m-4">
                 <div className="text-center">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <p className="text-label font-bold text-slate-400 uppercase tracking-widest">
                         [ Sem frações registadas ]
                     </p>
-                    <p className="text-[9px] text-slate-400 mt-1">
+                    <p className="text-micro text-slate-400 mt-1">
                         Adicione frações nas definições
                     </p>
                 </div>
@@ -181,45 +181,45 @@ export function PaymentDesktopTable({
             <div className="overflow-x-auto">
                 <div style={{ minWidth: totalWidth }}>
                     {/* Header */}
-                    <div 
-                        className="flex bg-slate-100 border-b-2 border-slate-300 text-[9px] font-bold uppercase tracking-wider text-slate-600 sticky top-0 z-20"
+                    <div
+                        className="flex bg-slate-100 border-b-2 border-slate-300 text-micro font-bold uppercase tracking-wider text-slate-600 sticky top-0 z-20"
                         style={{ height: ROW_HEIGHT }}
                     >
-                        <div 
+                        <div
                             className="sticky left-0 z-30 bg-slate-100 border-r-2 border-slate-300 px-2 flex items-center"
                             style={{ width: UNIT_WIDTH, minWidth: UNIT_WIDTH }}
                         >
                             Fração
                         </div>
-                        <div 
+                        <div
                             className="sticky z-30 bg-slate-100 border-r-2 border-slate-300 px-2 flex items-center"
                             style={{ left: UNIT_WIDTH, width: RESIDENT_WIDTH, minWidth: RESIDENT_WIDTH }}
                         >
                             Residente
                         </div>
                         {MONTHS_PT.map(m => (
-                            <div 
-                                key={m} 
+                            <div
+                                key={m}
                                 className="border-r border-slate-200 flex items-center justify-center"
                                 style={{ width: CELL_WIDTH, minWidth: CELL_WIDTH }}
                             >
                                 {m}
                             </div>
                         ))}
-                        <div 
+                        <div
                             className="sticky z-30 bg-slate-50 border-l-2 border-r border-slate-300 px-2 flex items-center justify-end"
                             style={{ right: TOTAL_WIDTH, width: TOTAL_WIDTH, minWidth: TOTAL_WIDTH }}
                         >
                             Pago
                         </div>
-                        <div 
+                        <div
                             className="sticky right-0 z-30 bg-slate-50 px-2 flex items-center justify-end"
                             style={{ width: TOTAL_WIDTH, minWidth: TOTAL_WIDTH }}
                         >
                             Dívida
                         </div>
                     </div>
-                    
+
                     {/* Virtualized Body - Correct react-window API */}
                     <List
                         height={listHeight}

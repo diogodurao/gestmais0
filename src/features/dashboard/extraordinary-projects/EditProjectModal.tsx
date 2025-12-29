@@ -82,7 +82,7 @@ export function EditProjectModal({ isOpen, onClose, onSave, project }: EditProje
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white tech-border w-full max-w-md">
                 <div className="flex items-center justify-between p-4 border-b border-slate-200">
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+                    <h2 className="text-body font-bold uppercase tracking-wider text-slate-700">
                         Editar Projeto
                     </h2>
                     <button
@@ -95,34 +95,34 @@ export function EditProjectModal({ isOpen, onClose, onSave, project }: EditProje
 
                 <form onSubmit={handleSubmit} className="p-4 space-y-4">
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                        <label className="block text-label font-bold text-slate-500 uppercase mb-1">
                             Nome do Projeto *
                         </label>
                         <input
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                            className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:border-blue-400"
+                            className="w-full px-3 py-2 text-body border border-slate-200 focus:outline-none focus:border-blue-400"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                        <label className="block text-label font-bold text-slate-500 uppercase mb-1">
                             Descrição
                         </label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                             rows={3}
-                            className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:border-blue-400 resize-none"
+                            className="w-full px-3 py-2 text-body border border-slate-200 focus:outline-none focus:border-blue-400 resize-none"
                         />
                     </div>
 
                     <div className="bg-slate-50 p-3 border border-slate-200">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">
+                        <p className="text-label font-bold text-slate-400 uppercase mb-2">
                             Campos Fixos (Não Editáveis)
                         </p>
-                        <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="grid grid-cols-2 gap-2 text-body">
                             <div>
                                 <span className="text-slate-400">Orçamento:</span>
                                 <span className="ml-1 font-mono font-bold">{budgetDisplay}</span>
@@ -141,7 +141,7 @@ export function EditProjectModal({ isOpen, onClose, onSave, project }: EditProje
                     </div>
 
                     {error && (
-                        <p className="text-[10px] text-rose-600 font-bold uppercase">{error}</p>
+                        <p className="text-label text-rose-600 font-bold uppercase">{error}</p>
                     )}
 
                     <div className="flex gap-2 justify-end pt-2">

@@ -37,7 +37,7 @@ export function StatCard({
     return (
         <div className={cn("tech-border p-2 sm:p-3", variants[variant], className)}>
             <div className="flex items-start justify-between">
-                <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                <p className="text-micro sm:text-label font-bold text-slate-500 uppercase tracking-tight">
                     {label}
                 </p>
                 {Icon && <Icon className="w-3 h-3 text-slate-400" />}
@@ -47,7 +47,7 @@ export function StatCard({
                     {value}
                 </p>
                 {subValue && (
-                    <span className="text-[10px] sm:text-[11px] text-slate-500">{subValue}</span>
+                    <span className="text-label sm:text-body text-slate-500">{subValue}</span>
                 )}
             </div>
         </div>

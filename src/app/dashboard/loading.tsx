@@ -1,12 +1,13 @@
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
 import { Key, Activity, BarChart3 } from "lucide-react";
+import { DashboardGrid } from "@/components/layout/DashboardGrid";
 
 export default function DashboardLoading() {
     return (
         <div className="space-y-6">
             {/* Payment Status Card Skeleton */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <DashboardGrid>
                 <div className="lg:col-span-2">
                     <Card className="h-full border-slate-200 shadow-sm">
                         <CardHeader className="pb-2">
@@ -29,15 +30,15 @@ export default function DashboardLoading() {
                         <Skeleton className="h-4 w-32" />
                     </div>
                 </div>
-            </div>
+            </DashboardGrid>
 
             {/* Info Panels Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 bg-white tech-border shadow-sm">
+            <DashboardGrid className="gap-0 bg-white tech-border shadow-sm">
                 {/* 1. Invite Code / Welcome Panel */}
                 <div className="col-span-1 border-r border-slate-200 p-0">
                     <CardHeader>
                         <CardTitle>
-                            <Key className="w-3.5 h-3.5 text-slate-400" />
+                            <Key className="w-4 h-4 text-slate-400" />
                             <Skeleton className="h-3 w-24 inline-block ml-2" />
                         </CardTitle>
                     </CardHeader>
@@ -51,7 +52,7 @@ export default function DashboardLoading() {
                 <div className="col-span-1 border-r border-slate-200 p-0">
                     <CardHeader>
                         <CardTitle>
-                            <Activity className="w-3.5 h-3.5 text-slate-400" />
+                            <Activity className="w-4 h-4 text-slate-400" />
                             <Skeleton className="h-3 w-24 inline-block ml-2" />
                         </CardTitle>
                     </CardHeader>
@@ -75,7 +76,7 @@ export default function DashboardLoading() {
                 <div className="col-span-1 p-0">
                     <CardHeader>
                         <CardTitle>
-                            <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
+                            <BarChart3 className="w-4 h-4 text-slate-400" />
                             <Skeleton className="h-3 w-24 inline-block ml-2" />
                         </CardTitle>
                     </CardHeader>
@@ -95,10 +96,10 @@ export default function DashboardLoading() {
                         <Skeleton className="h-3 w-32" />
                     </CardFooter>
                 </div>
-            </div>
+            </DashboardGrid>
 
             {/* Residents List Skeleton */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <DashboardGrid>
                 <div className="lg:col-span-2 space-y-4">
                     <Skeleton className="h-4 w-32" />
                     <Card>
@@ -132,7 +133,7 @@ export default function DashboardLoading() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </DashboardGrid>
         </div>
     );
 }

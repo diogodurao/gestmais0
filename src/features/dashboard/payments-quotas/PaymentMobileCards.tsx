@@ -29,11 +29,11 @@ interface MobileCardProps {
  */
 function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: MobileCardProps) {
     const [isExpanded, setIsExpanded] = useState(false)
-    
+
     const hasDebt = item.balance > 0
     const expectedTotal = 12 * monthlyQuota
-    const progressPercent = expectedTotal > 0 
-        ? Math.round((item.totalPaid / expectedTotal) * 100) 
+    const progressPercent = expectedTotal > 0
+        ? Math.round((item.totalPaid / expectedTotal) * 100)
         : 0
 
     return (
@@ -55,23 +55,23 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                     {/* Unit & Resident */}
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                         <div className={cn(
-                            "shrink-0 w-10 h-10 flex items-center justify-center font-bold text-xs rounded-sm border",
-                            hasDebt 
-                                ? "bg-rose-100 text-rose-700 border-rose-200" 
+                            "shrink-0 w-10 h-10 flex items-center justify-center font-bold text-body rounded-sm border",
+                            hasDebt
+                                ? "bg-rose-100 text-rose-700 border-rose-200"
                                 : "bg-emerald-100 text-emerald-700 border-emerald-200"
                         )}>
                             {item.unit}
                         </div>
                         <div className="min-w-0 flex-1">
                             {item.residentName ? (
-                                <span className="text-[12px] font-medium text-slate-800 truncate block flex items-center gap-1">
+                                <span className="text-body font-medium text-slate-800 truncate block flex items-center gap-1">
                                     <User className="w-3 h-3 text-slate-400 shrink-0" />
                                     {item.residentName}
                                 </span>
                             ) : (
-                                <span className="text-[11px] text-slate-400 italic">Sem residente</span>
+                                <span className="text-body text-slate-400 italic">Sem residente</span>
                             )}
-                            <div className="text-[10px] text-slate-400 mt-0.5">
+                            <div className="text-label text-slate-400 mt-0.5">
                                 {formatCurrency(item.totalPaid)} de {formatCurrency(expectedTotal)}
                             </div>
                         </div>
@@ -80,9 +80,9 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                     {/* Status & Expand */}
                     <div className="flex items-center gap-2">
                         <div className={cn(
-                            "px-2 py-1 rounded-sm text-[10px] font-bold",
-                            hasDebt 
-                                ? "bg-rose-100 text-rose-700 border border-rose-200" 
+                            "px-2 py-1 rounded-sm text-label font-bold",
+                            hasDebt
+                                ? "bg-rose-100 text-rose-700 border border-rose-200"
                                 : "bg-emerald-100 text-emerald-700 border border-emerald-200"
                         )}>
                             {hasDebt ? (
@@ -109,7 +109,7 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                             className={cn(
                                 "h-full transition-all rounded-full",
                                 progressPercent >= 100 ? "bg-emerald-500" :
-                                progressPercent >= 50 ? "bg-amber-500" : "bg-rose-500"
+                                    progressPercent >= 50 ? "bg-amber-500" : "bg-rose-500"
                             )}
                             style={{ width: `${Math.min(progressPercent, 100)}%` }}
                         />
@@ -120,10 +120,10 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
             {/* Expanded Content - Month Grid */}
             {isExpanded && (
                 <div className="border-t border-slate-100 bg-slate-50/50 p-3">
-                    <div className="text-[9px] font-bold text-slate-500 uppercase tracking-tight mb-2">
+                    <div className="text-micro font-bold text-slate-500 uppercase tracking-tight mb-2">
                         QUOTAS MENSAIS
                     </div>
-                    
+
                     {/* Month Grid - 6 columns */}
                     <div className="grid grid-cols-6 gap-1.5">
                         {MONTHS_PT.map((monthName, idx) => {
@@ -151,9 +151,9 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                                         !isInteractive && "cursor-default"
                                     )}
                                 >
-                                    <div className="text-[8px] font-bold text-slate-500">{monthName}</div>
+                                    <div className="text-micro font-bold text-slate-500">{monthName}</div>
                                     <div className={cn(
-                                        "text-[10px] font-mono font-bold mt-0.5",
+                                        "text-label font-mono font-bold mt-0.5",
                                         status === 'paid' && "text-emerald-700",
                                         status === 'late' && "text-rose-700",
                                         status === 'pending' && "text-slate-400"
@@ -167,20 +167,20 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
 
                     {/* Legend */}
                     <div className="flex items-center justify-center gap-3 mt-3 pt-2 border-t border-slate-200">
-                        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+                        <span className="flex items-center gap-1 text-micro text-slate-500">
                             <span className="w-2 h-2 bg-emerald-500 rounded-sm" /> Pago
                         </span>
-                        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+                        <span className="flex items-center gap-1 text-micro text-slate-500">
                             <span className="w-2 h-2 bg-slate-300 rounded-sm" /> Pendente
                         </span>
-                        <span className="flex items-center gap-1 text-[8px] text-slate-500">
+                        <span className="flex items-center gap-1 text-micro text-slate-500">
                             <span className="w-2 h-2 bg-rose-500 rounded-sm" /> Dívida
                         </span>
                     </div>
 
                     {/* Edit mode indicator */}
                     {isEditing && (
-                        <div className="mt-2 text-center text-[9px] text-blue-500 animate-pulse">
+                        <div className="mt-2 text-center text-micro text-blue-500 animate-pulse">
                             Toque num mês para alterar
                         </div>
                     )}
@@ -190,17 +190,17 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
     )
 }
 
-export function PaymentMobileCards({ 
-    data, 
+export function PaymentMobileCards({
+    data,
     monthlyQuota,
-    isEditing, 
+    isEditing,
     activeTool,
-    onCellClick 
+    onCellClick
 }: PaymentMobileCardsProps) {
     if (data.length === 0) {
         return (
             <div className="flex items-center justify-center h-48 p-4">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                <p className="text-label font-bold text-slate-400 uppercase tracking-widest text-center">
                     [ Sem frações ]
                 </p>
             </div>
@@ -226,7 +226,7 @@ export function PaymentMobileCards({
 
             {/* Summary Card */}
             <div className="tech-border bg-slate-100 p-3 mt-4">
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-tight">
+                <div className="flex items-center justify-between text-label font-bold uppercase tracking-tight">
                     <span className="text-slate-500">{data.length} Frações</span>
                     <div className="flex items-center gap-3">
                         <span className="text-emerald-700">{formatCurrency(totalPaid)} Cobrado</span>

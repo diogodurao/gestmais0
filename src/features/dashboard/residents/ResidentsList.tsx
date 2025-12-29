@@ -32,7 +32,7 @@ export function ResidentsList({
     return (
         <Card className="rounded-none border-slate-200 shadow-none">
             <CardHeader className="py-3 border-b border-slate-100 flex flex-row items-center justify-between">
-                <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                <CardTitle className="text-label font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
                     <Users className="h-3.5 w-3.5" />
                     Registo de Residentes
                 </CardTitle>
@@ -42,7 +42,7 @@ export function ResidentsList({
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         placeholder="PROCURAR..."
-                        className="bg-slate-50 border border-slate-200 text-[9px] pl-7 pr-2 py-1 rounded-none focus:outline-none focus:border-blue-300 w-32 uppercase"
+                        className="bg-slate-50 border border-slate-200 text-micro pl-7 pr-2 py-1 rounded-none focus:outline-none focus:border-blue-300 w-32 uppercase"
                     />
                 </div>
             </CardHeader>
@@ -50,7 +50,7 @@ export function ResidentsList({
                 <div className="bg-slate-50 border-b border-slate-100 px-4 py-2 flex items-center justify-between">
                     <div className="flex items-baseline gap-2">
                         <span className="text-xl font-bold font-mono text-slate-900">{residents.length}</span>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span className="text-micro font-bold text-slate-400 uppercase tracking-widest">
                             TOTAL
                         </span>
                     </div>
@@ -58,7 +58,7 @@ export function ResidentsList({
 
                 <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
                     {filteredResidents.length === 0 && (
-                        <div className="p-8 text-center text-slate-400 font-mono text-[10px] uppercase italic">
+                        <div className="p-8 text-center text-slate-400 font-mono text-label uppercase italic">
                             [ SEM RESULTADOS ]
                         </div>
                     )}
@@ -66,14 +66,14 @@ export function ResidentsList({
                     {filteredResidents.map((r) => (
                         <div key={r.user.id} className="p-3 hover:bg-slate-50 transition-colors flex items-center justify-between group">
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-8 h-8 shrink-0 bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold rounded-none border border-slate-200 uppercase">
+                                <div className="w-8 h-8 shrink-0 bg-slate-100 text-slate-600 flex items-center justify-center text-body font-bold rounded-none border border-slate-200 uppercase">
                                     {r.user.name.charAt(0)}
                                 </div>
                                 <div className="truncate">
-                                    <p className="text-[11px] font-bold text-slate-800 uppercase tracking-tight truncate">
+                                    <p className="text-body font-bold text-slate-800 uppercase tracking-tight truncate">
                                         {r.user.name}
                                     </p>
-                                    <p className="text-[9px] font-mono text-slate-400 truncate uppercase">
+                                    <p className="text-micro font-mono text-slate-400 truncate uppercase">
                                         {r.user.email}
                                     </p>
                                 </div>
@@ -82,11 +82,11 @@ export function ResidentsList({
                             <div className="flex items-center gap-4">
                                 <div className="text-right">
                                     {r.apartment ? (
-                                        <span className="font-mono text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 border border-blue-100 uppercase">
+                                        <span className="font-mono text-label font-bold text-blue-600 bg-blue-50 px-2 py-0.5 border border-blue-100 uppercase">
                                             {r.apartment.unit}
                                         </span>
                                     ) : (
-                                        <span className="text-[9px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 border border-amber-100 uppercase">
+                                        <span className="text-micro font-bold text-amber-500 bg-amber-50 px-2 py-0.5 border border-amber-100 uppercase">
                                             NÃO ASSOCIADO
                                         </span>
                                     )}

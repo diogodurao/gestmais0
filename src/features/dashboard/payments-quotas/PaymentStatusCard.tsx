@@ -83,7 +83,7 @@ export function PaymentStatusCard({
             <div className={cn("bg-slate-50 border border-slate-300 p-4", className)}>
                 <div className="flex items-center gap-3 text-slate-500">
                     <AlertCircle className="w-5 h-5" />
-                    <p className="text-[11px]">{error || "Erro ao carregar dados"}</p>
+                    <p className="text-body">{error || "Erro ao carregar dados"}</p>
                 </div>
             </div>
         )

@@ -1,13 +1,12 @@
-import { CardHeader, CardTitle, CardFooter } from "@/components/ui/Card"
 import { Key, Lock } from "lucide-react"
-import { DashboardCard } from "./components/DashboardCard"
+import { Panel } from "@/components/ui/Panel"
 import { can } from "@/lib/permissions"
 import type { SessionUser } from "@/lib/types"
 
 interface InviteCodePanelProps {
     isManager: boolean
     sessionUser: SessionUser
-    buildingInfo: any // Using specific type would be better if available
+    buildingInfo: any
     buildingCode: string
     residentApartment: any
 }
@@ -19,21 +18,14 @@ export function InviteCodePanel({
     buildingCode,
     residentApartment
 }: InviteCodePanelProps) {
-
-    // Helper to get apartment display name safely
-    const getApartmentDisplayName = (apt: any) => {
-        if (!apt) return ""
-        return `${apt.unit}` // Simplified, or match logic from utils
-    }
-
     return (
-        <DashboardCard>
-            <CardHeader>
-                <CardTitle>
-                    <Key className="w-3.5 h-3.5 text-slate-400" />
-                    {isManager ? 'Código do Condomínio' : 'Acesso Residente'}
-                </CardTitle>
-            </CardHeader>
+        <Panel
+            title={isManager ? 'Código do Condomínio' : 'Acesso Residente'}
+            icon={Key}
+            className="h-full border border-slate-300 shadow-[4px_4px_0px_#cbd5e1]"
+            contentClassName="p-0"
+            footer={isManager ? "Partilha o código com os residentes" : "Sessão de residente ativa"}
+        >
             <div className="p-6 flex flex-col items-center justify-center bg-blue-50/30 h-32">
                 {isManager ? (
                     can.viewInviteCode(sessionUser, buildingInfo) ? (
@@ -54,17 +46,12 @@ export function InviteCodePanel({
                 ) : residentApartment ? (
                     <>
                         <div className="text-3xl font-mono font-bold text-slate-800 tracking-tight mb-1">
-                            {residentApartment.unit} {/* Using safe accessor */}
+                            {residentApartment.unit}
                         </div>
                         <div className="text-[10px] uppercase font-bold text-slate-400">Frações Atribuídas</div>
                     </>
                 ) : null}
             </div>
-            <CardFooter className="text-center">
-                {isManager
-                    ? "Partilha o código com os residentes"
-                    : "Sessão de residente ativa"}
-            </CardFooter>
-        </DashboardCard>
+        </Panel>
     )
 }

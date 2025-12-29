@@ -10,7 +10,7 @@ export function PaymentGridFooter() {
     }, [])
 
     return (
-        <footer className="bg-slate-50 border-t border-slate-200 px-4 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-slate-500 shrink-0">
+        <footer className="bg-slate-50 border-t border-slate-200 px-4 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-micro text-slate-500 shrink-0">
             {/* Legend */}
             <div className="flex items-center gap-3">
                 <span className="font-bold text-slate-600 uppercase">Legenda:</span>
@@ -29,7 +29,7 @@ export function PaymentGridFooter() {
             </div>
 
             {/* Timestamp */}
-            <div className="ml-auto font-mono text-[8px] uppercase text-slate-400 hidden sm:block">
+            <div className="ml-auto font-mono text-micro uppercase text-slate-400 hidden sm:block">
                 {mounted ? `Atualizado ${new Date().toLocaleTimeString('pt-PT')}` : "..."}
             </div>
         </footer>

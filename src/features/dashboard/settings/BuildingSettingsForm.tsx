@@ -80,10 +80,10 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
             <Card className="mt-8">
                 <CardHeader>
                     <CardTitle>
-                        <Building2 className="w-3.5 h-3.5" />
+                        <Building2 className="w-4 h-4" />
                         Parâmetros do Edifício
                     </CardTitle>
-                    <button type="button" className="text-[10px] text-blue-600 hover:underline">
+                    <button type="button" className="text-label text-blue-600 hover:underline">
                         Modo Edição
                     </button>
                 </CardHeader>
@@ -91,7 +91,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                 <form onSubmit={handleSubmit} className="p-0">
                     <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
                         <div className="label-col border-none">Código do Edifício</div>
-                        <div className="value-col border-none bg-slate-50 text-slate-500 px-3 py-1.5 font-mono text-xs uppercase">
+                        <div className="value-col border-none bg-slate-50 text-slate-500 px-3 py-1.5 font-mono text-body uppercase">
                             {building.code}
                         </div>
                     </div>
@@ -153,7 +153,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
+                    <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 text-body font-bold text-slate-500 uppercase">
                         Configuração Financeira
                     </div>
 
@@ -166,9 +166,9 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                     name="quota"
                                     checked={formData.quotaMode === "global"}
                                     onChange={() => handleChange("quotaMode", "global")}
-                                    className="w-3.5 h-3.5 accent-blue-600"
+                                    className="w-4 h-4 accent-blue-600"
                                 />
-                                <span className="text-xs">Valor Fixo Global</span>
+                                <span className="text-body">Valor Fixo Global</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
@@ -176,9 +176,9 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                     name="quota"
                                     checked={formData.quotaMode === "permillage"}
                                     onChange={() => handleChange("quotaMode", "permillage")}
-                                    className="w-3.5 h-3.5 accent-blue-600"
+                                    className="w-4 h-4 accent-blue-600"
                                 />
-                                <span className="text-xs">Baseado em Permilagem</span>
+                                <span className="text-body">Baseado em Permilagem</span>
                             </label>
                         </div>
                     </div>
@@ -203,7 +203,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     </div>
                 </form>
             </Card>
-            {error && <p className="text-[10px] text-rose-600 font-bold uppercase text-right">{error}</p>}
+            {error && <p className="text-label text-rose-600 font-bold uppercase text-right">{error}</p>}
         </div>
     )
 }

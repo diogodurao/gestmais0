@@ -36,13 +36,13 @@ export function ExtraPaymentGridToolbar({
             {/* Edit Tools (Manager Only) */}
             {isManager && !readOnly && (
                 <div className="flex items-center gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase mr-2">
+                    <span className="text-label font-bold text-slate-400 uppercase mr-2">
                         Ferramentas:
                     </span>
 
                     <button
                         onClick={() => onToolModeChange(toolMode === "markPaid" ? null : "markPaid")}
-                        className={`flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase transition-colors ${toolMode === "markPaid"
+                        className={`flex items-center gap-1 px-2 py-1 text-label font-bold uppercase transition-colors ${toolMode === "markPaid"
                             ? "bg-emerald-500 text-white"
                             : "bg-white text-slate-600 border border-slate-200 hover:border-emerald-300"
                             }`}
@@ -53,7 +53,7 @@ export function ExtraPaymentGridToolbar({
 
                     <button
                         onClick={() => onToolModeChange(toolMode === "markPending" ? null : "markPending")}
-                        className={`flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase transition-colors ${toolMode === "markPending"
+                        className={`flex items-center gap-1 px-2 py-1 text-label font-bold uppercase transition-colors ${toolMode === "markPending"
                             ? "bg-amber-500 text-white"
                             : "bg-white text-slate-600 border border-slate-200 hover:border-amber-300"
                             }`}
@@ -64,7 +64,7 @@ export function ExtraPaymentGridToolbar({
 
                     <button
                         onClick={() => onToolModeChange(toolMode === "toggle" ? null : "toggle")}
-                        className={`flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase transition-colors ${toolMode === "toggle"
+                        className={`flex items-center gap-1 px-2 py-1 text-label font-bold uppercase transition-colors ${toolMode === "toggle"
                             ? "bg-blue-500 text-white"
                             : "bg-white text-slate-600 border border-slate-200 hover:border-blue-300"
                             }`}
@@ -77,14 +77,14 @@ export function ExtraPaymentGridToolbar({
 
             {/* Filter Tools */}
             <div className="flex items-center gap-1 ml-auto">
-                <span className="text-[10px] font-bold text-slate-400 uppercase mr-2">
+                <span className="text-label font-bold text-slate-400 uppercase mr-2">
                     <Filter className="w-3 h-3 inline mr-1" />
                     Filtros:
                 </span>
 
                 <button
                     onClick={() => onFilterModeChange("all")}
-                    className={`px-2 py-1 text-[10px] font-bold uppercase transition-colors ${filterMode === "all"
+                    className={`px-2 py-1 text-label font-bold uppercase transition-colors ${filterMode === "all"
                         ? "bg-slate-700 text-white"
                         : "bg-white text-slate-600 border border-slate-200 hover:border-slate-400"
                         }`}
@@ -94,7 +94,7 @@ export function ExtraPaymentGridToolbar({
 
                 <button
                     onClick={() => onFilterModeChange("paid")}
-                    className={`px-2 py-1 text-[10px] font-bold uppercase transition-colors ${filterMode === "paid"
+                    className={`px-2 py-1 text-label font-bold uppercase transition-colors ${filterMode === "paid"
                         ? "bg-emerald-600 text-white"
                         : "bg-white text-slate-600 border border-slate-200 hover:border-emerald-300"
                         }`}
@@ -104,7 +104,7 @@ export function ExtraPaymentGridToolbar({
 
                 <button
                     onClick={() => onFilterModeChange("pending")}
-                    className={`px-2 py-1 text-[10px] font-bold uppercase transition-colors ${filterMode === "pending"
+                    className={`px-2 py-1 text-label font-bold uppercase transition-colors ${filterMode === "pending"
                         ? "bg-amber-600 text-white"
                         : "bg-white text-slate-600 border border-slate-200 hover:border-amber-300"
                         }`}
@@ -138,7 +138,7 @@ export function ExtraPaymentGridToolbar({
 
             {/* Tool Mode Indicator */}
             {toolMode !== null && isManager && !readOnly && (
-                <div className="w-full text-[10px] text-slate-500 mt-2">
+                <div className="w-full text-label text-slate-500 mt-2">
                     {toolMode === "markPaid" && 'Modo de Edição: Marcar Pago'}
                     {toolMode === "markPending" && 'Modo de Edição: Marcar Pendente'}
                     {toolMode === "toggle" && 'Modo de Edição: Alternar Estado'}

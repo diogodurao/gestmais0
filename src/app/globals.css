@@ -30,6 +30,27 @@
 
 @layer utilities {
 
+  /* TYPOGRAPHY SCALE (Standardized) */
+  .text-micro {
+    font-size: 9px;
+  }
+
+  .text-label {
+    font-size: 10px;
+  }
+
+  .text-body {
+    font-size: 11px;
+  }
+
+  .text-content {
+    font-size: 13px;
+  }
+
+  .text-heading {
+    font-size: 15px;
+  }
+
   /* TECHNICAL BORDERS */
   .tech-border {
     @apply border border-slate-300;
@@ -53,7 +74,8 @@
 
   /* SPREADSHEET CELLS */
   .header-cell {
-    @apply bg-slate-50 text-slate-500 font-bold uppercase text-[11px] tracking-wider px-3 py-1.5 border-b border-r border-slate-300 select-none;
+    @apply bg-slate-50 text-slate-500 font-bold uppercase tracking-wider px-3 py-1.5 border-b border-r border-slate-300 select-none;
+    font-size: 11px;
   }
 
   .data-cell {
@@ -62,12 +84,14 @@
 
   /* INPUT STYLES */
   .input-sharp {
-    @apply border border-slate-300 rounded-none px-2 py-1 text-[13px] outline-none transition-colors focus:border-blue-600 focus:ring-1 focus:ring-blue-600 bg-white;
+    @apply border border-slate-300 rounded-none px-2 py-1 outline-none transition-colors focus:border-blue-600 focus:ring-1 focus:ring-blue-600 bg-white;
+    font-size: 13px;
   }
 
   /* STATUS BADGES */
   .status-badge {
-    @apply inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold uppercase border rounded-sm;
+    @apply inline-flex items-center px-1.5 py-0.5 font-bold uppercase border rounded-sm;
+    font-size: 10px;
   }
 
   .status-active {
@@ -84,7 +108,8 @@
 
   /* SETTINGS GRID */
   .label-col {
-    @apply bg-slate-50 text-slate-500 font-bold text-[11px] px-3 py-2 border-r border-slate-200 flex items-center uppercase tracking-tight;
+    @apply bg-slate-50 text-slate-500 font-bold px-3 py-2 border-r border-slate-200 flex items-center uppercase tracking-tight;
+    font-size: 11px;
   }
 
   .value-col {
@@ -92,7 +117,8 @@
   }
 
   .input-cell {
-    @apply w-full h-8 px-3 text-[13px] outline-none transition-all focus:bg-blue-50/30 font-sans border-none;
+    @apply w-full h-8 px-3 outline-none transition-all focus:bg-blue-50/30 font-sans border-none;
+    font-size: 13px;
   }
 
   /* LANDING PAGE UTILITIES */
@@ -107,7 +133,8 @@
   }
 
   .beta-badge {
-    @apply bg-slate-900 text-white text-[10px] font-bold px-1.5 py-0.5 uppercase font-mono;
+    @apply bg-slate-900 text-white font-bold px-1.5 py-0.5 uppercase font-mono;
+    font-size: 10px;
   }
 
   .btn-primary {

@@ -83,7 +83,7 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <Layers className="w-3.5 h-3.5" />
+                    <Layers className="w-4 h-4" />
                     Quotas Extraordinárias
                 </CardTitle>
                 {isManager && (
@@ -99,17 +99,17 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
             <CardContent className="p-0">
                 {isLoading ? (
                     <div className="p-8 text-center">
-                        <div className="animate-pulse text-[10px] text-slate-400 uppercase">
+                        <div className="animate-pulse text-label text-slate-400 uppercase">
                             A carregar...
                         </div>
                     </div>
                 ) : projects.length === 0 ? (
                     <div className="p-8 text-center">
                         <FileText className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                        <h3 className="text-sm font-bold text-slate-600 uppercase mb-2">
+                        <h3 className="text-body font-bold text-slate-600 uppercase mb-2">
                             Sem projetos extraordinários
                         </h3>
-                        <p className="text-xs text-slate-400 max-w-xs mx-auto mb-4">
+                        <p className="text-body text-slate-400 max-w-xs mx-auto mb-4">
                             {isManager
                                 ? "Crie o primeiro projeto para começar a gerir quotas extraordinárias para obras ou fundos de reserva."
                                 : "Não existem projetos extraordinários ativos ou passados neste condomínio."}
@@ -134,22 +134,22 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                                 className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
                             >
                                 <div className="min-w-0">
-                                    <h3 className="text-sm font-bold text-slate-700 uppercase truncate">
+                                    <h3 className="text-body font-bold text-slate-700 uppercase truncate">
                                         {project.name}
                                     </h3>
                                     <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-xs text-slate-400 font-mono">
+                                        <span className="text-body text-slate-400 font-mono">
                                             {(project.totalBudget / 100).toLocaleString("pt-PT", {
                                                 style: "currency",
                                                 currency: "EUR"
                                             })}
                                         </span>
-                                        <span className="text-[10px] text-slate-300">•</span>
-                                        <span className="text-xs text-slate-400">
+                                        <span className="text-micro text-slate-300">•</span>
+                                        <span className="text-body text-slate-400">
                                             {project.numInstallments} prestações
                                         </span>
-                                        <span className="text-[10px] text-slate-300">•</span>
-                                        <span className="text-xs text-slate-400">
+                                        <span className="text-micro text-slate-300">•</span>
+                                        <span className="text-body text-slate-400">
                                             {project.startMonth}/{project.startYear}
                                         </span>
                                     </div>

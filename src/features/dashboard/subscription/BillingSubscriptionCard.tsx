@@ -29,7 +29,7 @@ export function BillingSubscriptionCard({
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <CreditCard className="w-3.5 h-3.5" />
+                    <CreditCard className="w-4 h-4" />
                     Subscrição de Serviço de Faturação
                 </CardTitle>
                 {isActive ? (
@@ -40,9 +40,9 @@ export function BillingSubscriptionCard({
             </CardHeader>
             <div className="p-0">
                 <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] md:grid-cols-[140px_1fr] border-b border-slate-100">
-                    <div className="label-col border-none text-[10px] sm:text-xs">Estado</div>
+                    <div className="label-col border-none text-label sm:text-body">Estado</div>
                     <div className="value-col border-none px-3 py-2">
-                        <span className={`text-[11px] font-bold uppercase ${isActive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <span className={`text-body font-bold uppercase ${isActive ? 'text-emerald-600' : 'text-rose-600'}`}>
                             {subscriptionStatus || "Incompleto"}
                         </span>
                     </div>
@@ -51,17 +51,17 @@ export function BillingSubscriptionCard({
                 <div className="p-4 bg-slate-50/50">
                     {isActive ? (
                         <div className="space-y-2">
-                            <p className="text-xs text-slate-600 uppercase font-bold tracking-tight">Subscrição Ativa</p>
-                            <p className="text-[11px] text-slate-500">Todas as funcionalidades estão desbloqueadas.</p>
+                            <p className="text-body text-slate-600 uppercase font-bold tracking-tight">Subscrição Ativa</p>
+                            <p className="text-body text-slate-500">Todas as funcionalidades estão desbloqueadas.</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
                             <div className="bg-amber-50 border border-amber-100 p-3">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <Lock className="w-3.5 h-3.5 text-amber-600" />
-                                    <span className="text-[11px] font-bold text-amber-800 uppercase">Funcionalidades Bloqueadas</span>
+                                    <Lock className="w-4 h-4 text-amber-600" />
+                                    <span className="text-body font-bold text-amber-800 uppercase">Funcionalidades Bloqueadas</span>
                                 </div>
-                                <p className="text-[10px] text-amber-700 uppercase leading-tight">Subscreva para desbloquear todas as funcionalidades.</p>
+                                <p className="text-label text-amber-700 uppercase leading-tight">Subscreva para desbloquear todas as funcionalidades.</p>
                             </div>
 
                             {canSubscribe ? (
@@ -71,7 +71,7 @@ export function BillingSubscriptionCard({
                                 </div>
                             ) : (
                                 <div className="p-3 tech-border border-dashed text-center">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                    <p className="text-label text-slate-400 font-bold uppercase tracking-widest">
                                         [ {!profileComplete ? "Valide o seu perfil" : !buildingComplete ? "Valide o edifício" : "Insira todas as frações"} para ativar a faturação ]
                                     </p>
                                 </div>

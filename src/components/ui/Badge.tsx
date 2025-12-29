@@ -1,12 +1,12 @@
 import { HTMLAttributes, forwardRef } from "react"
 import { cn } from "@/lib/utils"
-import { 
-    Check, 
-    AlertCircle, 
-    Clock, 
-    Info, 
+import {
+    Check,
+    AlertCircle,
+    Clock,
+    Info,
     X,
-    LucideIcon 
+    LucideIcon
 } from "lucide-react"
 
 type BadgeVariant = "success" | "warning" | "error" | "info" | "neutral" | "outline"
@@ -40,7 +40,7 @@ const autoIcons: Record<BadgeVariant, LucideIcon | null> = {
 const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     ({ className, variant = "neutral", size = "sm", icon, dot, children, ...props }, ref) => {
         const IconComponent = icon === "auto" ? autoIcons[variant] : icon
-        
+
         return (
             <span
                 ref={ref}
@@ -48,8 +48,8 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
                     "inline-flex items-center gap-1 font-bold uppercase tracking-wider border rounded-sm",
                     variantStyles[variant],
                     {
-                        "h-4 px-1 text-[8px]": size === "xs",
-                        "h-5 px-1.5 text-[9px]": size === "sm",
+                        "h-4 px-1 text-micro": size === "xs",
+                        "h-5 px-1.5 text-micro": size === "sm",
                         "h-6 px-2 text-[10px]": size === "md",
                     },
                     className
@@ -57,7 +57,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
                 {...props}
             >
                 {dot && (
-                    <span 
+                    <span
                         className={cn(
                             "rounded-full shrink-0",
                             {
@@ -76,7 +76,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
                     />
                 )}
                 {IconComponent && (
-                    <IconComponent 
+                    <IconComponent
                         className={cn(
                             "shrink-0",
                             {

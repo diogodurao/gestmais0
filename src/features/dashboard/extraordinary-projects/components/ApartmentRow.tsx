@@ -60,9 +60,9 @@ export function ApartmentRow({
                             toolMode && !readOnly && inst.status === "late" && "hover:bg-emerald-100"
                         )}
                     >
-                        {inst.status === "paid" && <span className="font-mono text-[11px]">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
-                        {inst.status === "partial" && <span className="font-mono text-[10px]">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
-                        {inst.status === "late" && <span className="text-[9px] font-bold uppercase">EM ATRASO</span>}
+                        {inst.status === "paid" && <span className="font-mono text-body">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
+                        {inst.status === "partial" && <span className="font-mono text-label">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
+                        {inst.status === "late" && <span className="text-micro font-bold uppercase">EM ATRASO</span>}
                         {inst.status === "pending" && "—"}
                     </td>
                 )
@@ -76,7 +76,7 @@ export function ApartmentRow({
                 {formatCurrency(apartment.balance)}
             </td>
             <td className="data-cell text-center">
-                <StatusBadge status={apartment.status} className="text-[8px] sm:text-[9px] px-1.5 sm:px-2" />
+                <StatusBadge status={apartment.status} className="text-micro px-1.5 sm:px-2" />
             </td>
         </tr>
     )

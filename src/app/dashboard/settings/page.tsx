@@ -113,7 +113,7 @@ export default async function SettingsPage({
                             <Card>
                                 <CardHeader>
                                     <CardTitle>
-                                        <LayoutGrid className="w-3.5 h-3.5" />
+                                        <LayoutGrid className="w-4 h-4" />
                                         Frações
                                     </CardTitle>
                                     <span className="text-[10px] font-mono text-slate-400">{apartmentsData.length} / {building.totalApartments || 0}</span>
@@ -152,7 +152,7 @@ export default async function SettingsPage({
                     <Card>
                         <CardHeader>
                             <CardTitle>
-                                <Building2 className="w-3.5 h-3.5" />
+                                <Building2 className="w-4 h-4" />
                                 Entrar na sua fração
                             </CardTitle>
                         </CardHeader>

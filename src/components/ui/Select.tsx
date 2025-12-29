@@ -31,8 +31,8 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                             "border-slate-300 text-slate-700 hover:border-slate-400": !error,
                             "border-rose-400 text-rose-700 focus:ring-rose-400 focus:border-rose-400": error,
                             "h-6 px-2 text-[10px]": size === "xs",
-                            "h-7 px-2.5 text-[11px]": size === "sm",
-                            "h-9 px-3 text-[13px]": size === "md",
+                            "h-7 px-2.5 text-body": size === "sm",
+                            "h-9 px-3 text-content": size === "md",
                             "h-11 px-4 text-[15px]": size === "lg",
                             "w-full": fullWidth,
                         },
@@ -46,8 +46,8 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                         </option>
                     )}
                     {options.map((option) => (
-                        <option 
-                            key={option.value} 
+                        <option
+                            key={option.value}
                             value={option.value}
                             disabled={option.disabled}
                         >
@@ -55,7 +55,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                         </option>
                     ))}
                 </select>
-                <ChevronDown 
+                <ChevronDown
                     className={cn(
                         "absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400",
                         {

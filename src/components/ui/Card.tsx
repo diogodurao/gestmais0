@@ -32,7 +32,7 @@ const CardTitle = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
         return (
             <div
                 ref={ref}
-                className={cn("text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2", className)}
+                className={cn("text-body font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2", className)}
                 {...props}
             />
         )
@@ -52,7 +52,7 @@ const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
         return (
             <div
                 ref={ref}
-                className={cn("bg-slate-50 border-t border-slate-300 px-3 py-1.5 text-[11px] text-slate-500", className)}
+                className={cn("bg-slate-50 border-t border-slate-300 px-3 py-1.5 text-body text-slate-500", className)}
                 {...props}
             />
         )

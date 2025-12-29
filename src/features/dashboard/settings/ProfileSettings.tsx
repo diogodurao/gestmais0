@@ -83,16 +83,16 @@ export function ProfileSettings({ user }: { user: UserData }) {
             <Card>
                 <CardHeader>
                     <CardTitle>
-                        <User className="w-3.5 h-3.5" />
+                        <User className="w-4 h-4" />
                         DADOS_PERFIL_UTILIZADOR
                     </CardTitle>
                     <div className="flex items-center gap-3">
                         {profileComplete ? (
-                            <span className="text-[10px] text-green-600 font-mono flex items-center gap-1">
+                            <span className="text-label text-green-600 font-mono flex items-center gap-1">
                                 <Check className="w-3 h-3" /> VALIDADO
                             </span>
                         ) : (
-                            <span className="text-[10px] text-amber-600 font-mono flex items-center gap-1">
+                            <span className="text-label text-amber-600 font-mono flex items-center gap-1">
                                 <AlertCircle className="w-3 h-3" /> INCOMPLETO
                             </span>
                         )}
@@ -136,7 +136,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
                                 />
                                 {isValidNif(formData.nif) && (
                                     <div className="absolute right-2 top-2 text-green-500">
-                                        <Check className="w-3.5 h-3.5" />
+                                        <Check className="w-4 h-4" />
                                     </div>
                                 )}
                             </div>
@@ -175,7 +175,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
                     </div>
                 </form>
             </Card>
-            {error && <p className="text-[10px] text-rose-600 font-bold uppercase text-right">{error}</p>}
+            {error && <p className="text-label text-rose-600 font-bold uppercase text-right">{error}</p>}
         </div>
     )
 }

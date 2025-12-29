@@ -51,7 +51,7 @@ const variants: Record<CardVariant, { bg: string; icon: string; value: string }>
 const sizes = {
     sm: {
         padding: "p-2 sm:p-3",
-        label: "text-[9px] sm:text-[10px]",
+        label: "text-micro sm:text-label",
         value: "text-base sm:text-lg",
         icon: "w-3 sm:w-4 h-3 sm:h-4",
     },
@@ -63,7 +63,7 @@ const sizes = {
     },
     lg: {
         padding: "p-4",
-        label: "text-[11px]",
+        label: "text-body",
         value: "text-xl",
         icon: "w-5 h-5",
     },

@@ -35,8 +35,8 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
         <div className="space-y-3 w-full max-w-sm">
             <div className="flex justify-between items-center bg-slate-50 p-3 tech-border">
                 <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cálculo Total</p>
-                    <p className="text-[11px] text-slate-600 font-mono">{quantity} UNITS × €{(pricePerUnit / 100).toFixed(2)}</p>
+                    <p className="text-label font-bold text-slate-400 uppercase tracking-widest">Cálculo Total</p>
+                    <p className="text-body text-slate-600 font-mono">{quantity} UNITS × €{(pricePerUnit / 100).toFixed(2)}</p>
                 </div>
                 <p className="text-xl font-bold font-mono text-slate-900">€{total}</p>
             </div>
@@ -50,7 +50,7 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
             >
                 {isPending ? "A redirecionar..." : "CONFIRMAR SUBSCRIÇÃO"}
             </Button>
-            <p className="text-[9px] text-center text-slate-400 uppercase font-bold tracking-tighter">Transação Segura via Stripe</p>
+            <p className="text-micro text-center text-slate-400 uppercase font-bold tracking-tighter">Transação Segura via Stripe</p>
         </div>
     )
 }
@@ -85,8 +85,8 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
             <div className="flex items-start gap-3">
                 <RefreshCw className="w-4 h-4 text-blue-600 mt-0.5" />
                 <div className="flex-1">
-                    <p className="text-[11px] font-bold text-blue-900 uppercase">A Aguardar Sincronização</p>
-                    <p className="text-[10px] text-blue-700/70 mb-2 uppercase tracking-tight">
+                    <p className="text-body font-bold text-blue-900 uppercase">A Aguardar Sincronização</p>
+                    <p className="text-label text-blue-700/70 mb-2 uppercase tracking-tight">
                         Se o pagamento foi concluído mas o estado não alterou, force a sincronização.
                     </p>
                     <Button
@@ -99,7 +99,7 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
                         {isPending ? "A sincronizar..." : "Sincronizar Pagamento"}
                     </Button>
                     {result && (
-                        <div className={`mt-2 flex items-center gap-1 text-[10px] font-bold uppercase ${result.status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
+                        <div className={`mt-2 flex items-center gap-1 text-label font-bold uppercase ${result.status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
                             {result.status === 'active' ? (
                                 <><CheckCircle className="w-3 h-3" /> Estado: Ativo</>
                             ) : (

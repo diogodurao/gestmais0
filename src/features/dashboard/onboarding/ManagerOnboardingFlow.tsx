@@ -131,31 +131,38 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
 
                 {/* Progress Steps */}
                 <div className="flex items-center justify-center gap-2 mb-8">
-                    {steps.map((step, idx) => (
-                        <div key={step.number} className="flex items-center">
-                            <button
-                                onClick={() => setCurrentStep(step.number)}
-                                className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase transition-colors ${currentStep === step.number
-                                    ? "bg-blue-600 text-white"
-                                    : step.isComplete
-                                        ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
-                                        : "bg-white text-slate-500 border border-slate-200"
-                                    }`}
-                            >
-                                {step.isComplete ? (
-                                    <Check className="w-3.5 h-3.5" />
-                                ) : (
-                                    <span className="w-4 h-4 flex items-center justify-center text-[10px] font-bold border border-current rounded-full">
-                                        {step.number}
-                                    </span>
+                    {steps.map((step, idx) => {
+                        // A step is reachable if it's already complete, or it's the current step,
+                        // or it's the immediate next step after a complete one.
+                        const isReachable = step.number <= currentStep || (idx > 0 && steps[idx - 1].isComplete)
+
+                        return (
+                            <div key={step.number} className="flex items-center">
+                                <button
+                                    onClick={() => isReachable && setCurrentStep(step.number)}
+                                    disabled={!isReachable}
+                                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase transition-colors ${currentStep === step.number
+                                        ? "bg-blue-600 text-white"
+                                        : step.isComplete
+                                            ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                                            : "bg-white text-slate-500 border border-slate-200"
+                                        } ${!isReachable ? "opacity-40 cursor-not-allowed" : "hover:opacity-80"}`}
+                                >
+                                    {step.isComplete ? (
+                                        <Check className="w-4 h-4" />
+                                    ) : (
+                                        <span className={`w-4 h-4 flex items-center justify-center text-[10px] font-bold border rounded-full ${currentStep === step.number ? 'border-white' : 'border-current'}`}>
+                                            {step.number}
+                                        </span>
+                                    )}
+                                    <span className="hidden sm:inline">{step.title}</span>
+                                </button>
+                                {idx < steps.length - 1 && (
+                                    <ChevronRight className="w-4 h-4 text-slate-300 mx-1" />
                                 )}
-                                <span className="hidden sm:inline">{step.title}</span>
-                            </button>
-                            {idx < steps.length - 1 && (
-                                <ChevronRight className="w-4 h-4 text-slate-300 mx-1" />
-                            )}
-                        </div>
-                    ))}
+                            </div>
+                        )
+                    })}
                 </div>
 
                 {/* Step Content */}
@@ -178,18 +185,6 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
                                 buildingId={building.id}
                                 apartments={apartments}
                                 totalApartments={building.totalApartments || 0}
-                            // No direct onComplete prop in Units step usually, it has buttons inside
-                            // but we might need to adjust OnboardingStepUnits to support continuing
-                            // Actually it seems UnitsStepClient was managing next step.
-                            // Here ManagerOnboardingFlow manages it manually if OnboardingStepUnits does not emit event.
-                            // But usually OnboardingStepUnits allows adding units.
-                            // We should probably add a "Continue" button here outside OR OnboardingStepUnits needs a prop.
-                            // Let's assume user clicks "Next" by clicking the step or a button below.
-                            // Wait, OnboardingStepUnits in ManagerOnboardingFlow does NOT expose an onComplete for navigation unlike Personal.
-                            // We rely on user clicking next or the bottom button.
-                            // BUT the bottom button is "FINALIZE".
-                            // We need "CONTINUE" if step 3.
-                            // I'll leave OnboardingStepUnits as is and rely on the button below.
                             />
                         )}
                         {currentStep === 4 && (
@@ -204,17 +199,19 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
                     </CardContent>
                 </Card>
 
-                {/* Finalize Button */}
+                {/* Finalize/Continue Button */}
+                {/* Note: Steps 1 and 2 have their own internal "Save & Continue" buttons.
+                    We only show the parent button for step 3 (Units) and step 4 (Claim). */}
                 <div className="flex justify-center">
-                    {currentStep < 4 ? (
+                    {currentStep === 3 ? (
                         <Button
                             size="lg"
-                            onClick={() => setCurrentStep(currentStep + 1)}
-                            disabled={!steps[currentStep - 1].isComplete}
+                            onClick={() => setCurrentStep(4)}
+                            disabled={!steps[2].isComplete}
                         >
                             CONTINUAR
                         </Button>
-                    ) : (
+                    ) : currentStep === 4 ? (
                         <Button
                             size="lg"
                             disabled={!canFinalize || isLoading}
@@ -222,7 +219,7 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
                         >
                             {isLoading ? "A CARREGAR..." : "FINALIZAR E ENTRAR"}
                         </Button>
-                    )}
+                    ) : null}
                 </div>
 
                 {/* Status Summary */}

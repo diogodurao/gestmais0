@@ -10,7 +10,7 @@ const Table = forwardRef<HTMLTableElement, HTMLAttributes<HTMLTableElement>>(
             <div className="w-full overflow-auto">
                 <table
                     ref={ref}
-                    className={cn("w-full caption-bottom text-[11px]", className)}
+                    className={cn("w-full caption-bottom text-body", className)}
                     {...props}
                 />
             </div>
@@ -109,7 +109,7 @@ const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
             <th
                 ref={ref}
                 className={cn(
-                    "h-8 px-3 text-left align-middle font-bold text-slate-500 uppercase tracking-wider text-[9px]",
+                    "h-8 px-3 text-left align-middle font-bold text-slate-500 uppercase tracking-wider text-micro",
                     "[&:has([role=checkbox])]:pr-0",
                     sortable && "cursor-pointer hover:text-slate-700 select-none",
                     className
@@ -118,8 +118,8 @@ const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
             >
                 <div className="flex items-center gap-1">
                     {children}
-                    {sorted === "asc" && <span className="text-[8px]">↑</span>}
-                    {sorted === "desc" && <span className="text-[8px]">↓</span>}
+                    {sorted === "asc" && <span className="text-micro">↑</span>}
+                    {sorted === "desc" && <span className="text-micro">↓</span>}
                 </div>
             </th>
         )
@@ -191,7 +191,7 @@ const TableEmpty = forwardRef<HTMLTableRowElement, TableEmptyProps>(
                 <td colSpan={colSpan} className="h-32 text-center">
                     <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
                         {icon && <div className="w-8 h-8">{icon}</div>}
-                        <div className="text-[11px] font-bold uppercase tracking-wider">{title}</div>
+                        <div className="text-body font-bold uppercase tracking-wider">{title}</div>
                         {description && <div className="text-[10px]">{description}</div>}
                     </div>
                 </td>
@@ -201,14 +201,14 @@ const TableEmpty = forwardRef<HTMLTableRowElement, TableEmptyProps>(
 )
 TableEmpty.displayName = "TableEmpty"
 
-export { 
-    Table, 
-    TableHeader, 
-    TableBody, 
-    TableFooter, 
-    TableRow, 
-    TableHead, 
-    TableCell, 
+export {
+    Table,
+    TableHeader,
+    TableBody,
+    TableFooter,
+    TableRow,
+    TableHead,
+    TableCell,
     TableCaption,
-    TableEmpty 
+    TableEmpty
 }

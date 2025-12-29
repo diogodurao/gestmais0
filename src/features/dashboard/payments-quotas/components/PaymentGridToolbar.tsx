@@ -36,9 +36,9 @@ export function PaymentGridToolbar({
                         onClick={() => onToolChange(activeTool === 'paid' ? null : 'paid')}
                         disabled={isSaving}
                         className={cn(
-                            "px-3 py-1 rounded-sm font-bold text-[10px] transition-all whitespace-nowrap",
-                            activeTool === 'paid' 
-                                ? "bg-emerald-500 text-white shadow-sm" 
+                            "px-3 py-1 rounded-sm font-bold text-label transition-all whitespace-nowrap",
+                            activeTool === 'paid'
+                                ? "bg-emerald-500 text-white shadow-sm"
                                 : "text-slate-500 hover:text-emerald-600 hover:bg-emerald-50",
                             isSaving && "opacity-50 cursor-not-allowed"
                         )}
@@ -50,9 +50,9 @@ export function PaymentGridToolbar({
                         onClick={() => onToolChange(activeTool === 'late' ? null : 'late')}
                         disabled={isSaving}
                         className={cn(
-                            "px-3 py-1 rounded-sm font-bold text-[10px] transition-all whitespace-nowrap",
-                            activeTool === 'late' 
-                                ? "bg-rose-500 text-white shadow-sm" 
+                            "px-3 py-1 rounded-sm font-bold text-label transition-all whitespace-nowrap",
+                            activeTool === 'late'
+                                ? "bg-rose-500 text-white shadow-sm"
                                 : "text-slate-500 hover:text-rose-600 hover:bg-rose-50",
                             isSaving && "opacity-50 cursor-not-allowed"
                         )}
@@ -64,9 +64,9 @@ export function PaymentGridToolbar({
                         onClick={() => onToolChange(activeTool === 'clear' ? null : 'clear')}
                         disabled={isSaving}
                         className={cn(
-                            "px-3 py-1 rounded-sm font-bold text-[10px] transition-all whitespace-nowrap",
-                            activeTool === 'clear' 
-                                ? "bg-slate-600 text-white shadow-sm" 
+                            "px-3 py-1 rounded-sm font-bold text-label transition-all whitespace-nowrap",
+                            activeTool === 'clear'
+                                ? "bg-slate-600 text-white shadow-sm"
                                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-100",
                             isSaving && "opacity-50 cursor-not-allowed"
                         )}
@@ -83,7 +83,7 @@ export function PaymentGridToolbar({
                             type="button"
                             onClick={() => onFilterChange("all")}
                             className={cn(
-                                "px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase transition-all",
+                                "px-2 py-0.5 rounded-sm text-micro font-bold uppercase transition-all",
                                 filterMode === "all"
                                     ? "bg-slate-700 text-white"
                                     : "text-slate-500 hover:bg-slate-100"
@@ -95,7 +95,7 @@ export function PaymentGridToolbar({
                             type="button"
                             onClick={() => onFilterChange("paid")}
                             className={cn(
-                                "px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase transition-all",
+                                "px-2 py-0.5 rounded-sm text-micro font-bold uppercase transition-all",
                                 filterMode === "paid"
                                     ? "bg-emerald-500 text-white"
                                     : "text-slate-500 hover:bg-emerald-50"
@@ -107,7 +107,7 @@ export function PaymentGridToolbar({
                             type="button"
                             onClick={() => onFilterChange("late")}
                             className={cn(
-                                "px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase transition-all",
+                                "px-2 py-0.5 rounded-sm text-micro font-bold uppercase transition-all",
                                 filterMode === "late"
                                     ? "bg-rose-500 text-white"
                                     : "text-slate-500 hover:bg-rose-50"
@@ -126,17 +126,17 @@ export function PaymentGridToolbar({
                         placeholder="Procurar..."
                         value={searchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="bg-white border border-slate-200 text-[10px] pl-7 pr-3 py-1.5 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-32 placeholder:text-slate-400"
+                        className="bg-white border border-slate-200 text-label pl-7 pr-3 py-1.5 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-32 placeholder:text-slate-400"
                     />
                 </form>
             </div>
 
             {/* Active Tool Indicator */}
             {activeTool && (
-                <div className="h-6 flex items-center px-4 gap-2 text-[9px] text-blue-600 font-medium border-t border-slate-100 bg-blue-50/50">
+                <div className="h-6 flex items-center px-4 gap-2 text-micro text-blue-600 font-medium border-t border-slate-100 bg-blue-50/50">
                     <Info className="w-3 h-3 animate-pulse" />
                     <span>
-                        Modo ativo: {activeTool === 'paid' ? 'Marcar Pago' : activeTool === 'late' ? 'Marcar Dívida' : 'Limpar'} 
+                        Modo ativo: {activeTool === 'paid' ? 'Marcar Pago' : activeTool === 'late' ? 'Marcar Dívida' : 'Limpar'}
                         — Clique nas células para aplicar
                     </span>
                     {isSaving && (

@@ -80,7 +80,7 @@ export default function ManagerOnboardingLayout({
                                         }`}
                                 >
                                     {isComplete ? (
-                                        <Check className="w-3.5 h-3.5" />
+                                        <Check className="w-4 h-4" />
                                     ) : (
                                         <span className={`w-4 h-4 flex items-center justify-center text-[10px] font-bold border rounded-full ${isCurrent ? 'border-white' : 'border-current'}`}>
                                             {step.number}

@@ -73,3 +73,28 @@ export type SubscriptionStatus =
 export type ActionResult<T> =
     | { success: true; data: T }
     | { success: false; error: string }
+
+// ==========================================
+// DASHBOARD TYPES
+// ==========================================
+
+export type ManagedBuilding = {
+    building: { id: string; name: string; code: string; subscriptionStatus?: string | null }
+    isOwner: boolean | null
+}
+
+export type Apartment = {
+    id: number
+    buildingId: string
+    unit: string
+    permillage: number | null
+    residentId: string | null
+}
+
+export type DashboardInitialData = {
+    session: SessionUser | null
+    managerBuildings: ManagedBuilding[]
+    activeBuilding: ManagedBuilding | null
+    residentApartment: Apartment | null
+    setupComplete: boolean
+}

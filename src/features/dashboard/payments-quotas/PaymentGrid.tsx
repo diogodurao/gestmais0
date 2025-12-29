@@ -32,7 +32,7 @@ export function PaymentGrid({
 }: PaymentGridProps) {
     const router = useRouter()
     const { toast } = useToast()
-    
+
     // Local state for optimistic updates
     const [localData, setLocalData] = useState<PaymentData[]>(data)
     const [searchTerm, setSearchTerm] = useState("")
@@ -149,10 +149,11 @@ export function PaymentGrid({
             }
 
             // Recalculate totals
-            const totalPaid = Object.values(newPayments).reduce((sum, p) => 
+            const totalPaid = Object.values(newPayments).reduce((sum, p) =>
                 sum + (p.status === 'paid' ? (p.amount || monthlyQuota) : 0), 0
             )
-            const expectedTotal = 12 * monthlyQuota
+            const currentMonth = new Date().getMonth() + 1
+            const expectedTotal = currentMonth * monthlyQuota
             const balance = Math.max(0, expectedTotal - totalPaid)
 
             return {
@@ -171,7 +172,7 @@ export function PaymentGrid({
     const handleSearch = useCallback((e: React.FormEvent) => {
         e.preventDefault()
         if (!searchTerm) return
-        
+
         const match = filteredData[0]
         if (match) {
             setHighlightedId(match.apartmentId)

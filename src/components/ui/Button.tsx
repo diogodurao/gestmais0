@@ -33,7 +33,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 )}
                 {...props}
             >
-                {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {children}
             </button>
         )

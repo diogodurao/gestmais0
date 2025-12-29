@@ -185,9 +185,9 @@ export function ResidentOnboardingFlow({
                                         }`}
                                 >
                                     {step.isComplete ? (
-                                        <Check className="w-3.5 h-3.5" />
+                                        <Check className="w-4 h-4" />
                                     ) : (
-                                        <Icon className="w-3.5 h-3.5" />
+                                        <Icon className="w-4 h-4" />
                                     )}
                                     <span className="hidden sm:inline">{step.title}</span>
                                 </div>

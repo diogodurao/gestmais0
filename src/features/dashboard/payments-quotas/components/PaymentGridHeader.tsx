@@ -17,10 +17,10 @@ export function PaymentGridHeader({ year, stats }: PaymentGridHeaderProps) {
                 <div className="flex items-center gap-3 min-w-0">
                     <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
                     <div className="min-w-0">
-                        <h1 className="font-bold text-slate-800 text-sm leading-tight truncate">
+                        <h1 className="font-bold text-slate-800 text-content leading-tight truncate">
                             Mapa de Quotas
                         </h1>
-                        <span className="text-[9px] text-slate-500 font-mono uppercase tracking-tight">
+                        <span className="text-micro text-slate-500 font-mono uppercase tracking-tight">
                             Exercício {year}
                         </span>
                     </div>
@@ -30,24 +30,24 @@ export function PaymentGridHeader({ year, stats }: PaymentGridHeaderProps) {
                 <div className="flex items-center gap-2 shrink-0">
                     {/* Paid/Total ratio */}
                     <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-slate-100 border border-slate-200 text-slate-600 rounded-sm">
-                        <span className="text-[9px] font-bold uppercase">
+                        <span className="text-micro font-bold uppercase">
                             {stats.paidCount}/{stats.total}
                         </span>
-                        <span className="text-[8px] text-slate-400">em dia</span>
+                        <span className="text-micro text-slate-400">em dia</span>
                     </div>
 
                     {/* Total collected */}
                     <div className="flex items-center gap-1 px-2 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-sm">
-                        <span className="text-[9px] font-bold uppercase hidden xs:inline">Cobrado</span>
-                        <span className="font-mono font-bold text-[10px]">
+                        <span className="text-micro font-bold uppercase hidden xs:inline">Cobrado</span>
+                        <span className="font-mono font-bold text-label">
                             {formatCurrency(stats.totalCollected)}
                         </span>
                     </div>
 
                     {/* Total overdue */}
                     <div className="flex items-center gap-1 px-2 py-1 bg-rose-50 border border-rose-200 text-rose-700 rounded-sm">
-                        <span className="text-[9px] font-bold uppercase hidden xs:inline">Dívida</span>
-                        <span className="font-mono font-bold text-[10px]">
+                        <span className="text-micro font-bold uppercase hidden xs:inline">Dívida</span>
+                        <span className="font-mono font-bold text-label">
                             {formatCurrency(stats.totalOverdue)}
                         </span>
                     </div>

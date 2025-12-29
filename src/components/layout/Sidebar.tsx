@@ -5,29 +5,17 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "./SidebarProvider"
 import { managerNavItems, residentNavItems } from "@/config/navigation"
+import { useDashboard } from "@/contexts/DashboardContext"
 
-type ManagedBuilding = {
-    building: { id: string; name: string; code: string; subscriptionStatus?: string | null }
-    isOwner: boolean | null
-}
-
-type SidebarProps = {
-    userRole: string
-    setupComplete?: boolean
-    managerBuildings?: ManagedBuilding[]
-    activeBuildingId?: string
-}
-
-export function Sidebar({
-    userRole,
-    setupComplete = false,
-    activeBuildingId,
-    managerBuildings = []
-}: SidebarProps) {
+export function Sidebar() {
     const { isOpen, isDesktopCollapsed, closeSidebar } = useSidebar()
     const pathname = usePathname()
+    const { session, activeBuilding, managerBuildings, setupComplete } = useDashboard()
 
-    const activeBuilding = managerBuildings.find(b => b.building.id === activeBuildingId)
+    const userRole = session?.role || "resident"
+
+    // For manager: active building is from context
+    // For resident: active building is also in context
 
     const links = userRole === "manager" ? managerNavItems : residentNavItems
 
@@ -36,14 +24,14 @@ export function Sidebar({
             {/* Sidebar Container */}
             <aside className={cn(
                 "fixed inset-y-0 left-0 z-50 bg-slate-50 border-r border-slate-300 transform transition-all duration-300 ease-in-out flex flex-col py-3",
-                // Mobile state
-                isOpen ? "translate-x-0 w-64" : "-translate-x-full w-64",
-                // Desktop state
+                // Mobile state: w-52
+                isOpen ? "translate-x-0 w-52" : "-translate-x-full w-52",
+                // Desktop state: w-64
                 "lg:translate-x-0 lg:static lg:h-screen",
-                isDesktopCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none lg:border-r-0" : "lg:w-52 lg:opacity-100"
+                isDesktopCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none lg:border-r-0" : "lg:w-64 lg:opacity-100"
             )}>
                 <div className={cn(
-                    "px-4 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider transition-opacity whitespace-nowrap overflow-hidden",
+                    "px-4 mb-2 text-label font-bold text-slate-400 uppercase tracking-wider transition-opacity whitespace-nowrap overflow-hidden",
                     isDesktopCollapsed && "lg:opacity-0"
                 )}>
                     Workspace
@@ -71,7 +59,7 @@ export function Sidebar({
                                     title={isSubscriptionRestricted ? "Active subscription required" : "Complete setup to access this feature"}
                                 >
                                     <Icon className="w-4 h-4 mr-3 shrink-0" />
-                                    <span className="text-xs font-medium truncate whitespace-nowrap">{link.label}</span>
+                                    <span className="text-body font-medium truncate whitespace-nowrap">{link.label}</span>
                                 </div>
                             )
                         }
@@ -89,7 +77,7 @@ export function Sidebar({
                                 onClick={closeSidebar}
                             >
                                 <Icon className={cn("w-4 h-4 mr-3 shrink-0", isActive ? "text-blue-600" : "text-slate-400")} />
-                                <span className="text-xs truncate whitespace-nowrap">{link.label}</span>
+                                <span className="text-body truncate whitespace-nowrap">{link.label}</span>
                             </Link>
                         )
                     })}
