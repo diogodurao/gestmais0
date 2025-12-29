@@ -95,7 +95,7 @@ export interface ApartmentPaymentData {
         year: number
         expectedAmount: number
         paidAmount: number
-        status: "paid" | "pending" | "overdue" | "partial"
+        status: "paid" | "pending" | "late" | "partial"
     }>
 }
 
@@ -119,7 +119,7 @@ export interface ResidentProjectPayment {
         year: number
         expectedAmount: number
         paidAmount: number
-        status: "paid" | "pending" | "overdue" | "partial"
+        status: "paid" | "pending" | "late" | "partial"
     }>
 }
 
@@ -386,7 +386,7 @@ export class ExtraordinaryService {
                     year,
                     expectedAmount: payment.expectedAmount,
                     paidAmount: payment.paidAmount || 0,
-                    status: payment.status as "paid" | "pending" | "overdue" | "partial",
+                    status: payment.status as "paid" | "pending" | "late" | "partial",
                 })
             })
 
@@ -511,7 +511,7 @@ export class ExtraordinaryService {
                         year,
                         expectedAmount: p.expectedAmount,
                         paidAmount: p.paidAmount || 0,
-                        status: p.status as "paid" | "pending" | "overdue" | "partial",
+                        status: p.status as "paid" | "pending" | "late" | "partial",
                     }
                 })
 

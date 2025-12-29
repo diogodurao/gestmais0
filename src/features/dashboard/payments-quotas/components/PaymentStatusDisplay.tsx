@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { formatCurrency } from "@/lib/extraordinary-calculations"
+import { formatCurrency } from "@/lib/format"
 import { type PaymentStatusSummary } from "@/app/actions/payment-status"
 import {
     CheckCircle,
@@ -52,7 +52,7 @@ export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayPr
     const regOverdue = data.regularQuotas.overdueMonths
     const regStatus = getSectionStatus(regBalance, regOverdue)
     const regMsg = regBalance > 0
-        ? `Faltam ${formatCurrency(regBalance)} em cotas.`
+        ? `Faltam ${formatCurrency(regBalance)} em quotas.`
         : "Quotas de condomínio em dia."
 
     // --- EXTRA QUOTAS DATA ---

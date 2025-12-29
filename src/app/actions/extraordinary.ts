@@ -7,7 +7,7 @@
  * and their associated payment records.
  */
 
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession, requireBuildingAccess, requireProjectAccess, requireResidentSession } from "@/lib/auth-helpers"
 import { extraordinaryService } from "@/services/extraordinary.service"
 import {
     CreateProjectInput,
@@ -45,7 +45,6 @@ export async function createExtraordinaryProject(
     input: CreateProjectInput
 ): Promise<ActionResult<any>> {
     // Verify user manages this building
-    const { requireBuildingAccess } = await import("@/lib/auth-helpers")
     const { session } = await requireBuildingAccess(input.buildingId)
 
     try {
@@ -72,7 +71,6 @@ export async function createExtraordinaryProject(
 export async function updateExtraordinaryProject(
     input: UpdateProjectInput
 ): Promise<ActionResult<any>> {
-    const { requireProjectAccess } = await import("@/lib/auth-helpers")
     await requireProjectAccess(input.projectId)
 
     try {
@@ -97,7 +95,6 @@ export async function getExtraordinaryProjects(
 
     // Check if user is manager or resident of this building
     if (session.user.role === 'manager') {
-        const { requireBuildingAccess } = await import("@/lib/auth-helpers")
         await requireBuildingAccess(buildingId)
     } else if (session.user.role === 'resident') {
         if (session.user.buildingId !== buildingId) {
@@ -120,7 +117,6 @@ export async function getExtraordinaryProjectDetail(
     const session = await requireSession()
 
     if (session.user.role === 'manager') {
-        const { requireProjectAccess } = await import("@/lib/auth-helpers")
         await requireProjectAccess(projectId)
     } else if (session.user.role === 'resident') {
         // We need to verify the project belongs to the resident's building
@@ -152,7 +148,6 @@ export async function getExtraordinaryProjectDetail(
 // ===========================================
 
 export async function getResidentExtraordinaryPayments() {
-    const { requireResidentSession } = await import("@/lib/auth-helpers")
     const session = await requireResidentSession()
     return await extraordinaryService.getResidentExtraordinaryPayments(session.user.id)
 }
@@ -202,7 +197,6 @@ export async function bulkUpdatePayments(
 export async function archiveExtraordinaryProject(
     projectId: number
 ) {
-    const { requireProjectAccess } = await import("@/lib/auth-helpers")
     await requireProjectAccess(projectId)
     return await extraordinaryService.archiveExtraordinaryProject(projectId)
 }
@@ -214,7 +208,6 @@ export async function archiveExtraordinaryProject(
 export async function deleteExtraordinaryProject(
     projectId: number
 ) {
-    const { requireProjectAccess } = await import("@/lib/auth-helpers")
     await requireProjectAccess(projectId)
     return await extraordinaryService.deleteExtraordinaryProject(projectId)
 }
@@ -226,7 +219,6 @@ export async function deleteExtraordinaryProject(
 export async function recalculateProjectPayments(
     projectId: number
 ) {
-    const { requireProjectAccess } = await import("@/lib/auth-helpers")
     await requireProjectAccess(projectId)
     return await extraordinaryService.recalculateProjectPayments(projectId)
 }

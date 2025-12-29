@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { cn } from "@/lib/utils"
-import { getMonthName, formatCurrency } from "@/lib/extraordinary-calculations"
+import { getMonthName, formatCurrency } from "@/lib/format"
 import {
     updateExtraordinaryPayment,
 } from "@/app/actions/extraordinary"
@@ -138,7 +138,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                     balance: p.balance,
                 }
                 p.installments.forEach((inst, i) => {
-                    row[`inst_${i}`] = inst.status === "paid" ? "Pago" : inst.status === "overdue" ? "Atraso" : "Pendente"
+                    row[`inst_${i}`] = inst.status === "paid" ? "Pago" : inst.status === "late" ? "Atraso" : "Pendente"
                 })
                 return row
             })

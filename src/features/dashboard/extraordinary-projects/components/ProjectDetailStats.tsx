@@ -1,6 +1,6 @@
 "use client"
 
-import { formatCurrency } from "@/lib/extraordinary-calculations"
+import { formatCurrency } from "@/lib/format"
 import { StatCard } from "@/components/ui/StatCard"
 
 interface ProjectDetailStatsProps {

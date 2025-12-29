@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { MoreVertical, Edit, RefreshCw, Archive, Trash2, FileText } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { archiveExtraordinaryProject } from "@/app/actions/extraordinary"
+import { useToast } from "@/hooks/use-toast"
 
 type Project = {
     id: number
@@ -42,6 +43,7 @@ export function ProjectDetailHeader({
     loadProject
 }: ProjectDetailHeaderProps) {
     const router = useRouter()
+    const { toast } = useToast()
 
     const handleArchive = async () => {
         try {
@@ -50,7 +52,11 @@ export function ProjectDetailHeader({
                 router.refresh()
             }
         } catch (error) {
-            console.error("Failed to archive project", error)
+            toast({
+                variant: "destructive",
+                title: "Erro",
+                description: "Falha ao arquivar projeto"
+            })
         }
         setShowArchiveConfirm(false)
     }

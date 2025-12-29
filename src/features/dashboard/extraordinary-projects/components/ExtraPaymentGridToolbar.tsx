@@ -3,7 +3,7 @@
 import { Filter, Edit3, Check, Clock, ToggleLeft, FileText, Table, Smartphone } from "lucide-react"
 import { type ToolMode } from "../types"
 
-type FilterMode = "all" | "paid" | "pending" | "overdue" | "partial"
+type FilterMode = "all" | "paid" | "pending" | "late" | "partial"
 
 interface ExtraPaymentGridToolbarProps {
     isManager: boolean

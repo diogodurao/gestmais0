@@ -37,11 +37,7 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
     return (
         <div className="min-h-screen font-sans text-slate-900 bg-slate-50 overflow-x-hidden">
             <Navbar />
-
-            <Navbar />
-
             <Hero cityName={city.name} />
-
             <Features />
             <Pricing />
             <Faq />

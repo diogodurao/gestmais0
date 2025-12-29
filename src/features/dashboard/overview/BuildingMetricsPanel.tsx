@@ -55,7 +55,7 @@ export function BuildingMetricsPanel({
                 ) : residentBuildingInfo ? (
                     <div className="space-y-1">
                         <p className="text-[11px] font-bold text-slate-800 truncate uppercase">{residentBuildingInfo.building.name}</p>
-                        <p className="text-[10px] font-medium text-slate-500 uppercase tracking-tighter">Manager: {residentBuildingInfo.manager.name}</p>
+                        <p className="text-[10px] font-medium text-slate-500 uppercase tracking-tighter">Gestor: {residentBuildingInfo.manager.name}</p>
                     </div>
                 ) : null}
             </div>

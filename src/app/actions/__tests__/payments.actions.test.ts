@@ -13,6 +13,7 @@ vi.mock('@/services/payment.service', () => ({
 vi.mock('@/lib/auth-helpers', () => ({
     requireBuildingAccess: vi.fn(),
     requireApartmentAccess: vi.fn(),
+    requireSession: vi.fn(),
 }))
 
 // Mock next/cache
@@ -27,7 +28,8 @@ describe('Payment Actions', () => {
 
     describe('getPaymentMap', () => {
         it('should return grid data when user has access', async () => {
-            const { requireBuildingAccess } = await import('@/lib/auth-helpers')
+            const { requireBuildingAccess, requireSession } = await import('@/lib/auth-helpers')
+            vi.mocked(requireSession).mockResolvedValue({ user: { role: 'manager' } } as any)
             const mockData = { gridData: [], monthlyQuota: 50 }
             vi.mocked(paymentService.getPaymentMap).mockResolvedValue(mockData)
 

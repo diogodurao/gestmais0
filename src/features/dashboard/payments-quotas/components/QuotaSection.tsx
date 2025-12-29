@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { formatCurrency } from "@/lib/extraordinary-calculations"
+import { formatCurrency } from "@/lib/format"
 
 interface QuotaSectionProps {
     icon: React.ComponentType<{ className?: string }>

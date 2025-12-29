@@ -4,15 +4,14 @@ import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Layers, TrendingDown, TrendingUp } from "lucide-react"
 import { getResidentExtraordinaryPayments, type ResidentProjectPayment } from "@/app/actions/extraordinary"
+import { useToast } from "@/hooks/use-toast"
 
-interface ResidentExtraPaymentsProps {
-    userId: string
-    apartmentId: number
-}
+interface ResidentExtraPaymentsProps { }
 
-export function ResidentExtraPayments({ userId, apartmentId }: ResidentExtraPaymentsProps) {
+export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
     const [payments, setPayments] = useState<ResidentProjectPayment[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const { toast } = useToast()
 
     useEffect(() => {
         let isMounted = true
@@ -27,7 +26,11 @@ export function ResidentExtraPayments({ userId, apartmentId }: ResidentExtraPaym
                 }
             } catch (error) {
                 if (!controller.signal.aborted) {
-                    console.error("Failed to load payments", error)
+                    toast({
+                        variant: "destructive",
+                        title: "Erro",
+                        description: "Não foi possível carregar os dados. Por favor tente novamente."
+                    })
                 }
             } finally {
                 if (isMounted) setIsLoading(false)
@@ -118,7 +121,7 @@ export function ResidentExtraPayments({ userId, apartmentId }: ResidentExtraPaym
                                             key={instIdx}
                                             className={`text-[9px] font-mono px-1.5 py-0.5 ${inst.status === "paid"
                                                 ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                                                : inst.status === "overdue"
+                                                : inst.status === "late"
                                                     ? "bg-rose-50 text-rose-600 border border-rose-100"
                                                     : "bg-slate-50 text-slate-500 border border-slate-200"
                                                 }`}

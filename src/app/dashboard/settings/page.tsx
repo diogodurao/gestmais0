@@ -5,7 +5,7 @@ import { getBuilding, getBuildingApartments, getResidentApartment, getUnclaimedA
 import { BuildingSettingsForm } from "@/features/dashboard/settings/BuildingSettingsForm"
 import { ApartmentManager } from "@/features/dashboard/settings/ApartmentManager"
 import { ProfileSettings } from "@/features/dashboard/settings/ProfileSettings"
-import { BillingSubscriptionCard } from "@/features/dashboard/cards/BillingSubscriptionCard"
+import { BillingSubscriptionCard } from "@/features/dashboard/subscription/BillingSubscriptionCard"
 import { LayoutGrid, Building2 } from "lucide-react"
 import { getApartmentDisplayName } from "@/lib/utils"
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"

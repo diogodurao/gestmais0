@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button"
 import { Layers, Plus, ChevronRight, FileText } from "lucide-react"
 import { getExtraordinaryProjects } from "@/app/actions/extraordinary"
 import { ExtraProjectCreate } from "./ExtraProjectCreate"
+import { useToast } from "@/hooks/use-toast"
 
 type Project = {
     id: number
@@ -37,6 +38,7 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
     const [projects, setProjects] = useState<Project[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [showCreate, setShowCreate] = useState(false)
+    const { toast } = useToast()
 
     const fetchProjects = async () => {
         try {
@@ -46,7 +48,11 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                 setProjects(result.data)
             }
         } catch (error) {
-            console.error("Failed to load projects", error)
+            toast({
+                variant: "destructive",
+                title: "Erro",
+                description: "Falha ao carregar lista de projetos."
+            })
         } finally {
             setIsLoading(false)
         }

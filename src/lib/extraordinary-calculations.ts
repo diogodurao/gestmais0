@@ -1,4 +1,4 @@
-export { formatCurrency, parseCurrency, getMonthName } from "./format"
+// Re-exports removed to avoid circular dependencies. Import from "@/lib/format" directly.
 
 /**
  * Extraordinary Payments Calculation Service
@@ -64,7 +64,7 @@ export function calculateExtraordinaryPayments(
     apartments: Apartment[]
 ): ProjectCalculationSummary {
     const warnings: string[] = []
-    
+
     // Validate inputs
     if (totalBudget <= 0) {
         warnings.push("Orçamento deve ser maior que zero")
@@ -75,25 +75,25 @@ export function calculateExtraordinaryPayments(
     if (startMonth < 1 || startMonth > 12) {
         warnings.push("Mês inicial inválido")
     }
-    
+
     // Calculate total permillage
     const totalPermillage = apartments.reduce((sum, apt) => sum + (apt.permillage || 0), 0)
-    
+
     if (Math.abs(totalPermillage - 1000) > 1) {
         warnings.push(`Permilagem total (${totalPermillage.toFixed(2)}‰) difere de 1000‰`)
     }
-    
+
     // Calculate for each apartment
     const apartmentCalculations: ApartmentCalculation[] = apartments.map((apt) => {
         const permillage = apt.permillage || 0
-        
+
         if (permillage === 0) {
             warnings.push(`Fração ${apt.unit} não tem permilagem definida`)
         }
-        
+
         // Calculate total share: (budget × permillage) / 1000
         const totalShare = Math.round((totalBudget * permillage) / 1000)
-        
+
         // Calculate installments with proper rounding
         const installments = calculateInstallments(
             totalShare,
@@ -101,10 +101,10 @@ export function calculateExtraordinaryPayments(
             startMonth,
             startYear
         )
-        
+
         // Average monthly payment
         const monthlyPayment = Math.round(totalShare / numInstallments)
-        
+
         return {
             apartmentId: apt.id,
             unit: apt.unit,
@@ -115,7 +115,7 @@ export function calculateExtraordinaryPayments(
             installments,
         }
     })
-    
+
     return {
         totalBudget,
         totalPermillage,
@@ -137,24 +137,24 @@ function calculateInstallments(
     // Calculate regular payment and remainder
     const regularPayment = Math.floor(totalShare / numInstallments)
     const remainder = totalShare - regularPayment * numInstallments
-    
+
     const installments: InstallmentCalculation[] = []
-    
+
     for (let i = 0; i < numInstallments; i++) {
         // Calculate month and year for this installment
         let month = startMonth + i
         let year = startYear
-        
+
         while (month > 12) {
             month -= 12
             year += 1
         }
-        
+
         // Last installment gets the remainder to ensure exact total
-        const amount = i === numInstallments - 1 
-            ? regularPayment + remainder 
+        const amount = i === numInstallments - 1
+            ? regularPayment + remainder
             : regularPayment
-        
+
         installments.push({
             number: i + 1,
             month,
@@ -162,7 +162,7 @@ function calculateInstallments(
             amount,
         })
     }
-    
+
     return installments
 }
 
@@ -180,12 +180,12 @@ export function getInstallmentDate(
 ): { month: number; year: number } {
     let month = startMonth + installmentNumber - 1
     let year = startYear
-    
+
     while (month > 12) {
         month -= 12
         year += 1
     }
-    
+
     return { month, year }
 }
 
@@ -211,23 +211,23 @@ export function determinePaymentStatus(
     if (paidAmount >= expectedAmount) {
         return "paid"
     }
-    
+
     // Partially paid
     if (paidAmount > 0) {
         return "partial"
     }
-    
+
     // Check if overdue (past the installment month)
     const currentMonth = currentDate.getMonth() + 1
     const currentYear = currentDate.getFullYear()
-    
+
     if (
         installmentYear < currentYear ||
         (installmentYear === currentYear && installmentMonth < currentMonth)
     ) {
         return "overdue"
     }
-    
+
     return "pending"
 }
 
@@ -248,28 +248,28 @@ export function validateProjectInput(data: {
     startYear: number
 }): ValidationResult {
     const errors: string[] = []
-    
+
     if (!data.name || data.name.trim().length < 3) {
         errors.push("Nome do projeto deve ter pelo menos 3 caracteres")
     }
-    
+
     if (data.totalBudget <= 0) {
         errors.push("Orçamento deve ser maior que zero")
     }
-    
+
     if (data.numInstallments < 1 || data.numInstallments > 120) {
         errors.push("Número de prestações deve estar entre 1 e 120")
     }
-    
+
     if (data.startMonth < 1 || data.startMonth > 12) {
         errors.push("Mês inicial inválido")
     }
-    
+
     const currentYear = new Date().getFullYear()
     if (data.startYear < currentYear - 5 || data.startYear > currentYear + 10) {
         errors.push("Ano inicial inválido")
     }
-    
+
     return {
         valid: errors.length === 0,
         errors,
@@ -306,7 +306,7 @@ export function calculateProjectStats(
     const totalPaid = payments.reduce((sum, p) => sum + p.paidAmount, 0)
     const totalBalance = totalExpected - totalPaid
     const progressPercent = calculateProgress(totalPaid, totalExpected)
-    
+
     // Count apartments where all installments are paid
     const apartmentPayments = new Map<number, { paid: number; total: number }>()
     payments.forEach((p) => {
@@ -315,17 +315,17 @@ export function calculateProjectStats(
         if (p.status === "paid") current.paid++
         apartmentPayments.set(p.apartmentId, current)
     })
-    
+
     let apartmentsCompleted = 0
     apartmentPayments.forEach((apt) => {
         if (apt.paid === apt.total) apartmentsCompleted++
     })
-    
+
     // Find next due installment
     const now = new Date()
     const currentMonth = now.getMonth() + 1
     const currentYear = now.getFullYear()
-    
+
     let nextDueDate: { month: number; year: number } | null = null
     for (let i = 1; i <= numInstallments; i++) {
         const { month, year } = getInstallmentDate(i, startMonth, startYear)
@@ -334,7 +334,7 @@ export function calculateProjectStats(
             break
         }
     }
-    
+
     return {
         totalExpected,
         totalPaid,

@@ -32,11 +32,6 @@ export const UNIT_TYPES = [
     { value: "storage", label: "Storage", labelPt: "Arrecadação" },
 ] as const
 
-export const PAYMENT_STATUS = {
-    PAID: 'paid',
-    PENDING: 'pending',
-    LATE: 'late',
-} as const
 
 export const SUBSCRIPTION_STATUS = {
     ACTIVE: 'active',
@@ -51,7 +46,6 @@ export const USER_ROLES = {
 } as const
 
 // Type exports for type safety
-export type PaymentStatus = typeof PAYMENT_STATUS[keyof typeof PAYMENT_STATUS]
 export type SubscriptionStatus = typeof SUBSCRIPTION_STATUS[keyof typeof SUBSCRIPTION_STATUS]
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES]
 export type UnitType = typeof UNIT_TYPES[number]['value']

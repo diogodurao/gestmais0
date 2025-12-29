@@ -1,6 +1,6 @@
 "use client"
 
-import { formatCurrency } from "@/lib/extraordinary-calculations"
+import { formatCurrency } from "@/lib/format"
 import { ProgressBar } from "@/components/ui/ProgressBar"
 
 interface BudgetProgressProps {
@@ -37,7 +37,7 @@ export function BudgetProgress({ totalCollected, totalBudget, progressPercent }:
                 </div>
                 <div className="text-right">
                     <span className="text-slate-400 uppercase font-bold tracking-tighter hidden sm:inline">Orçamento Total </span>
-                    <span className="text-slate-400 uppercase font-bold tracking-tighter">Orçam.</span>
+                    <span className="text-slate-400 uppercase font-bold tracking-tighter sm:hidden">Orçamento</span>
                     <span className="text-slate-900 font-bold font-mono text-[11px] sm:text-[12px] ml-1 sm:ml-2">
                         {formatCurrency(totalBudget)}
                     </span>

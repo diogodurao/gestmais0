@@ -62,15 +62,7 @@ export async function requireResidentSession() {
     return session
 }
 
-/**
- * @deprecated Use requireManagerSession instead
- */
-export const requireManager = requireManagerSession
 
-/**
- * @deprecated Use requireResidentSession instead  
- */
-export const requireResident = requireResidentSession
 
 /**
  * Verify manager has access to a specific building

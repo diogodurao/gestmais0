@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { formatCurrency, getMonthName } from "@/lib/extraordinary-calculations"
+import { formatCurrency, getMonthName } from "@/lib/format"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 // import { t } from "@/lib/translations"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
@@ -112,7 +112,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                                     className={cn(
                                         "p-2 text-center transition-all border",
                                         inst.status === "paid" && "bg-emerald-50 border-emerald-200",
-                                        inst.status === "overdue" && "bg-rose-50 border-rose-200",
+                                        inst.status === "late" && "bg-rose-50 border-rose-200",
                                         inst.status === "pending" && "bg-white border-slate-200",
                                         inst.status === "partial" && "bg-amber-50 border-amber-200",
                                         toolMode && !readOnly && "active:scale-95",
@@ -126,12 +126,12 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                                     <div className={cn(
                                         "text-[10px] font-mono font-bold mt-0.5",
                                         inst.status === "paid" && "text-emerald-700",
-                                        inst.status === "overdue" && "text-rose-700",
+                                        inst.status === "late" && "text-rose-700",
                                         inst.status === "pending" && "text-slate-500",
                                         inst.status === "partial" && "text-amber-700"
                                     )}>
                                         {inst.status === "paid" ? "✓" :
-                                            inst.status === "overdue" ? "!" : "—"}
+                                            inst.status === "late" ? "!" : "—"}
                                     </div>
                                 </button>
                             )

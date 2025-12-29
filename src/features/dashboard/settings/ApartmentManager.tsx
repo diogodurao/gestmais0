@@ -164,6 +164,7 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                                         onClick={() => setDeleteTarget(apt)}
                                         className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
                                         title="Eliminar Fração"
+                                        data-testid={`delete-unit-button-${apt.id}`}
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
                                     </button>

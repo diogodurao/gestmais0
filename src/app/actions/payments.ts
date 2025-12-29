@@ -24,7 +24,6 @@ export async function getPaymentMap(buildingId: string, year: number): Promise<{
 
     // Check if user is manager or resident of this building
     if (session.user.role === 'manager') {
-        const { requireBuildingAccess } = await import("@/lib/auth-helpers")
         await requireBuildingAccess(buildingId)
     } else if (session.user.role === 'resident') {
         if (session.user.buildingId !== buildingId) {

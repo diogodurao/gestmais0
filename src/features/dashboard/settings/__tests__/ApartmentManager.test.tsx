@@ -50,7 +50,7 @@ describe('ApartmentManager Delete Confirmation', () => {
         const deleteBtn = screen.getByTestId('delete-unit-button-1')
         fireEvent.click(deleteBtn)
 
-        expect(screen.getByText('Apagar Fração')).toBeDefined()
+        expect(screen.getByText('Eliminar Fração')).toBeDefined()
     })
 
     it('should call deleteApartment when confirm is clicked', async () => {
@@ -59,7 +59,7 @@ describe('ApartmentManager Delete Confirmation', () => {
         const deleteBtn = screen.getByTestId('delete-unit-button-1')
         fireEvent.click(deleteBtn)
 
-        const confirmBtn = screen.getByText('Guardar')
+        const confirmBtn = screen.getByText('Confirmar')
         fireEvent.click(confirmBtn)
 
         expect(buildingActions.deleteApartment).toHaveBeenCalledWith(1)

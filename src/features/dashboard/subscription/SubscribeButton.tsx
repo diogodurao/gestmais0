@@ -24,7 +24,7 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
                 }
             } catch (error) {
                 console.error("Subscription failed:", error)
-                alert("Failed to start checkout. Please try again.")
+                alert("Falha ao realizar pagamento. Por favor tente novamente.")
             }
         })
     }
@@ -87,7 +87,7 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
                 <div className="flex-1">
                     <p className="text-[11px] font-bold text-blue-900 uppercase">A Aguardar Sincronização</p>
                     <p className="text-[10px] text-blue-700/70 mb-2 uppercase tracking-tight">
-                        If payment is complete but state is unchanged, trigger manual synchronization.
+                        Se o pagamento foi concluído mas o estado não alterou, force a sincronização.
                     </p>
                     <Button
                         size="xs"

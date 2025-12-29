@@ -1,6 +1,6 @@
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
 
-export type CellStatus = "paid" | "pending" | "overdue" | "partial"
+export type CellStatus = "paid" | "pending" | "late" | "partial"
 export type ToolMode = "markPaid" | "markPending" | "toggle" | null
 
 export interface ProjectSummary {

@@ -84,7 +84,8 @@ describe('Extraordinary Actions', () => {
 
     describe('getExtraordinaryProjects', () => {
         it('should return projects list', async () => {
-            const { requireBuildingAccess } = await import('@/lib/auth-helpers')
+            const { requireBuildingAccess, requireSession } = await import('@/lib/auth-helpers')
+            vi.mocked(requireSession).mockResolvedValue({ user: { role: 'manager' } } as any)
             vi.mocked(requireBuildingAccess).mockResolvedValue({} as any)
 
             const mockProjects = [{ id: 1, name: 'P1' }]

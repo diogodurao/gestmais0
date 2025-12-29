@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { formatCurrency, getMonthName } from "@/lib/extraordinary-calculations"
+import { formatCurrency, getMonthName } from "@/lib/format"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
 import { type ToolMode, type CellStatus } from "../types"
@@ -52,17 +52,17 @@ export function ApartmentRow({
                             "data-cell text-center transition-colors",
                             toolMode && !readOnly && "cursor-pointer",
                             inst.status === "paid" && "bg-emerald-50 text-emerald-700",
-                            inst.status === "overdue" && "bg-rose-50 text-rose-700 font-bold",
+                            inst.status === "late" && "bg-rose-50 text-rose-700 font-bold",
                             inst.status === "partial" && "bg-amber-50 text-amber-700",
                             inst.status === "pending" && "text-slate-400",
                             toolMode && !readOnly && inst.status === "pending" && "hover:bg-emerald-100",
                             toolMode && !readOnly && inst.status === "paid" && "hover:bg-rose-100",
-                            toolMode && !readOnly && inst.status === "overdue" && "hover:bg-emerald-100"
+                            toolMode && !readOnly && inst.status === "late" && "hover:bg-emerald-100"
                         )}
                     >
                         {inst.status === "paid" && <span className="font-mono text-[11px]">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
                         {inst.status === "partial" && <span className="font-mono text-[10px]">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
-                        {inst.status === "overdue" && <span className="text-[9px] font-bold uppercase">EM ATRASO</span>}
+                        {inst.status === "late" && <span className="text-[9px] font-bold uppercase">EM ATRASO</span>}
                         {inst.status === "pending" && "—"}
                     </td>
                 )
