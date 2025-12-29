@@ -137,6 +137,14 @@ export class StripeService {
                 stripeCustomerId = await createCustomer()
             }
 
+            if (!process.env.STRIPE_PRICE_ID) {
+                throw new Error("STRIPE_PRICE_ID is not configured in environment variables")
+            }
+
+            if (!process.env.NEXT_PUBLIC_APP_URL) {
+                throw new Error("NEXT_PUBLIC_APP_URL is not configured in environment variables")
+            }
+
             checkoutSession = await stripe.checkout.sessions.create({
                 customer: stripeCustomerId,
                 mode: 'subscription',

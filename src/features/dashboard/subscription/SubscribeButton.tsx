@@ -18,13 +18,15 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
     const handleSubscribe = () => {
         startTransition(async (): Promise<void> => {
             try {
-                const url = await createCheckoutSession(buildingId)
-                if (url) {
-                    window.location.href = url
+                const result = await createCheckoutSession(buildingId)
+                if (result.success && result.url) {
+                    window.location.href = result.url
+                } else {
+                    alert(result.error || "Falha ao realizar pagamento. Por favor tente novamente.")
                 }
             } catch (error) {
                 console.error("Subscription failed:", error)
-                alert("Falha ao realizar pagamento. Por favor tente novamente.")
+                alert("Ocorreu um erro inesperado. Por favor tente novamente.")
             }
         })
     }
