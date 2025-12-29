@@ -5,14 +5,14 @@ To fix the `ERR_CONNECTION_REFUSED` and ensure your database/Stripe integrations
 ### Authentication (`better-auth`)
 | Variable | Example Value | Description |
 | :--- | :--- | :--- |
-| `BETTER_AUTH_URL` | `https://your-domain.vercel.app` | The base URL of your deployed app. |
-| `NEXT_PUBLIC_BETTER_AUTH_URL` | `https://your-domain.vercel.app` | Required for the client-side auth client. |
+| `BETTER_AUTH_URL` | `https://gestmais.pt` | The base URL of your deployed app (MUST use https). |
+| `NEXT_PUBLIC_BETTER_AUTH_URL` | `https://gestmais.pt` | Required for the client-side auth client (MUST use https). |
 | `BETTER_AUTH_SECRET` | `your_long_random_secret` | A secret string for signing auth tokens. |
 
 ### Application
 | Variable | Example Value | Description |
 | :--- | :--- | :--- |
-| `NEXT_PUBLIC_APP_URL` | `https://your-domain.vercel.app` | Used for Stripe redirects and other relative-to-absolute URL conversions. |
+| `NEXT_PUBLIC_APP_URL` | `https://gestmais.pt` | Used for Stripe redirects (MUST use https). |
 
 ### Database (CloudSQL)
 | Variable | Value | Description |
