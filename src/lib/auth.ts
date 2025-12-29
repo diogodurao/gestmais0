@@ -4,6 +4,7 @@ import { db } from "@/db"; // Adjust import if needed
 import * as schema from "@/db/schema";
 
 export const auth = betterAuth({
+    secret: process.env.BETTER_AUTH_SECRET || "build_time_secret",
     database: drizzleAdapter(db, {
         provider: "pg",
         schema: schema,
