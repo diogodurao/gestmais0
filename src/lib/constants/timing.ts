@@ -1,0 +1,5 @@
+export const TIMING = {
+    SYNC_INITIAL_DELAY: 2500,
+    REDIRECT_DELAY: 1500,
+    HIGHLIGHT_DURATION: 3000,
+} as const

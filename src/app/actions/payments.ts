@@ -1,83 +1,101 @@
 "use server"
 
-import { db } from "@/db"
-import { payments, apartments, building } from "@/db/schema"
-import { eq, and } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
+import { paymentService, type PaymentData } from "@/services/payment.service"
+import { type PaymentStatus, ActionResult } from "@/lib/types"
+import { ROUTES } from "@/lib/routes"
 
-export type PaymentStatus = 'paid' | 'pending' | 'late'
+/**
+ * ============================================================================
+ * RESIDENT QUOTA PAYMENTS (Server Actions)
+ * ============================================================================
+ * These actions handle the storage/retrieval of which residents have paid their
+ * monthly quotas.
+ * 
+ * NOT RELATED TO STRIPE.
+ */
+import { requireBuildingAccess, requireApartmentAccess, requireSession } from "@/lib/auth-helpers"
+import { updatePaymentStatusSchema, bulkUpdatePaymentsSchema } from "@/lib/zod-schemas"
 
-export interface PaymentData {
-    apartmentId: number
-    unit: string
-    payments: Record<number, string> // month (1-12) -> status
-}
+export type { PaymentStatus, PaymentData }
 
-export async function getPaymentMap(buildingId: string, year: number) {
-    if (!buildingId) return []
+export async function getPaymentMap(buildingId: string, year: number): Promise<{ gridData: PaymentData[], monthlyQuota: number }> {
+    const session = await requireSession()
 
-    // 1. Get all apartments for the building
-    const buildingApartments = await db.select().from(apartments).where(eq(apartments.buildingId, buildingId)).orderBy(apartments.unit)
-
-    // 2. Get all payments for these apartments for the given year
-    // Note: Drizzle doesn't support 'IN' easily with composed queries sometimes, so we might loop or do a join
-    // Let's rely on a join if possible, or just fetch all payments for the building's apartments
-    // For MVP, fetching all payments for the building/year is fine
-
-    // Get raw payments
-    const rawPayments = await db.select({
-        apartmentId: payments.apartmentId,
-        month: payments.month,
-        status: payments.status,
-    })
-        .from(payments)
-        .innerJoin(apartments, eq(payments.apartmentId, apartments.id))
-        .where(and(
-            eq(apartments.buildingId, buildingId),
-            eq(payments.year, year)
-        ))
-
-    // 3. Transform into a Grid Friendly Structure
-    const gridData: PaymentData[] = buildingApartments.map(apt => {
-        const aptPayments: Record<number, string> = {}
-        // Initialize all months as 'pending' or 'unpaid' effectively (empty in our record)
-        // Or we can pre-fill. Let's send what we have.
-
-        rawPayments.filter(p => p.apartmentId === apt.id).forEach(p => {
-            aptPayments[p.month] = p.status
-        })
-
-        return {
-            apartmentId: apt.id,
-            unit: apt.unit,
-            payments: aptPayments
+    // Check if user is manager or resident of this building
+    if (session.user.role === 'manager') {
+        await requireBuildingAccess(buildingId)
+    } else if (session.user.role === 'resident') {
+        if (session.user.buildingId !== buildingId) {
+            throw new Error("Unauthorized: You are not a resident of this building")
         }
-    })
+    } else {
+        throw new Error("Unauthorized")
+    }
 
-    return gridData
+    return await paymentService.getPaymentMap(buildingId, year)
 }
 
-export async function updatePaymentStatus(apartmentId: number, month: number, year: number, status: PaymentStatus, amount: number = 0) {
-    // Check if exists
-    const existing = await db.select().from(payments).where(and(
-        eq(payments.apartmentId, apartmentId),
-        eq(payments.month, month),
-        eq(payments.year, year)
-    )).limit(1)
+export async function updatePaymentStatus(
+    apartmentId: number,
+    month: number,
+    year: number,
+    status: PaymentStatus,
+    amount?: number
+): Promise<ActionResult<undefined>> {
+    await requireApartmentAccess(apartmentId)
 
-    if (existing.length > 0) {
-        await db.update(payments)
-            .set({ status, amount, updatedAt: new Date() })
-            .where(eq(payments.id, existing[0].id))
-    } else {
-        await db.insert(payments).values({
+    try {
+        // Validate inputs
+        const validated = updatePaymentStatusSchema.safeParse({
             apartmentId,
             month,
             year,
             status,
-            amount: amount, // For MVP we default to 0 or manual input
+            amount
         })
-    }
 
-    revalidatePath("/dashboard/payments")
+        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+
+        await paymentService.updatePaymentStatus(apartmentId, month, year, status, amount)
+        revalidatePath(ROUTES.DASHBOARD.PAYMENTS)
+        return { success: true, data: undefined }
+    } catch {
+        return { success: false, error: "Failed to update payment status" }
+    }
+}
+
+export async function bulkUpdatePayments(
+    apartmentId: number,
+    year: number,
+    startMonth: number,
+    endMonth: number,
+    status: PaymentStatus
+): Promise<ActionResult<boolean>> {
+    await requireApartmentAccess(apartmentId)
+
+    try {
+        const validated = bulkUpdatePaymentsSchema.safeParse({
+            apartmentId,
+            year,
+            startMonth,
+            endMonth,
+            status
+        })
+
+        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+
+        const monthsToUpdate = Array.from({ length: endMonth - startMonth + 1 }, (_, i) => startMonth + i)
+
+        if (monthsToUpdate.length === 0) return { success: true, data: true }
+
+        for (const month of monthsToUpdate) {
+            await paymentService.updatePaymentStatus(apartmentId, month, year, status)
+        }
+
+        revalidatePath(ROUTES.DASHBOARD.PAYMENTS)
+        return { success: true, data: true }
+    } catch {
+        return { success: false, error: "Failed to bulk update payments" }
+    }
 }

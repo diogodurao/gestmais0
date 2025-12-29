@@ -1,41 +1,44 @@
 import { ButtonHTMLAttributes, forwardRef } from "react"
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs))
-}
+import { Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: "primary" | "secondary" | "outline" | "ghost"
-    size?: "sm" | "md" | "lg"
+    variant?: "primary" | "secondary" | "outline" | "ghost" | "danger"
+    size?: "xs" | "sm" | "md" | "lg"
     fullWidth?: boolean
+    isLoading?: boolean
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = "primary", size = "md", fullWidth, ...props }, ref) => {
+    ({ className, variant = "primary", size = "md", fullWidth, isLoading, children, disabled, ...props }, ref) => {
         return (
             <button
                 ref={ref}
+                disabled={disabled || isLoading}
                 className={cn(
-                    "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+                    "inline-flex items-center justify-center rounded-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:opacity-50 disabled:pointer-events-none uppercase tracking-tight gap-2",
                     {
-                        "bg-black text-white hover:bg-gray-800": variant === "primary",
-                        "bg-gray-100 text-gray-900 hover:bg-gray-200": variant === "secondary",
-                        "border border-gray-300 bg-transparent hover:bg-gray-50": variant === "outline",
-                        "hover:bg-gray-100": variant === "ghost",
-                        "h-8 px-3 text-sm": size === "sm",
-                        "h-10 px-4 py-2": size === "md",
-                        "h-12 px-6 text-lg": size === "lg",
+                        "bg-slate-900 text-white hover:bg-slate-800 border border-slate-900": variant === "primary",
+                        "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200": variant === "secondary",
+                        "border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 shadow-sm": variant === "outline",
+                        "hover:bg-slate-100 text-slate-600": variant === "ghost",
+                        "bg-rose-600 text-white hover:bg-rose-700 border border-rose-600": variant === "danger",
+                        "h-6 px-2 text-[10px]": size === "xs",
+                        "h-7 px-3 text-[11px]": size === "sm",
+                        "h-9 px-4 text-[13px]": size === "md",
+                        "h-11 px-6 text-[15px]": size === "lg",
                         "w-full": fullWidth,
                     },
                     className
                 )}
                 {...props}
-            />
+            >
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {children}
+            </button>
         )
     }
 )
 Button.displayName = "Button"
 
-export { Button, cn }
+export { Button }

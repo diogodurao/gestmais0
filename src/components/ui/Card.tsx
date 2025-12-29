@@ -1,12 +1,12 @@
 import { HTMLAttributes, forwardRef } from "react"
-import { cn } from "./Button"
+import { cn } from "@/lib/utils"
 
 const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
     ({ className, ...props }, ref) => {
         return (
             <div
                 ref={ref}
-                className={cn("bg-white rounded-lg border border-gray-100 shadow-sm", className)}
+                className={cn("bg-white tech-border shadow-sm overflow-hidden", className)}
                 {...props}
             />
         )
@@ -19,7 +19,7 @@ const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
         return (
             <div
                 ref={ref}
-                className={cn("p-6 pb-4 border-b border-gray-50", className)}
+                className={cn("bg-slate-50 border-b border-slate-300 px-3 py-2 flex items-center justify-between", className)}
                 {...props}
             />
         )
@@ -27,11 +27,37 @@ const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 )
 CardHeader.displayName = "CardHeader"
 
+const CardTitle = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+    ({ className, ...props }, ref) => {
+        return (
+            <div
+                ref={ref}
+                className={cn("text-body font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2", className)}
+                {...props}
+            />
+        )
+    }
+)
+CardTitle.displayName = "CardTitle"
+
 const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
     ({ className, ...props }, ref) => {
-        return <div ref={ref} className={cn("p-6 pt-4", className)} {...props} />
+        return <div ref={ref} className={cn("p-4", className)} {...props} />
     }
 )
 CardContent.displayName = "CardContent"
 
-export { Card, CardHeader, CardContent }
+const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+    ({ className, ...props }, ref) => {
+        return (
+            <div
+                ref={ref}
+                className={cn("bg-slate-50 border-t border-slate-300 px-3 py-1.5 text-body text-slate-500", className)}
+                {...props}
+            />
+        )
+    }
+)
+CardFooter.displayName = "CardFooter"
+
+export { Card, CardHeader, CardTitle, CardContent, CardFooter }

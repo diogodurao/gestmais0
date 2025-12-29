@@ -5,6 +5,7 @@ import { authClient } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
+import { ROUTES } from "@/lib/routes"
 
 export function LoginForm() {
     const [loading, setLoading] = useState(false)
@@ -16,7 +17,7 @@ export function LoginForm() {
         password: ""
     })
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault()
         setLoading(true)
         setError("")
@@ -25,27 +26,22 @@ export function LoginForm() {
             await authClient.signIn.email({
                 email: formData.email,
                 password: formData.password,
-                callbackURL: "/dashboard"
+                callbackURL: ROUTES.DASHBOARD.HOME
             }, {
                 onRequest: () => {
-                    console.log("LOGIN REQUEST STARTED")
                     setLoading(true)
                 },
                 onSuccess: () => {
-                    console.log("LOGIN SUCCESS - REDIRECTING TO /dashboard")
                     router.push("/dashboard")
                 },
                 onError: (ctx) => {
-                    console.error("LOGIN ERROR", ctx)
-                    setError(ctx.error.message || "Failed to sign in")
+                    setError(ctx.error.message || "Credenciais inválidas")
                     setLoading(false)
                 }
             })
         } catch (err) {
-            setError("An unexpected error occurred")
-            setLoading(false) // Ensure loading is reset even for unexpected errors outside authClient callbacks
-        } finally {
-            // setLoading(false) // Moved to onError callback or handled by onSuccess navigation
+            setError("Ocorreu um erro")
+            setLoading(false)
         }
     }
 
@@ -54,13 +50,13 @@ export function LoginForm() {
             <Input
                 label="Email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="tiago123@gmail.com"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             />
             <Input
-                label="Password"
+                label="Palavra-passe"
                 type="password"
                 placeholder="••••••••"
                 required
@@ -71,7 +67,7 @@ export function LoginForm() {
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <Button type="submit" fullWidth disabled={loading}>
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? "A entrar..." : "Entrar"}
             </Button>
         </form>
     )

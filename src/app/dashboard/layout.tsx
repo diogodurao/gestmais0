@@ -1,6 +1,10 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
+import { DashboardHeader } from "@/components/layout/DashboardHeader"
+import { SidebarProvider } from "@/components/layout/SidebarProvider"
+import { getDashboardContext } from "@/app/actions/dashboard"
+import { DashboardProvider } from "@/contexts/DashboardContext"
 
 export default async function DashboardLayout({
     children,
@@ -11,17 +15,27 @@ export default async function DashboardLayout({
         headers: await headers()
     })
 
-    return (
-        <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar */}
-            <Sidebar userRole={session?.user.role || "resident"} />
+    // Fetch ONCE, pass to context
+    const initialData = await getDashboardContext(session)
 
-            {/* Main Content */}
-            <main className="flex-1 min-w-0"> {/* min-w-0 prevents flex overflow issues */}
-                <div className="p-4 lg:p-8 max-w-7xl mx-auto mt-14 lg:mt-0">
-                    {children}
+    return (
+        <DashboardProvider initialData={initialData}>
+            <SidebarProvider>
+                <div className="h-screen bg-slate-100 flex flex-col overflow-hidden">
+                    {/* Header - now reads from context */}
+                    <DashboardHeader />
+
+                    <div className="flex flex-1 overflow-hidden">
+                        {/* Sidebar - now reads from context */}
+                        <Sidebar />
+
+                        {/* Main Content */}
+                        <main className="flex-1 overflow-y-auto bg-slate-100 border-l border-slate-300 p-4 lg:p-6 flex flex-col">
+                            {children}
+                        </main>
+                    </div>
                 </div>
-            </main>
-        </div>
+            </SidebarProvider>
+        </DashboardProvider>
     );
 }

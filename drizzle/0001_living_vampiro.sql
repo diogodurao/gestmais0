@@ -1,0 +1,1 @@
+ALTER TABLE "apartments" ALTER COLUMN "permillage" SET DATA TYPE real;

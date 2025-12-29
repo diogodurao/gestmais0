@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GestMais - Core Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* SPREADSHEET THEME CORE */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 13px; 
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        /* 1. Technical Borders */
+        .tech-border { border: 1px solid #cbd5e1; }
+        .tech-border-b { border-bottom: 1px solid #cbd5e1; }
+        .tech-border-r { border-right: 1px solid #cbd5e1; }
+        
+        /* 2. Header Cells (The "Gray Headers") */
+        .header-cell {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            padding: 6px 12px;
+            border-bottom: 1px solid #cbd5e1;
+            border-right: 1px solid #cbd5e1;
+            user-select: none;
+        }
+
+        /* 3. Data Cells */
+        .data-cell {
+            background-color: white;
+            padding: 6px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* 4. Value Display (Monospace for codes/numbers) */
+        .mono-val { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+        /* 5. Status Indicators */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+        }
+        .status-active { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+        .status-alert { background: #fff1f2; color: #be123c; border-color: #fecdd3; }
+        .status-pending { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <header class="h-10 bg-slate-50 tech-border-b flex items-center px-3 justify-between flex-shrink-0">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 font-bold text-slate-800 tracking-tight">
+                <div class="w-5 h-5 bg-slate-800 text-white rounded-sm flex items-center justify-center text-[10px]">G</div>
+                GestMais
+            </div>
+            
+            <div class="h-5 w-px bg-slate-300"></div>
+            <button class="flex items-center gap-2 px-2 py-1 hover:bg-slate-200 rounded-sm text-xs font-medium text-slate-700">
+                <i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-500"></i>
+                Ocean View Apts
+                <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400"></i>
+            </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="text-right leading-3">
+                <div class="text-xs font-bold text-slate-700">Diogo Durão</div>
+                <div class="text-[10px] text-slate-500 uppercase">Manager Access</div>
+            </div>
+            <div class="w-7 h-7 bg-blue-600 text-white rounded-sm flex items-center justify-center text-xs font-bold shadow-sm">DD</div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <aside class="w-52 bg-slate-50 tech-border-r flex flex-col py-3">
+            <div class="px-4 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Workspace</div>
+            
+            <a href="#" class="flex items-center px-4 py-1.5 bg-white border-l-[3px] border-blue-600 text-slate-900 font-medium shadow-sm">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 mr-3 text-blue-600"></i>
+                Dashboard
+            </a>
+            
+            <a href="#" class="flex items-center px-4 py-1.5 text-slate-600 border-l-[3px] border-transparent hover:bg-white hover:border-slate-300 transition-all">
+                <i data-lucide="credit-card" class="w-4 h-4 mr-3 text-slate-400"></i>
+                Payment Map
+            </a>
+            
+            <a href="#" class="flex items-center px-4 py-1.5 text-slate-600 border-l-[3px] border-transparent hover:bg-white hover:border-slate-300 transition-all">
+                <i data-lucide="users" class="w-4 h-4 mr-3 text-slate-400"></i>
+                Residents
+            </a>
+
+            <div class="mt-6 px-4 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">System</div>
+            
+            <a href="#" class="flex items-center px-4 py-1.5 text-slate-600 border-l-[3px] border-transparent hover:bg-white hover:border-slate-300 transition-all">
+                <i data-lucide="settings" class="w-4 h-4 mr-3 text-slate-400"></i>
+                Configuration
+            </a>
+        </aside>
+
+        <main class="flex-1 bg-slate-200 p-[1px] flex flex-col min-w-0 overflow-y-auto">
+            
+            <div class="bg-white tech-border mb-[1px] h-8 flex items-center px-2 text-xs gap-2">
+                <div class="font-mono text-slate-400 w-6 text-center tech-border-r">fx</div>
+                <div class="font-mono text-slate-600">Summary_View / Q1_2024</div>
+            </div>
+
+            <div class="flex-1 p-6 space-y-6 overflow-y-auto bg-slate-100">
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-0 bg-white tech-border shadow-sm">
+                    
+                    <div class="col-span-1 border-r border-slate-200 p-0">
+                        <div class="header-cell border-t-0 border-l-0 w-full flex justify-between">
+                            BUILDING_INVITE_CODE
+                            <i data-lucide="key" class="w-3 h-3 text-slate-400"></i>
+                        </div>
+                        <div class="p-6 flex flex-col items-center justify-center bg-blue-50/30 h-32">
+                            <div class="text-3xl font-mono font-bold text-blue-700 tracking-widest mb-2 select-all">N9X-22B</div>
+                            <button class="flex items-center gap-1 text-[10px] uppercase font-bold text-blue-600 hover:bg-blue-100 px-2 py-1 rounded-sm transition-colors">
+                                <i data-lucide="copy" class="w-3 h-3"></i> Copy to Clipboard
+                            </button>
+                        </div>
+                        <div class="bg-slate-50 p-2 text-[10px] text-slate-500 text-center border-t border-slate-200">
+                            Share this code with new residents
+                        </div>
+                    </div>
+
+                    <div class="col-span-1 border-r border-slate-200 p-0">
+                        <div class="header-cell border-t-0 w-full flex justify-between">
+                            SYSTEM_STATUS
+                            <i data-lucide="activity" class="w-3 h-3 text-slate-400"></i>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                <span class="text-xs text-slate-500 font-medium">Subscription</span>
+                                <span class="status-badge status-active">Active</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                <span class="text-xs text-slate-500 font-medium">Sync State</span>
+                                <div class="flex items-center gap-1 text-xs text-emerald-700">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                    Live
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-slate-500 font-medium">Next Billing</span>
+                                <span class="text-xs font-mono">2024-04-01</span>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-2 text-[10px] text-center border-t border-slate-200 text-blue-600 font-bold cursor-pointer hover:bg-slate-100">
+                            MANAGE SUBSCRIPTION
+                        </div>
+                    </div>
+
+                    <div class="col-span-1 p-0">
+                        <div class="header-cell border-t-0 border-r-0 w-full flex justify-between">
+                            OCCUPANCY_METRICS
+                            <i data-lucide="bar-chart-3" class="w-3 h-3 text-slate-400"></i>
+                        </div>
+                        <div class="p-6 grid grid-cols-2 gap-4 h-32">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-slate-700">24</div>
+                                <div class="text-[10px] text-slate-400 uppercase font-bold mt-1">Total Units</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-amber-600">3</div>
+                                <div class="text-[10px] text-amber-600/70 uppercase font-bold mt-1">Unclaimed</div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-2 text-[10px] text-slate-500 text-center border-t border-slate-200">
+                            88% Occupancy Rate
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white tech-border shadow-sm">
+                    <div class="bg-slate-50 p-2 tech-border-b flex justify-between items-center">
+                        <div class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                            <i data-lucide="users" class="w-3.5 h-3.5 text-slate-500"></i>
+                            Recent Residents
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="px-2 py-1 bg-white border border-slate-300 rounded-sm text-[10px] font-medium hover:bg-slate-50">Filter</button>
+                            <button class="px-2 py-1 bg-slate-800 text-white rounded-sm text-[10px] font-medium hover:bg-slate-700">Add Unit</button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="header-cell w-16 text-center">Unit</th>
+                                    <th class="header-cell">Resident Name</th>
+                                    <th class="header-cell w-32">Email</th>
+                                    <th class="header-cell w-24 text-center">Status</th>
+                                    <th class="header-cell w-24 text-right border-r-0">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-xs">
+                                <tr>
+                                    <td class="data-cell justify-center font-bold bg-slate-50">1A</td>
+                                    <td class="data-cell font-medium">Maria Silva</td>
+                                    <td class="data-cell text-slate-500">maria@example.com</td>
+                                    <td class="data-cell justify-center"><span class="status-badge status-active">Active</span></td>
+                                    <td class="data-cell justify-end border-r-0">
+                                        <button class="text-slate-400 hover:text-blue-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="data-cell justify-center font-bold bg-slate-50">1B</td>
+                                    <td class="data-cell font-medium">João Santos</td>
+                                    <td class="data-cell text-slate-500">joao@example.com</td>
+                                    <td class="data-cell justify-center"><span class="status-badge status-active">Active</span></td>
+                                    <td class="data-cell justify-end border-r-0">
+                                        <button class="text-slate-400 hover:text-blue-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="data-cell justify-center font-bold bg-amber-50 text-amber-900">2A</td>
+                                    <td class="data-cell text-slate-400 italic">-- Empty --</td>
+                                    <td class="data-cell text-slate-400">-</td>
+                                    <td class="data-cell justify-center"><span class="status-badge status-pending">Unclaimed</span></td>
+                                    <td class="data-cell justify-end border-r-0">
+                                        <button class="text-blue-600 font-bold hover:underline text-[10px]">INVITE</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-2 bg-slate-50 border-t border-slate-200 text-center">
+                        <a href="#" class="text-[11px] text-slate-500 hover:text-slate-800 font-medium">View All Residents →</a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="p-4 bg-white tech-border shadow-sm flex items-center gap-3 hover:bg-slate-50 group text-left transition-colors">
+                        <div class="p-2 bg-blue-50 border border-blue-100 rounded-sm group-hover:bg-blue-100 transition-colors">
+                            <i data-lucide="file-plus" class="w-5 h-5 text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-slate-700 text-xs">Upload Document</div>
+                            <div class="text-[10px] text-slate-500">Meeting minutes or regulations</div>
+                        </div>
+                    </button>
+
+                    <button class="p-4 bg-white tech-border shadow-sm flex items-center gap-3 hover:bg-slate-50 group text-left transition-colors">
+                        <div class="p-2 bg-emerald-50 border border-emerald-100 rounded-sm group-hover:bg-emerald-100 transition-colors">
+                            <i data-lucide="wallet" class="w-5 h-5 text-emerald-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-slate-700 text-xs">Record Expense</div>
+                            <div class="text-[10px] text-slate-500">Log new building maintenance cost</div>
+                        </div>
+                    </button>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

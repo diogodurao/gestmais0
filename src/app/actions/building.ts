@@ -1,167 +1,213 @@
 "use server"
+import { ROUTES } from "@/lib/routes"
+import { buildingService } from "@/services/building.service"
+import { requireSession, requireBuildingAccess, requireManagerSession, requireResidentSession } from "@/lib/auth-helpers"
+import { revalidatePath } from "next/cache"
+import {
+    createBuildingSchema,
+    updateBuildingSchema,
+    createApartmentSchema,
+    updateApartmentSchema
+} from "@/lib/zod-schemas"
+import { ActionResult } from "@/lib/types"
 
-import { db } from "@/db"
-import { building, user, apartments, payments } from "@/db/schema"
-import { eq, and } from "drizzle-orm"
-import { nanoid } from "nanoid"
+// Auth check should ideally be here if not passed in, but userId implies trusted context or already extracted
+export async function getOrCreateManagerBuilding() {
+    const session = await requireManagerSession()
+    return await buildingService.getOrCreateManagerBuilding(session.user.id)
+}
 
-export async function getOrCreateManagerBuilding(userId: string, userNif: string) {
-    // 1. Check if user already has a building
-    const existingUser = await db.select().from(user).where(eq(user.id, userId)).limit(1)
-    if (!existingUser.length) throw new Error("User not found")
+export async function createNewBuilding(name: string, nif: string): Promise<ActionResult<{ id: string; name: string }>> {
+    const session = await requireManagerSession()
+    try {
+        const validated = createBuildingSchema.safeParse({ name, nif })
+        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
 
-    const currentUser = existingUser[0]
-
-    if (currentUser.buildingId) {
-        // Return existing building
-        const existingBuilding = await db.select().from(building).where(eq(building.id, currentUser.buildingId)).limit(1)
-        return existingBuilding[0]
+        const result = await buildingService.createNewBuilding(session.user.id, validated.data.name, validated.data.nif || "N/A")
+        return { success: true, data: result }
+    } catch (error) {
+        return { success: false, error: "Failed to create building" }
     }
-
-    // 2. Create new building
-    // Generate a simple short code for invites
-    // User requested: no hyphens, no capslock. So we use alphanumeric mixed case.
-    const { customAlphabet } = await import("nanoid")
-    const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
-    const code = nanoidCode()
-
-    // We'll use the user's NIF as the building NIF by default for MVP simplification
-    // or we could ask for it. But requirements say "generate buildingid".
-
-    const [newBuilding] = await db.insert(building).values({
-        id: crypto.randomUUID(),
-        name: "My Condominium", // Default name, editable later
-        nif: userNif || "N/A",
-        code: code,
-        managerId: userId,
-    }).returning()
-
-    // 3. Link user to building
-    await db.update(user)
-        .set({ buildingId: newBuilding.id })
-        .where(eq(user.id, userId))
-
-    return newBuilding
 }
 
-export async function joinBuilding(userId: string, code: string) {
-    if (!code) throw new Error("Code is required")
-
-    // Find building by code
-    const foundBuilding = await db.select().from(building).where(eq(building.code, code)).limit(1)
-
-    if (!foundBuilding.length) {
-        throw new Error("Invalid building code")
-    }
-
-    const targetBuilding = foundBuilding[0]
-
-    // Link user
-    await db.update(user)
-        .set({ buildingId: targetBuilding.id })
-        .where(eq(user.id, userId))
-
-    return targetBuilding
+export async function getManagerBuildings() {
+    const session = await requireManagerSession()
+    return await buildingService.getManagerBuildings(session.user.id)
 }
 
-export async function getResidentBuildingDetails(buildingId: string) {
-    const result = await db.select({
-        building: building,
-        manager: {
-            name: user.name,
-            email: user.email,
-        }
-    })
-        .from(building)
-        .innerJoin(user, eq(building.managerId, user.id))
-        .where(eq(building.id, buildingId))
-        .limit(1)
-
-    return result[0] || null
-}
-
-export async function createApartment(buildingId: string, unit: string) {
-    if (!buildingId || !unit) throw new Error("Missing fields")
-
-    // Check if exists
-    const existing = await db.select().from(apartments).where(and(
-        eq(apartments.buildingId, buildingId),
-        eq(apartments.unit, unit)
-    )).limit(1)
-
-    if (existing.length) throw new Error("Apartment already exists")
-
-    const [newApt] = await db.insert(apartments).values({
-        buildingId,
-        unit,
-    }).returning()
-
-    return newApt
-}
-
-export async function deleteApartment(apartmentId: number) {
-    // Delete related payments first (cascade usually handles this if defined, but explicit is safer for MVP)
-    await db.delete(payments).where(eq(payments.apartmentId, apartmentId))
-
-    // Delete apartment
-    await db.delete(apartments).where(eq(apartments.id, apartmentId))
-
+export async function switchActiveBuilding(buildingId: string) {
+    const { session } = await requireBuildingAccess(buildingId)
+    await buildingService.switchActiveBuilding(session.user.id, buildingId)
     return true
 }
 
-import { headers } from "next/headers"
-import { auth } from "@/lib/auth"
+// ==========================================
+// RESIDENT ACTIONS
+// ==========================================
 
-export async function claimApartment(buildingId: string, unit: string) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    })
-
-    if (!session) throw new Error("Unauthorized")
-
-    const userId = session.user.id
-
-    // Check if apartment exists
-    const existing = await db.select().from(apartments).where(and(
-        eq(apartments.buildingId, buildingId),
-        eq(apartments.unit, unit)
-    )).limit(1)
-
-    if (existing.length) {
-        // Update existing
-        await db.update(apartments)
-            .set({ residentId: userId })
-            .where(eq(apartments.id, existing[0].id))
-        return existing[0]
-    } else {
-        // Create new
-        const [newApt] = await db.insert(apartments).values({
-            buildingId,
-            unit,
-            residentId: userId,
-        }).returning()
-        return newApt
+export async function joinBuilding(code: string): Promise<ActionResult<{ id: string; name: string }>> {
+    const session = await requireResidentSession()
+    try {
+        const result = await buildingService.joinBuilding(session.user.id, code)
+        return { success: true, data: result }
+    } catch (error) {
+        // console.error("Error joining building:", error)
+        const msg = error instanceof Error ? error.message : "Failed to join building"
+        return { success: false, error: msg }
     }
 }
 
-export async function getResidentApartment(userId: string) {
-    const result = await db.select().from(apartments).where(eq(apartments.residentId, userId)).limit(1)
-    return result[0] || null
+export async function getResidentBuildingDetails(buildingId: string) {
+    await requireResidentSession() // Ensure authenticated as resident
+    return await buildingService.getResidentBuildingDetails(buildingId)
 }
 
-export async function getBuildingResidents(buildingId: string) {
-    // Get all users linked to this building with role resident
-    // Also join with apartment to show their unit if they have one
-    const result = await db.select({
-        user: user,
-        apartment: apartments
-    })
-        .from(user)
-        .leftJoin(apartments, eq(apartments.residentId, user.id))
-        .where(and(
-            eq(user.buildingId, buildingId),
-            eq(user.role, 'resident')
-        ))
+export async function claimApartment(apartmentId: number): Promise<ActionResult<{ id: number; unit: string }>> {
+    const session = await requireSession()
+    try {
+        const result = await buildingService.claimApartment(session.user.id, apartmentId)
+        revalidatePath(ROUTES.DASHBOARD.HOME)
+        return { success: true, data: result }
+    } catch (error) {
+        // console.error("Error claiming apartment:", error)
+        const msg = error instanceof Error ? error.message : "Failed to claim apartment"
+        return { success: false, error: msg }
+    }
+}
 
-    return result
+export async function getResidentApartment() {
+    const session = await requireResidentSession()
+    return await buildingService.getResidentApartment(session.user.id)
+}
+
+export async function getUnclaimedApartments(buildingId: string) {
+    await requireSession() // Any authenticated user can see unclaimed apartments (needed for claiming)
+    return await buildingService.getUnclaimedApartments(buildingId)
+}
+
+// ==========================================
+// BUILDING INFO ACTIONS
+// ==========================================
+
+export async function getBuildingResidents(buildingId: string) {
+    await requireBuildingAccess(buildingId)
+    return await buildingService.getBuildingResidents(buildingId)
+}
+
+export async function getBuilding(buildingId: string) {
+    await requireBuildingAccess(buildingId)
+    return await buildingService.getBuilding(buildingId)
+}
+
+export async function getBuildingApartments(buildingId: string) {
+    await requireBuildingAccess(buildingId)
+    return await buildingService.getBuildingApartments(buildingId)
+}
+
+export async function updateBuilding(
+    buildingId: string,
+    data: {
+        name?: string
+        nif?: string
+        iban?: string | null
+        city?: string | null
+        street?: string | null
+        number?: string | null
+        quotaMode?: string
+        monthlyQuota?: number
+        totalApartments?: number
+    }
+): Promise<ActionResult<{ id: string }>> {
+    await requireBuildingAccess(buildingId)
+    try {
+        const validated = updateBuildingSchema.safeParse(data)
+        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+
+        const updated = await buildingService.updateBuilding(buildingId, validated.data)
+        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+        return { success: true, data: updated }
+    } catch (error) {
+        return { success: false, error: "Failed to update building" }
+    }
+}
+
+export async function completeBuildingSetup(buildingId: string): Promise<ActionResult<any>> {
+    await requireBuildingAccess(buildingId)
+    try {
+        const updated = await buildingService.completeBuildingSetup(buildingId)
+        revalidatePath(ROUTES.DASHBOARD.HOME)
+        return { success: true, data: updated }
+    } catch (error) {
+        return { success: false, error: "Failed to complete setup" }
+    }
+}
+
+// ==========================================
+// APARTMENT CRUD ACTIONS
+// ==========================================
+
+export async function createApartment(
+    buildingId: string,
+    data: { unit: string; permillage?: number | null }
+): Promise<ActionResult<{ id: number; unit: string }>> {
+    await requireBuildingAccess(buildingId)
+    try {
+        const validated = createApartmentSchema.safeParse(data)
+        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+
+        const result = await buildingService.createApartment(buildingId, validated.data)
+        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+        return { success: true, data: result }
+    } catch (error) {
+        return { success: false, error: "Failed to create apartment" }
+    }
+}
+
+export async function updateApartment(
+    apartmentId: number,
+    data: { unit?: string; permillage?: number | null }
+): Promise<ActionResult<{ id: number; unit: string }>> {
+    // Indirect check via requireApartmentAccess would be better, but for now:
+    // We don't have buildingId here easily without fetching.
+    // TODO: Ideally refactor service to check auth, or fetch apartment -> building here.
+    // Optimization: Assume buildingService handles it? No, service is unprotected.
+    // Let's use our new helper.
+    const { requireApartmentAccess } = await import("@/lib/auth-helpers")
+    await requireApartmentAccess(apartmentId)
+
+    try {
+        const validated = updateApartmentSchema.safeParse(data)
+        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+
+        const result = await buildingService.updateApartment(apartmentId, validated.data)
+        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+        return { success: true, data: result }
+    } catch (error) {
+        return { success: false, error: "Failed to update apartment" }
+    }
+}
+
+export async function deleteApartment(apartmentId: number): Promise<ActionResult<void>> {
+    const { requireApartmentAccess } = await import("@/lib/auth-helpers")
+    await requireApartmentAccess(apartmentId)
+    try {
+        await buildingService.deleteApartment(apartmentId)
+        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+        revalidatePath(ROUTES.DASHBOARD.PAYMENTS)
+        return { success: true, data: undefined }
+    } catch (error) {
+        const msg = error instanceof Error ? error.message : "Failed to delete apartment"
+        return { success: false, error: msg }
+    }
+}
+
+export async function bulkDeleteApartments(apartmentIds: number[]): Promise<ActionResult<boolean>> {
+    await requireSession() // Simple auth check
+    try {
+        await buildingService.bulkDeleteApartments(apartmentIds)
+        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+        return { success: true, data: true }
+    } catch (error) {
+        return { success: false, error: "Failed to delete apartments" }
+    }
 }

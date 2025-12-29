@@ -8,10 +8,7 @@ export const auth = betterAuth({
         provider: "pg",
         schema: schema,
     }),
-    trustedOrigins: [
-        "http://localhost:3000",
-        "http://172.20.10.3:3000" // Mobile testing
-    ],
+    // trustedOrigins removed - rely on BETTER_AUTH_URL env var
     emailAndPassword: {
         enabled: true,
     },
@@ -19,13 +16,25 @@ export const auth = betterAuth({
         additionalFields: {
             role: {
                 type: "string",
-                required: false, // Optional initially, but we'll enforce in UI
+                required: false,
             },
             nif: {
                 type: "string",
                 required: false,
             },
+            iban: {
+                type: "string",
+                required: false,
+            },
             buildingId: {
+                type: "string",
+                required: false,
+            },
+            activeBuildingId: {
+                type: "string",
+                required: false,
+            },
+            stripeCustomerId: {
                 type: "string",
                 required: false,
             }
