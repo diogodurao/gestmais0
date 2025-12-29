@@ -1,9 +1,9 @@
-
 import { db } from "@/db"
 import { building, user } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { stripe } from "@/lib/stripe"
 import { revalidatePath } from "next/cache"
+import type Stripe from 'stripe'
 
 export class StripeService {
     async syncSubscriptionStatus(buildingId: string, userId: string, stripeCustomerId: string | null) {
@@ -132,21 +132,20 @@ export class StripeService {
             return customer.id
         }
 
-        try {
-            if (!stripeCustomerId) {
-                stripeCustomerId = await createCustomer()
+        const validateEnv = () => {
+            if (!process.env.STRIPE_PRICE_ID || process.env.STRIPE_PRICE_ID === "undefined") {
+                throw new Error("STRIPE_PRICE_ID is missing or invalid in environment variables")
             }
-
-            if (!process.env.STRIPE_PRICE_ID) {
-                throw new Error("STRIPE_PRICE_ID is not configured in environment variables")
+            if (!process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL === "undefined") {
+                throw new Error("NEXT_PUBLIC_APP_URL is missing or invalid in environment variables")
             }
+        }
 
-            if (!process.env.NEXT_PUBLIC_APP_URL) {
-                throw new Error("NEXT_PUBLIC_APP_URL is not configured in environment variables")
-            }
-
-            checkoutSession = await stripe.checkout.sessions.create({
-                customer: stripeCustomerId,
+        const createSession = async (cid: string) => {
+            validateEnv()
+            console.log(`[StripeService] Creating session for Customer: ${cid}, Price: ${process.env.STRIPE_PRICE_ID?.substring(0, 8)}...`)
+            return await stripe.checkout.sessions.create({
+                customer: cid,
                 mode: 'subscription',
                 payment_method_types: ['card'],
                 line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity }],
@@ -154,23 +153,29 @@ export class StripeService {
                 cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?canceled=true`,
                 metadata: { buildingId, userId },
             })
-        } catch (error) {
-            // Safely check for Stripe error code
-            const stripeError = error as { code?: string }
-            if (stripeError.code === 'resource_missing' && stripeCustomerId) {
+        }
+
+        try {
+            if (!stripeCustomerId) {
                 stripeCustomerId = await createCustomer()
-                checkoutSession = await stripe.checkout.sessions.create({
-                    customer: stripeCustomerId,
-                    mode: 'subscription',
-                    payment_method_types: ['card'],
-                    line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity }],
-                    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-                    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?canceled=true`,
-                    metadata: { buildingId, userId },
-                })
-            } else {
-                throw error
             }
+
+            try {
+                checkoutSession = await createSession(stripeCustomerId)
+            } catch (error) {
+                // Safely check for Stripe error code
+                const stripeError = error as { code?: string }
+                if (stripeError.code === 'resource_missing') {
+                    console.log("[StripeService] Customer not found in Stripe, creating new one...")
+                    stripeCustomerId = await createCustomer()
+                    checkoutSession = await createSession(stripeCustomerId)
+                } else {
+                    throw error
+                }
+            }
+        } catch (error) {
+            console.error("[createCheckoutSession] Fatal Error:", error)
+            throw error
         }
 
         if (!checkoutSession.url) throw new Error("Failed to create checkout session")
