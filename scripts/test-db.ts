@@ -1,17 +1,17 @@
-import { db } from '../src/db';
-import { sql } from 'drizzle-orm';
+
+import { db } from "../src/db";
+import { sql } from "drizzle-orm";
 
 async function main() {
-    try {
-        console.log('Testing database connection...');
-        const result = await db.execute(sql`SELECT NOW()`);
-        console.log('Connection successful!');
-        console.log('Server time:', result[0].now);
-        process.exit(0);
-    } catch (error) {
-        console.error('Connection failed:', error);
-        process.exit(1);
-    }
+  try {
+    console.log("Testing database connection...");
+    // Just a simple query to check connection
+    const result = await db.execute(sql`SELECT 1`);
+    console.log("Database connection successful:", result);
+  } catch (error) {
+    console.error("Database connection failed:", error);
+    process.exit(1);
+  }
 }
 
 main();

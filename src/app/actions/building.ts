@@ -19,23 +19,32 @@ export async function getOrCreateManagerBuilding(userId: string, userNif: string
             const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
             const code = nanoidCode()
 
-            const [newBuilding] = await db.insert(building).values({
-                id: crypto.randomUUID(),
-                name: "My Condominium",
-                nif: userNif || "N/A",
-                code,
-                managerId: userId,
-            }).returning()
+            // Transaction for atomicity
+            const newBuilding = await db.transaction(async (tx) => {
+                const [created] = await tx.insert(building).values({
+                    id: crypto.randomUUID(),
+                    name: "My Condominium",
+                    nif: userNif || "N/A",
+                    code,
+                    managerId: userId,
+                }).returning()
+
+                await tx.update(user)
+                    .set({ buildingId: created.id })
+                    .where(eq(user.id, userId))
+
+                return created
+            })
 
             activeBuilding = newBuilding
             buildings = [newBuilding]
         } else {
             activeBuilding = currentBuildings[0]
-        }
 
-        await db.update(user)
-            .set({ buildingId: activeBuilding.id })
-            .where(eq(user.id, userId))
+            await db.update(user)
+                .set({ buildingId: activeBuilding.id })
+                .where(eq(user.id, userId))
+        }
     }
 
     return { activeBuilding, buildings }
@@ -88,17 +97,21 @@ export async function createBuildingForManager(managerId: string, name: string, 
     const nanoidCode = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6)
     const code = nanoidCode()
 
-    const [newBuilding] = await db.insert(building).values({
-        id: crypto.randomUUID(),
-        name: name || "New Building",
-        nif: nif || "N/A",
-        code,
-        managerId,
-    }).returning()
+    const newBuilding = await db.transaction(async (tx) => {
+        const [created] = await tx.insert(building).values({
+            id: crypto.randomUUID(),
+            name: name || "New Building",
+            nif: nif || "N/A",
+            code,
+            managerId,
+        }).returning()
 
-    await db.update(user)
-        .set({ buildingId: newBuilding.id })
-        .where(eq(user.id, managerId))
+        await tx.update(user)
+            .set({ buildingId: created.id })
+            .where(eq(user.id, managerId))
+
+        return created
+    })
 
     return newBuilding
 }
@@ -139,11 +152,13 @@ export async function createApartment(buildingId: string, unit: string) {
 }
 
 export async function deleteApartment(apartmentId: number) {
-    // Delete related payments first (cascade usually handles this if defined, but explicit is safer for MVP)
-    await db.delete(payments).where(eq(payments.apartmentId, apartmentId))
+    await db.transaction(async (tx) => {
+        // Delete related payments first
+        await tx.delete(payments).where(eq(payments.apartmentId, apartmentId))
 
-    // Delete apartment
-    await db.delete(apartments).where(eq(apartments.id, apartmentId))
+        // Delete apartment
+        await tx.delete(apartments).where(eq(apartments.id, apartmentId))
+    })
 
     return true
 }
@@ -154,30 +169,34 @@ import { auth } from "@/lib/auth"
 export async function claimApartment(buildingId: string, apartmentId: number, userId: string) {
     if (!buildingId || !apartmentId || !userId) throw new Error("Missing fields")
 
-    const targetApartment = await db.select().from(apartments).where(and(
-        eq(apartments.id, apartmentId),
-        eq(apartments.buildingId, buildingId)
-    )).limit(1)
+    const result = await db.transaction(async (tx) => {
+        const targetApartment = await tx.select().from(apartments).where(and(
+            eq(apartments.id, apartmentId),
+            eq(apartments.buildingId, buildingId)
+        )).limit(1)
 
-    if (!targetApartment.length) {
-        throw new Error("Apartment not found for this building")
-    }
+        if (!targetApartment.length) {
+            throw new Error("Apartment not found for this building")
+        }
 
-    if (targetApartment[0].residentId && targetApartment[0].residentId !== userId) {
-        throw new Error("Apartment already claimed")
-    }
+        if (targetApartment[0].residentId && targetApartment[0].residentId !== userId) {
+            throw new Error("Apartment already claimed")
+        }
 
-    const [updated] = await db.update(apartments)
-        .set({ residentId: userId })
-        .where(eq(apartments.id, apartmentId))
-        .returning()
+        const [updated] = await tx.update(apartments)
+            .set({ residentId: userId })
+            .where(eq(apartments.id, apartmentId))
+            .returning()
 
-    // Ensure user is linked to this building
-    await db.update(user)
-        .set({ buildingId, profileComplete: true, updatedAt: new Date() })
-        .where(eq(user.id, userId))
+        // Ensure user is linked to this building
+        await tx.update(user)
+            .set({ buildingId, profileComplete: true, updatedAt: new Date() })
+            .where(eq(user.id, userId))
 
-    return updated
+        return updated
+    })
+
+    return result
 }
 
 export async function getResidentApartment(userId: string) {
@@ -279,20 +298,22 @@ export async function bulkCreateApartments(buildingId: string, unitsString: stri
 
     const created: typeof apartments.$inferSelect[] = []
 
-    for (const unit of units) {
-        const existing = await db.select().from(apartments).where(and(
-            eq(apartments.buildingId, buildingId),
-            eq(apartments.unit, unit)
-        )).limit(1)
+    await db.transaction(async (tx) => {
+        for (const unit of units) {
+            const existing = await tx.select().from(apartments).where(and(
+                eq(apartments.buildingId, buildingId),
+                eq(apartments.unit, unit)
+            )).limit(1)
 
-        if (!existing.length) {
-            const [newApt] = await db.insert(apartments).values({
-                buildingId,
-                unit,
-            }).returning()
-            created.push(newApt)
+            if (!existing.length) {
+                const [newApt] = await tx.insert(apartments).values({
+                    buildingId,
+                    unit,
+                }).returning()
+                created.push(newApt)
+            }
         }
-    }
+    })
 
     return created
 }
