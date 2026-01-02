@@ -101,8 +101,34 @@ export function ExtraProjectCreate({ buildingId, apartments, onCancel, onSuccess
         setIsLoading(true)
 
         try {
-            // TODO: Implement real file upload
-            const documentUrl = selectedFile ? `mock-url-${Date.now()}` : undefined
+            let documentUrl: string | undefined
+
+            if (selectedFile) {
+                const uploadFormData = new FormData()
+                uploadFormData.append('buildingId', buildingId)
+                uploadFormData.append('category', 'projetos')
+                uploadFormData.append('title', `Orçamento - ${formData.name}`)
+                uploadFormData.append('files', selectedFile)
+
+                const uploadRes = await fetch('/api/documents/upload', {
+                    method: 'POST',
+                    body: uploadFormData,
+                })
+
+                if (!uploadRes.ok) {
+                    const errorData = await uploadRes.json()
+                    throw new Error(errorData.error || "Erro ao carregar documento")
+                }
+
+                const uploadData = await uploadRes.json()
+                const result = uploadData.results[0]
+
+                if (!result.success) {
+                    throw new Error(result.error || "Erro ao carregar documento")
+                }
+
+                documentUrl = result.document.fileUrl
+            }
 
             const result = await createExtraordinaryProject({
                 buildingId,
@@ -125,8 +151,8 @@ export function ExtraProjectCreate({ buildingId, apartments, onCancel, onSuccess
             } else {
                 setError(result.error || "Ocorreu um erro inesperado")
             }
-        } catch (err) {
-            setError("Ocorreu um erro inesperado")
+        } catch (err: any) {
+            setError(err.message || "Ocorreu um erro inesperado")
         } finally {
             setIsLoading(false)
         }

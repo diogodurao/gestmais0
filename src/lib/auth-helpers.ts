@@ -22,7 +22,7 @@ export async function requireSession() {
         throw new Error("Unauthorized")
     }
 
-    return session
+    return session as typeof session & { user: SessionUser }
 }
 
 /**

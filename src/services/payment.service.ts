@@ -1,19 +1,8 @@
 import { db } from "@/db"
-import { PaymentStatus } from "@/lib/types"
+import { PaymentStatus, PaymentData } from "@/lib/types"
 import { payments, apartments, user, building, extraordinaryProjects, extraordinaryPayments } from "@/db/schema"
 import { eq, and, asc, lte, sql, sum, count, inArray } from "drizzle-orm"
 import { getInstallmentDate } from "@/lib/extraordinary-calculations"
-
-
-
-export interface PaymentData {
-    apartmentId: number
-    unit: string
-    residentName?: string | null
-    payments: Record<number, { status: string; amount: number }>
-    totalPaid: number
-    balance: number
-}
 
 export interface PaymentStatusSummary {
     residentName: string

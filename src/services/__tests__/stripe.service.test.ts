@@ -54,6 +54,8 @@ vi.mock("@/db", () => ({
 describe('StripeService', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        vi.stubEnv('STRIPE_PRICE_ID', 'price_123')
+        vi.stubEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000')
     })
 
     describe('createCheckoutSession', () => {

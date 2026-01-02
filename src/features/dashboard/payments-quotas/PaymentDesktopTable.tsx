@@ -2,11 +2,20 @@
 
 import { useMemo, useRef, useEffect, useState } from 'react'
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window'
-import { PaymentData } from "@/app/actions/payments"
+
 import { cn } from "@/lib/utils"
 import { MONTHS_PT } from "@/lib/constants"
 import { formatCurrency } from "@/lib/format"
-import { type ToolType, type RowData } from "./types"
+import { type PaymentToolType, type PaymentData } from "@/lib/types"
+
+interface RowData {
+    items: PaymentData[]
+    monthlyQuota: number
+    readOnly: boolean
+    activeTool: PaymentToolType
+    highlightedId: number | null
+    onCellClick: (aptId: number, monthIdx: number) => void
+}
 
 // Layout constants
 const CELL_WIDTH = 72
@@ -19,7 +28,7 @@ interface PaymentDesktopTableProps {
     data: PaymentData[]
     monthlyQuota: number
     readOnly: boolean
-    activeTool: ToolType
+    activeTool: PaymentToolType
     highlightedId: number | null
     onCellClick: (aptId: number, monthIdx: number) => void
     onDelete: (aptId: number) => void

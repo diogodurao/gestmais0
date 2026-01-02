@@ -12,7 +12,7 @@ import {
 // TYPES
 // ===========================================
 
-import { PaymentStatus, ProjectStatus } from "@/lib/types"
+import { PaymentStatus, ProjectStatus, ApartmentPaymentData } from "@/lib/types"
 
 export interface CreateProjectInput {
     buildingId: string
@@ -79,25 +79,7 @@ export interface ProjectDetail {
     }
 }
 
-export interface ApartmentPaymentData {
-    apartmentId: number
-    unit: string
-    residentName: string | null
-    permillage: number
-    totalShare: number
-    totalPaid: number
-    balance: number
-    status: "complete" | "partial" | "pending"
-    installments: Array<{
-        id: number
-        number: number
-        month: number
-        year: number
-        expectedAmount: number
-        paidAmount: number
-        status: "paid" | "pending" | "late" | "partial"
-    }>
-}
+
 
 export interface ResidentProjectPayment {
     projectId: number

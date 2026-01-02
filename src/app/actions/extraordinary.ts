@@ -16,7 +16,7 @@ import {
     ProjectListItem,
     ProjectDetail,
     ResidentProjectPayment,
-    ApartmentPaymentData,
+
 } from "@/services/extraordinary.service"
 
 import {
@@ -24,7 +24,7 @@ import {
     updateProjectSchema,
     updateExtraPaymentSchema
 } from "@/lib/zod-schemas"
-import { ActionResult } from "@/lib/types"
+import { ActionResult, ApartmentPaymentData } from "@/lib/types"
 
 // Re-export types for usage in components
 export type {

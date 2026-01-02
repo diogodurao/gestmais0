@@ -1,15 +1,15 @@
 "use client"
 
 import { Filter, Edit3, Check, Clock, ToggleLeft, FileText, Table, Smartphone } from "lucide-react"
-import { type ToolMode } from "../types"
+import { type ExtraordinaryToolMode } from "@/lib/types"
 
 type FilterMode = "all" | "paid" | "pending" | "late" | "partial"
 
 interface ExtraPaymentGridToolbarProps {
     isManager: boolean
-    toolMode: ToolMode
+    toolMode: ExtraordinaryToolMode
     filterMode: FilterMode
-    onToolModeChange: (mode: ToolMode) => void
+    onToolModeChange: (mode: ExtraordinaryToolMode) => void
     onFilterModeChange: (mode: FilterMode) => void
     readOnly?: boolean
     showMobileTools?: boolean

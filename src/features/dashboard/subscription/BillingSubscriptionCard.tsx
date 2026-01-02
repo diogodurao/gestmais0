@@ -3,6 +3,8 @@
 import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card"
 import { CreditCard, Lock } from "lucide-react"
 import { SubscribeButton, SyncSubscriptionButton } from "@/features/dashboard/subscription/SubscribeButton"
+import { type SubscriptionStatus } from "@/lib/types"
+import { DEFAULT_SUBSCRIPTION_PRICE_PER_UNIT } from "@/lib/constants"
 
 interface BillingSubscriptionCardProps {
     subscriptionStatus: string | null
@@ -21,7 +23,7 @@ export function BillingSubscriptionCard({
     canSubscribe,
     profileComplete,
     buildingComplete,
-    pricePerUnit = 300,
+    pricePerUnit = DEFAULT_SUBSCRIPTION_PRICE_PER_UNIT,
 }: BillingSubscriptionCardProps) {
     const isActive = subscriptionStatus === 'active'
 

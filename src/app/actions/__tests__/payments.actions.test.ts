@@ -44,7 +44,7 @@ describe('Payment Actions', () => {
     describe('updatePaymentStatus', () => {
         it('should update status when input is valid', async () => {
             const { requireApartmentAccess } = await import('@/lib/auth-helpers')
-            vi.mocked(paymentService.updatePaymentStatus).mockResolvedValue(undefined)
+            vi.mocked(paymentService.updatePaymentStatus).mockResolvedValue(true)
 
             const result = await updatePaymentStatus(1, 1, 2024, 'paid', 5000)
 

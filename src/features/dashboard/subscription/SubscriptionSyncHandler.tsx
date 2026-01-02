@@ -5,11 +5,12 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { syncSubscriptionStatus } from "@/app/actions/stripe"
 import { CheckCircle, Loader2, AlertCircle, RefreshCw } from "lucide-react"
 import { TIMING } from "@/lib/constants/timing"
+import { type SubscriptionSyncStatus } from "@/lib/types"
 
 export function SubscriptionSyncHandler({ buildingId }: { buildingId: string | null }) {
     const searchParams = useSearchParams()
     const router = useRouter()
-    const [status, setStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle')
+    const [status, setStatus] = useState<SubscriptionSyncStatus>('idle')
     const [message, setMessage] = useState("")
     const [retryCount, setRetryCount] = useState(0)
 

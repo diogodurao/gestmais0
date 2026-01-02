@@ -7,18 +7,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Layers, Plus, ChevronRight, FileText } from "lucide-react"
 import { getExtraordinaryProjects } from "@/app/actions/extraordinary"
+import { type ExtraordinaryProjectSummary } from "@/lib/types"
 import { ExtraProjectCreate } from "./ExtraProjectCreate"
 import { useToast } from "@/hooks/use-toast"
-
-type Project = {
-    id: number
-    name: string
-    totalBudget: number
-    numInstallments: number
-    startMonth: number
-    startYear: number
-    status: string
-}
 
 type Apartment = {
     id: number
@@ -35,7 +26,7 @@ interface ExtraProjectsListProps {
 export function ExtraProjectsList({ buildingId, apartments = [], readOnly = false }: ExtraProjectsListProps) {
     const isManager = !readOnly
     const router = useRouter()
-    const [projects, setProjects] = useState<Project[]>([])
+    const [projects, setProjects] = useState<ExtraordinaryProjectSummary[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [showCreate, setShowCreate] = useState(false)
     const { toast } = useToast()

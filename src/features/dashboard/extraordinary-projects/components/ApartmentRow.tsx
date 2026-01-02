@@ -4,12 +4,12 @@ import { cn } from "@/lib/utils"
 import { formatCurrency, getMonthName } from "@/lib/format"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
-import { type ToolMode, type CellStatus } from "../types"
+import { type ExtraordinaryToolMode, type PaymentStatus } from "@/lib/types"
 
 interface ApartmentRowProps {
     apartment: ApartmentPaymentData
-    toolMode: ToolMode
-    onCellClick: (paymentId: number, status: CellStatus, amount: number) => void
+    toolMode: ExtraordinaryToolMode
+    onCellClick: (paymentId: number, status: PaymentStatus, amount: number) => void
     readOnly: boolean
     startMonth: number
     startYear: number

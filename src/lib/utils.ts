@@ -81,3 +81,36 @@ export function formatPermillage(value: number | null): string {
     if (value === null) return ""
     return `${value.toString().replace('.', ',')}‰`
 }
+
+// ==========================================
+// ENVIRONMENT UTILITIES
+// ==========================================
+
+export function getAppUrl() {
+    if (process.env.NODE_ENV === "development") {
+        return "http://localhost:3000"
+    }
+    return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+}
+
+// ==========================================
+// DOCUMENT UTILITIES
+// ==========================================
+
+export function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+export function getFileIcon(mimeType: string): string {
+    if (mimeType === 'application/pdf') return '📄'
+    if (mimeType.includes('word')) return '📝'
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet') || mimeType === 'text/csv') return '📊'
+    if (mimeType.startsWith('image/')) return '🖼️'
+    return '📎'
+}
+
+export function canPreview(mimeType: string): boolean {
+    return mimeType === 'application/pdf' || mimeType.startsWith('image/')
+}

@@ -7,7 +7,7 @@ import { formatCurrency, getMonthName } from "@/lib/format"
 import { StatusBadge } from "@/components/ui/StatusBadge"
 // import { t } from "@/lib/translations"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
-import { type ToolMode, type CellStatus } from "../types"
+import { type ExtraordinaryToolMode, type PaymentStatus } from "@/lib/types"
 
 interface MobileApartmentCardProps {
     apartment: ApartmentPaymentData
@@ -15,8 +15,8 @@ interface MobileApartmentCardProps {
         startMonth: number
         startYear: number
     }
-    toolMode: ToolMode
-    onCellClick: (paymentId: number, status: CellStatus, amount: number) => void
+    toolMode: ExtraordinaryToolMode
+    onCellClick: (paymentId: number, status: PaymentStatus, amount: number) => void
     readOnly: boolean
 }
 

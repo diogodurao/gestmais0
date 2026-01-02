@@ -17,12 +17,25 @@ import { MobileApartmentCard } from "./components/MobileApartmentCard"
 import { ApartmentRow } from "./components/ApartmentRow"
 
 // Types
-import { type ExtraPaymentGridProps, type ToolMode, type CellStatus } from "./types"
+import {
+    type ExtraordinaryToolMode,
+    type PaymentStatus,
+    type ExtraordinaryProjectSummary
+} from "@/lib/types"
+import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
+
+interface ExtraPaymentGridProps {
+    project: ExtraordinaryProjectSummary
+    payments: ApartmentPaymentData[]
+    onRefresh?: () => void
+    readOnly?: boolean
+}
 
 export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = false }: ExtraPaymentGridProps) {
     const { toast } = useToast()
-    const [toolMode, setToolMode] = useState<ToolMode>(null)
-    const [filterStatus, setFilterStatus] = useState<CellStatus | "all">("all")
+
+    const [toolMode, setToolMode] = useState<ExtraordinaryToolMode>(null)
+    const [filterStatus, setFilterStatus] = useState<PaymentStatus | "all">("all")
     const [localPayments, setLocalPayments] = useState(payments)
     const [showMobileTools, setShowMobileTools] = useState(false)
 
@@ -50,12 +63,12 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
     // Handle cell click
     const handleCellClick = useDebouncedCallback(async (
         paymentId: number,
-        currentStatus: CellStatus,
+        currentStatus: PaymentStatus,
         expectedAmount: number
     ): Promise<void> => {
         if (!toolMode || readOnly) return
 
-        let newStatus: CellStatus
+        let newStatus: PaymentStatus
         let newPaidAmount: number
 
         if (toolMode === "markPaid") {
@@ -100,16 +113,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
     // Export handlers
     const handleExportPDF = () => {
         import("@/lib/document-export").then(({ exportExtraPaymentsToPDF }) => {
-            const exportData = localPayments.map((p) => ({
-                apartment: p.unit,
-                fraction: p.unit,
-                resident: p.residentName || undefined,
-                permillage: p.permillage,
-                totalShare: p.totalShare,
-                installments: p.installments.map((i) => i.status === "paid" ? "paid" as const : "pending" as const),
-                totalPaid: p.totalPaid,
-            }))
-            exportExtraPaymentsToPDF(project.name, "Edifício", project.totalBudget, exportData)
+            exportExtraPaymentsToPDF(project.name, "Edifício", project.totalBudget, localPayments)
         })
     }
 

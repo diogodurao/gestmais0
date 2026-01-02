@@ -2,7 +2,7 @@
 
 import { Calendar } from "lucide-react"
 import { formatCurrency } from "@/lib/format"
-import { type PaymentStats } from "../types"
+import { type PaymentStats } from "@/lib/types"
 
 interface PaymentGridHeaderProps {
     year: number

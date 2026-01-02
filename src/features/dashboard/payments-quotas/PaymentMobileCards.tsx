@@ -2,17 +2,16 @@
 
 import { useState } from "react"
 import { ChevronDown, ChevronUp, User, TrendingDown } from "lucide-react"
-import { PaymentData } from "@/app/actions/payments"
+import { PaymentData, type PaymentToolType } from "@/lib/types"
 import { MONTHS_PT } from "@/lib/constants"
 import { formatCurrency } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import { type ToolType } from "./types"
 
 interface PaymentMobileCardsProps {
     data: PaymentData[]
     monthlyQuota: number
     isEditing: boolean
-    activeTool: ToolType
+    activeTool: PaymentToolType
     onCellClick: (aptId: number, monthIdx: number) => void
 }
 
@@ -20,7 +19,7 @@ interface MobileCardProps {
     item: PaymentData
     monthlyQuota: number
     isEditing: boolean
-    activeTool: ToolType
+    activeTool: PaymentToolType
     onCellClick: (aptId: number, monthIdx: number) => void
 }
 

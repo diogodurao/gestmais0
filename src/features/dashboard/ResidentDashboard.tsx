@@ -3,6 +3,10 @@ import { ResidentOnboardingFlow } from "@/features/dashboard/onboarding/Resident
 import { PaymentStatusCard } from "@/features/dashboard/payments-quotas/PaymentStatusCard";
 import { BuildingMetricsPanel } from "@/features/dashboard/overview/BuildingMetricsPanel";
 import { SystemStatusPanel } from "@/features/dashboard/overview/SystemStatusPanel";
+import { getEvaluationStatus } from "@/app/actions/evaluations";
+import { EvaluationWidget } from "@/features/dashboard/evaluations/EvaluationWidget";
+import { getNotifications } from "@/app/actions/notification";
+import { NotificationCard } from "@/features/dashboard/notifications/NotificationCard";
 import type { SessionUser } from "@/lib/types";
 
 interface ResidentDashboardProps {
@@ -11,14 +15,20 @@ interface ResidentDashboardProps {
 
 export async function ResidentDashboard({ session }: ResidentDashboardProps) {
     const sessionUser = session.user as unknown as SessionUser;
+    const notifications = await getNotifications(5);
 
     let residentBuildingInfo = null;
     let residentApartment = null;
+    let evaluationStatus = null;
 
     const hasBuildingId = !!session.user.buildingId;
     const hasIban = !!session.user.iban;
 
     try {
+        if (hasBuildingId) {
+            evaluationStatus = await getEvaluationStatus(session.user.buildingId!);
+        }
+
         residentApartment = await getResidentApartment();
         const hasApartment = !!residentApartment;
 
@@ -52,12 +62,13 @@ export async function ResidentDashboard({ session }: ResidentDashboardProps) {
 
     return (
         <div className="space-y-4 max-w-4xl">
+            {evaluationStatus && <EvaluationWidget status={evaluationStatus} />}
+
             {/* Full-width payment status - their main concern */}
             <PaymentStatusCard userId={session.user.id} />
 
             {/* Two-column layout for secondary info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Building Info Card (Mapped to BuildingMetricsPanel which shows info for residents) */}
                 <BuildingMetricsPanel
                     isManager={false}
                     residents={[]}
@@ -67,6 +78,8 @@ export async function ResidentDashboard({ session }: ResidentDashboardProps) {
 
                 {/* Quick Links Card (Mapped to SystemStatusPanel for now as "Quick Features" isn't fully defined but System Status is relevant) */}
                 <SystemStatusPanel sessionUser={sessionUser} />
+
+                <NotificationCard notifications={notifications} />
             </div>
 
             {/* Extraordinary projects (if any) - Placeholder for now as requested by user in future vision */}
