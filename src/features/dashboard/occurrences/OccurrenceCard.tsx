@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { MessageCircle } from "lucide-react"
 import { Card } from "@/components/ui/Card"
-import { StatusBadge } from "@/components/ui/StatusBadge"
+import { Badge } from "@/components/ui/Badge"
 import { Occurrence } from "@/lib/types"
 import { formatDistanceToNow } from "@/lib/format"
 import { OCCURRENCE_STATUS_CONFIG } from "@/lib/constants"
@@ -15,7 +15,7 @@ export function OccurrenceCard({ occurrence }: Props) {
         <Link href={`/dashboard/occurrences/${occurrence.id}`}>
             <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex items-start justify-between mb-2">
-                    <StatusBadge status={occurrence.status} config={OCCURRENCE_STATUS_CONFIG} />
+                    <Badge status={occurrence.status} config={OCCURRENCE_STATUS_CONFIG} />
                     <span className="text-label text-slate-400">
                         {formatDistanceToNow(occurrence.createdAt)}
                     </span>

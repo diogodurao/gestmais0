@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 import { Select } from "@/components/ui/Select"
+import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
 import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "@/app/actions/calendar"
 import { CalendarEvent } from "@/lib/types"
 import { EVENT_TYPE_SUGGESTIONS } from "@/lib/constants"
@@ -99,72 +100,128 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={readOnly ? "Detalhes do Evento" : isEditing ? "Editar Evento" : "Novo Evento"}>
             <div className="space-y-4">
-                <Input
-                    label="Título *"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    disabled={readOnly}
-                />
+                <FormField required>
+                    <FormLabel>Título</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Input
+                                {...props}
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                disabled={readOnly}
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
-                <div>
-                    <label className="block text-body font-bold text-slate-500 uppercase mb-1">Tipo *</label>
-                    <input
-                        list="event-types"
-                        value={type}
-                        onChange={(e) => setType(e.target.value)}
-                        className="input-sharp w-full"
-                        disabled={readOnly}
-                        placeholder="Selecione ou escreva..."
-                    />
-                    <datalist id="event-types">
-                        {EVENT_TYPE_SUGGESTIONS.map(t => <option key={t} value={t} />)}
-                    </datalist>
-                </div>
+                <FormField required>
+                    <FormLabel>Tipo</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <>
+                                <input
+                                    {...props}
+                                    list="event-types"
+                                    value={type}
+                                    onChange={(e) => setType(e.target.value)}
+                                    className="input-sharp w-full"
+                                    disabled={readOnly}
+                                    placeholder="Selecione ou escreva..."
+                                />
+                                <datalist id="event-types">
+                                    {EVENT_TYPE_SUGGESTIONS.map(t => <option key={t} value={t} />)}
+                                </datalist>
+                            </>
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
-                <Textarea
-                    placeholder="Descrição (opcional)"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    disabled={readOnly}
-                />
+                <FormField>
+                    <FormControl>
+                        {(props) => (
+                            <Textarea
+                                {...props}
+                                placeholder="Descrição (opcional)"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                disabled={readOnly}
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
                 <div className="grid grid-cols-2 gap-3">
-                    <Input
-                        label="Data Início *"
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        disabled={readOnly}
-                    />
-                    <Input
-                        label="Data Fim"
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        disabled={readOnly}
-                    />
+                    <FormField required>
+                        <FormLabel>Data Início</FormLabel>
+                        <FormControl>
+                            {(props) => (
+                                <Input
+                                    {...props}
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    disabled={readOnly}
+                                />
+                            )}
+                        </FormControl>
+                        <FormError />
+                    </FormField>
+                    <FormField>
+                        <FormLabel>Data Fim</FormLabel>
+                        <FormControl>
+                            {(props) => (
+                                <Input
+                                    {...props}
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    disabled={readOnly}
+                                />
+                            )}
+                        </FormControl>
+                        <FormError />
+                    </FormField>
                 </div>
 
-                <Input
-                    label="Hora (opcional)"
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    disabled={readOnly}
-                />
+                <FormField>
+                    <FormLabel>Hora (opcional)</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Input
+                                {...props}
+                                type="time"
+                                value={startTime}
+                                onChange={(e) => setStartTime(e.target.value)}
+                                disabled={readOnly}
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
                 {!isEditing && !readOnly && (
-                    <Select
-                        options={[
-                            { value: "none", label: "Não repetir" },
-                            { value: "weekly", label: "Semanal (4x)" },
-                            { value: "biweekly", label: "Quinzenal (4x)" },
-                            { value: "monthly", label: "Mensal (4x)" },
-                        ]}
-                        value={recurrence}
-                        onChange={(e) => setRecurrence(e.target.value as typeof recurrence)}
-                        fullWidth
-                    />
+                    <FormField>
+                        <FormControl>
+                            {(props) => (
+                                <Select
+                                    {...props}
+                                    options={[
+                                        { value: "none", label: "Não repetir" },
+                                        { value: "weekly", label: "Semanal (4x)" },
+                                        { value: "biweekly", label: "Quinzenal (4x)" },
+                                        { value: "monthly", label: "Mensal (4x)" },
+                                    ]}
+                                    value={recurrence}
+                                    onChange={(e) => setRecurrence(e.target.value as typeof recurrence)}
+                                    fullWidth
+                                />
+                            )}
+                        </FormControl>
+                        <FormError />
+                    </FormField>
                 )}
 
                 {!readOnly && (

@@ -6,6 +6,8 @@ export type ProjectStatus = "active" | "completed" | "cancelled" | "archived"
 
 export type UserRole = "manager" | "resident"
 
+export type ComponentSize = "xs" | "sm" | "md" | "lg"
+
 
 
 /**

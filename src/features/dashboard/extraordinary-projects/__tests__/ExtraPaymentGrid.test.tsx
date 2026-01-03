@@ -5,8 +5,8 @@ import { type ExtraordinaryProjectSummary } from "@/lib/types"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
 
 // Mock hooks and components
-vi.mock("@/components/ui/StatusBadge", () => ({
-    StatusBadge: ({ status }: { status: string }) => <div data-testid="status-badge">{status}</div>
+vi.mock("@/components/ui/Badge", () => ({
+    Badge: ({ status }: { status: string }) => <div data-testid="status-badge">{status}</div>
 }))
 
 vi.mock("@/hooks/use-toast", () => ({

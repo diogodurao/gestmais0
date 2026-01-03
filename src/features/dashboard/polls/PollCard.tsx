@@ -1,9 +1,9 @@
 import Link from "next/link"
 import { Users } from "lucide-react"
 import { Card } from "@/components/ui/Card"
-import { PollStatusBadge } from "./PollStatusBadge"
+import { Badge } from "@/components/ui/Badge"
 import { Poll } from "@/lib/types"
-import { POLL_TYPE_CONFIG, WEIGHT_MODE_CONFIG } from "@/lib/constants"
+import { POLL_STATUS_CONFIG, POLL_TYPE_CONFIG, WEIGHT_MODE_CONFIG } from "@/lib/constants"
 import { formatDistanceToNow } from "@/lib/format"
 
 interface Props {
@@ -17,7 +17,7 @@ export function PollCard({ poll, hasVoted }: Props) {
             <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
-                        <PollStatusBadge status={poll.status} />
+                        <Badge status={poll.status} config={POLL_STATUS_CONFIG} />
                         {hasVoted && (
                             <span className="text-label text-blue-600 font-medium">
                                 ✓ Votou

@@ -10,6 +10,7 @@ import { OnboardingStepBuilding } from "@/features/dashboard/onboarding/componen
 import { OnboardingStepUnits, type Apartment } from "@/features/dashboard/onboarding/components/OnboardingStepUnits"
 import { OnboardingStepManagerUnit } from "@/features/dashboard/onboarding/components/OnboardingStepManagerUnit"
 import { completeOnboarding } from "@/app/actions/onboarding"
+import { useDashboard } from "@/contexts/DashboardContext"
 
 // We alias the imported types to match what we need or just use them directly
 type ApartmentData = Apartment
@@ -51,6 +52,7 @@ interface ManagerOnboardingFlowProps {
 
 export function ManagerOnboardingFlow({ user, building, apartments, initialStep, currentManagerUnitId }: ManagerOnboardingFlowProps) {
     const router = useRouter()
+    const { managerBuildings } = useDashboard()
 
     // Map string step to number
     const getStepNumber = (step?: string) => {
@@ -127,6 +129,24 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
                     <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
                         Vamos configurar o seu condomínio em 4 passos simples. Pode alterar estas definições mais tarde.
                     </p>
+                    {/* Add escape hatch if multiple buildings exist */}
+                    {managerBuildings.length > 1 && (
+                        <div className="mt-4">
+                            <button
+                                onClick={async () => {
+                                    // Find a building that IS complete if possible, or just the first other one
+                                    // But wait, the easiest is to just use the BuildingSelector in header.
+                                    // However, a clear button here is better.
+                                    // We'll just suggest using the selector or provide a simple link.
+                                    router.push("/dashboard")
+                                    router.refresh()
+                                }}
+                                className="text-xs font-bold text-blue-600 uppercase hover:underline"
+                            >
+                                ← Voltar para os outros edifícios
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Progress Steps */}

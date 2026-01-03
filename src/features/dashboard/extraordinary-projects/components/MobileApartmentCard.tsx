@@ -4,7 +4,7 @@ import { useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatCurrency, getMonthName } from "@/lib/format"
-import { StatusBadge } from "@/components/ui/StatusBadge"
+import { Badge } from "@/components/ui/Badge"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
 import { type ExtraordinaryToolMode, type PaymentStatus } from "@/lib/types"
 import { GENERAL_STATUS_CONFIG } from "@/lib/constants"
@@ -57,7 +57,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <StatusBadge status={apartment.status} config={GENERAL_STATUS_CONFIG} className="text-micro px-1.5 sm:px-2" />
+                        <Badge status={apartment.status} config={GENERAL_STATUS_CONFIG} className="text-micro px-1.5 sm:px-2" />
                         {isExpanded ? (
                             <ChevronUp className="w-4 h-4 text-slate-400" />
                         ) : (

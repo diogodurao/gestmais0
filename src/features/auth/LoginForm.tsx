@@ -5,6 +5,7 @@ import { authClient } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
+import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
 import { ROUTES } from "@/lib/routes"
 
 export function LoginForm() {
@@ -47,22 +48,37 @@ export function LoginForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-                label="Email"
-                type="email"
-                placeholder="tiago123@gmail.com"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            />
-            <Input
-                label="Palavra-passe"
-                type="password"
-                placeholder="••••••••"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-            />
+            <FormField required>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                    {(props) => (
+                        <Input
+                            {...props}
+                            type="email"
+                            placeholder="tiago123@gmail.com"
+                            value={formData.email}
+                            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                        />
+                    )}
+                </FormControl>
+                <FormError />
+            </FormField>
+
+            <FormField required>
+                <FormLabel>Palavra-passe</FormLabel>
+                <FormControl>
+                    {(props) => (
+                        <Input
+                            {...props}
+                            type="password"
+                            placeholder="••••••••"
+                            value={formData.password}
+                            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                        />
+                    )}
+                </FormControl>
+                <FormError />
+            </FormField>
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 

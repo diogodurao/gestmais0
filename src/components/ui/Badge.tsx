@@ -1,44 +1,43 @@
 import { HTMLAttributes, forwardRef } from "react"
 import { cn } from "@/lib/utils"
-import {
-    Check,
-    AlertCircle,
-    Clock,
-    Info,
-    X,
-    LucideIcon
-} from "lucide-react"
-
-type BadgeVariant = "success" | "warning" | "error" | "info" | "neutral" | "outline"
-type BadgeSize = "xs" | "sm" | "md"
+import { Check, AlertCircle, Clock, Info, X, LucideIcon } from "lucide-react"
+import { type Size, type SemanticVariant, SEMANTIC_COLORS } from "@/lib/ui-tokens"
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-    variant?: BadgeVariant
-    size?: BadgeSize
+    variant?: SemanticVariant | "outline" | "neutral"
+    status?: string
+    config?: Record<string, { label: string; color: string }>
+    size?: Size
     icon?: LucideIcon | "auto"
     dot?: boolean
 }
 
-const variantStyles: Record<BadgeVariant, string> = {
-    success: "bg-green-100 text-green-700 border-green-200",
-    warning: "bg-amber-100 text-amber-700 border-amber-200",
-    error: "bg-rose-100 text-rose-700 border-rose-200",
-    info: "bg-blue-100 text-blue-700 border-blue-200",
-    neutral: "bg-slate-100 text-slate-600 border-slate-200",
-    outline: "bg-white text-slate-600 border-slate-300",
-}
-
-const autoIcons: Record<BadgeVariant, LucideIcon | null> = {
+const autoIcons: Record<string, LucideIcon | null> = {
     success: Check,
     warning: AlertCircle,
-    error: X,
+    danger: X,
     info: Info,
     neutral: null,
-    outline: null,
 }
 
 const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
-    ({ className, variant = "neutral", size = "sm", icon, dot, children, ...props }, ref) => {
+    ({ className, variant = "neutral", status, config, size = "sm", icon, dot, children, ...props }, ref) => {
+        const isConfig = status && config
+        const statusConfig = isConfig ? config[status] : null
+
+        const finalLabel = statusConfig?.label || children
+
+        // Resolve styles
+        let finalStyles = ""
+        if (statusConfig?.color) {
+            finalStyles = statusConfig.color
+        } else if (variant === "outline") {
+            finalStyles = "bg-white text-slate-600 border-slate-300"
+        } else {
+            const colors = SEMANTIC_COLORS[variant as SemanticVariant] || SEMANTIC_COLORS.neutral
+            finalStyles = `${colors.bg} ${colors.text} ${colors.border}`
+        }
+
         const IconComponent = icon === "auto" ? autoIcons[variant] : icon
 
         return (
@@ -46,11 +45,12 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
                 ref={ref}
                 className={cn(
                     "inline-flex items-center gap-1 font-bold uppercase tracking-wider border rounded-sm",
-                    variantStyles[variant],
+                    finalStyles,
                     {
                         "h-4 px-1 text-micro": size === "xs",
                         "h-5 px-1.5 text-micro": size === "sm",
-                        "h-6 px-2 text-[10px]": size === "md",
+                        "h-6 px-2 text-label": size === "md",
+                        "h-7 px-2.5 text-body": size === "lg",
                     },
                     className
                 )}
@@ -64,13 +64,14 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
                                 "w-1 h-1": size === "xs",
                                 "w-1.5 h-1.5": size === "sm",
                                 "w-2 h-2": size === "md",
+                                "w-2.5 h-2.5": size === "lg",
                             },
                             {
-                                "bg-green-500": variant === "success",
-                                "bg-amber-500": variant === "warning",
-                                "bg-rose-500": variant === "error",
-                                "bg-blue-500": variant === "info",
-                                "bg-slate-400": variant === "neutral" || variant === "outline",
+                                "bg-emerald-500": variant === "success" || finalStyles.includes("green") || finalStyles.includes("emerald"),
+                                "bg-amber-500": variant === "warning" || finalStyles.includes("amber") || finalStyles.includes("yellow"),
+                                "bg-rose-500": variant === "danger" || finalStyles.includes("rose") || finalStyles.includes("red"),
+                                "bg-blue-500": variant === "info" || finalStyles.includes("blue"),
+                                "bg-slate-400": variant === "neutral" || variant === "outline" || finalStyles.includes("slate"),
                             }
                         )}
                     />
@@ -83,11 +84,12 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
                                 "w-2 h-2": size === "xs",
                                 "w-2.5 h-2.5": size === "sm",
                                 "w-3 h-3": size === "md",
+                                "w-3.5 h-3.5": size === "lg",
                             }
                         )}
                     />
                 )}
-                {children}
+                {finalLabel}
             </span>
         )
     }

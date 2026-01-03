@@ -1,10 +1,11 @@
 import { ButtonHTMLAttributes, forwardRef } from "react"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { type ComponentSize } from "@/lib/types"
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: "primary" | "secondary" | "outline" | "ghost" | "danger"
-    size?: "xs" | "sm" | "md" | "lg"
+    size?: ComponentSize
     fullWidth?: boolean
     isLoading?: boolean
 }

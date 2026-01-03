@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Textarea } from "@/components/ui/Textarea"
+import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { StarRating } from "./StarRating"
 import { submitEvaluation } from "@/app/actions/evaluations"
@@ -96,15 +97,21 @@ export function EvaluationForm({ buildingId, status }: Props) {
                     </div>
 
                     {/* Comments */}
-                    <div>
-                        <Textarea
-                            label="Comentários ou sugestões (opcional)"
-                            value={comments}
-                            onChange={(e) => setComments(e.target.value)}
-                            placeholder="Partilhe a sua opinião ou sugestões de melhoria..."
-                            rows={4}
-                        />
-                    </div>
+                    <FormField>
+                        <FormLabel>Comentários ou sugestões (opcional)</FormLabel>
+                        <FormControl>
+                            {(props) => (
+                                <Textarea
+                                    {...props}
+                                    value={comments}
+                                    onChange={(e) => setComments(e.target.value)}
+                                    placeholder="Partilhe a sua opinião ou sugestões de melhoria..."
+                                    rows={4}
+                                />
+                            )}
+                        </FormControl>
+                        <FormError />
+                    </FormField>
 
                     {/* Submit */}
                     <div className="flex items-center justify-between pt-2">

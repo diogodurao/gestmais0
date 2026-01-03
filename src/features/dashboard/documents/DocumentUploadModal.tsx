@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 import { Select } from "@/components/ui/Select"
+import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
 import { DocumentCategory } from "@/lib/types"
 import { DOCUMENT_CATEGORY_OPTIONS as CATEGORY_OPTIONS } from "@/lib/constants"
 import { formatFileSize } from "@/lib/utils"
@@ -228,12 +229,19 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
                             <div key={index} className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg">
                                 <File className="w-5 h-5 text-slate-400 flex-shrink-0" />
                                 <div className="flex-1 min-w-0">
-                                    <Input
-                                        value={sf.title}
-                                        onChange={(e) => updateFileTitle(index, e.target.value)}
-                                        placeholder="Título do documento"
-                                        className="text-body"
-                                    />
+                                    <FormField>
+                                        <FormControl>
+                                            {(props) => (
+                                                <Input
+                                                    {...props}
+                                                    value={sf.title}
+                                                    onChange={(e) => updateFileTitle(index, e.target.value)}
+                                                    placeholder="Título do documento"
+                                                    className="text-body"
+                                                />
+                                            )}
+                                        </FormControl>
+                                    </FormField>
                                     <p className="text-label text-slate-400 mt-1">
                                         {sf.file.name} • {formatFileSize(sf.file.size)}
                                     </p>
@@ -251,24 +259,40 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
 
                 {/* Category (not for new version) */}
                 {!isNewVersion && (
-                    <Select
-                        label="Categoria *"
-                        options={CATEGORY_OPTIONS}
-                        value={category}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as DocumentCategory)}
-                        fullWidth
-                    />
+                    <FormField required>
+                        <FormLabel>Categoria</FormLabel>
+                        <FormControl>
+                            {(props) => (
+                                <Select
+                                    {...props}
+                                    options={CATEGORY_OPTIONS}
+                                    value={category}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as DocumentCategory)}
+                                    fullWidth
+                                />
+                            )}
+                        </FormControl>
+                        <FormError />
+                    </FormField>
                 )}
 
                 {/* Description */}
                 {!isNewVersion && (
-                    <Textarea
-                        label="Descrição (opcional)"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Adicione uma descrição..."
-                        rows={2}
-                    />
+                    <FormField>
+                        <FormLabel>Descrição (opcional)</FormLabel>
+                        <FormControl>
+                            {(props) => (
+                                <Textarea
+                                    {...props}
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Adicione uma descrição..."
+                                    rows={2}
+                                />
+                            )}
+                        </FormControl>
+                        <FormError />
+                    </FormField>
                 )}
 
                 {/* Actions */}

@@ -6,6 +6,7 @@ import { Modal } from "@/components/ui/Modal"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
+import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
 import { PhotoUpload } from "./PhotoUpload"
 import { createOccurrence, updateOccurrence } from "@/app/actions/occurrences"
 import { Occurrence } from "@/lib/types"
@@ -132,27 +133,51 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
             title={isEditing ? "Editar Ocorrência" : "Nova Ocorrência"}
         >
             <div className="space-y-4">
-                <Input
-                    label="Título *"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Ex: Elevador avariado"
-                />
+                <FormField required>
+                    <FormLabel>Título</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Input
+                                {...props}
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Ex: Elevador avariado"
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
-                <Input
-                    label="Tipo *"
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    placeholder="Ex: Manutenção, Ruído, Limpeza..."
-                />
+                <FormField required>
+                    <FormLabel>Tipo</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Input
+                                {...props}
+                                value={type}
+                                onChange={(e) => setType(e.target.value)}
+                                placeholder="Ex: Manutenção, Ruído, Limpeza..."
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
-                <Textarea
-                    label="Descrição"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Descreva a ocorrência com mais detalhe..."
-                    rows={4}
-                />
+                <FormField>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Textarea
+                                {...props}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Descreva a ocorrência com mais detalhe..."
+                                rows={4}
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
                 {/* Photos - only for new occurrences */}
                 {!isEditing && (

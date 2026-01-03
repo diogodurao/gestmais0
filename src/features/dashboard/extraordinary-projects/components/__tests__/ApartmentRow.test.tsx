@@ -3,9 +3,9 @@ import { describe, it, expect, vi, afterEach } from "vitest"
 import { ApartmentRow } from "../ApartmentRow"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
 
-// Mock StatusBadge since it's a UI component
-vi.mock("@/components/ui/StatusBadge", () => ({
-    StatusBadge: ({ status }: { status: string }) => <div data-testid="status-badge">{status}</div>
+// Mock Badge since it's a UI component
+vi.mock("@/components/ui/Badge", () => ({
+    Badge: ({ status }: { status: string }) => <div data-testid="status-badge">{status}</div>
 }))
 
 const mockApartment: ApartmentPaymentData = {

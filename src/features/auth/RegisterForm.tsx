@@ -4,6 +4,7 @@ import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
+import { FormField, FormLabel, FormControl, FormError, FormDescription } from "@/components/ui/Formfield"
 import { isValidNif } from "@/lib/validations"
 
 import { useRouter } from "next/navigation"
@@ -122,63 +123,75 @@ export function RegisterForm() {
                 </Button>
             </div>
 
-            <div>
-                <Input
-                    label="Nome Completo"
-                    type="text"
-                    placeholder="Tiago Silva"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className={errors.name ? "border-red-500" : ""}
-                />
-                {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
-            </div>
+            <FormField error={errors.name} required>
+                <FormLabel>Nome Completo</FormLabel>
+                <FormControl>
+                    {(props) => (
+                        <Input
+                            {...props}
+                            type="text"
+                            placeholder="Tiago Silva"
+                            value={formData.name}
+                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                    )}
+                </FormControl>
+                <FormError />
+            </FormField>
 
-            <div>
-                <Input
-                    label="Email"
-                    type="email"
-                    placeholder="tiago123@gmail.com"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className={errors.email ? "border-red-500" : ""}
-                />
-                {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
-            </div>
+            <FormField error={errors.email} required>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                    {(props) => (
+                        <Input
+                            {...props}
+                            type="email"
+                            placeholder="tiago123@gmail.com"
+                            value={formData.email}
+                            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                        />
+                    )}
+                </FormControl>
+                <FormError />
+            </FormField>
 
-            <div>
-                <Input
-                    label="Palavra-passe"
-                    type="password"
-                    placeholder="••••••••"
-                    required
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    className={errors.password ? "border-red-500" : ""}
-                />
-                {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
-                <p className="text-[10px] text-slate-400 mt-1">
+            <FormField error={errors.password} required>
+                <FormLabel>Palavra-passe</FormLabel>
+                <FormControl>
+                    {(props) => (
+                        <Input
+                            {...props}
+                            type="password"
+                            placeholder="••••••••"
+                            value={formData.password}
+                            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                        />
+                    )}
+                </FormControl>
+                <FormDescription>
                     Mínimo 8 caracteres, 1 maiúscula, 1 minúscula, 1 número
-                </p>
-            </div>
+                </FormDescription>
+                <FormError />
+            </FormField>
 
-            <div>
-                <Input
-                    label={role === "manager" ? "NIF Pessoal" : "NIF"}
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="206578465"
-                    required
-                    maxLength={9}
-                    value={formData.nif}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nif: e.target.value.replace(/\D/g, '') }))}
-                    className={errors.nif ? "border-red-500" : ""}
-                />
-                {errors.nif && <p className="text-xs text-red-500 mt-1">{errors.nif}</p>}
-            </div>
+            <FormField error={errors.nif} required>
+                <FormLabel>{role === "manager" ? "NIF Pessoal" : "NIF"}</FormLabel>
+                <FormControl>
+                    {(props) => (
+                        <Input
+                            {...props}
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            placeholder="206578465"
+                            maxLength={9}
+                            value={formData.nif}
+                            onChange={(e) => setFormData(prev => ({ ...prev, nif: e.target.value.replace(/\D/g, '') }))}
+                        />
+                    )}
+                </FormControl>
+                <FormError />
+            </FormField>
 
             {errors.form && <p className="text-sm text-red-600 text-center">{errors.form}</p>}
 

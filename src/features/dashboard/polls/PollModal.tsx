@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 import { Select } from "@/components/ui/Select"
+import { FormField, FormLabel, FormControl, FormError, FormDescription } from "@/components/ui/Formfield"
 import { createPoll } from "@/app/actions/polls"
 import { PollType, PollWeightMode } from "@/lib/types"
 import { POLL_TYPE_CONFIG, WEIGHT_MODE_CONFIG } from "@/lib/constants"
@@ -97,73 +98,98 @@ export function PollModal({ isOpen, onClose, buildingId }: Props) {
     return (
         <Modal isOpen={isOpen} onClose={handleClose} title="Nova Votação">
             <div className="space-y-4">
-                <Input
-                    label="Título *"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Ex: Aprovação de obras no telhado"
-                />
+                <FormField required>
+                    <FormLabel>Título</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Input
+                                {...props}
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Ex: Aprovação de obras no telhado"
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
-                <div>
-                    <label className="block text-body font-bold text-slate-500 uppercase mb-1 tracking-wider">
-                        Descrição
-                    </label>
-                    <Textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Descreva o assunto da votação..."
-                        rows={3}
-                    />
-                </div>
+                <FormField>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Textarea
+                                {...props}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Descreva o assunto da votação..."
+                                rows={3}
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
-                <div>
-                    <label className="block text-body font-bold text-slate-500 uppercase mb-1 tracking-wider">
-                        Tipo de votação
-                    </label>
-                    <Select
-                        options={Object.entries(POLL_TYPE_CONFIG).map(([value, { label }]) => ({
-                            value,
-                            label,
-                        }))}
-                        value={type}
-                        onChange={(e) => setType(e.target.value as PollType)}
-                        fullWidth
-                    />
-                </div>
+                <FormField required>
+                    <FormLabel>Tipo de votação</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Select
+                                {...props}
+                                options={Object.entries(POLL_TYPE_CONFIG).map(([value, { label }]) => ({
+                                    value,
+                                    label,
+                                }))}
+                                value={type}
+                                onChange={(e) => setType(e.target.value as PollType)}
+                                fullWidth
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
-                <div>
-                    <label className="block text-body font-bold text-slate-500 uppercase mb-1 tracking-wider">
-                        Modo de contagem
-                    </label>
-                    <Select
-                        options={Object.entries(WEIGHT_MODE_CONFIG).map(([value, { label, description }]) => ({
-                            value,
-                            label: `${label} — ${description}`,
-                        }))}
-                        value={weightMode}
-                        onChange={(e) => setWeightMode(e.target.value as PollWeightMode)}
-                        fullWidth
-                    />
-                </div>
+                <FormField required>
+                    <FormLabel>Modo de contagem</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Select
+                                {...props}
+                                options={Object.entries(WEIGHT_MODE_CONFIG).map(([value, { label, description }]) => ({
+                                    value,
+                                    label: `${label} — ${description}`,
+                                }))}
+                                value={weightMode}
+                                onChange={(e) => setWeightMode(e.target.value as PollWeightMode)}
+                                fullWidth
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
                 {type !== "yes_no" && (
                     <div className="space-y-2">
-                        <label className="block text-body font-bold text-slate-500 uppercase">
-                            Opções *
-                        </label>
+                        <FormLabel>Opções</FormLabel>
                         {options.map((option, index) => (
                             <div key={index} className="flex gap-2">
-                                <Input
-                                    value={option}
-                                    onChange={(e) => updateOption(index, e.target.value)}
-                                    placeholder={`Opção ${index + 1}`}
-                                    className="flex-1"
-                                />
+                                <FormField className="flex-1">
+                                    <FormControl>
+                                        {(props) => (
+                                            <Input
+                                                {...props}
+                                                value={option}
+                                                onChange={(e) => updateOption(index, e.target.value)}
+                                                placeholder={`Opção ${index + 1}`}
+                                            />
+                                        )}
+                                    </FormControl>
+                                </FormField>
                                 {options.length > 2 && (
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => removeOption(index)}
+                                        className="mt-0.5"
                                     >
                                         <X className="w-4 h-4" />
                                     </Button>
@@ -175,11 +201,11 @@ export function PollModal({ isOpen, onClose, buildingId }: Props) {
                                 <Plus className="w-4 h-4 mr-1" /> Adicionar opção
                             </Button>
                         )}
-                        <p className="text-label text-slate-400">
+                        <FormDescription>
                             {type === "single_choice"
                                 ? "Os votantes poderão escolher apenas uma opção"
                                 : "Os votantes poderão escolher várias opções"}
-                        </p>
+                        </FormDescription>
                     </div>
                 )}
 

@@ -5,6 +5,7 @@ import { Modal } from "@/components/ui/Modal"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
+import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
 import { createDiscussion, updateDiscussion } from "@/app/actions/discussions"
 import { Discussion } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
@@ -85,20 +86,36 @@ export function DiscussionModal({ isOpen, onClose, buildingId, discussion }: Pro
             title={isEditing ? "Editar Discussão" : "Nova Discussão"}
         >
             <div className="space-y-4">
-                <Input
-                    label="Título *"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Ex: Sugestão para melhorias no jardim"
-                />
+                <FormField required>
+                    <FormLabel>Título</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Input
+                                {...props}
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Ex: Sugestão para melhorias no jardim"
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
-                <Textarea
-                    label="Conteúdo"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Descreva o tema da discussão..."
-                    rows={5}
-                />
+                <FormField>
+                    <FormLabel>Conteúdo</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Textarea
+                                {...props}
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                placeholder="Descreva o tema da discussão..."
+                                rows={5}
+                            />
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
 
                 <div className="flex gap-2 pt-2">
                     <Button variant="outline" onClick={handleClose} disabled={isLoading}>

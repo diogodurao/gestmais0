@@ -6,11 +6,11 @@ import { ArrowLeft, Trash2, Lock } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
-import { PollStatusBadge } from "./PollStatusBadge"
+import { Badge } from "@/components/ui/Badge"
 import { VoteForm } from "./VoteForm"
 import { PollResults } from "./PollResults"
 import { Poll, PollVote, PollResults as PollResultsType } from "@/lib/types"
-import { POLL_TYPE_CONFIG, WEIGHT_MODE_CONFIG } from "@/lib/constants"
+import { POLL_STATUS_CONFIG, POLL_TYPE_CONFIG, WEIGHT_MODE_CONFIG } from "@/lib/constants"
 import { closePoll, deletePoll } from "@/app/actions/polls"
 import { useToast } from "@/hooks/use-toast"
 import { formatDistanceToNow } from "@/lib/format"
@@ -87,7 +87,7 @@ export function PollDetail({ poll, votes, results, userVote, isManager, building
                 <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <PollStatusBadge status={poll.status} />
+                            <Badge status={poll.status} config={POLL_STATUS_CONFIG} />
                             <span className="text-label text-slate-400">
                                 {formatDistanceToNow(poll.createdAt)}
                             </span>
