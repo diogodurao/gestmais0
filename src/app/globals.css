@@ -106,6 +106,10 @@
     @apply bg-amber-50 text-amber-700 border-amber-200;
   }
 
+  .status-neutral {
+    @apply bg-slate-50 text-slate-500 border-slate-200;
+  }
+
   /* SETTINGS GRID */
   .label-col {
     @apply bg-slate-50 text-slate-500 font-bold px-3 py-2 border-r border-slate-200 flex items-center uppercase tracking-tight;

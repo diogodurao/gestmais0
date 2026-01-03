@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { cn } from "@/lib/utils"
 import { getMonthName, formatCurrency } from "@/lib/format"
@@ -60,8 +60,8 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
             return true
         })
 
-    // Handle cell click
-    const handleCellClick = useDebouncedCallback(async (
+    // Handle cell click logic - memoized to prevent debouncer recreation on unrelated renders
+    const handleCellClickLogic = useCallback(async (
         paymentId: number,
         currentStatus: PaymentStatus,
         expectedAmount: number
@@ -108,7 +108,9 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
             status: newStatus,
             paidAmount: newPaidAmount,
         })
-    }, 300)
+    }, [toolMode, readOnly, updatePayment])
+
+    const handleCellClick = useDebouncedCallback(handleCellClickLogic, 300)
 
     // Export handlers
     const handleExportPDF = () => {

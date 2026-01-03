@@ -8,8 +8,19 @@ import { Button } from "@/components/ui/Button"
 import { Layers, Plus, ChevronRight, FileText } from "lucide-react"
 import { getExtraordinaryProjects } from "@/app/actions/extraordinary"
 import { type ExtraordinaryProjectSummary } from "@/lib/types"
-import { ExtraProjectCreate } from "./ExtraProjectCreate"
+import { formatCurrency } from "@/lib/format"
+import dynamic from "next/dynamic"
+
+// Dynamic Imports
+const ExtraProjectCreate = dynamic(
+    () => import("./ExtraProjectCreate").then(mod => mod.ExtraProjectCreate),
+    {
+        ssr: false,
+        loading: () => <div className="p-8 text-center text-slate-400">A carregar formulário...</div>
+    }
+)
 import { useToast } from "@/hooks/use-toast"
+import { Skeleton } from "@/components/ui/Skeleton"
 
 type Apartment = {
     id: number
@@ -89,10 +100,16 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
             </CardHeader>
             <CardContent className="p-0">
                 {isLoading ? (
-                    <div className="p-8 text-center">
-                        <div className="animate-pulse text-label text-slate-400 uppercase">
-                            A carregar...
-                        </div>
+                    <div className="p-4 space-y-4">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex justify-between items-center">
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-3 w-48" />
+                                </div>
+                                <Skeleton className="h-4 w-4" />
+                            </div>
+                        ))}
                     </div>
                 ) : projects.length === 0 ? (
                     <div className="p-8 text-center">
@@ -130,10 +147,7 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                                     </h3>
                                     <div className="flex items-center gap-3 mt-1">
                                         <span className="text-body text-slate-400 font-mono">
-                                            {(project.totalBudget / 100).toLocaleString("pt-PT", {
-                                                style: "currency",
-                                                currency: "EUR"
-                                            })}
+                                            {formatCurrency(project.totalBudget)}
                                         </span>
                                         <span className="text-micro text-slate-300">•</span>
                                         <span className="text-body text-slate-400">

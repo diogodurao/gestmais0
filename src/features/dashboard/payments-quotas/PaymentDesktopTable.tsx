@@ -4,7 +4,7 @@ import { useMemo, useRef, useEffect, useState } from 'react'
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window'
 
 import { cn } from "@/lib/utils"
-import { MONTHS_PT } from "@/lib/constants"
+import { MONTHS_PT, PAYMENT_TABLE_LAYOUT } from "@/lib/constants"
 import { formatCurrency } from "@/lib/format"
 import { type PaymentToolType, type PaymentData } from "@/lib/types"
 
@@ -18,11 +18,8 @@ interface RowData {
 }
 
 // Layout constants
-const CELL_WIDTH = 72
-const UNIT_WIDTH = 64
-const RESIDENT_WIDTH = 160
-const TOTAL_WIDTH = 88
-const ROW_HEIGHT = 36
+// Layout constants
+const { CELL_WIDTH, UNIT_WIDTH, RESIDENT_WIDTH, TOTAL_WIDTH, ROW_HEIGHT } = PAYMENT_TABLE_LAYOUT
 
 interface PaymentDesktopTableProps {
     data: PaymentData[]

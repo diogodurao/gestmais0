@@ -16,7 +16,7 @@ export default async function DashboardLayout({
     })
 
     // Fetch ONCE, pass to context
-    const initialData = await getDashboardContext(session)
+    const initialData = await getDashboardContext(session as any)
 
     return (
         <DashboardProvider initialData={initialData}>

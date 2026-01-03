@@ -21,8 +21,8 @@ export default async function DashboardPage() {
     const sessionUser = session.user as unknown as SessionUser
 
     if (isManager(sessionUser)) {
-        return <ManagerDashboard session={session} />
+        return <ManagerDashboard session={session as any} />
     }
 
-    return <ResidentDashboard session={session} />
+    return <ResidentDashboard session={session as any} />
 }

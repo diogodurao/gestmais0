@@ -20,6 +20,7 @@ import {
     type PaymentData
 } from "@/lib/types"
 import { PAYMENT_TOOL_TO_STATUS } from "@/lib/constants"
+import { useOptimisticList } from "@/hooks/useOptimisticList"
 
 interface PaymentGridProps {
     data: PaymentData[]
@@ -40,7 +41,12 @@ export function PaymentGrid({
     const { toast } = useToast()
 
     // Local state for optimistic updates
-    const [localData, setLocalData] = useState<PaymentData[]>(data)
+    const {
+        data: localData,
+        optimisticUpdate,
+        rollback
+    } = useOptimisticList(data, (item) => item.apartmentId)
+
     const [searchTerm, setSearchTerm] = useState("")
     const [highlightedId, setHighlightedId] = useState<number | null>(null)
 
@@ -48,11 +54,6 @@ export function PaymentGrid({
     const [filterMode, setFilterMode] = useState<PaymentFilterMode>("all")
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null)
-
-    // Sync local data when props change (after server refresh)
-    useEffect(() => {
-        setLocalData(data)
-    }, [data])
 
     // Clear highlight after delay
     useEffect(() => {
@@ -69,7 +70,7 @@ export function PaymentGrid({
         },
         onError: () => {
             // Rollback to server state on error
-            setLocalData(data)
+            rollback()
             toast({
                 title: "Erro",
                 description: "Não foi possível atualizar o pagamento",
@@ -144,9 +145,7 @@ export function PaymentGrid({
         const monthNum = monthIdx + 1
 
         // Optimistic update - update UI immediately
-        setLocalData(prev => prev.map(apt => {
-            if (apt.apartmentId !== aptId) return apt
-
+        optimisticUpdate(aptId, (apt) => {
             const newPayments = {
                 ...apt.payments,
                 [monthNum]: {
@@ -169,7 +168,7 @@ export function PaymentGrid({
                 totalPaid,
                 balance
             }
-        }))
+        })
 
         // Fire API call (errors handled by useAsyncAction with rollback)
         await updateStatus(aptId, monthNum, year, dbStatus as any)

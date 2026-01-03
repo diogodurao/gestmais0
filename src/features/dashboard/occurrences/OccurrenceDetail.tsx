@@ -7,7 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Select } from "@/components/ui/Select"
-import { StatusBadge } from "./StatusBadge"
+import { StatusBadge } from "@/components/ui/StatusBadge"
 import { OccurrenceModal } from "./OccurrenceModal"
 import { CommentSection } from "./CommentSection"
 import { PhotoGallery } from "./PhotoGallery"
@@ -87,7 +87,7 @@ export function OccurrenceDetail({
                 <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <StatusBadge status={occurrence.status} />
+                            <StatusBadge status={occurrence.status} config={OCCURRENCE_STATUS_CONFIG} />
                             <span className="text-label text-slate-400">
                                 {formatDistanceToNow(occurrence.createdAt)}
                             </span>

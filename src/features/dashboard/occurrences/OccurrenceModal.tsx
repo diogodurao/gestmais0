@@ -11,6 +11,7 @@ import { createOccurrence, updateOccurrence } from "@/app/actions/occurrences"
 import { Occurrence } from "@/lib/types"
 import { MAX_PHOTOS_PER_OCCURRENCE } from "@/lib/constants"
 import { useToast } from "@/hooks/use-toast"
+import { useAsyncAction } from "@/hooks/useAsyncAction"
 
 interface SelectedPhoto {
     file: File
@@ -33,7 +34,6 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
     const [type, setType] = useState(occurrence?.type || "")
     const [description, setDescription] = useState(occurrence?.description || "")
     const [photos, setPhotos] = useState<SelectedPhoto[]>([])
-    const [isLoading, setIsLoading] = useState(false)
 
     const resetForm = () => {
         if (!occurrence) {
@@ -51,63 +51,78 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
         onClose()
     }
 
+    const { execute: createOcc, isPending: isCreating } = useAsyncAction(async (data: {
+        title: string
+        type: string
+        description: string
+        photos: SelectedPhoto[]
+    }) => {
+        const result = await createOccurrence({
+            buildingId,
+            title: data.title,
+            type: data.type,
+            description: data.description || undefined,
+        })
+
+        if (!result.success) {
+            return result
+        }
+
+        // Upload photos if any
+        if (data.photos.length > 0) {
+            const formData = new FormData()
+            formData.append('occurrenceId', result.data.id.toString())
+            data.photos.forEach(p => formData.append('photos', p.file))
+
+            try {
+                await fetch('/api/occurrences/upload', {
+                    method: 'POST',
+                    body: formData,
+                })
+            } catch (error) {
+                console.error('Photo upload error:', error)
+                // Don't fail the whole operation
+            }
+        }
+
+        return result
+    }, {
+        successMessage: "Ocorrência criada com sucesso",
+        onSuccess: () => {
+            router.refresh()
+            handleClose()
+        }
+    })
+
+    const { execute: updateOcc, isPending: isUpdating } = useAsyncAction(updateOccurrence, {
+        successMessage: "Ocorrência atualizada com sucesso",
+        onSuccess: () => {
+            handleClose()
+        }
+    })
+
+    const isLoading = isCreating || isUpdating
+
     const handleSubmit = async () => {
         if (!title.trim() || !type.trim()) {
             toast({ title: "Erro", description: "Preencha os campos obrigatórios", variant: "destructive" })
             return
         }
 
-        setIsLoading(true)
-
         if (isEditing && occurrence) {
-            const result = await updateOccurrence(occurrence.id, {
+            await updateOcc(occurrence.id, {
                 title: title.trim(),
                 type: type.trim(),
                 description: description.trim() || undefined,
             })
-
-            if (result.success) {
-                toast({ title: "Sucesso", description: "Ocorrência atualizada" })
-                handleClose()
-            } else {
-                toast({ title: "Erro", description: result.error, variant: "destructive" })
-            }
         } else {
-            // Create occurrence first
-            const result = await createOccurrence({
-                buildingId,
+            await createOcc({
                 title: title.trim(),
                 type: type.trim(),
-                description: description.trim() || undefined,
+                description: description.trim(),
+                photos
             })
-
-            if (result.success) {
-                // Upload photos if any
-                if (photos.length > 0) {
-                    const formData = new FormData()
-                    formData.append('occurrenceId', result.data.id.toString())
-                    photos.forEach(p => formData.append('photos', p.file))
-
-                    try {
-                        await fetch('/api/occurrences/upload', {
-                            method: 'POST',
-                            body: formData,
-                        })
-                    } catch (error) {
-                        console.error('Photo upload error:', error)
-                        // Don't fail the whole operation
-                    }
-                }
-
-                toast({ title: "Sucesso", description: "Ocorrência criada" })
-                router.refresh()
-                handleClose()
-            } else {
-                toast({ title: "Erro", description: result.error, variant: "destructive" })
-            }
         }
-
-        setIsLoading(false)
     }
 
     return (

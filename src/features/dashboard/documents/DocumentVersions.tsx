@@ -8,6 +8,7 @@ import { Document } from "@/lib/types"
 import { formatFileSize } from "@/lib/utils"
 import { getDocumentVersions, getDocumentDownloadUrl } from "@/app/actions/documents"
 import { formatDistanceToNow } from "@/lib/format"
+import { Skeleton } from "@/components/ui/Skeleton"
 
 interface Props {
     document: Document | null
@@ -47,7 +48,17 @@ export function DocumentVersions({ document, onClose }: Props) {
         >
             <div className="space-y-2">
                 {isLoading ? (
-                    <p className="text-body text-slate-500 text-center py-4">A carregar...</p>
+                    <div className="space-y-2 p-1">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex justify-between items-center p-3 border border-slate-100 rounded-lg">
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-48" />
+                                </div>
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                            </div>
+                        ))}
+                    </div>
                 ) : versions.length === 0 ? (
                     <p className="text-body text-slate-500 text-center py-4">Sem versões anteriores</p>
                 ) : (

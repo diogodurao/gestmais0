@@ -10,11 +10,11 @@ import { NotificationCard } from "@/features/dashboard/notifications/Notificatio
 import type { SessionUser } from "@/lib/types";
 
 interface ResidentDashboardProps {
-    session: any;
+    session: { user: SessionUser };
 }
 
 export async function ResidentDashboard({ session }: ResidentDashboardProps) {
-    const sessionUser = session.user as unknown as SessionUser;
+    const sessionUser = session.user;
     const notifications = await getNotifications(5);
 
     let residentBuildingInfo = null;

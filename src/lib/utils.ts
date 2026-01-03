@@ -1,5 +1,5 @@
 import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { extendTailwindMerge } from "tailwind-merge"
 import { FLOOR_OPTIONS } from "./constants"
 import { Check, AlertCircle, LucideIcon } from "lucide-react"
 
@@ -8,10 +8,22 @@ import { Check, AlertCircle, LucideIcon } from "lucide-react"
 // ==========================================
 
 /**
+ * Custom tailwind-merge configuration to handle semantic typography classes
+ * preventing them from conflicting with text colors
+ */
+const customTwMerge = extendTailwindMerge({
+    extend: {
+        classGroups: {
+            'font-size': ['text-micro', 'text-label', 'text-body', 'text-content', 'text-heading'],
+        },
+    },
+})
+
+/**
  * Merge Tailwind classes with clsx
  */
 export function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs))
+    return customTwMerge(clsx(inputs))
 }
 
 // ==========================================

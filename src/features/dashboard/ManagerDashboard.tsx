@@ -15,15 +15,14 @@ import { EvaluationWidget } from "@/features/dashboard/evaluations/EvaluationWid
 import { Lock } from "lucide-react";
 import { getNotifications } from "@/app/actions/notification";
 import { NotificationCard } from "@/features/dashboard/notifications/NotificationCard";
-// Assuming Session is imported from standard next-auth or custom types.
 import type { SessionUser } from "@/lib/types";
 
 interface ManagerDashboardProps {
-    session: any; // Using any for session object structure as defined in page.tsx currently
+    session: { user: SessionUser };
 }
 
 export async function ManagerDashboard({ session }: ManagerDashboardProps) {
-    const sessionUser = session.user as unknown as SessionUser;
+    const sessionUser = session.user;
 
     let buildingInfo = null;
     let buildingCode = "N/A";
@@ -31,7 +30,7 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
     let unclaimedUnits: Array<{ id: number; unit: string }> = [];
     const notifications = await getNotifications(5);
 
-    let apartmentsData: any[] = []; // Store for onboarding check
+    let apartmentsData: Awaited<ReturnType<typeof getBuildingApartments>> = []; // Store for onboarding check
     let evaluationStatus = null;
 
     try {

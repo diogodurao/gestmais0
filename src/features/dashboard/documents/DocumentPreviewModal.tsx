@@ -5,6 +5,7 @@ import { Download, X } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Document } from "@/lib/types"
 import { getDocumentDownloadUrl } from "@/app/actions/documents"
+import { Skeleton } from "@/components/ui/Skeleton"
 
 interface Props {
     document: Document | null
@@ -70,8 +71,8 @@ export function DocumentPreviewModal({ document, onClose }: Props) {
                 {/* Content */}
                 <div className="flex-1 overflow-auto p-4 bg-slate-100">
                     {isLoading ? (
-                        <div className="flex items-center justify-center h-full">
-                            <p className="text-body text-slate-500">A carregar...</p>
+                        <div className="w-full h-full min-h-[600px] bg-white rounded-lg p-8">
+                            <Skeleton className="w-full h-full rounded-lg" />
                         </div>
                     ) : url ? (
                         isPdf ? (
