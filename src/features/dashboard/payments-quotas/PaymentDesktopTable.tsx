@@ -137,15 +137,17 @@ export function PaymentDesktopTable({
     onCellClick,
 }: PaymentDesktopTableProps) {
     const containerRef = useRef<HTMLDivElement>(null)
-    const [listHeight, setListHeight] = useState(400)
+    const [maxListHeight, setMaxListHeight] = useState(400)
 
-    // Calculate dynamic height based on container
+    // Calculate dynamic available height based on container
     useEffect(() => {
         const updateHeight = () => {
             if (containerRef.current) {
                 const rect = containerRef.current.getBoundingClientRect()
+                // Leave some space for footer/padding (100px)
                 const availableHeight = window.innerHeight - rect.top - 100
-                setListHeight(Math.max(300, Math.min(availableHeight, 600)))
+                // Set constraints: min 300px, max (available), cap at 600px
+                setMaxListHeight(Math.max(300, Math.min(availableHeight, 600)))
             }
         }
 
@@ -166,27 +168,15 @@ export function PaymentDesktopTable({
 
     const totalWidth = UNIT_WIDTH + RESIDENT_WIDTH + (CELL_WIDTH * 12) + (TOTAL_WIDTH * 2)
 
-    // Empty state
-    if (data.length === 0) {
-        return (
-            <div className="hidden md:flex items-center justify-center h-64 border border-dashed border-slate-300 bg-slate-50/50 rounded-sm m-4">
-                <div className="text-center">
-                    <p className="text-label font-bold text-slate-400 uppercase tracking-widest">
-                        [ Sem frações registadas ]
-                    </p>
-                    <p className="text-micro text-slate-400 mt-1">
-                        Adicione frações nas definições
-                    </p>
-                </div>
-            </div>
-        )
-    }
+    // Calculate actual height needed for items, bounded by the max available height
+    // This prevents the table from taking up huge whitespace when there are few items
+    const listHeight = Math.min(Math.max(data.length * ROW_HEIGHT, ROW_HEIGHT), maxListHeight)
 
     return (
         <div ref={containerRef} className="hidden md:block overflow-hidden border-b border-slate-200 bg-white">
             <div className="overflow-x-auto">
                 <div style={{ minWidth: totalWidth }}>
-                    {/* Header */}
+                    {/* Header - Always visible to prevent layout shift */}
                     <div
                         className="flex bg-slate-100 border-b-2 border-slate-300 text-micro font-bold uppercase tracking-wider text-slate-600 sticky top-0 z-20"
                         style={{ height: ROW_HEIGHT }}
@@ -219,24 +209,41 @@ export function PaymentDesktopTable({
                             Pago
                         </div>
                         <div
-                            className="sticky right-0 z-30 bg-slate-50 px-2 flex items-center justify-end"
+                            className="sticky right-0 z-30 bg-slate-50 px-2 flex items-center justify-end text-right"
                             style={{ width: TOTAL_WIDTH, minWidth: TOTAL_WIDTH }}
                         >
                             Dívida
                         </div>
                     </div>
 
-                    {/* Virtualized Body - Correct react-window API */}
-                    <List
-                        height={listHeight}
-                        itemCount={data.length}
-                        itemSize={ROW_HEIGHT}
-                        itemData={itemData}
-                        width="100%"
-                        overscanCount={5}
-                    >
-                        {ApartmentRow}
-                    </List>
+                    {/* Content */}
+                    {data.length > 0 ? (
+                        <List
+                            height={listHeight}
+                            itemCount={data.length}
+                            itemSize={ROW_HEIGHT}
+                            itemData={itemData}
+                            width="100%"
+                            overscanCount={5}
+                        >
+                            {ApartmentRow}
+                        </List>
+                    ) : (
+                        // Empty State - Rendered inside the table structure
+                        <div
+                            className="flex items-center justify-center border-dashed border-slate-300 bg-slate-50/50"
+                            style={{ height: '200px' }}
+                        >
+                            <div className="text-center">
+                                <p className="text-label font-bold text-slate-400 uppercase tracking-widest">
+                                    [ Sem frações ]
+                                </p>
+                                <p className="text-micro text-slate-400 mt-1">
+                                    Nenhum registo corresponde ao filtro
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

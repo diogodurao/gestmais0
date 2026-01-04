@@ -10,7 +10,7 @@ export function Pricing() {
                     </h2>
                     <br />
                     <p className="text-slate-500 mt-4 bg-white/80 backdrop-blur-sm inline-block px-3 py-1 text-sm border border-slate-200">
-                        Preços transparentes sem variáveis ocultas.
+                        Preços transparentes.
                     </p>
                 </div>
 
@@ -33,7 +33,7 @@ export function Pricing() {
                             <div className="w-5 h-5 bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center rounded-sm">
                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
                             </div>
-                            Suporte Prioritário
+                            Automatização integrada
                         </li>
                         <li className="flex items-center gap-3 text-slate-700 font-medium text-sm">
                             <div className="w-5 h-5 bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center rounded-sm">

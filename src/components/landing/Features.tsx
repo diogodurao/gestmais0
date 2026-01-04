@@ -19,11 +19,11 @@ export function Features() {
                                     <LayoutGrid className="w-4 h-4 text-blue-600" />
                                 </div>
                                 <h3 className="font-bold text-slate-900 uppercase tracking-tighter text-sm">
-                                    Arquitetura de Livro
+                                    Utilização simples
                                 </h3>
                             </div>
                             <ul className="space-y-3 pl-2 border-l border-slate-200">
-                                {["Registo imutável centralizado", "Vistas de alta densidade", "Varredura anual em segundos"].map((item, i) => (
+                                {["Fácil de usar", "Interface intuitiva", "Funcionalidades essenciais"].map((item, i) => (
                                     <li key={i} className="flex items-start gap-2 text-xs font-mono text-slate-600">
                                         <span>- {item}</span>
                                     </li>
@@ -31,7 +31,6 @@ export function Features() {
                             </ul>
                         </div>
 
-                        {/* OCCURRENCES */}
                         <div className="group">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="w-8 h-8 bg-emerald-50 border border-emerald-200 flex items-center justify-center">
@@ -42,7 +41,7 @@ export function Features() {
                                 </h3>
                             </div>
                             <ul className="space-y-3 pl-2 border-l border-slate-200">
-                                {["Permissões granulares", "Transparência total", "Acesso Gestor vs Residente"].map((item, i) => (
+                                {["Acesso administrador e residente", "Transparência total", "Atualização de dados em tempo real "].map((item, i) => (
                                     <li key={i} className="flex items-start gap-2 text-xs font-mono text-slate-600">
                                         <span>- {item}</span>
                                     </li>
@@ -50,7 +49,6 @@ export function Features() {
                             </ul>
                         </div>
 
-                        {/* DOCUMENTS */}
                         <div className="group">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="w-8 h-8 bg-amber-50 border border-amber-200 flex items-center justify-center">
@@ -61,7 +59,7 @@ export function Features() {
                                 </h3>
                             </div>
                             <ul className="space-y-3 pl-2 border-l border-slate-200">
-                                {["Configuração única", "Cálculo por permilagem", "Rastreio automático de dívida"].map((item, i) => (
+                                {["Identificação automática de pagamentos", "Cálculo por permilagem", "Informações adicionais"].map((item, i) => (
                                     <li key={i} className="flex items-start gap-2 text-xs font-mono text-slate-600">
                                         <span>- {item}</span>
                                     </li>

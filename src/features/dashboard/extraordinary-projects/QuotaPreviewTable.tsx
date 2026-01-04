@@ -69,7 +69,7 @@ export function QuotaPreviewTable({
                             {quotaPreview.map((row, idx) => (
                                 <tr key={idx} className="border-t border-slate-100">
                                     <td className="p-2 font-mono font-bold">{row.unit}</td>
-                                    <td className="p-2 text-right font-mono">{row.permillage}‰</td>
+                                    <td className="p-2 text-right font-mono">{row.permillage}%</td>
                                     <td className="p-2 text-right font-mono">
                                         {formatCurrency(row.totalShare)}
                                     </td>

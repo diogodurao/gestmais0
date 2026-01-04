@@ -49,7 +49,7 @@ export function Sidebar() {
                         const isSubscriptionRestricted = userRole === 'manager' && link.requiresSubscription && !hasActiveSubscription
                         const isSetupRestricted = link.requiresSetup && !setupComplete
 
-                        const isDisabled = isSetupRestricted || isSubscriptionRestricted
+                        const isDisabled = isSetupRestricted
 
                         if (isDisabled) {
                             return (

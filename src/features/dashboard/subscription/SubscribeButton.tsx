@@ -48,10 +48,12 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
                 disabled={isPending}
                 fullWidth
                 size="lg"
+                variant="primary"
                 className="h-12 text-sm tracking-widest"
             >
                 {isPending ? "A redirecionar..." : "CONFIRMAR SUBSCRIÇÃO"}
             </Button>
+            <p className="text-micro text-center text-slate-400 uppercase font-bold tracking-tighter">*valor sujeito a IVA*</p>
             <p className="text-micro text-center text-slate-400 uppercase font-bold tracking-tighter">Transação Segura via Stripe</p>
         </div>
     )

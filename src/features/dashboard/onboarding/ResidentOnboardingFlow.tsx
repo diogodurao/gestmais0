@@ -6,6 +6,7 @@ import { Check, ChevronRight, Building2, Home, CreditCard } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { joinBuilding, selectApartment, completeResidentOnboarding } from "@/app/actions/onboarding"
+import { isValidIban } from "@/lib/validations"
 
 type UserData = {
     id: string
@@ -292,7 +293,7 @@ export function ResidentOnboardingFlow({
                                     </p>
                                 </div>
 
-                                <div>
+                                <div className="relative">
                                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
                                         Número IBAN
                                     </label>
@@ -301,8 +302,11 @@ export function ResidentOnboardingFlow({
                                         value={iban}
                                         onChange={(e) => setIban(e.target.value.toUpperCase())}
                                         placeholder="PT50 1234 4321 5678 9012 3456 7"
-                                        className="w-full px-4 py-3 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400 uppercase"
+                                        className="w-full px-4 py-3 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400 uppercase pr-10"
                                     />
+                                    {isValidIban(iban) && (
+                                        <Check className="absolute right-3 top-3 w-5 h-5 text-emerald-500" />
+                                    )}
                                 </div>
 
                                 {selectedApartment && (
@@ -321,7 +325,7 @@ export function ResidentOnboardingFlow({
                                 <Button
                                     fullWidth
                                     onClick={handleCompleteSetup}
-                                    disabled={isLoading}
+                                    disabled={isLoading || !isValidIban(iban)}
                                 >
                                     {isLoading ? "A CARREGAR..." : "CONCLUIR CONFIGURAÇÃO"}
                                 </Button>

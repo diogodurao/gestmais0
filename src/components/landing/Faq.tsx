@@ -3,12 +3,12 @@ import { ChevronDown } from "lucide-react";
 export function Faq() {
     const items = [
         {
-            question: "Como funciona a importação de dados?",
-            answer: "Pode importar a lista de frações e residentes via CSV ou configurar manualmente no nosso assistente passo-a-passo."
+            question: "O que é a GestMais?",
+            answer: "A GestMais é um software de gestão de condomínios que visa reduzir o trabalho administrativo a 90% e proporcionar transparência e velocidade na gestão de condomínios."
         },
         {
-            question: "Os residentes têm acesso a quê?",
-            answer: "Os residentes têm acesso a todas as informações do prédio, incluindo situação financeira, histórico, ocorrências, calendário do prédio, etc..."
+            question: "Como funciona?",
+            answer: "O administrador do condominio cria o ecossitema do prédio com todos os dados necessários, e o residente terá acesso via um identifcador único ao prédio."
         }
     ];
 

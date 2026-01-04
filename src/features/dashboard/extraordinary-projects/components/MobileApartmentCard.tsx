@@ -51,7 +51,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                                 <span className="text-body text-slate-400 italic">Sem residente</span>
                             )}
                             <div className="text-label text-slate-400 mt-0.5">
-                                {apartment.permillage.toFixed(2)}‰ • {formatCurrency(apartment.totalShare)}
+                                {apartment.permillage.toFixed(2)}% • {formatCurrency(apartment.totalShare)}
                             </div>
                         </div>
                     </div>
