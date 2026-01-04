@@ -10,28 +10,36 @@ import { InviteCodePanel } from "@/features/dashboard/overview/InviteCodePanel";
 import { SystemStatusPanel } from "@/features/dashboard/overview/SystemStatusPanel";
 import { BuildingMetricsPanel } from "@/features/dashboard/overview/BuildingMetricsPanel";
 import { DashboardGrid } from "@/components/layout/DashboardGrid";
+import { getEvaluationStatus } from "@/app/actions/evaluations";
+import { EvaluationWidget } from "@/features/dashboard/evaluations/EvaluationWidget";
 import { Lock } from "lucide-react";
-// Assuming Session is imported from standard next-auth or custom types.
+import { getNotifications } from "@/app/actions/notification";
+import { NotificationCard } from "@/features/dashboard/notifications/NotificationCard";
 import type { SessionUser } from "@/lib/types";
 
 interface ManagerDashboardProps {
-    session: any; // Using any for session object structure as defined in page.tsx currently
+    session: { user: SessionUser };
 }
 
 export async function ManagerDashboard({ session }: ManagerDashboardProps) {
-    const sessionUser = session.user as unknown as SessionUser;
+    const sessionUser = session.user;
 
     let buildingInfo = null;
     let buildingCode = "N/A";
     let residents: Array<{ user: { id: string; name: string; email: string }; apartment: { id: number; unit: string } | null }> = [];
     let unclaimedUnits: Array<{ id: number; unit: string }> = [];
+    const notifications = await getNotifications(5);
 
-    let apartmentsData: any[] = []; // Store for onboarding check
+    let apartmentsData: Awaited<ReturnType<typeof getBuildingApartments>> = []; // Store for onboarding check
+    let evaluationStatus = null;
 
     try {
         const building = await getOrCreateManagerBuilding();
         buildingInfo = building;
         buildingCode = building.code;
+
+        const evaluationStatusResult = await getEvaluationStatus(building.id);
+        evaluationStatus = evaluationStatusResult;
 
         apartmentsData = await getBuildingApartments(building.id);
 
@@ -89,7 +97,10 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
             <DashboardGrid variant="wide">
                 <PaymentStatusCard key="personal-status" userId={session.user.id} />
                 {buildingInfo && (
-                    <PaymentStatusCard key="building-status" buildingId={buildingInfo.id} />
+                    <>
+                        <PaymentStatusCard key="building-status" buildingId={buildingInfo.id} />
+                        {evaluationStatus && <EvaluationWidget status={evaluationStatus} />}
+                    </>
                 )}
             </DashboardGrid>
 
@@ -110,6 +121,7 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
                     residentBuildingInfo={null}
                     totalApartments={buildingInfo?.totalApartments ?? undefined}
                 />
+                <NotificationCard notifications={notifications} />
             </DashboardGrid>
 
             {/* Main content */}

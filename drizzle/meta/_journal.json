@@ -15,6 +15,69 @@
       "when": 1765971663136,
       "tag": "0001_living_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767204952230,
+      "tag": "0002_green_the_hunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1767284689003,
+      "tag": "0003_pretty_warstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1767288418047,
+      "tag": "0004_dusty_red_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1767291831264,
+      "tag": "0005_boring_secret_warriors",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1767295074254,
+      "tag": "0006_living_corsair",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1767359864561,
+      "tag": "0007_high_star_brand",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1767360322553,
+      "tag": "0008_flat_roughhouse",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1767380226101,
+      "tag": "0009_white_giant_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1767382038255,
+      "tag": "0010_tidy_bruce_banner",
+      "breakpoints": true
     }
   ]
 }

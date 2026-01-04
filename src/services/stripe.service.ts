@@ -2,6 +2,7 @@ import { db } from "@/db"
 import { building, user } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { stripe } from "@/lib/stripe"
+import { getAppUrl } from "@/lib/utils"
 import { revalidatePath } from "next/cache"
 import type Stripe from 'stripe'
 
@@ -136,24 +137,23 @@ export class StripeService {
             if (!process.env.STRIPE_PRICE_ID || process.env.STRIPE_PRICE_ID === "undefined") {
                 throw new Error("STRIPE_PRICE_ID is missing or invalid in environment variables")
             }
-            if (!process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL === "undefined") {
-                throw new Error("NEXT_PUBLIC_APP_URL is missing or invalid in environment variables")
-            }
         }
 
         const createSession = async (cid: string) => {
             validateEnv()
+            const appUrl = getAppUrl()
             console.log(`[StripeService] Creating session for Customer: ${cid}, Price: ${process.env.STRIPE_PRICE_ID?.substring(0, 8)}...`)
             return await stripe.checkout.sessions.create({
                 customer: cid,
                 mode: 'subscription',
                 payment_method_types: ['card'],
                 line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity }],
-                success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-                cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?canceled=true`,
+                success_url: `${appUrl}/dashboard?success=true`,
+                cancel_url: `${appUrl}/dashboard/settings?canceled=true`,
                 metadata: { buildingId, userId },
             })
         }
+
 
         try {
             if (!stripeCustomerId) {

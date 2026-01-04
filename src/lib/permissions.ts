@@ -5,7 +5,7 @@ import type { SessionUser, UserRole, SubscriptionStatus } from "./types"
 // ==========================================
 
 type BuildingContext = {
-    subscriptionStatus?: string | null
+    subscriptionStatus?: SubscriptionStatus | string | null
     managerId?: string
     setupComplete?: boolean | null
 }
@@ -189,7 +189,7 @@ export function requireActiveSubscription(building: BuildingContext | null | und
  * Combined check: manager + active subscription
  */
 export function requireManagerWithSubscription(
-    user: SessionUser | null, 
+    user: SessionUser | null,
     building: BuildingContext | null | undefined
 ): asserts user is SessionUser {
     requireManager(user)

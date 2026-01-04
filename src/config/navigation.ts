@@ -10,7 +10,13 @@ import {
     CreditCard,
     Hammer,
     Settings,
+    Calendar,
     type LucideIcon,
+    AlertTriangle,
+    Vote,
+    MessageSquare,
+    BarChart3,
+    FolderOpen,
 } from "lucide-react"
 
 // ===========================================
@@ -56,6 +62,42 @@ export const managerNavItems: NavItem[] = [
         requiresSubscription: true,
     },
     {
+        href: "/dashboard/calendar",
+        label: "Agenda",
+        icon: Calendar,
+        requiresSetup: true,
+    },
+    {
+        href: "/dashboard/occurrences",
+        label: "Ocorrências",
+        icon: AlertTriangle,
+        requiresSetup: true,
+    },
+    {
+        href: "/dashboard/polls",
+        label: "Votações",
+        icon: Vote,
+        requiresSetup: true,
+    },
+    {
+        href: "/dashboard/discussions",
+        label: "Discussões",
+        icon: MessageSquare,
+        requiresSetup: true,
+    },
+    {
+        href: "/dashboard/evaluations",
+        label: "Avaliação Mensal",
+        icon: BarChart3,
+        requiresSetup: true,
+    },
+    {
+        href: "/dashboard/documents",
+        label: "Documentos",
+        icon: FolderOpen,
+        requiresSetup: true,
+    },
+    {
         href: ROUTES.DASHBOARD.SETTINGS,
         label: "Definições",
         icon: Settings,
@@ -82,6 +124,37 @@ export const residentNavItems: NavItem[] = [
         href: ROUTES.DASHBOARD.EXTRAORDINARY,
         label: "Quotas Extra",
         icon: Hammer,
+
+    },
+    {
+        href: "/dashboard/calendar",
+        label: "Agenda",
+        icon: Calendar,
+    },
+    {
+        href: "/dashboard/occurrences",
+        label: "Ocorrências",
+        icon: AlertTriangle,
+    },
+    {
+        href: "/dashboard/polls",
+        label: "Votações",
+        icon: Vote,
+    },
+    {
+        href: "/dashboard/discussions",
+        label: "Discussões",
+        icon: MessageSquare,
+    },
+    {
+        href: "/dashboard/evaluations",
+        label: "Avaliação Mensal",
+        icon: BarChart3,
+    },
+    {
+        href: "/dashboard/documents",
+        label: "Documentos",
+        icon: FolderOpen,
     },
     {
         href: ROUTES.DASHBOARD.SETTINGS,

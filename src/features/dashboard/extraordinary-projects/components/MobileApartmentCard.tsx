@@ -4,10 +4,10 @@ import { useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatCurrency, getMonthName } from "@/lib/format"
-import { StatusBadge } from "@/components/ui/StatusBadge"
-// import { t } from "@/lib/translations"
+import { Badge } from "@/components/ui/Badge"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
-import { type ToolMode, type CellStatus } from "../types"
+import { type ExtraordinaryToolMode, type PaymentStatus } from "@/lib/types"
+import { GENERAL_STATUS_CONFIG } from "@/lib/constants"
 
 interface MobileApartmentCardProps {
     apartment: ApartmentPaymentData
@@ -15,8 +15,8 @@ interface MobileApartmentCardProps {
         startMonth: number
         startYear: number
     }
-    toolMode: ToolMode
-    onCellClick: (paymentId: number, status: CellStatus, amount: number) => void
+    toolMode: ExtraordinaryToolMode
+    onCellClick: (paymentId: number, status: PaymentStatus, amount: number) => void
     readOnly: boolean
 }
 
@@ -51,13 +51,13 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                                 <span className="text-body text-slate-400 italic">Sem residente</span>
                             )}
                             <div className="text-label text-slate-400 mt-0.5">
-                                {apartment.permillage.toFixed(2)}‰ • {formatCurrency(apartment.totalShare)}
+                                {apartment.permillage.toFixed(2)}% • {formatCurrency(apartment.totalShare)}
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <StatusBadge status={apartment.status} className="text-micro px-1.5 sm:px-2" />
+                        <Badge status={apartment.status} config={GENERAL_STATUS_CONFIG} className="text-micro px-1.5 sm:px-2" />
                         {isExpanded ? (
                             <ChevronUp className="w-4 h-4 text-slate-400" />
                         ) : (

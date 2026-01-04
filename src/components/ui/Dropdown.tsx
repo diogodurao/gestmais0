@@ -142,7 +142,7 @@ const DropdownContent = forwardRef<HTMLDivElement, DropdownContentProps>(
                 ref={contentRef}
                 role="menu"
                 className={cn(
-                    "absolute z-50 min-w-[160px] bg-white border border-slate-300 shadow-lg py-1",
+                    "absolute z-50 min-w-[160px] bg-white tech-border shadow-lg py-1",
                     "animate-in fade-in-0 zoom-in-95 duration-100",
                     {
                         "top-full mt-1": side === "bottom",

@@ -1,8 +1,8 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { paymentService, type PaymentData } from "@/services/payment.service"
-import { type PaymentStatus, ActionResult } from "@/lib/types"
+import { paymentService } from "@/services/payment.service"
+import { type PaymentStatus, type PaymentData, ActionResult } from "@/lib/types"
 import { ROUTES } from "@/lib/routes"
 
 /**

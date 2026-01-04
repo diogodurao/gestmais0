@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { updateBuilding } from "@/app/actions/building"
 import { Button } from "@/components/ui/Button"
+import { useAsyncAction } from "@/hooks/useAsyncAction"
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Building2 } from "lucide-react"
 
@@ -23,7 +24,6 @@ type Building = {
 
 export function BuildingSettingsForm({ building }: { building: Building }) {
     const router = useRouter()
-    const [isSaving, setIsSaving] = useState(false)
     const [error, setError] = useState("")
     const [formData, setFormData] = useState({
         nif: building.nif,
@@ -43,36 +43,30 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         if (error) setError("")
     }
 
-    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault()
-        setIsSaving(true)
-        setError("")
-
+    const { execute: saveSettings, isPending } = useAsyncAction(async () => {
         const parsedQuota = parseFloat(monthlyQuotaStr)
         const parsedTotalUnits = parseInt(formData.totalApartments)
 
-        try {
-            const result = await updateBuilding(building.id, {
-                ...formData,
-                name: `${formData.street} ${formData.number}`,
-                iban: formData.iban || null,
-                city: formData.city || null,
-                street: formData.street || null,
-                number: formData.number || null,
-                monthlyQuota: isNaN(parsedQuota) ? 0 : Math.round(parsedQuota * 100),
-                totalApartments: isNaN(parsedTotalUnits) ? 0 : parsedTotalUnits,
-            })
-            if (result.success) {
-                router.refresh()
-            } else {
-                setError(result.error || "Ocorreu um erro inesperado")
-            }
-        } catch (error) {
-            console.error("Failed to update building", error)
-            setError("Ocorreu um erro inesperado")
-        } finally {
-            setIsSaving(false)
-        }
+        return await updateBuilding(building.id, {
+            ...formData,
+            name: `${formData.street} ${formData.number}`,
+            iban: formData.iban || null,
+            city: formData.city || null,
+            street: formData.street || null,
+            number: formData.number || null,
+            monthlyQuota: isNaN(parsedQuota) ? 0 : Math.round(parsedQuota * 100),
+            totalApartments: isNaN(parsedTotalUnits) ? 0 : parsedTotalUnits,
+        })
+    }, {
+        successMessage: "Alterações guardadas com sucesso",
+        onSuccess: () => router.refresh(),
+        onError: (msg) => setError(msg)
+    })
+
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+        e.preventDefault()
+        setError("")
+        await saveSettings()
     }
 
     return (
@@ -197,7 +191,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                     </div>
 
                     <div className="p-3 flex justify-end border-t border-slate-100">
-                        <Button type="submit" size="xs" isLoading={isSaving} variant="primary">
+                        <Button type="submit" size="xs" isLoading={isPending} variant="primary">
                             Guardar Alterações
                         </Button>
                     </div>

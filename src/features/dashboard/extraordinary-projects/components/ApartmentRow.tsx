@@ -1,21 +1,23 @@
 "use client"
 
+import { memo } from "react"
 import { cn } from "@/lib/utils"
 import { formatCurrency, getMonthName } from "@/lib/format"
-import { StatusBadge } from "@/components/ui/StatusBadge"
+import { Badge } from "@/components/ui/Badge"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
-import { type ToolMode, type CellStatus } from "../types"
+import { type ExtraordinaryToolMode, type PaymentStatus } from "@/lib/types"
+import { GENERAL_STATUS_CONFIG } from "@/lib/constants"
 
 interface ApartmentRowProps {
     apartment: ApartmentPaymentData
-    toolMode: ToolMode
-    onCellClick: (paymentId: number, status: CellStatus, amount: number) => void
+    toolMode: ExtraordinaryToolMode
+    onCellClick: (paymentId: number, status: PaymentStatus, amount: number) => void
     readOnly: boolean
     startMonth: number
     startYear: number
 }
 
-export function ApartmentRow({
+export const ApartmentRow = memo(function ApartmentRow({
     apartment,
     toolMode,
     onCellClick,
@@ -51,9 +53,9 @@ export function ApartmentRow({
                         className={cn(
                             "data-cell text-center transition-colors",
                             toolMode && !readOnly && "cursor-pointer",
-                            inst.status === "paid" && "bg-emerald-50 text-emerald-700",
-                            inst.status === "late" && "bg-rose-50 text-rose-700 font-bold",
-                            inst.status === "partial" && "bg-amber-50 text-amber-700",
+                            inst.status === "paid" && "status-active",
+                            inst.status === "late" && "status-alert font-bold",
+                            inst.status === "partial" && "status-pending",
                             inst.status === "pending" && "text-slate-400",
                             toolMode && !readOnly && inst.status === "pending" && "hover:bg-emerald-100",
                             toolMode && !readOnly && inst.status === "paid" && "hover:bg-rose-100",
@@ -71,13 +73,13 @@ export function ApartmentRow({
             <td className="data-cell text-right font-mono text-emerald-700">{formatCurrency(apartment.totalPaid)}</td>
             <td className={cn(
                 "data-cell text-right font-mono font-bold",
-                apartment.balance > 0 ? "text-rose-600 bg-rose-50" : "text-slate-400"
+                apartment.balance > 0 ? "status-alert" : "text-slate-400"
             )}>
                 {formatCurrency(apartment.balance)}
             </td>
             <td className="data-cell text-center">
-                <StatusBadge status={apartment.status} className="text-micro px-1.5 sm:px-2" />
+                <Badge status={apartment.status} config={GENERAL_STATUS_CONFIG} className="text-micro px-1.5 sm:px-2" />
             </td>
         </tr>
     )
-}
+})

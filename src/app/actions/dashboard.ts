@@ -5,16 +5,16 @@ import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/va
 import { isManager, isResident } from "@/lib/permissions"
 import type { SessionUser, DashboardInitialData, ManagedBuilding } from "@/lib/types"
 
-export async function getDashboardContext(session: any): Promise<DashboardInitialData> {
+export async function getDashboardContext(session: { user: SessionUser } | null): Promise<DashboardInitialData> {
 
     // Default empty state
     let setupComplete = false
     let managerBuildings: ManagedBuilding[] = []
     let activeBuilding: ManagedBuilding | null = null // explicit null for JSON serialization
-    let residentApartment: any = null
+    let residentApartment: Awaited<ReturnType<typeof getResidentApartment>> | null = null
 
     if (session?.user) {
-        const sessionUser = session.user as unknown as SessionUser
+        const sessionUser = session.user
 
         if (isResident(sessionUser)) {
             // Residents need: buildingId + claimed apartment + IBAN

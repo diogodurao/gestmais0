@@ -145,7 +145,7 @@ const TableCell = forwardRef<HTMLTableCellElement, TableCellProps>(
                     "h-10 px-3 align-middle text-slate-700",
                     "[&:has([role=checkbox])]:pr-0",
                     {
-                        "font-mono text-[10px] tracking-tight": mono,
+                        "font-mono text-label tracking-tight": mono,
                         "text-slate-400": muted,
                         "max-w-[200px] truncate": truncate,
                     },
@@ -166,7 +166,7 @@ const TableCaption = forwardRef<HTMLTableCaptionElement, HTMLAttributes<HTMLTabl
         return (
             <caption
                 ref={ref}
-                className={cn("mt-2 text-[10px] text-slate-400", className)}
+                className={cn("mt-2 text-label text-slate-400", className)}
                 {...props}
             />
         )
@@ -192,7 +192,7 @@ const TableEmpty = forwardRef<HTMLTableRowElement, TableEmptyProps>(
                     <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
                         {icon && <div className="w-8 h-8">{icon}</div>}
                         <div className="text-body font-bold uppercase tracking-wider">{title}</div>
-                        {description && <div className="text-[10px]">{description}</div>}
+                        {description && <div className="text-label">{description}</div>}
                     </div>
                 </td>
             </tr>

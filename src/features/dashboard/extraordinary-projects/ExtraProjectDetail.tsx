@@ -14,8 +14,14 @@ import {
     type ProjectDetail,
 } from "@/app/actions/extraordinary"
 import { ExtraPaymentGrid } from "@/features/dashboard/extraordinary-projects/ExtraPaymentGrid"
-import { EditProjectModal } from "@/features/dashboard/extraordinary-projects/EditProjectModal"
-import { ErrorBoundary } from "@/components/ErrorBoundary"
+import dynamic from "next/dynamic"
+
+// Dynamic Imports
+const EditProjectModal = dynamic(
+    () => import("@/features/dashboard/extraordinary-projects/EditProjectModal").then(mod => mod.EditProjectModal),
+    { ssr: false }
+)
+import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { SkeletonCard } from "@/components/ui/Skeletons"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
@@ -160,17 +166,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
             <ProjectDetailStats stats={project.stats} />
 
             {/* Payment Grid */}
-            <ErrorBoundary fallback={
-                <div className="tech-border p-8 text-center bg-white">
-                    <p className="text-rose-600 mb-2">Erro ao carregar pagamentos</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="text-sm text-blue-600 hover:underline"
-                    >
-                        Tentar novamente
-                    </button>
-                </div>
-            }>
+            <FeatureErrorBoundary>
                 <ExtraPaymentGrid
                     project={{
                         id: project.id,
@@ -185,7 +181,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
                     onRefresh={loadProject}
                     readOnly={readOnly}
                 />
-            </ErrorBoundary>
+            </FeatureErrorBoundary>
         </div>
     )
 }

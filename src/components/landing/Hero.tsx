@@ -9,7 +9,7 @@ export function Hero({ cityName }: HeroProps) {
     const titleLine1 = cityName ? `Gestão em ${cityName}.` : "Gestão de Condomínio.";
     const subtitle = cityName
         ? `Abandone o caos. O GestMais é o sistema operacional para condomínios em ${cityName}, desenhado para transparência e velocidade.`
-        : "Abandone o caos de grupos de WhatsApp e recibos em papel. O GestMais é o livro financeiro de alta densidade desenhado para transparência e velocidade.";
+        : "Abandone o caos de grupos de WhatsApp e recibos em papel. Software de gestão desenhado para redução de trabalho a 90%.";
 
     return (
         <header className="pt-32 pb-20 px-6 lg:px-12 bg-grid min-h-screen flex flex-col items-center justify-center text-center relative">

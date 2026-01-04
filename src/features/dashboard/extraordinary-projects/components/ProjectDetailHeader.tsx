@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { MoreVertical, Edit, RefreshCw, Archive, Trash2, FileText } from "lucide-react"
+import { MoreVertical, Edit, RefreshCw, Archive, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { archiveExtraordinaryProject } from "@/app/actions/extraordinary"
 import { useToast } from "@/hooks/use-toast"
@@ -15,7 +14,7 @@ type Project = {
     numInstallments: number
     startMonth: number
     startYear: number
-    documentUrl: string | null
+
     status: string
 }
 
@@ -117,18 +116,7 @@ export function ProjectDetailHeader({
                                     Atualizar Dados
                                 </button>
 
-                                {project.documentUrl && (
-                                    <a
-                                        href={project.documentUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                                        onClick={() => setIsMenuOpen(false)}
-                                    >
-                                        <FileText className="w-4 h-4 text-slate-400" />
-                                        Ver Documento
-                                    </a>
-                                )}
+
 
                                 <div className="h-px bg-slate-100 my-1" />
 

@@ -107,7 +107,7 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
                                 {apt.unit}
                             </div>
                             <div className="col-span-4 p-2 text-sm font-mono">
-                                {apt.permillage} ‰
+                                {apt.permillage} %
                             </div>
                             <div className="col-span-3 p-2 text-right">
                                 <button
@@ -180,7 +180,7 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
                     {apartments.length} FRAÇÕES
                 </span>
                 <span className={totalPermillage === 1000 ? "text-emerald-600 font-bold" : ""}>
-                    {totalPermillage}/1000 ‰
+                    {totalPermillage}/1000 %
                 </span>
             </div>
         </div>

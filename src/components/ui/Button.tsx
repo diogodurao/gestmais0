@@ -1,10 +1,11 @@
 import { ButtonHTMLAttributes, forwardRef } from "react"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { type ComponentSize } from "@/lib/types"
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: "primary" | "secondary" | "outline" | "ghost" | "danger"
-    size?: "xs" | "sm" | "md" | "lg"
+    size?: ComponentSize
     fullWidth?: boolean
     isLoading?: boolean
 }
@@ -23,10 +24,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                         "border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 shadow-sm": variant === "outline",
                         "hover:bg-slate-100 text-slate-600": variant === "ghost",
                         "bg-rose-600 text-white hover:bg-rose-700 border border-rose-600": variant === "danger",
-                        "h-6 px-2 text-[10px]": size === "xs",
-                        "h-7 px-3 text-[11px]": size === "sm",
-                        "h-9 px-4 text-[13px]": size === "md",
-                        "h-11 px-6 text-[15px]": size === "lg",
+                        "h-6 px-2 text-label": size === "xs",
+                        "h-7 px-3 text-body": size === "sm",
+                        "h-9 px-4 text-content": size === "md",
+                        "h-11 px-6 text-heading": size === "lg",
                         "w-full": fullWidth,
                     },
                     className

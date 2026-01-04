@@ -13,7 +13,7 @@ export async function GET() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
-        const data = await getDashboardContext(session)
+        const data = await getDashboardContext(session as any)
         return NextResponse.json(data)
     } catch (error) {
         console.error("Dashboard context API error:", error)

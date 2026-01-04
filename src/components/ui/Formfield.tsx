@@ -15,12 +15,8 @@ type FormFieldContextValue = {
 
 const FormFieldContext = createContext<FormFieldContextValue | null>(null)
 
-function useFormField() {
-    const context = useContext(FormFieldContext)
-    if (!context) {
-        throw new Error("FormField components must be used within a FormField")
-    }
-    return context
+export function useFormField() {
+    return useContext(FormFieldContext)
 }
 
 // ===========================================
@@ -59,7 +55,10 @@ interface FormLabelProps extends HTMLAttributes<HTMLLabelElement> {
 
 const FormLabel = forwardRef<HTMLLabelElement, FormLabelProps>(
     ({ className, children, optional, ...props }, ref) => {
-        const { id, required, error } = useFormField()
+        const context = useFormField()
+        const id = context?.id
+        const required = context?.required
+        const error = context?.error
 
         return (
             <label
@@ -89,8 +88,10 @@ interface FormControlProps {
 }
 
 function FormControl({ children }: FormControlProps) {
-    const { id, error } = useFormField()
-    
+    const context = useFormField()
+    const id = context?.id || ""
+    const error = context?.error
+
     return (
         <>
             {children({
@@ -123,7 +124,9 @@ FormDescription.displayName = "FormDescription"
 // ===========================================
 const FormError = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
     ({ className, children, ...props }, ref) => {
-        const { id, error } = useFormField()
+        const context = useFormField()
+        const id = context?.id
+        const error = context?.error
 
         if (!error) return null
 
@@ -190,12 +193,11 @@ const FormRow = forwardRef<HTMLDivElement, FormRowProps>(
 )
 FormRow.displayName = "FormRow"
 
-export { 
-    FormField, 
-    FormLabel, 
-    FormControl, 
-    FormDescription, 
+export {
+    FormField,
+    FormLabel,
+    FormControl,
+    FormDescription,
     FormError,
-    FormRow,
-    useFormField 
+    FormRow
 }

@@ -4,11 +4,11 @@ import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Layers, TrendingDown, TrendingUp } from "lucide-react"
 import { getResidentExtraordinaryPayments, type ResidentProjectPayment } from "@/app/actions/extraordinary"
+import { formatCurrency } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
+import { Skeleton } from "@/components/ui/Skeleton"
 
-interface ResidentExtraPaymentsProps { }
-
-export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
+export function ResidentExtraPayments() {
     const [payments, setPayments] = useState<ResidentProjectPayment[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const { toast } = useToast()
@@ -66,10 +66,7 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
                             <span className="text-label font-bold uppercase">Total em Dívida</span>
                         </div>
                         <div className="text-xl font-bold font-mono text-rose-600">
-                            {(totalDebt / 100).toLocaleString("pt-PT", {
-                                style: "currency",
-                                currency: "EUR"
-                            })}
+                            {formatCurrency(totalDebt)}
                         </div>
                     </div>
                     <div className="p-4 text-center">
@@ -78,20 +75,27 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
                             <span className="text-label font-bold uppercase">Total Pago</span>
                         </div>
                         <div className="text-xl font-bold font-mono text-emerald-600">
-                            {(totalPaid / 100).toLocaleString("pt-PT", {
-                                style: "currency",
-                                currency: "EUR"
-                            })}
+                            {formatCurrency(totalPaid)}
                         </div>
                     </div>
                 </div>
 
                 {/* Project List */}
                 {isLoading ? (
-                    <div className="p-8 text-center">
-                        <div className="animate-pulse text-label text-slate-400 uppercase">
-                            A carregar...
-                        </div>
+                    <div className="p-4 space-y-4">
+                        {[1, 2].map((i) => (
+                            <div key={i} className="space-y-3">
+                                <div className="flex justify-between">
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-4 w-20" />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Skeleton className="h-5 w-16" />
+                                    <Skeleton className="h-5 w-16" />
+                                    <Skeleton className="h-5 w-16" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : payments.length === 0 ? (
                     <div className="p-8 text-center">
@@ -110,7 +114,7 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
                                     <span className={`text-body font-bold font-mono ${payment.balance > 0 ? "text-rose-600" : "text-emerald-600"
                                         }`}>
                                         {payment.balance > 0
-                                            ? `-${(payment.balance / 100).toLocaleString("pt-PT", { style: "currency", currency: "EUR" })}`
+                                            ? `-${formatCurrency(payment.balance)}`
                                             : "Liquidado"}
                                     </span>
                                 </div>
@@ -119,11 +123,11 @@ export function ResidentExtraPayments({ }: ResidentExtraPaymentsProps) {
                                     {payment.installments.map((inst, instIdx) => (
                                         <span
                                             key={instIdx}
-                                            className={`text-micro font-mono px-1.5 py-0.5 ${inst.status === "paid"
-                                                ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                                            className={`status-badge ${inst.status === "paid"
+                                                ? "status-active"
                                                 : inst.status === "late"
-                                                    ? "bg-rose-50 text-rose-600 border border-rose-100"
-                                                    : "bg-slate-50 text-slate-500 border border-slate-200"
+                                                    ? "status-alert"
+                                                    : "status-neutral"
                                                 }`}
                                         >
                                             {inst.month}/{inst.year}

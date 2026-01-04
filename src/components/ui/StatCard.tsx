@@ -1,14 +1,55 @@
 import { cn } from "@/lib/utils"
 import { LucideIcon } from "lucide-react"
+import { type Size, type SemanticVariant, SEMANTIC_COLORS } from "@/lib/ui-tokens"
+
+// ===========================================
+// TYPES
+// ===========================================
 
 interface StatCardProps {
     label: string
     value: string | number
     subValue?: string
-    variant?: "neutral" | "success" | "warning" | "danger" | "info"
-    icon?: LucideIcon
+    variant?: SemanticVariant
+    icon?: LucideIcon | React.ComponentType<{ className?: string }>
+    size?: Size
     className?: string
 }
+
+// ===========================================
+// STYLE MAPS
+// ===========================================
+
+const sizes = {
+    xs: {
+        padding: "p-1.5 sm:p-2",
+        label: "text-micro",
+        value: "text-base",
+        icon: "w-3 h-3",
+    },
+    sm: {
+        padding: "p-2 sm:p-3",
+        label: "text-micro sm:text-label",
+        value: "text-base sm:text-lg",
+        icon: "w-3 sm:w-4 h-3 sm:h-4",
+    },
+    md: {
+        padding: "p-3",
+        label: "text-label",
+        value: "text-lg",
+        icon: "w-4 h-4",
+    },
+    lg: {
+        padding: "p-4",
+        label: "text-body",
+        value: "text-xl",
+        icon: "w-5 h-5",
+    },
+}
+
+// ===========================================
+// COMPONENT
+// ===========================================
 
 export function StatCard({
     label,
@@ -16,40 +57,32 @@ export function StatCard({
     subValue,
     variant = "neutral",
     icon: Icon,
-    className
+    size = "sm",
+    className,
 }: StatCardProps) {
-    const variants = {
-        neutral: "bg-slate-50 border-slate-200",
-        success: "bg-emerald-50 border-emerald-200",
-        warning: "bg-amber-50 border-amber-200",
-        danger: "bg-rose-50 border-rose-200",
-        info: "bg-blue-50 border-blue-200",
-    }
-
-    const valueColors = {
-        neutral: "text-slate-800",
-        success: "text-emerald-700",
-        warning: "text-amber-700",
-        danger: "text-rose-700",
-        info: "text-blue-700",
-    }
+    const colors = SEMANTIC_COLORS[variant]
+    const s = sizes[size as keyof typeof sizes] || sizes.sm
 
     return (
-        <div className={cn("tech-border p-2 sm:p-3", variants[variant], className)}>
+        <div className={cn("tech-border", s.padding, colors.bg, className)}>
             <div className="flex items-start justify-between">
-                <p className="text-micro sm:text-label font-bold text-slate-500 uppercase tracking-tight">
-                    {label}
-                </p>
-                {Icon && <Icon className="w-3 h-3 text-slate-400" />}
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                    {Icon && <Icon className={cn(s.icon, colors.text)} />}
+                    <span className={cn("font-bold text-slate-500 uppercase tracking-tight", s.label)}>
+                        {label}
+                    </span>
+                </div>
             </div>
             <div className="flex items-baseline gap-1 sm:gap-2 mt-0.5 sm:mt-1">
-                <p className={cn("text-base sm:text-lg font-bold font-mono", valueColors[variant])}>
+                <p className={cn("font-bold font-mono", s.value, colors.text)}>
                     {value}
                 </p>
                 {subValue && (
-                    <span className="text-label sm:text-body text-slate-500">{subValue}</span>
+                    <span className="text-label sm:text-body text-slate-500 whitespace-nowrap">{subValue}</span>
                 )}
             </div>
         </div>
     )
 }
+
+export default StatCard

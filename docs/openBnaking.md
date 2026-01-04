@@ -7,3 +7,8 @@ The user.iban field is already in your schema — this was smart forward-thinkin
 - A webhook endpoint for bank transaction events
 - Transaction-to-payment matching logic
 But the core updatePaymentStatus function remains unchanged.
+
+
+- add:
+- the day to pay
+- the last day to pay, before it becomes late.

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useDebouncedCallback } from "use-debounce"
-import { updatePaymentStatus, PaymentData } from "@/app/actions/payments"
+import { updatePaymentStatus } from "@/app/actions/payments"
 import { deleteApartment } from "@/app/actions/building"
 import { PaymentDesktopTable } from "./PaymentDesktopTable"
 import { PaymentMobileCards } from "./PaymentMobileCards"
@@ -13,7 +13,14 @@ import { PaymentGridFooter } from "./components/PaymentGridFooter"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { useToast } from "@/hooks/use-toast"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
-import { type ToolType, type FilterMode, type PaymentStats, TOOL_TO_STATUS } from "./types"
+import {
+    type PaymentToolType,
+    type PaymentFilterMode,
+    type PaymentStats,
+    type PaymentData
+} from "@/lib/types"
+import { PAYMENT_TOOL_TO_STATUS } from "@/lib/constants"
+import { useOptimisticList } from "@/hooks/useOptimisticList"
 
 interface PaymentGridProps {
     data: PaymentData[]
@@ -34,18 +41,19 @@ export function PaymentGrid({
     const { toast } = useToast()
 
     // Local state for optimistic updates
-    const [localData, setLocalData] = useState<PaymentData[]>(data)
+    const {
+        data: localData,
+        optimisticUpdate,
+        rollback
+    } = useOptimisticList(data, (item) => item.apartmentId)
+
     const [searchTerm, setSearchTerm] = useState("")
     const [highlightedId, setHighlightedId] = useState<number | null>(null)
-    const [activeTool, setActiveTool] = useState<ToolType>(null)
-    const [filterMode, setFilterMode] = useState<FilterMode>("all")
+
+    const [activeTool, setActiveTool] = useState<PaymentToolType>(null)
+    const [filterMode, setFilterMode] = useState<PaymentFilterMode>("all")
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null)
-
-    // Sync local data when props change (after server refresh)
-    useEffect(() => {
-        setLocalData(data)
-    }, [data])
 
     // Clear highlight after delay
     useEffect(() => {
@@ -62,7 +70,7 @@ export function PaymentGrid({
         },
         onError: () => {
             // Rollback to server state on error
-            setLocalData(data)
+            rollback()
             toast({
                 title: "Erro",
                 description: "Não foi possível atualizar o pagamento",
@@ -133,13 +141,11 @@ export function PaymentGrid({
     ): Promise<void> => {
         if (!activeTool || readOnly) return
 
-        const dbStatus = TOOL_TO_STATUS[activeTool]
+        const dbStatus = PAYMENT_TOOL_TO_STATUS[activeTool]
         const monthNum = monthIdx + 1
 
         // Optimistic update - update UI immediately
-        setLocalData(prev => prev.map(apt => {
-            if (apt.apartmentId !== aptId) return apt
-
+        optimisticUpdate(aptId, (apt) => {
             const newPayments = {
                 ...apt.payments,
                 [monthNum]: {
@@ -162,7 +168,7 @@ export function PaymentGrid({
                 totalPaid,
                 balance
             }
-        }))
+        })
 
         // Fire API call (errors handled by useAsyncAction with rollback)
         await updateStatus(aptId, monthNum, year, dbStatus as any)

@@ -2,7 +2,7 @@
 
 import { Search, Info, Filter } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { type ToolType, type FilterMode } from "../types"
+import { type PaymentToolType as ToolType, type PaymentFilterMode as FilterMode } from "@/lib/types"
 
 interface PaymentGridToolbarProps {
     activeTool: ToolType

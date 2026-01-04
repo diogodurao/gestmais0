@@ -116,6 +116,25 @@ export function formatDateTime(date: Date | string): string {
     }).format(d)
 }
 
+/**
+ * Format relative time distance (e.g. "há 2 min")
+ */
+export function formatDistanceToNow(date: Date | string): string {
+    const now = new Date()
+    const then = new Date(date)
+    const diffMs = now.getTime() - then.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMins / 60)
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffMins < 1) return "agora mesmo"
+    if (diffMins < 60) return `há ${diffMins} min`
+    if (diffHours < 24) return `há ${diffHours}h`
+    if (diffDays < 7) return `há ${diffDays}d`
+
+    return then.toLocaleDateString("pt-PT", { day: "numeric", month: "short" })
+}
+
 // ===========================================
 // NUMBERS
 // ===========================================

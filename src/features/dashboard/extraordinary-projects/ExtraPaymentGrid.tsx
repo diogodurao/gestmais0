@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { cn } from "@/lib/utils"
 import { getMonthName, formatCurrency } from "@/lib/format"
@@ -17,12 +17,25 @@ import { MobileApartmentCard } from "./components/MobileApartmentCard"
 import { ApartmentRow } from "./components/ApartmentRow"
 
 // Types
-import { type ExtraPaymentGridProps, type ToolMode, type CellStatus } from "./types"
+import {
+    type ExtraordinaryToolMode,
+    type PaymentStatus,
+    type ExtraordinaryProjectSummary
+} from "@/lib/types"
+import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
+
+interface ExtraPaymentGridProps {
+    project: ExtraordinaryProjectSummary
+    payments: ApartmentPaymentData[]
+    onRefresh?: () => void
+    readOnly?: boolean
+}
 
 export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = false }: ExtraPaymentGridProps) {
     const { toast } = useToast()
-    const [toolMode, setToolMode] = useState<ToolMode>(null)
-    const [filterStatus, setFilterStatus] = useState<CellStatus | "all">("all")
+
+    const [toolMode, setToolMode] = useState<ExtraordinaryToolMode>(null)
+    const [filterStatus, setFilterStatus] = useState<PaymentStatus | "all">("all")
     const [localPayments, setLocalPayments] = useState(payments)
     const [showMobileTools, setShowMobileTools] = useState(false)
 
@@ -47,15 +60,15 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
             return true
         })
 
-    // Handle cell click
-    const handleCellClick = useDebouncedCallback(async (
+    // Handle cell click logic - memoized to prevent debouncer recreation on unrelated renders
+    const handleCellClickLogic = useCallback(async (
         paymentId: number,
-        currentStatus: CellStatus,
+        currentStatus: PaymentStatus,
         expectedAmount: number
     ): Promise<void> => {
         if (!toolMode || readOnly) return
 
-        let newStatus: CellStatus
+        let newStatus: PaymentStatus
         let newPaidAmount: number
 
         if (toolMode === "markPaid") {
@@ -95,21 +108,14 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
             status: newStatus,
             paidAmount: newPaidAmount,
         })
-    }, 300)
+    }, [toolMode, readOnly, updatePayment])
+
+    const handleCellClick = useDebouncedCallback(handleCellClickLogic, 300)
 
     // Export handlers
     const handleExportPDF = () => {
         import("@/lib/document-export").then(({ exportExtraPaymentsToPDF }) => {
-            const exportData = localPayments.map((p) => ({
-                apartment: p.unit,
-                fraction: p.unit,
-                resident: p.residentName || undefined,
-                permillage: p.permillage,
-                totalShare: p.totalShare,
-                installments: p.installments.map((i) => i.status === "paid" ? "paid" as const : "pending" as const),
-                totalPaid: p.totalPaid,
-            }))
-            exportExtraPaymentsToPDF(project.name, "Edifício", project.totalBudget, exportData)
+            exportExtraPaymentsToPDF(project.name, "Edifício", project.totalBudget, localPayments)
         })
     }
 
@@ -205,7 +211,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                             <tr>
                                 <th className="header-cell w-16 text-center sticky left-0 bg-slate-100 z-10">Fração</th>
                                 <th className="header-cell w-40">Residente</th>
-                                <th className="header-cell w-20 text-right">‰</th>
+                                <th className="header-cell w-20 text-right">%</th>
                                 <th className="header-cell w-28 text-right">Quota Total</th>
                                 {Array.from({ length: project.numInstallments }, (_, i) => {
                                     let month = project.startMonth + i
@@ -242,7 +248,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                             <tr className="bg-slate-100 font-bold">
                                 <td className="data-cell sticky left-0 bg-slate-100 z-10">TOTAL</td>
                                 <td className="data-cell">{localPayments.length} Frações</td>
-                                <td className="data-cell text-right">{localPayments.reduce((sum, p) => sum + p.permillage, 0).toFixed(2)}‰</td>
+                                <td className="data-cell text-right">{localPayments.reduce((sum, p) => sum + p.permillage, 0).toFixed(2)}%</td>
                                 <td className="data-cell text-right font-mono">{formatCurrency(project.totalBudget)}</td>
                                 {Array.from({ length: project.numInstallments }, (_, i) => {
                                     const paidCount = localPayments.filter((p) => p.installments[i]?.status === "paid").length

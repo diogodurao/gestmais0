@@ -51,6 +51,7 @@ export const bulkUpdatePaymentsSchema = z.object({
 })
 
 // Extraordinary Project Schemas
+// Extraordinary Project Schemas
 export const createProjectSchema = z.object({
     buildingId: z.string().uuid(),
     name: z.string().min(1, "Project name is required"),
@@ -59,7 +60,7 @@ export const createProjectSchema = z.object({
     numInstallments: z.number().int().min(1, "Must have at least 1 installment"),
     startMonth: z.number().int().min(1).max(12),
     startYear: z.number().int().min(2000).max(2100),
-    documentUrl: z.string().url().optional(),
+    documentUrl: z.string().optional(),
     documentName: z.string().optional(),
 })
 
@@ -67,7 +68,7 @@ export const updateProjectSchema = z.object({
     projectId: z.number().int(),
     name: z.string().min(1).optional(),
     description: z.string().optional(),
-    documentUrl: z.string().url().optional(),
+    documentUrl: z.string().optional(),
     documentName: z.string().optional(),
     status: z.enum(["draft", "active", "completed", "cancelled"]).optional()
 })
@@ -77,4 +78,106 @@ export const updateExtraPaymentSchema = z.object({
     amountPaid: z.number().min(0).optional(),
     status: z.enum(["paid", "pending", "late", "partial"]).optional(),
     paidDate: z.string().datetime().or(z.date()).optional().nullable().transform(val => val ? new Date(val) : null)
+})
+
+// Calendar Event Schemas
+export const createCalendarEventSchema = z.object({
+    buildingId: z.string().min(1),
+    title: z.string().min(1, "Título é obrigatório"),
+    type: z.string().min(1, "Tipo é obrigatório"),
+    description: z.string().optional(),
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
+    endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    startTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+    recurrence: z.enum(["none", "weekly", "biweekly", "monthly"]).optional(),
+})
+
+export const updateCalendarEventSchema = z.object({
+    title: z.string().min(1).optional(),
+    type: z.string().min(1).optional(),
+    description: z.string().optional(),
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+    startTime: z.string().regex(/^\d{2}:\d{2}$/).optional().nullable(),
+})
+
+// Occurrence Schemas
+export const createOccurrenceSchema = z.object({
+    buildingId: z.string().min(1),
+    title: z.string().min(1, "Título é obrigatório").max(200),
+    type: z.string().min(1, "Tipo é obrigatório").max(100),
+    description: z.string().max(2000).optional(),
+})
+
+export const updateOccurrenceSchema = z.object({
+    title: z.string().min(1).max(200).optional(),
+    type: z.string().min(1).max(100).optional(),
+    description: z.string().max(2000).optional().nullable(),
+})
+
+// Poll Schemas
+export const createPollSchema = z.object({
+    buildingId: z.string().min(1),
+    title: z.string().min(1, "Título é obrigatório").max(200),
+    description: z.string().max(2000).optional(),
+    type: z.enum(["yes_no", "single_choice", "multiple_choice"]),
+    weightMode: z.enum(["equal", "permilagem"]),
+    options: z.array(z.string().min(1).max(200)).max(10).optional(),
+})
+
+export const castVoteSchema = z.object({
+    pollId: z.number().positive(),
+    vote: z.union([
+        z.string(), // For yes_no: "yes", "no", "abstain"
+        z.array(z.string()), // For choices: ["Option A"] or ["Option A", "Option B"]
+    ]),
+})
+
+// Discussion Schemas
+export const createDiscussionSchema = z.object({
+    buildingId: z.string().min(1),
+    title: z.string().min(1, "Título é obrigatório").max(200),
+    content: z.string().max(5000).optional(),
+})
+
+export const updateDiscussionSchema = z.object({
+    title: z.string().min(1).max(200).optional(),
+    content: z.string().max(5000).optional().nullable(),
+})
+
+// Evaluation Schemas
+const ratingSchema = z.number().int().min(1, "Mínimo 1").max(5, "Máximo 5")
+
+export const submitEvaluationSchema = z.object({
+    buildingId: z.string().min(1),
+    year: z.number().int().min(2020).max(2100),
+    month: z.number().int().min(1).max(12),
+    securityRating: ratingSchema,
+    cleaningRating: ratingSchema,
+    maintenanceRating: ratingSchema,
+    communicationRating: ratingSchema,
+    generalRating: ratingSchema,
+    comments: z.string().max(2000).optional(),
+})
+
+// Document Schemas
+export const documentCategorySchema = z.enum([
+    'atas',
+    'regulamentos',
+    'contas',
+    'seguros',
+    'contratos',
+    'outros'
+])
+
+export const uploadDocumentSchema = z.object({
+    buildingId: z.string().min(1),
+    title: z.string().min(1, "Título é obrigatório").max(200),
+    description: z.string().max(1000).optional(),
+    category: documentCategorySchema,
+})
+
+export const updateDocumentSchema = z.object({
+    title: z.string().min(1).max(200).optional(),
+    description: z.string().max(1000).optional().nullable(),
 })

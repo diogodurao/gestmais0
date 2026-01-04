@@ -77,7 +77,7 @@ export function OnboardingStepManagerUnit({
                                         {apt.unit}
                                     </div>
                                     <div className={`text-xs ${isSelected ? "text-blue-100" : "text-slate-400"}`}>
-                                        {apt.permillage} ‰
+                                        {apt.permillage} %
                                     </div>
                                 </div>
                                 {isSelected && <Check className="w-4 h-4 text-white" />}
