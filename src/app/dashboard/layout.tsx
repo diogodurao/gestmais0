@@ -5,6 +5,7 @@ import { DashboardHeader } from "@/components/layout/DashboardHeader"
 import { SidebarProvider } from "@/components/layout/SidebarProvider"
 import { getDashboardContext } from "@/app/actions/dashboard"
 import { DashboardProvider } from "@/contexts/DashboardContext"
+import { BfcacheOptimizer } from "@/components/BfcacheOptimizer"
 
 export default async function DashboardLayout({
     children,
@@ -21,6 +22,8 @@ export default async function DashboardLayout({
     return (
         <DashboardProvider initialData={initialData}>
             <SidebarProvider>
+                {/* Enable back/forward cache by handling WebSocket cleanup */}
+                <BfcacheOptimizer />
                 <div className="h-screen bg-slate-100 flex flex-col overflow-hidden">
                     {/* Header - now reads from context */}
                     <DashboardHeader />
