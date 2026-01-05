@@ -59,6 +59,7 @@ export function PhotoGallery({ attachments, canDelete, currentUserId }: Props) {
                         <img
                             src={attachment.fileUrl}
                             alt={attachment.fileName}
+                            loading="lazy"
                             className="w-full h-full object-cover"
                         />
                     </button>
@@ -111,6 +112,7 @@ export function PhotoGallery({ attachments, canDelete, currentUserId }: Props) {
                     <img
                         src={attachments[lightboxIndex].fileUrl}
                         alt={attachments[lightboxIndex].fileName}
+                        fetchPriority="high"
                         className="max-w-[90vw] max-h-[90vh] object-contain"
                     />
 
