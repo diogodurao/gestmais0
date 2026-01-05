@@ -37,6 +37,17 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Dashboard pages: use 'private, no-cache' instead of 'no-store'
+        // This allows bfcache while still requiring revalidation
+        source: '/dashboard/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'private, no-cache',
+          },
+        ],
+      },
+      {
         // Cache static assets aggressively
         source: '/static/:path*',
         headers: [
