@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
@@ -26,9 +26,11 @@ export function PollsList({ buildingId, initialPolls, userVotedPollIds, isManage
     const [activeTab, setActiveTab] = useState<PollStatus | "all">("all")
     const [modalOpen, setModalOpen] = useState(false)
 
-    const filteredPolls = activeTab === "all"
-        ? initialPolls
-        : initialPolls.filter(p => p.status === activeTab)
+    // Memoize filtered polls to avoid recalculating on every render
+    const filteredPolls = useMemo(() => {
+        if (activeTab === "all") return initialPolls
+        return initialPolls.filter(p => p.status === activeTab)
+    }, [initialPolls, activeTab])
 
     return (
         <>

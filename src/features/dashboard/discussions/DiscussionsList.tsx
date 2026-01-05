@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
@@ -26,11 +26,12 @@ export function DiscussionsList({ buildingId, initialDiscussions }: Props) {
     const [activeTab, setActiveTab] = useState<FilterTab>("all")
     const [modalOpen, setModalOpen] = useState(false)
 
-    const filteredDiscussions = activeTab === "all"
-        ? initialDiscussions
-        : activeTab === "open"
-            ? initialDiscussions.filter(d => !d.isClosed)
-            : initialDiscussions.filter(d => d.isClosed)
+    // Memoize filtered discussions to avoid recalculating on every render
+    const filteredDiscussions = useMemo(() => {
+        if (activeTab === "all") return initialDiscussions
+        if (activeTab === "open") return initialDiscussions.filter(d => !d.isClosed)
+        return initialDiscussions.filter(d => d.isClosed)
+    }, [initialDiscussions, activeTab])
 
     return (
         <>

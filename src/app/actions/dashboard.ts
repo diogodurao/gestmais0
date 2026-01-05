@@ -65,10 +65,14 @@ export async function getDashboardContext(session: { user: SessionUser } | null)
             const activeBuildingId = session.user.activeBuildingId || (buildings.length > 0 ? buildings[0].building.id : null)
 
             if (activeBuildingId) {
-                const activeBuildingData = await getBuilding(activeBuildingId)
+                // Parallelize building and apartments queries for better performance
+                const [activeBuildingData, apartments] = await Promise.all([
+                    getBuilding(activeBuildingId),
+                    getBuildingApartments(activeBuildingId)
+                ])
+
                 if (activeBuildingData) {
                     buildingDone = isBuildingComplete(activeBuildingData)
-                    const apartments = await getBuildingApartments(activeBuildingId)
                     unitsDone = isUnitsComplete(
                         activeBuildingData.totalApartments,
                         apartments

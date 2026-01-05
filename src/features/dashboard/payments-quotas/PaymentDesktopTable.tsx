@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useRef, useEffect, useState } from 'react'
+import { useMemo, useRef, useEffect, useState, useCallback } from 'react'
+import { useDebouncedCallback } from 'use-debounce'
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window'
 
 import { cn } from "@/lib/utils"
@@ -139,22 +140,25 @@ export function PaymentDesktopTable({
     const containerRef = useRef<HTMLDivElement>(null)
     const [maxListHeight, setMaxListHeight] = useState(400)
 
+    // Debounced height update to avoid layout thrashing on resize
+    const updateHeight = useCallback(() => {
+        if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect()
+            // Leave some space for footer/padding (100px)
+            const availableHeight = window.innerHeight - rect.top - 100
+            // Set constraints: min 300px, max (available), cap at 600px
+            setMaxListHeight(Math.max(300, Math.min(availableHeight, 600)))
+        }
+    }, [])
+
+    const debouncedUpdateHeight = useDebouncedCallback(updateHeight, 100)
+
     // Calculate dynamic available height based on container
     useEffect(() => {
-        const updateHeight = () => {
-            if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect()
-                // Leave some space for footer/padding (100px)
-                const availableHeight = window.innerHeight - rect.top - 100
-                // Set constraints: min 300px, max (available), cap at 600px
-                setMaxListHeight(Math.max(300, Math.min(availableHeight, 600)))
-            }
-        }
-
-        updateHeight()
-        window.addEventListener('resize', updateHeight)
-        return () => window.removeEventListener('resize', updateHeight)
-    }, [])
+        updateHeight() // Initial calculation (not debounced)
+        window.addEventListener('resize', debouncedUpdateHeight)
+        return () => window.removeEventListener('resize', debouncedUpdateHeight)
+    }, [updateHeight, debouncedUpdateHeight])
 
     // Memoize row data to prevent unnecessary re-renders
     const itemData = useMemo<RowData>(() => ({

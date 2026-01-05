@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react"
 
 type SidebarContextType = {
     isOpen: boolean
@@ -24,22 +24,27 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
         }
     }, [])
 
-    const toggleSidebar = () => setIsOpen(!isOpen)
-    const closeSidebar = () => setIsOpen(false)
-    const toggleDesktopCollapse = () => {
-        const newState = !isDesktopCollapsed
-        setIsDesktopCollapsed(newState)
-        localStorage.setItem("sidebar-collapsed", String(newState))
-    }
+    const toggleSidebar = useCallback(() => setIsOpen(prev => !prev), [])
+    const closeSidebar = useCallback(() => setIsOpen(false), [])
+    const toggleDesktopCollapse = useCallback(() => {
+        setIsDesktopCollapsed(prev => {
+            const newState = !prev
+            localStorage.setItem("sidebar-collapsed", String(newState))
+            return newState
+        })
+    }, [])
+
+    // Memoize context value to prevent unnecessary re-renders
+    const contextValue = useMemo<SidebarContextType>(() => ({
+        isOpen,
+        isDesktopCollapsed,
+        toggleSidebar,
+        toggleDesktopCollapse,
+        closeSidebar
+    }), [isOpen, isDesktopCollapsed, toggleSidebar, toggleDesktopCollapse, closeSidebar])
 
     return (
-        <SidebarContext.Provider value={{ 
-            isOpen, 
-            isDesktopCollapsed, 
-            toggleSidebar, 
-            toggleDesktopCollapse,
-            closeSidebar 
-        }}>
+        <SidebarContext.Provider value={contextValue}>
             {children}
         </SidebarContext.Provider>
     )

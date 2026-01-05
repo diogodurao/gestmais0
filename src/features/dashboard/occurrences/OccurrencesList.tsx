@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
@@ -25,9 +25,11 @@ export function OccurrencesList({ buildingId, initialOccurrences }: Props) {
     const [activeTab, setActiveTab] = useState<OccurrenceStatus | "all">("all")
     const [modalOpen, setModalOpen] = useState(false)
 
-    const filteredOccurrences = activeTab === "all"
-        ? initialOccurrences
-        : initialOccurrences.filter(o => o.status === activeTab)
+    // Memoize filtered occurrences to avoid recalculating on every render
+    const filteredOccurrences = useMemo(() => {
+        if (activeTab === "all") return initialOccurrences
+        return initialOccurrences.filter(o => o.status === activeTab)
+    }, [initialOccurrences, activeTab])
 
     return (
         <>

@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react"
 import { DashboardInitialData } from "@/lib/types"
 
 type DashboardContextType = DashboardInitialData & {
@@ -25,7 +25,7 @@ export function DashboardProvider({
         setData(initialData)
     }, [initialData])
 
-    const refresh = async () => {
+    const refresh = useCallback(async () => {
         setIsLoading(true)
         try {
             const res = await fetch('/api/dashboard-context')
@@ -37,10 +37,17 @@ export function DashboardProvider({
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [])
+
+    // Memoize context value to prevent unnecessary re-renders
+    const contextValue = useMemo<DashboardContextType>(() => ({
+        ...data,
+        isLoading,
+        refresh
+    }), [data, isLoading, refresh])
 
     return (
-        <DashboardContext.Provider value={{ ...data, isLoading, refresh }}>
+        <DashboardContext.Provider value={contextValue}>
             {children}
         </DashboardContext.Provider>
     )

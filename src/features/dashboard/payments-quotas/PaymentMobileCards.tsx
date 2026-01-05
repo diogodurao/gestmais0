@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, memo } from "react"
 import { ChevronDown, ChevronUp, User, TrendingDown } from "lucide-react"
 import { PaymentData, type PaymentToolType } from "@/lib/types"
 import { MONTHS_PT } from "@/lib/constants"
@@ -24,9 +24,9 @@ interface MobileCardProps {
 }
 
 /**
- * Individual expandable card for mobile view
+ * Individual expandable card for mobile view - memoized to prevent unnecessary re-renders
  */
-function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: MobileCardProps) {
+const MobileCard = memo(function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: MobileCardProps) {
     const [isExpanded, setIsExpanded] = useState(false)
 
     const hasDebt = item.balance > 0
@@ -187,7 +187,7 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
             )}
         </div>
     )
-}
+})
 
 export function PaymentMobileCards({
     data,
@@ -206,9 +206,11 @@ export function PaymentMobileCards({
         )
     }
 
-    // Calculate totals for summary
-    const totalPaid = data.reduce((sum, item) => sum + item.totalPaid, 0)
-    const totalDebt = data.reduce((sum, item) => sum + item.balance, 0)
+    // Memoize totals calculation to avoid recalculating on every render
+    const { totalPaid, totalDebt } = useMemo(() => ({
+        totalPaid: data.reduce((sum, item) => sum + item.totalPaid, 0),
+        totalDebt: data.reduce((sum, item) => sum + item.balance, 0)
+    }), [data])
 
     return (
         <div className="p-3 space-y-2">
