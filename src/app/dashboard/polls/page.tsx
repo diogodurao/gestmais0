@@ -20,12 +20,11 @@ export default async function PollsPage() {
 
     const polls = await getPolls(buildingId)
 
-    // Get user's votes to show "voted" badge
-    const userVotedPollIds: number[] = []
-    for (const poll of polls) {
-        const vote = await getUserVote(poll.id)
-        if (vote) userVotedPollIds.push(poll.id)
-    }
+    // Get user's votes in parallel to avoid N+1 query problem
+    const votes = await Promise.all(polls.map(poll => getUserVote(poll.id)))
+    const userVotedPollIds = polls
+        .filter((_, index) => votes[index] !== null)
+        .map(poll => poll.id)
 
     return (
         <div className="p-4 md:p-6">

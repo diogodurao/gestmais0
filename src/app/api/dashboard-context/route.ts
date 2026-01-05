@@ -10,13 +10,26 @@ export async function GET() {
         })
 
         if (!session?.user) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 }
+            )
         }
 
         const data = await getDashboardContext(session as any)
-        return NextResponse.json(data)
+
+        // Add cache headers for better performance
+        // Private because it contains user-specific data
+        return NextResponse.json(data, {
+            headers: {
+                'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+            }
+        })
     } catch (error) {
         console.error("Dashboard context API error:", error)
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: 500 }
+        )
     }
 }

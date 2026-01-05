@@ -38,13 +38,15 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
         buildingInfo = building;
         buildingCode = building.code;
 
-        const evaluationStatusResult = await getEvaluationStatus(building.id);
+        // Parallelize independent queries for better performance
+        const [evaluationStatusResult, apartmentsResult] = await Promise.all([
+            getEvaluationStatus(building.id),
+            getBuildingApartments(building.id)
+        ]);
         evaluationStatus = evaluationStatusResult;
-
-        apartmentsData = await getBuildingApartments(building.id);
+        apartmentsData = apartmentsResult;
 
         // Check if manager has claimed a unit
-        // We need to check if the valid apartments list contains one assigned to the current user
         const managerApt = apartmentsData.find(a => a.resident?.id === session.user.id);
         const currentManagerUnitId = managerApt ? managerApt.apartment.id : null;
         const claimDone = !!currentManagerUnitId;
@@ -80,8 +82,13 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
             );
         }
 
-        residents = await getBuildingResidents(building.id);
-        unclaimedUnits = await getUnclaimedApartments(building.id);
+        // Parallelize residents and unclaimed units queries
+        const [residentsResult, unclaimedResult] = await Promise.all([
+            getBuildingResidents(building.id),
+            getUnclaimedApartments(building.id)
+        ]);
+        residents = residentsResult;
+        unclaimedUnits = unclaimedResult;
     } catch (e) {
         console.error("Failed to load building", e);
     }
