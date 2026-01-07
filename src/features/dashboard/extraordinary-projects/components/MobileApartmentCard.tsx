@@ -29,7 +29,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
     return (
         <div className="tech-border bg-white overflow-hidden">
             <div
-                className="p-3 cursor-pointer active:bg-slate-50"
+                className="p-1.5 cursor-pointer active:bg-slate-50"
                 onClick={() => setIsExpanded(!isExpanded)}
                 role="button"
                 tabIndex={0}
@@ -90,7 +90,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
             </div>
 
             {isExpanded && (
-                <div className="border-t border-slate-100 bg-slate-50/50 p-3">
+                <div className="border-t border-slate-100 bg-slate-50/50 p-1.5">
                     <div className="text-micro font-bold text-slate-500 uppercase tracking-tight mb-2">
                         PRESTAÇÕES
                     </div>

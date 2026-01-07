@@ -116,7 +116,7 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4">
+        <div className="min-h-screen bg-slate-50 py-4 md:py-8 px-1.5 md:px-4">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -187,7 +187,7 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
 
                 {/* Step Content */}
                 <Card className="mb-6">
-                    <CardContent className="p-6">
+                    <CardContent className="p-1.5 md:p-6">
                         {currentStep === 1 && (
                             <OnboardingStepPersonal
                                 user={user}

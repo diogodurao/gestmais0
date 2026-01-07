@@ -156,7 +156,7 @@ export function ResidentOnboardingFlow({
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4">
+        <div className="min-h-screen bg-slate-50 py-4 md:py-8 px-1.5 md:px-4">
             <div className="max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -202,7 +202,7 @@ export function ResidentOnboardingFlow({
 
                 {/* Step Content */}
                 <Card className="mb-6">
-                    <CardContent className="p-6">
+                    <CardContent className="p-1.5 md:p-6">
                         {/* Step 1: Join Building */}
                         {currentStep === 1 && (
                             <div className="space-y-6">

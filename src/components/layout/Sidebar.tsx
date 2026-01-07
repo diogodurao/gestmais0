@@ -23,7 +23,7 @@ export function Sidebar() {
         <>
             {/* Sidebar Container */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-50 bg-slate-50 border-r border-slate-300 transform transition-all duration-300 ease-in-out flex flex-col py-3",
+                "fixed inset-y-0 left-0 z-50 bg-slate-50 border-r border-slate-300 transform transition-all duration-300 ease-in-out flex flex-col py-1.5 md:py-3",
                 // Mobile state: w-52
                 isOpen ? "translate-x-0 w-52" : "-translate-x-full w-52",
                 // Desktop state: w-64
@@ -31,7 +31,7 @@ export function Sidebar() {
                 isDesktopCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none lg:border-r-0" : "lg:w-64 lg:opacity-100"
             )}>
                 <div className={cn(
-                    "px-4 mb-2 text-label font-bold text-slate-400 uppercase tracking-wider transition-opacity whitespace-nowrap overflow-hidden",
+                    "px-1.5 md:px-4 mb-2 text-label font-bold text-slate-400 uppercase tracking-wider transition-opacity whitespace-nowrap overflow-hidden",
                     isDesktopCollapsed && "lg:opacity-0"
                 )}>
                     Workspace
@@ -55,7 +55,7 @@ export function Sidebar() {
                             return (
                                 <div
                                     key={link.href}
-                                    className="flex items-center px-4 py-1.5 text-slate-300 cursor-not-allowed border-l-[3px] border-transparent"
+                                    className="flex items-center px-1.5 md:px-4 py-1.5 text-slate-300 cursor-not-allowed border-l-[3px] border-transparent"
                                     title={isSubscriptionRestricted ? "Active subscription required" : "Complete setup to access this feature"}
                                 >
                                     <Icon className="w-4 h-4 mr-3 shrink-0" />
@@ -69,7 +69,7 @@ export function Sidebar() {
                                 key={link.href}
                                 href={link.href}
                                 className={cn(
-                                    "flex items-center px-4 py-1.5 transition-all border-l-[3px]",
+                                    "flex items-center px-1.5 md:px-4 py-1.5 transition-all border-l-[3px]",
                                     isActive
                                         ? "bg-white border-blue-600 text-slate-900 font-medium shadow-sm"
                                         : "text-slate-600 border-transparent hover:bg-white hover:border-slate-300"
@@ -84,7 +84,7 @@ export function Sidebar() {
                 </nav>
 
                 {/* Footer */}
-                <div className="mt-auto px-4 py-2 border-t border-slate-200">
+                <div className="mt-auto px-1.5 md:px-4 py-1.5 md:py-2 border-t border-slate-200">
                 </div>
             </aside>
 

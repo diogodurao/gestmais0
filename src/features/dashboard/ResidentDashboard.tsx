@@ -61,14 +61,14 @@ export async function ResidentDashboard({ session }: ResidentDashboardProps) {
     }
 
     return (
-        <div className="space-y-4 max-w-4xl">
+        <div className="space-y-1.5 md:space-y-4 max-w-4xl">
             {evaluationStatus && <EvaluationWidget status={evaluationStatus} />}
 
             {/* Full-width payment status - their main concern */}
             <PaymentStatusCard userId={session.user.id} />
 
             {/* Two-column layout for secondary info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-4">
                 <BuildingMetricsPanel
                     isManager={false}
                     residents={[]}

@@ -86,8 +86,8 @@ export default async function SettingsPage({
     const canSubscribe = profileComplete && buildingComplete && unitsComplete
 
     return (
-        <div className="flex-1 overflow-y-auto bg-slate-100 p-3 sm:p-4 lg:p-6">
-            <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8 pb-20">
+        <div className="flex-1 overflow-y-auto bg-slate-100 p-1.5 sm:p-4 lg:p-6">
+            <div className="max-w-4xl mx-auto space-y-1.5 sm:space-y-6 lg:space-y-8 pb-20">
 
                 {/* Header bar within content for quick save simulation */}
                 <div className="flex items-center justify-between mb-2">
