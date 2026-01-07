@@ -42,7 +42,7 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
         )}>
             {/* Card Header - Clickable to expand */}
             <div
-                className="p-3 cursor-pointer active:bg-slate-50"
+                className="p-1.5 cursor-pointer active:bg-slate-50"
                 onClick={() => setIsExpanded(!isExpanded)}
                 role="button"
                 tabIndex={0}
@@ -118,7 +118,7 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
 
             {/* Expanded Content - Month Grid */}
             {isExpanded && (
-                <div className="border-t border-slate-100 bg-slate-50/50 p-3">
+                <div className="border-t border-slate-100 bg-slate-50/50 p-1.5">
                     <div className="text-micro font-bold text-slate-500 uppercase tracking-tight mb-2">
                         QUOTAS MENSAIS
                     </div>
@@ -211,7 +211,7 @@ export function PaymentMobileCards({
     const totalDebt = data.reduce((sum, item) => sum + item.balance, 0)
 
     return (
-        <div className="p-3 space-y-2">
+        <div className="p-1.5 space-y-1.5">
             {data.map((item) => (
                 <MobileCard
                     key={item.apartmentId}
@@ -224,7 +224,7 @@ export function PaymentMobileCards({
             ))}
 
             {/* Summary Card */}
-            <div className="tech-border bg-slate-100 p-3 mt-4">
+            <div className="tech-border bg-slate-100 p-1.5 mt-2">
                 <div className="flex items-center justify-between text-label font-bold uppercase tracking-tight">
                     <span className="text-slate-500">{data.length} Frações</span>
                     <div className="flex items-center gap-3">

@@ -42,7 +42,7 @@ export function DashboardHeader() {
         .slice(0, 2)
 
     return (
-        <header className="h-10 bg-slate-50 border-b border-slate-300 flex items-center px-3 justify-between shrink-0 z-50">
+        <header className="h-10 bg-slate-50 border-b border-slate-300 flex items-center px-1.5 md:px-3 justify-between shrink-0 z-50">
             <div className="flex items-center gap-2">
                 {/* Mobile Toggle */}
                 <button

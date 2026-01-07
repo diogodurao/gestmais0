@@ -87,7 +87,7 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-1.5 md:space-y-6">
             {/* Subscription Sync Handler */}
             {buildingInfo && (
                 <SubscriptionSyncWrapper buildingId={buildingInfo.id} />

@@ -30,7 +30,7 @@ export default async function DashboardLayout({
                         <Sidebar />
 
                         {/* Main Content */}
-                        <main className="flex-1 overflow-y-auto bg-slate-100 border-l border-slate-300 p-4 lg:p-6 flex flex-col">
+                        <main className="flex-1 overflow-y-auto bg-slate-100 border-l border-slate-300 p-1.5 md:p-4 lg:p-6 flex flex-col">
                             {children}
                         </main>
                     </div>

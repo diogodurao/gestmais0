@@ -19,7 +19,7 @@ const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
         return (
             <div
                 ref={ref}
-                className={cn("bg-slate-50 border-b border-slate-300 px-3 py-2 flex items-center justify-between", className)}
+                className={cn("bg-slate-50 border-b border-slate-300 px-1.5 md:px-3 py-1.5 md:py-2 flex items-center justify-between", className)}
                 {...props}
             />
         )
@@ -42,7 +42,7 @@ CardTitle.displayName = "CardTitle"
 
 const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
     ({ className, ...props }, ref) => {
-        return <div ref={ref} className={cn("p-4", className)} {...props} />
+        return <div ref={ref} className={cn("p-1.5 md:p-4", className)} {...props} />
     }
 )
 CardContent.displayName = "CardContent"
@@ -52,7 +52,7 @@ const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
         return (
             <div
                 ref={ref}
-                className={cn("bg-slate-50 border-t border-slate-300 px-3 py-1.5 text-body text-slate-500", className)}
+                className={cn("bg-slate-50 border-t border-slate-300 px-1.5 md:px-3 py-1 md:py-1.5 text-body text-slate-500", className)}
                 {...props}
             />
         )

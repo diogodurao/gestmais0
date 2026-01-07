@@ -74,12 +74,12 @@
 
   /* SPREADSHEET CELLS */
   .header-cell {
-    @apply bg-slate-50 text-slate-500 font-bold uppercase tracking-wider px-3 py-1.5 border-b border-r border-slate-300 select-none;
+    @apply bg-slate-50 text-slate-500 font-bold uppercase tracking-wider px-1.5 md:px-3 py-1 md:py-1.5 border-b border-r border-slate-300 select-none;
     font-size: 11px;
   }
 
   .data-cell {
-    @apply bg-white px-3 py-1.5 border-b border-r border-slate-200;
+    @apply bg-white px-1.5 md:px-3 py-1 md:py-1.5 border-b border-r border-slate-200;
   }
 
   /* INPUT STYLES */
@@ -112,7 +112,7 @@
 
   /* SETTINGS GRID */
   .label-col {
-    @apply bg-slate-50 text-slate-500 font-bold px-3 py-2 border-r border-slate-200 flex items-center uppercase tracking-tight;
+    @apply bg-slate-50 text-slate-500 font-bold px-1.5 md:px-3 py-1.5 md:py-2 border-r border-slate-200 flex items-center uppercase tracking-tight;
     font-size: 11px;
   }
 
@@ -121,7 +121,7 @@
   }
 
   .input-cell {
-    @apply w-full h-8 px-3 outline-none transition-all focus:bg-blue-50/30 font-sans border-none;
+    @apply w-full h-8 px-1.5 md:px-3 outline-none transition-all focus:bg-blue-50/30 font-sans border-none;
     font-size: 13px;
   }
 
