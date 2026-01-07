@@ -8,6 +8,8 @@ export const metadata = {
 
 const navLinks = [
     { href: "/ui-preview", label: "Overview" },
+    { href: "/ui-preview/ui", label: "UI Components" },
+    { href: "/ui-preview/dashboard", label: "Dashboard Preview" },
     { href: "/ui-preview/design-system", label: "Design System" },
     { href: "/ui-preview/typography", label: "Typography" },
     { href: "/ui-preview/buttons", label: "Buttons" },
