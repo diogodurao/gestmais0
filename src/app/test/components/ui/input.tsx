@@ -3,14 +3,14 @@ import { cn } from "@/lib/utils"
 
 type InputSize = "sm" | "md"
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
   size?: InputSize
   error?: boolean
 }
 
 const sizeStyles: Record<InputSize, string> = {
-  sm: "h-7 px-2 text-[10px]",
-  md: "h-8 px-2.5 text-[11px]",
+  sm: "h-7 px-1.5 text-[10px]",
+  md: "h-8 px-1.5 text-[11px]",
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(

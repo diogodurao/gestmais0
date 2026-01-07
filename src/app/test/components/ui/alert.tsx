@@ -47,7 +47,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
         ref={ref}
         role="alert"
         className={cn(
-          "flex gap-2 rounded-lg border p-2.5",
+          "flex gap-1.5 rounded-lg border p-1.5",
           styles.container,
           className
         )}

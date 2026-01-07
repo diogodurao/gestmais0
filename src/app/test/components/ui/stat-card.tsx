@@ -11,7 +11,7 @@ interface StatCardProps {
 
 export function StatCard({ label, value, change, icon, className }: StatCardProps) {
   return (
-    <div className={cn("rounded-lg border border-[#E9ECEF] bg-white p-3", className)}>
+    <div className={cn("rounded-lg border border-[#E9ECEF] bg-white p-1.5", className)}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-[10px] font-medium text-[#8E9AAF]">{label}</p>
@@ -26,7 +26,7 @@ export function StatCard({ label, value, change, icon, className }: StatCardProp
           )}
         </div>
         {icon && (
-          <div className="rounded bg-[#F8F8F6] p-1.5 text-[#8E9AAF]">{icon}</div>
+          <div className="rounded bg-[#F8F8F6] p-1 text-[#8E9AAF]">{icon}</div>
         )}
       </div>
     </div>

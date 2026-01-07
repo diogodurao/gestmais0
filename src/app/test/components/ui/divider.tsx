@@ -8,7 +8,7 @@ interface DividerProps {
 export function Divider({ className, label }: DividerProps) {
   if (label) {
     return (
-      <div className={cn("flex items-center gap-4", className)}>
+      <div className={cn("flex items-center gap-1.5", className)}>
         <div className="h-px flex-1 bg-gray-200" />
         <span className="text-[11px] text-gray-500">{label}</span>
         <div className="h-px flex-1 bg-gray-200" />

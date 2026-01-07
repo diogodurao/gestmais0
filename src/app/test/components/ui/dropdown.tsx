@@ -53,7 +53,7 @@ export function DropdownItem({ onClick, disabled, destructive, children }: Dropd
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex w-full items-center px-2.5 py-1.5 text-left text-[10px] transition-colors",
+        "flex w-full items-center px-1.5 py-1 text-left text-[10px] transition-colors",
         "hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50",
         destructive ? "text-[#D4848C]" : "text-[#495057]"
       )}

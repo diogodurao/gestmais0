@@ -54,7 +54,7 @@ export function Sheet({ open, onClose, side = "right", title, description, child
         )}
       >
         {(title || description) && (
-          <div className="border-b border-gray-200 px-4 py-3">
+          <div className="border-b border-gray-200 px-1.5 py-1.5">
             <div className="flex items-start justify-between">
               <div>
                 {title && (
@@ -73,9 +73,9 @@ export function Sheet({ open, onClose, side = "right", title, description, child
             </div>
           </div>
         )}
-        <div className="flex-1 overflow-y-auto p-4">{children}</div>
+        <div className="flex-1 overflow-y-auto p-1.5">{children}</div>
         {footer && (
-          <div className="border-t border-gray-200 px-4 py-3">{footer}</div>
+          <div className="border-t border-gray-200 px-1.5 py-1.5">{footer}</div>
         )}
       </div>
     </div>

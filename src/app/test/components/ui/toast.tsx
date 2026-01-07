@@ -56,7 +56,7 @@ function ToastContainer() {
   const { toasts, removeToast } = useToast()
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-1.5 right-1.5 z-50 flex flex-col gap-1.5">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onDismiss={() => removeToast(toast.id)} />
       ))}
@@ -85,10 +85,10 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
   return (
     <div
       className={cn(
-        "flex items-start gap-3 rounded-md border border-gray-200 p-3 shadow-md",
+        "flex items-start gap-1.5 rounded-md border border-gray-200 p-1.5 shadow-md",
         styles.bg
       )}
-      style={{ minWidth: 280, maxWidth: 360 }}
+      style={{ minWidth: 240, maxWidth: 320 }}
     >
       <Icon className={cn("h-4 w-4 flex-shrink-0 mt-0.5", styles.icon)} />
       <div className="flex-1 min-w-0">

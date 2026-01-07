@@ -9,7 +9,7 @@ interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type">
 
 export const Radio = forwardRef<HTMLInputElement, RadioProps>(
   ({ className, label, id, ...props }, ref) => (
-    <label htmlFor={id} className="inline-flex cursor-pointer items-center gap-2">
+    <label htmlFor={id} className="inline-flex cursor-pointer items-center gap-1.5">
       <input
         ref={ref}
         type="radio"

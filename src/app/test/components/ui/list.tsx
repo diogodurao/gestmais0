@@ -26,7 +26,7 @@ export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
     <li
       ref={ref}
       className={cn(
-        "flex items-center gap-3 px-3 py-2",
+        "flex items-center gap-1.5 px-1.5 py-1.5",
         clickable && "cursor-pointer transition-colors hover:bg-gray-50",
         active && "bg-blue-50",
         className
