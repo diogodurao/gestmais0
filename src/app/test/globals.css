@@ -43,8 +43,10 @@
   --color-info: #8E9AAF;
   --color-info-light: #E9ECF0;
 
-  /* Spacing */
+  /* Spacing - Updated base unit to 6px */
+  --space-0: 0px;
   --space-1: 4px;
+  --space-1-5: 6px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
@@ -172,4 +174,22 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-gray-400);
+}
+
+/* ============================================
+   MOBILE UTILITIES
+   ============================================ */
+
+@media (max-width: 640px) {
+  .mobile-stack {
+    flex-direction: column;
+  }
+  
+  .mobile-full {
+    width: 100%;
+  }
+  
+  .mobile-hidden {
+    display: none;
+  }
 }

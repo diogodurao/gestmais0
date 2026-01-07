@@ -11,7 +11,7 @@ export default function TestLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="h-screen w-screen overflow-hidden bg-white p-1">
+    <div className="h-screen w-screen overflow-hidden bg-white p-1.5">
       {children}
     </div>
   )
