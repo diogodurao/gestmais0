@@ -1,39 +1,37 @@
 "use client"
 
 import { useState } from "react"
+import { Button } from "./components/ui/button"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./components/ui/card"
+import { Badge } from "./components/ui/badge"
+import { Input } from "./components/ui/input"
+import { Textarea } from "./components/ui/textarea"
+import { Select } from "./components/ui/select"
+import { Checkbox } from "./components/ui/checkbox"
+import { Radio } from "./components/ui/radio"
+import { Label } from "./components/ui/label"
+import { FormField } from "./components/ui/form-field"
+import { Tag } from "./components/ui/tag"
+import { Divider } from "./components/ui/divider"
+import { Avatar } from "./components/ui/avatar"
+import { IconButton } from "./components/ui/icon-button"
+import { Modal } from "./components/ui/modal"
+import { Sheet } from "./components/ui/sheet"
+import { Drawer } from "./components/ui/drawer"
+import { Dropdown, DropdownItem, DropdownDivider } from "./components/ui/dropdown"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./components/ui/table"
+import { List, ListItem } from "./components/ui/list"
+import { DataGrid, DataGridItem } from "./components/ui/data-grid"
+import { StatCard } from "./components/ui/stat-card"
+import { Alert } from "./components/ui/alert"
+import { SkeletonText, SkeletonCard, SkeletonTable } from "./components/ui/skeleton"
+import { EmptyState } from "./components/ui/empty-state"
+import { ToastProvider, useToast } from "./components/ui/toast"
+import { Progress } from "./components/ui/progress"
+import { Spinner } from "./components/ui/spinner"
 import {
-  Button,
-  Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
-  Badge,
-  Input,
-  Textarea,
-  Select,
-  Checkbox,
-  Radio,
-  Label,
-  FormField,
-  Tag,
-  Divider,
-  Avatar,
-  IconButton,
-  Modal,
-  Sheet,
-  Drawer,
-  Dropdown, DropdownItem, DropdownDivider,
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-  List, ListItem,
-  DataGrid, DataGridItem,
-  StatCard,
-  Alert,
-  Skeleton, SkeletonText, SkeletonCard, SkeletonTable,
-  EmptyState,
-  ToastProvider, useToast,
-  Progress,
-  Spinner,
-} from "./components/ui"
-import {
-  Plus, Settings, MoreVertical, User, Mail, Phone,
-  TrendingUp, Users, DollarSign, Activity, FileText,
+  Plus, Settings, MoreVertical, User,
+  Users, DollarSign, Activity, FileText,
   Edit, Trash2, Download, Eye,
 } from "lucide-react"
 
@@ -83,7 +81,6 @@ function ComponentShowcase() {
 
   return (
     <div className="space-y-12">
-      {/* Typography */}
       <Section title="Typography">
         <div className="space-y-2 rounded-md border border-gray-200 bg-white p-4">
           <p className="text-heading">Heading - 16px semibold</p>
@@ -93,7 +90,6 @@ function ComponentShowcase() {
         </div>
       </Section>
 
-      {/* Buttons */}
       <Section title="Buttons">
         <Subsection title="Variants">
           <div className="flex flex-wrap gap-2">
@@ -125,7 +121,6 @@ function ComponentShowcase() {
         </Subsection>
       </Section>
 
-      {/* Form Elements */}
       <Section title="Form Elements">
         <div className="grid gap-6 sm:grid-cols-2">
           <Card>
@@ -180,7 +175,6 @@ function ComponentShowcase() {
         </div>
       </Section>
 
-      {/* Badges & Tags */}
       <Section title="Badges & Tags">
         <Subsection title="Badge Variants">
           <div className="flex flex-wrap gap-2">
@@ -200,7 +194,6 @@ function ComponentShowcase() {
         </Subsection>
       </Section>
 
-      {/* Avatars */}
       <Section title="Avatars">
         <div className="flex items-center gap-4">
           <Avatar alt="John Doe" />
@@ -209,7 +202,6 @@ function ComponentShowcase() {
         </div>
       </Section>
 
-      {/* Cards */}
       <Section title="Cards">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Card>
@@ -218,7 +210,7 @@ function ComponentShowcase() {
               <CardDescription>A basic card with header and content.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-body">Card content goes here. This is a simple card component with header, title, description, and content areas.</p>
+              <p className="text-body">Card content goes here.</p>
             </CardContent>
           </Card>
           <Card>
@@ -249,36 +241,15 @@ function ComponentShowcase() {
         </div>
       </Section>
 
-      {/* Stats */}
       <Section title="Stat Cards">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Total Users"
-            value="1,234"
-            change={{ value: "12%", positive: true }}
-            icon={<Users className="h-5 w-5" />}
-          />
-          <StatCard
-            label="Revenue"
-            value="$45,231"
-            change={{ value: "8%", positive: true }}
-            icon={<DollarSign className="h-5 w-5" />}
-          />
-          <StatCard
-            label="Active Now"
-            value="573"
-            icon={<Activity className="h-5 w-5" />}
-          />
-          <StatCard
-            label="Pending"
-            value="12"
-            change={{ value: "3%", positive: false }}
-            icon={<FileText className="h-5 w-5" />}
-          />
+          <StatCard label="Total Users" value="1,234" change={{ value: "12%", positive: true }} icon={<Users className="h-5 w-5" />} />
+          <StatCard label="Revenue" value="$45,231" change={{ value: "8%", positive: true }} icon={<DollarSign className="h-5 w-5" />} />
+          <StatCard label="Active Now" value="573" icon={<Activity className="h-5 w-5" />} />
+          <StatCard label="Pending" value="12" change={{ value: "3%", positive: false }} icon={<FileText className="h-5 w-5" />} />
         </div>
       </Section>
 
-      {/* Data Grid */}
       <Section title="Data Grid">
         <DataGrid columns={4}>
           <DataGridItem label="Total Items" value="1,234" />
@@ -288,7 +259,6 @@ function ComponentShowcase() {
         </DataGrid>
       </Section>
 
-      {/* Table */}
       <Section title="Table">
         <Card>
           <Table>
@@ -323,103 +293,50 @@ function ComponentShowcase() {
                   </div>
                 </TableCell>
               </TableRow>
-              <TableRow>
-                <TableCell>Bob Wilson</TableCell>
-                <TableCell>bob@example.com</TableCell>
-                <TableCell><Badge variant="error">Inactive</Badge></TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <IconButton size="sm" variant="ghost" icon={<Eye className="h-4 w-4" />} label="View" />
-                    <IconButton size="sm" variant="ghost" icon={<Edit className="h-4 w-4" />} label="Edit" />
-                  </div>
-                </TableCell>
-              </TableRow>
             </TableBody>
           </Table>
         </Card>
       </Section>
 
-      {/* List */}
       <Section title="List">
         <div className="max-w-md">
           <List>
-            <ListItem
-              clickable
-              leading={<User className="h-5 w-5 text-gray-400" />}
-              title="John Doe"
-              description="john@example.com"
-              trailing={<Badge variant="success">Active</Badge>}
-            />
-            <ListItem
-              clickable
-              leading={<User className="h-5 w-5 text-gray-400" />}
-              title="Jane Smith"
-              description="jane@example.com"
-              trailing={<Badge variant="warning">Pending</Badge>}
-            />
-            <ListItem
-              clickable
-              leading={<User className="h-5 w-5 text-gray-400" />}
-              title="Bob Wilson"
-              description="bob@example.com"
-              trailing={<Badge>Draft</Badge>}
-            />
+            <ListItem clickable leading={<User className="h-5 w-5 text-gray-400" />} title="John Doe" description="john@example.com" trailing={<Badge variant="success">Active</Badge>} />
+            <ListItem clickable leading={<User className="h-5 w-5 text-gray-400" />} title="Jane Smith" description="jane@example.com" trailing={<Badge variant="warning">Pending</Badge>} />
+            <ListItem clickable leading={<User className="h-5 w-5 text-gray-400" />} title="Bob Wilson" description="bob@example.com" trailing={<Badge>Draft</Badge>} />
           </List>
         </div>
       </Section>
 
-      {/* Dropdowns */}
       <Section title="Dropdown Menu">
-        <Dropdown
-          trigger={<Button variant="outline" size="sm">Actions <MoreVertical className="h-4 w-4" /></Button>}
-        >
-          <DropdownItem onClick={() => {}}>
-            <Eye className="mr-2 h-4 w-4" /> View
-          </DropdownItem>
-          <DropdownItem onClick={() => {}}>
-            <Edit className="mr-2 h-4 w-4" /> Edit
-          </DropdownItem>
-          <DropdownItem onClick={() => {}}>
-            <Download className="mr-2 h-4 w-4" /> Download
-          </DropdownItem>
+        <Dropdown trigger={<Button variant="outline" size="sm">Actions <MoreVertical className="h-4 w-4" /></Button>}>
+          <DropdownItem onClick={() => {}}><Eye className="mr-2 h-4 w-4" /> View</DropdownItem>
+          <DropdownItem onClick={() => {}}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownItem>
+          <DropdownItem onClick={() => {}}><Download className="mr-2 h-4 w-4" /> Download</DropdownItem>
           <DropdownDivider />
-          <DropdownItem onClick={() => {}} destructive>
-            <Trash2 className="mr-2 h-4 w-4" /> Delete
-          </DropdownItem>
+          <DropdownItem onClick={() => {}} destructive><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownItem>
         </Dropdown>
       </Section>
 
-      {/* Alerts */}
       <Section title="Alerts">
         <div className="space-y-3">
-          <Alert variant="info" title="Information">
-            This is an informational message.
-          </Alert>
-          <Alert variant="success" title="Success">
-            Your changes have been saved.
-          </Alert>
-          <Alert variant="warning" title="Warning">
-            Please review your settings.
-          </Alert>
-          <Alert variant="error" title="Error" dismissible onDismiss={() => {}}>
-            Something went wrong. Please try again.
-          </Alert>
+          <Alert variant="info" title="Information">This is an informational message.</Alert>
+          <Alert variant="success" title="Success">Your changes have been saved.</Alert>
+          <Alert variant="warning" title="Warning">Please review your settings.</Alert>
+          <Alert variant="error" title="Error" dismissible onDismiss={() => {}}>Something went wrong.</Alert>
         </div>
       </Section>
 
-      {/* Toast */}
       <Section title="Toast Notifications">
         <ToastDemo />
       </Section>
 
-      {/* Progress & Loading */}
       <Section title="Progress & Loading">
         <Subsection title="Progress Bar">
           <div className="max-w-md space-y-3">
             <Progress value={25} />
             <Progress value={50} />
             <Progress value={75} />
-            <Progress value={100} size="sm" />
           </div>
         </Subsection>
         <Subsection title="Spinner">
@@ -431,7 +348,6 @@ function ComponentShowcase() {
         </Subsection>
       </Section>
 
-      {/* Skeletons */}
       <Section title="Skeleton Loading">
         <div className="grid gap-6 sm:grid-cols-2">
           <div>
@@ -449,18 +365,12 @@ function ComponentShowcase() {
         </div>
       </Section>
 
-      {/* Empty State */}
       <Section title="Empty State">
         <Card>
-          <EmptyState
-            title="No items found"
-            description="Get started by creating your first item."
-            action={<Button size="sm"><Plus className="h-4 w-4" /> Add Item</Button>}
-          />
+          <EmptyState title="No items found" description="Get started by creating your first item." action={<Button size="sm"><Plus className="h-4 w-4" /> Add Item</Button>} />
         </Card>
       </Section>
 
-      {/* Dividers */}
       <Section title="Dividers">
         <div className="space-y-4 rounded-md border border-gray-200 bg-white p-4">
           <p className="text-body">Content above divider</p>
@@ -471,64 +381,27 @@ function ComponentShowcase() {
         </div>
       </Section>
 
-      {/* Modals & Overlays */}
       <Section title="Overlays">
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => setModalOpen(true)}>
-            Open Modal
-          </Button>
-          <Button variant="outline" onClick={() => setSheetOpen(true)}>
-            Open Sheet
-          </Button>
-          <Button variant="outline" onClick={() => setDrawerOpen(true)}>
-            Open Drawer
-          </Button>
+          <Button variant="outline" onClick={() => setModalOpen(true)}>Open Modal</Button>
+          <Button variant="outline" onClick={() => setSheetOpen(true)}>Open Sheet</Button>
+          <Button variant="outline" onClick={() => setDrawerOpen(true)}>Open Drawer</Button>
         </div>
 
-        <Modal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          title="Modal Title"
-          description="This is a modal dialog example."
-          footer={
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-              <Button onClick={() => setModalOpen(false)}>Confirm</Button>
-            </div>
-          }
-        >
-          <p className="text-body">Modal content goes here. You can put any content inside.</p>
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Modal Title" description="This is a modal dialog example." footer={<div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button><Button onClick={() => setModalOpen(false)}>Confirm</Button></div>}>
+          <p className="text-body">Modal content goes here.</p>
         </Modal>
 
-        <Sheet
-          open={sheetOpen}
-          onClose={() => setSheetOpen(false)}
-          title="Sheet Title"
-          description="This is a side sheet example."
-          footer={
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setSheetOpen(false)}>Close</Button>
-            </div>
-          }
-        >
-          <p className="text-body">Sheet content goes here. Useful for forms or detail views.</p>
+        <Sheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Sheet Title" description="This is a side sheet example." footer={<div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setSheetOpen(false)}>Close</Button></div>}>
+          <p className="text-body">Sheet content goes here.</p>
           <div className="mt-4 space-y-4">
-            <FormField label="Name">
-              <Input placeholder="Enter name" />
-            </FormField>
-            <FormField label="Email">
-              <Input type="email" placeholder="Enter email" />
-            </FormField>
+            <FormField label="Name"><Input placeholder="Enter name" /></FormField>
+            <FormField label="Email"><Input type="email" placeholder="Enter email" /></FormField>
           </div>
         </Sheet>
 
-        <Drawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          title="Drawer Title"
-          description="This is a bottom drawer example."
-        >
-          <p className="text-body">Drawer content goes here. Great for mobile interactions.</p>
+        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title="Drawer Title" description="This is a bottom drawer example.">
+          <p className="text-body">Drawer content goes here.</p>
           <div className="mt-4 flex gap-2">
             <Button className="flex-1" variant="outline" onClick={() => setDrawerOpen(false)}>Cancel</Button>
             <Button className="flex-1" onClick={() => setDrawerOpen(false)}>Confirm</Button>
