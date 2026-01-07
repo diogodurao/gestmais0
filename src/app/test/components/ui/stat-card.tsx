@@ -11,22 +11,22 @@ interface StatCardProps {
 
 export function StatCard({ label, value, change, icon, className }: StatCardProps) {
   return (
-    <div className={cn("rounded-md border border-gray-200 bg-white p-4", className)}>
+    <div className={cn("rounded-lg border border-[#E9ECEF] bg-white p-3", className)}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[11px] font-medium text-gray-500">{label}</p>
-          <p className="mt-1 text-[18px] font-semibold text-gray-900">{value}</p>
+          <p className="text-[10px] font-medium text-[#8E9AAF]">{label}</p>
+          <p className="mt-0.5 text-[14px] font-semibold text-[#343A40]">{value}</p>
           {change && (
             <p className={cn(
-              "mt-1 text-[11px] font-medium",
-              change.positive ? "text-emerald-600" : "text-red-600"
+              "mt-0.5 text-[10px] font-medium",
+              change.positive ? "text-[#8FB996]" : "text-[#D4848C]"
             )}>
               {change.positive ? "+" : ""}{change.value}
             </p>
           )}
         </div>
         {icon && (
-          <div className="rounded-md bg-gray-100 p-2 text-gray-600">{icon}</div>
+          <div className="rounded bg-[#F8F8F6] p-1.5 text-[#8E9AAF]">{icon}</div>
         )}
       </div>
     </div>

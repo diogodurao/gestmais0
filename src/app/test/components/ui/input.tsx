@@ -9,8 +9,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const sizeStyles: Record<InputSize, string> = {
-  sm: "h-8 px-2 text-[11px]",
-  md: "h-9 px-3 text-[13px]",
+  sm: "h-7 px-2 text-[10px]",
+  md: "h-8 px-2.5 text-[11px]",
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -18,11 +18,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     <input
       ref={ref}
       className={cn(
-        "w-full rounded-md border bg-white text-gray-900 transition-colors",
-        "placeholder:text-gray-400",
-        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0",
-        "disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500",
-        error ? "border-red-300" : "border-gray-200",
+        "w-full rounded border bg-white text-[#343A40] transition-colors",
+        "placeholder:text-[#ADB5BD]",
+        "focus:outline-none focus:ring-1 focus:ring-[#8FB996] focus:border-[#8FB996]",
+        "disabled:cursor-not-allowed disabled:bg-[#F8F9FA] disabled:text-[#ADB5BD]",
+        error ? "border-[#D4848C]" : "border-[#E9ECEF]",
         sizeStyles[size],
         className
       )}

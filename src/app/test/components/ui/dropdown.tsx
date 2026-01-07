@@ -29,7 +29,7 @@ export function Dropdown({ trigger, children, align = "left" }: DropdownProps) {
       {open && (
         <div
           className={cn(
-            "absolute z-50 mt-1 min-w-[160px] rounded-md border border-gray-200 bg-white py-1 shadow-md",
+            "absolute z-50 mt-1 min-w-[140px] rounded-lg border border-[#E9ECEF] bg-white py-1 shadow-sm",
             align === "right" ? "right-0" : "left-0"
           )}
         >
@@ -53,9 +53,9 @@ export function DropdownItem({ onClick, disabled, destructive, children }: Dropd
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex w-full items-center px-3 py-1.5 text-left text-[13px] transition-colors",
-        "hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50",
-        destructive ? "text-red-600" : "text-gray-700"
+        "flex w-full items-center px-2.5 py-1.5 text-left text-[10px] transition-colors",
+        "hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50",
+        destructive ? "text-[#D4848C]" : "text-[#495057]"
       )}
     >
       {children}
@@ -64,5 +64,5 @@ export function DropdownItem({ onClick, disabled, destructive, children }: Dropd
 }
 
 export function DropdownDivider() {
-  return <div className="my-1 h-px bg-gray-200" />
+  return <div className="my-1 h-px bg-[#E9ECEF]" />
 }

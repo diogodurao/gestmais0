@@ -11,8 +11,8 @@ interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const sizeStyles: Record<AvatarSize, string> = {
-  sm: "h-8 w-8 text-[11px]",
-  md: "h-10 w-10 text-[13px]",
+  sm: "h-6 w-6 text-[9px]",
+  md: "h-8 w-8 text-[10px]",
 }
 
 export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
@@ -23,7 +23,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
       <div
         ref={ref}
         className={cn(
-          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100",
+          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E8F0EA]",
           sizeStyles[size],
           className
         )}
@@ -32,7 +32,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {src ? (
           <img src={src} alt={alt} className="h-full w-full object-cover" />
         ) : (
-          <span className="font-medium text-gray-600">{initials}</span>
+          <span className="font-medium text-[#6A9B72]">{initials}</span>
         )}
       </div>
     )

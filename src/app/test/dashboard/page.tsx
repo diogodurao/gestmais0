@@ -20,10 +20,10 @@ import { Divider } from "../components/ui/divider"
 import { ToastProvider, useToast } from "../components/ui/toast"
 import { Progress } from "../components/ui/progress"
 import {
-  Plus, Search, Filter, MoreVertical, Bell, Settings,
+  Plus, Filter, MoreVertical, Menu,
   Users, DollarSign, TrendingUp, Calendar,
   Eye, Edit, Trash2, Download, ChevronRight,
-  Home, FileText, CreditCard, MessageSquare,
+  Home, FileText, CreditCard, MessageSquare, Settings,
 } from "lucide-react"
 
 const navigation = [
@@ -49,25 +49,38 @@ const upcomingTasks = [
   { id: 3, title: "Payment deadline", date: "Jan 20", type: "deadline" },
 ]
 
-function Sidebar() {
+function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   return (
-    <aside className="w-56 border-r border-gray-200 bg-white">
-      <div className="flex h-14 items-center border-b border-gray-200 px-4">
-        <span className="text-[14px] font-semibold text-gray-900">Condominium</span>
+    <aside
+      className={`flex flex-col rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] transition-all duration-200 ${
+        collapsed ? "w-12" : "w-48"
+      }`}
+    >
+      <div className="flex h-10 items-center justify-between px-2">
+        {!collapsed && (
+          <span className="text-[11px] font-semibold text-[#495057]">Condominium</span>
+        )}
+        <button
+          onClick={onToggle}
+          className="flex h-7 w-7 items-center justify-center rounded text-[#6C757D] hover:bg-[#E9ECEF]"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
       </div>
-      <nav className="p-2">
+      <nav className="flex-1 px-1.5 py-1">
         {navigation.map((item) => (
           <a
             key={item.name}
             href="#"
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-[13px] transition-colors ${
+            className={`flex items-center gap-2 rounded px-2 py-1.5 text-[10px] transition-colors ${
               item.active
-                ? "bg-gray-100 font-medium text-gray-900"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
+                : "text-[#6C757D] hover:bg-[#E9ECEF]"
             }`}
+            title={collapsed ? item.name : undefined}
           >
-            <item.icon className="h-4 w-4" />
-            {item.name}
+            <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
+            {!collapsed && item.name}
           </a>
         ))}
       </nav>
@@ -77,21 +90,10 @@ function Sidebar() {
 
 function Header() {
   return (
-    <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4">
-      <div className="flex items-center gap-4">
-        <h1 className="text-[16px] font-semibold text-gray-900">Overview</h1>
-      </div>
+    <header className="flex h-10 items-center justify-between rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] px-3">
+      <span className="text-[12px] font-medium text-[#495057]">Overview</span>
       <div className="flex items-center gap-2">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input className="w-64 pl-9" placeholder="Search..." size="sm" />
-        </div>
-        <IconButton icon={<Bell className="h-4 w-4" />} label="Notifications" variant="ghost" size="sm" />
-        <Divider className="!mx-2 !h-6 !w-px" />
-        <div className="flex items-center gap-2">
-          <Avatar size="sm" fallback="AD" alt="Admin" />
-          <span className="text-[13px] text-gray-700">Admin</span>
-        </div>
+        <Avatar size="sm" fallback="AD" alt="Admin" />
       </div>
     </header>
   )
@@ -116,59 +118,59 @@ function DashboardContent() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
-      <Alert variant="info" className="mb-6" dismissible onDismiss={() => {}}>
+    <div className="flex-1 overflow-y-auto rounded-lg border border-[#E9ECEF] bg-white p-4">
+      <Alert variant="info" className="mb-4" dismissible onDismiss={() => {}}>
         Next monthly meeting scheduled for January 15th at 7:00 PM.
       </Alert>
 
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-[18px] font-semibold text-gray-900">Dashboard</h2>
-          <p className="text-[13px] text-gray-500">Welcome back. Here is your overview.</p>
+          <h2 className="text-[13px] font-semibold text-[#343A40]">Dashboard</h2>
+          <p className="text-[10px] text-[#8E9AAF]">Welcome back. Here is your overview.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4" /> Filter
+            <Filter className="h-3 w-3" /> Filter
           </Button>
           <Button size="sm" onClick={() => setShowPaymentModal(true)}>
-            <Plus className="h-4 w-4" /> New Payment
+            <Plus className="h-3 w-3" /> New Payment
           </Button>
         </div>
       </div>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total Collected"
           value="$12,450"
           change={{ value: "8%", positive: true }}
-          icon={<DollarSign className="h-5 w-5" />}
+          icon={<DollarSign className="h-4 w-4" />}
         />
         <StatCard
           label="Residents"
           value="48"
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users className="h-4 w-4" />}
         />
         <StatCard
           label="Pending Payments"
           value="6"
           change={{ value: "2", positive: false }}
-          icon={<TrendingUp className="h-5 w-5" />}
+          icon={<TrendingUp className="h-4 w-4" />}
         />
         <StatCard
           label="This Month"
           value="$4,250"
-          icon={<Calendar className="h-5 w-5" />}
+          icon={<Calendar className="h-4 w-4" />}
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Recent Payments</CardTitle>
                 <Button variant="ghost" size="sm">
-                  View all <ChevronRight className="h-4 w-4" />
+                  View all <ChevronRight className="h-3 w-3" />
                 </Button>
               </div>
             </CardHeader>
@@ -187,7 +189,7 @@ function DashboardContent() {
                 {recentPayments.map((payment) => (
                   <TableRow key={payment.id}>
                     <TableCell>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <Avatar size="sm" fallback={payment.resident.charAt(0)} alt={payment.resident} />
                         <span>{payment.resident}</span>
                       </div>
@@ -198,21 +200,21 @@ function DashboardContent() {
                     <TableCell>{payment.date}</TableCell>
                     <TableCell>
                       <Dropdown
-                        trigger={<IconButton size="sm" variant="ghost" icon={<MoreVertical className="h-4 w-4" />} label="Actions" />}
+                        trigger={<IconButton size="sm" variant="ghost" icon={<MoreVertical className="h-3 w-3" />} label="Actions" />}
                         align="right"
                       >
                         <DropdownItem onClick={() => setShowResidentSheet(true)}>
-                          <Eye className="mr-2 h-4 w-4" /> View Details
+                          <Eye className="mr-1.5 h-3 w-3" /> View Details
                         </DropdownItem>
                         <DropdownItem onClick={() => {}}>
-                          <Edit className="mr-2 h-4 w-4" /> Edit
+                          <Edit className="mr-1.5 h-3 w-3" /> Edit
                         </DropdownItem>
                         <DropdownItem onClick={() => {}}>
-                          <Download className="mr-2 h-4 w-4" /> Download Receipt
+                          <Download className="mr-1.5 h-3 w-3" /> Download Receipt
                         </DropdownItem>
                         <DropdownDivider />
                         <DropdownItem onClick={() => {}} destructive>
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          <Trash2 className="mr-1.5 h-3 w-3" /> Delete
                         </DropdownItem>
                       </Dropdown>
                     </TableCell>
@@ -223,18 +225,18 @@ function DashboardContent() {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Upcoming</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {upcomingTasks.map((task) => (
                   <div key={task.id} className="flex items-center justify-between">
                     <div>
-                      <p className="text-[13px] font-medium text-gray-800">{task.title}</p>
-                      <p className="text-[11px] text-gray-500">{task.date}</p>
+                      <p className="text-[11px] font-medium text-[#495057]">{task.title}</p>
+                      <p className="text-[10px] text-[#8E9AAF]">{task.date}</p>
                     </div>
                     <Badge variant={task.type === "deadline" ? "warning" : "default"}>
                       {task.type}
@@ -250,25 +252,25 @@ function DashboardContent() {
               <CardTitle>Collection Progress</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <div className="mb-1 flex justify-between text-[11px]">
-                    <span className="text-gray-500">January 2025</span>
-                    <span className="font-medium text-gray-700">87%</span>
+                  <div className="mb-1 flex justify-between text-[10px]">
+                    <span className="text-[#8E9AAF]">January 2025</span>
+                    <span className="font-medium text-[#495057]">87%</span>
                   </div>
                   <Progress value={87} />
                 </div>
                 <div>
-                  <div className="mb-1 flex justify-between text-[11px]">
-                    <span className="text-gray-500">December 2024</span>
-                    <span className="font-medium text-gray-700">94%</span>
+                  <div className="mb-1 flex justify-between text-[10px]">
+                    <span className="text-[#8E9AAF]">December 2024</span>
+                    <span className="font-medium text-[#495057]">94%</span>
                   </div>
                   <Progress value={94} />
                 </div>
                 <div>
-                  <div className="mb-1 flex justify-between text-[11px]">
-                    <span className="text-gray-500">November 2024</span>
-                    <span className="font-medium text-gray-700">91%</span>
+                  <div className="mb-1 flex justify-between text-[10px]">
+                    <span className="text-[#8E9AAF]">November 2024</span>
+                    <span className="font-medium text-[#495057]">91%</span>
                   </div>
                   <Progress value={91} />
                 </div>
@@ -284,7 +286,7 @@ function DashboardContent() {
         title="Record Payment"
         description="Enter the payment details below."
         footer={
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-1.5">
             <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
               Cancel
             </Button>
@@ -297,7 +299,7 @@ function DashboardContent() {
           </div>
         }
       >
-        <div className="space-y-4">
+        <div className="space-y-3">
           <FormField label="Resident" required>
             <Select>
               <option value="">Select resident</option>
@@ -324,52 +326,52 @@ function DashboardContent() {
         title="Resident Details"
         description="Maria Silva - Apt 101"
       >
-        <div className="space-y-6">
-          <div className="flex items-center gap-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
             <Avatar fallback="MS" alt="Maria Silva" />
             <div>
-              <p className="text-[14px] font-medium text-gray-900">Maria Silva</p>
-              <p className="text-[13px] text-gray-500">maria.silva@email.com</p>
+              <p className="text-[12px] font-medium text-[#343A40]">Maria Silva</p>
+              <p className="text-[11px] text-[#8E9AAF]">maria.silva@email.com</p>
             </div>
           </div>
 
           <Divider />
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-[13px] text-gray-500">Unit</span>
-              <span className="text-[13px] font-medium text-gray-900">Apt 101</span>
+              <span className="text-[11px] text-[#8E9AAF]">Unit</span>
+              <span className="text-[11px] font-medium text-[#343A40]">Apt 101</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px] text-gray-500">Status</span>
+              <span className="text-[11px] text-[#8E9AAF]">Status</span>
               <Badge variant="success">Active</Badge>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px] text-gray-500">Balance</span>
-              <span className="text-[13px] font-medium text-gray-900">$0.00</span>
+              <span className="text-[11px] text-[#8E9AAF]">Balance</span>
+              <span className="text-[11px] font-medium text-[#343A40]">$0.00</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px] text-gray-500">Member since</span>
-              <span className="text-[13px] font-medium text-gray-900">Jan 2023</span>
+              <span className="text-[11px] text-[#8E9AAF]">Member since</span>
+              <span className="text-[11px] font-medium text-[#343A40]">Jan 2023</span>
             </div>
           </div>
 
           <Divider />
 
           <div>
-            <p className="mb-2 text-[11px] font-medium text-gray-500">RECENT PAYMENTS</p>
-            <div className="space-y-2">
-              <div className="flex justify-between text-[13px]">
-                <span className="text-gray-700">January 2025</span>
-                <span className="font-medium text-emerald-600">$85.00</span>
+            <p className="mb-1.5 text-[10px] font-medium text-[#8E9AAF]">RECENT PAYMENTS</p>
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[11px]">
+                <span className="text-[#495057]">January 2025</span>
+                <span className="font-medium text-[#8FB996]">$85.00</span>
               </div>
-              <div className="flex justify-between text-[13px]">
-                <span className="text-gray-700">December 2024</span>
-                <span className="font-medium text-emerald-600">$85.00</span>
+              <div className="flex justify-between text-[11px]">
+                <span className="text-[#495057]">December 2024</span>
+                <span className="font-medium text-[#8FB996]">$85.00</span>
               </div>
-              <div className="flex justify-between text-[13px]">
-                <span className="text-gray-700">November 2024</span>
-                <span className="font-medium text-emerald-600">$85.00</span>
+              <div className="flex justify-between text-[11px]">
+                <span className="text-[#495057]">November 2024</span>
+                <span className="font-medium text-[#8FB996]">$85.00</span>
               </div>
             </div>
           </div>
@@ -380,11 +382,13 @@ function DashboardContent() {
 }
 
 export default function DashboardPage() {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
   return (
     <ToastProvider>
-      <div className="flex h-screen bg-white">
-        <Sidebar />
-        <div className="flex flex-1 flex-col">
+      <div className="flex h-full gap-1 bg-white">
+        <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
+        <div className="flex flex-1 flex-col gap-1">
           <Header />
           <DashboardContent />
         </div>

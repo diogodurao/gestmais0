@@ -9,7 +9,7 @@ interface ProgressProps {
 
 const sizeStyles = {
   sm: "h-1",
-  md: "h-2",
+  md: "h-1.5",
 }
 
 export function Progress({ value, max = 100, size = "md", className }: ProgressProps) {
@@ -22,13 +22,13 @@ export function Progress({ value, max = 100, size = "md", className }: ProgressP
       aria-valuemin={0}
       aria-valuemax={max}
       className={cn(
-        "w-full overflow-hidden rounded-full bg-gray-200",
+        "w-full overflow-hidden rounded-full bg-[#E9ECEF]",
         sizeStyles[size],
         className
       )}
     >
       <div
-        className="h-full rounded-full bg-blue-600 transition-all duration-300"
+        className="h-full rounded-full bg-[#8FB996] transition-all duration-300"
         style={{ width: `${percentage}%` }}
       />
     </div>
