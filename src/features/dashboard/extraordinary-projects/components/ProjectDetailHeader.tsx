@@ -27,7 +27,7 @@ interface ProjectDetailHeaderProps {
     setShowArchiveConfirm: (show: boolean) => void
     setShowDeleteConfirm: (show: boolean) => void
     isDeleting: boolean
-    loadProject: () => Promise<any>
+    loadProject: () => void
 }
 
 export function ProjectDetailHeader({

@@ -62,7 +62,7 @@ const config: Config = {
                 lg: "var(--radius-lg)",
             },
             fontSize: {
-                label: "var(--text-xs)", // 10px - mapped to label class usage logic
+                label: "var(--text-xs)", // 10px
                 body: "var(--text-sm)", // 11px
                 base: "var(--text-base)", // 12px
                 subtitle: "var(--text-lg)", // 13px
@@ -84,8 +84,8 @@ const config: Config = {
                 md: "var(--shadow-md)",
             },
             transitionDuration: {
-                fast: "150ms",
-                normal: "200ms",
+                fast: "var(--transition-fast)",
+                normal: "var(--transition-normal)",
             },
         },
     },

@@ -3,7 +3,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications"
 import { Bell, BellOff, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect } from "react"
-import { ToastAction } from "@/components/ui/toast"
+import { ToastAction } from "@/components/ui/Toast"
 
 export function PushNotificationToggle() {
     const { permission, isSubscribed, loading, error, subscribeToPush } = usePushNotifications()

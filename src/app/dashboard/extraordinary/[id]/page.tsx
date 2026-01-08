@@ -1,13 +1,13 @@
 /**
  * Extraordinary Project Detail Page
- * 
- * Route: /dashboard/extraordinary/[id]
+ * * Route: /dashboard/extraordinary/[id]
  */
 
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
 import { ExtraProjectDetail } from "@/features/dashboard/extraordinary-projects/ExtraProjectDetail"
 import { requireSession } from "@/lib/session"
+import { getExtraordinaryProjectDetail } from "@/app/actions/extraordinary"
 
 export const metadata = {
     title: "Projeto Extraordinário | GestMais",
@@ -28,14 +28,26 @@ export default async function ExtraordinaryProjectDetailPage({ params }: PagePro
         notFound()
     }
 
-    const session = await requireSession()
+    // 1. Fetch Data on the Server
+    // This runs on the backend, so it's fast and SEO friendly
+    const [session, projectResponse] = await Promise.all([
+        requireSession(),
+        getExtraordinaryProjectDetail(projectId)
+    ])
+
+    // 2. Handle 404 / Errors
+    if (!projectResponse.success || !projectResponse.data) {
+        notFound()
+    }
+
     const isResident = session.user.role === 'resident'
 
     return (
         <div className="p-4 md:p-6">
             <Suspense fallback={<ProjectDetailSkeleton />}>
+                {/* 3. Pass the data directly to the client component */}
                 <ExtraProjectDetail
-                    projectId={projectId}
+                    initialProject={projectResponse.data}
                     readOnly={isResident}
                 />
             </Suspense>
@@ -48,14 +60,13 @@ function ProjectDetailSkeleton() {
         <div className="space-y-4">
             <div className="tech-border bg-white p-4">
                 <div className="flex items-start gap-4">
-                    <div className="w-9 h-9 bg-slate-200 skeleton" />
+                    <div className="w-9 h-9 bg-slate-200 animate-pulse rounded" />
                     <div>
-                        <div className="h-6 w-48 bg-slate-200 skeleton" />
-                        <div className="h-3 w-24 bg-slate-100 skeleton mt-2" />
+                        <div className="h-6 w-48 bg-slate-200 animate-pulse rounded" />
+                        <div className="h-3 w-24 bg-slate-100 animate-pulse rounded mt-2" />
                     </div>
                 </div>
             </div>
-
             <div className="grid grid-cols-4 gap-3">
                 {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="tech-border p-3">

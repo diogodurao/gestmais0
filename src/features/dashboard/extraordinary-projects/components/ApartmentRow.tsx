@@ -6,7 +6,7 @@ import { formatCurrency, getMonthName } from "@/lib/format"
 import { Badge } from "@/components/ui/Badge"
 import { type ApartmentPaymentData } from "@/app/actions/extraordinary"
 import { type ExtraordinaryToolMode, type PaymentStatus } from "@/lib/types"
-import { GENERAL_STATUS_CONFIG } from "@/lib/constants"
+import { GENERAL_STATUS_CONFIG } from "@/lib/constants/ui"
 
 interface ApartmentRowProps {
     apartment: ApartmentPaymentData

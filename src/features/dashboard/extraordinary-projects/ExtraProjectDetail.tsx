@@ -1,14 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ROUTES } from "@/lib/routes"
 import {
-    ArrowLeft,
-} from "lucide-react"
-import {
-    getExtraordinaryProjectDetail,
     archiveExtraordinaryProject,
     deleteExtraordinaryProject,
     type ProjectDetail,
@@ -22,47 +17,31 @@ const EditProjectModal = dynamic(
     { ssr: false }
 )
 import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary"
-import { Skeleton } from "@/components/ui/Skeleton"
-import { SkeletonCard } from "@/components/ui/Skeletons"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
-import { useAsyncData } from "@/hooks/useAsyncData"
-import { useAsyncAction } from "@/hooks/useAsyncAction"
+import { useAsyncAction } from "@/hooks/useAsyncAction" // Keep this for mutations
 
 // Sub-components
 import { ProjectDetailHeader } from "./components/ProjectDetailHeader"
 import { ProjectDetailStats } from "./components/ProjectDetailStats"
 
-// ===========================================
-// TYPES
-// ===========================================
-
 interface ExtraProjectDetailProps {
-    projectId: number
+    initialProject: ProjectDetail // Data passed from server
     readOnly?: boolean
 }
 
-// ===========================================
-// COMPONENT
-// ===========================================
-
-export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProjectDetailProps) {
+export function ExtraProjectDetail({ initialProject, readOnly = false }: ExtraProjectDetailProps) {
     const router = useRouter()
-
-    const {
-        data: project,
-        isLoading,
-        error,
-        refetch: loadProject
-    } = useAsyncData(() => getExtraordinaryProjectDetail(projectId).then(res => {
-        if (!res.success) throw new Error(res.error)
-        return res.data
-    }), [projectId])
+    
+    // We use the prop as the source of truth. 
+    // When router.refresh() runs, this prop will update with new server data.
+    const project = initialProject
 
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
+    // Mutation actions (Archive/Delete) still use useAsyncAction
     const { execute: archiveAction } = useAsyncAction(archiveExtraordinaryProject, {
         onSuccess: () => router.push(ROUTES.DASHBOARD.EXTRAORDINARY),
         errorMessage: "Erro ao arquivar projeto"
@@ -75,47 +54,19 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
     })
 
     const handleArchive = async (): Promise<void> => {
-        await archiveAction(projectId)
+        await archiveAction(project.id)
         setShowArchiveConfirm(false)
     }
 
     const handleDelete = async (): Promise<void> => {
-        await deleteAction(projectId)
+        await deleteAction(project.id)
         setShowDeleteConfirm(false)
     }
 
-    if (isLoading) {
-        return (
-            <div className="space-y-4">
-                <SkeletonCard hasHeader={true} />
-                <div className="grid grid-cols-4 gap-3">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="tech-border bg-slate-50 p-3">
-                            <Skeleton className="h-3 w-20 bg-slate-200" />
-                            <Skeleton className="h-6 w-24 bg-slate-200 mt-2" />
-                        </div>
-                    ))}
-                </div>
-                <div className="tech-border bg-white p-4">
-                    <Skeleton className="h-64 bg-slate-100" />
-                </div>
-            </div>
-        )
-    }
-
-    if (error || !project) {
-        return (
-            <div className="tech-border p-8 text-center">
-                <p className="text-body text-rose-600">{error || "Projeto não encontrado"}</p>
-                <Link
-                    href={ROUTES.DASHBOARD.EXTRAORDINARY}
-                    className="inline-flex items-center gap-2 mt-4 text-body text-blue-600 hover:underline"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Voltar
-                </Link>
-            </div>
-        )
+    // This replaces "loadProject". 
+    // It tells Next.js to re-run the server component (page.tsx) and send us fresh props.
+    const handleRefresh = () => {
+        router.refresh()
     }
 
     return (
@@ -128,7 +79,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
                     onClose={() => setIsEditing(false)}
                     onSave={() => {
                         setIsEditing(false)
-                        loadProject()
+                        handleRefresh() // Refresh data after edit
                     }}
                 />
             )}
@@ -160,7 +111,7 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
                 setShowArchiveConfirm={setShowArchiveConfirm}
                 setShowDeleteConfirm={setShowDeleteConfirm}
                 isDeleting={isDeleting}
-                loadProject={loadProject}
+                loadProject={handleRefresh}
             />
 
             <ProjectDetailStats stats={project.stats} />
@@ -178,12 +129,10 @@ export function ExtraProjectDetail({ projectId, readOnly = false }: ExtraProject
                         status: project.status,
                     }}
                     payments={project.payments}
-                    onRefresh={loadProject}
+                    onRefresh={handleRefresh} // Pass refresh handler
                     readOnly={readOnly}
                 />
             </FeatureErrorBoundary>
         </div>
     )
 }
-
-export default ExtraProjectDetail
