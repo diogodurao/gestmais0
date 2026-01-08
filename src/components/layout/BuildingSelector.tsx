@@ -13,7 +13,7 @@ import {
     DropdownItem,
     DropdownSeparator,
     DropdownLabel
-} from "@/components/ui/Dropdown"
+} from "@/components/ui/dropdown"
 
 interface BuildingSelectorProps {
     managerBuildings: ManagedBuilding[]
@@ -55,18 +55,18 @@ export function BuildingSelector({
     return (
         <Dropdown>
             <DropdownTrigger
-                className="flex items-center gap-2 px-2 py-1 hover:bg-slate-200 rounded-sm text-body font-medium text-slate-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-1.5 py-1 hover:bg-[#E9ECEF] rounded text-[11px] font-medium text-[#495057] transition-colors disabled:opacity-50"
                 disabled={isPending}
             >
-                <Building2 className="w-4 h-4 text-slate-500" />
-                <span className="truncate max-w-[150px]">
+                <Building2 className="w-3.5 h-3.5 text-[#8E9AAF]" />
+                <span className="truncate max-w-[120px]">
                     {activeBuilding?.building.name || "Selecionar Edifício"}
                 </span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
+                <ChevronDown className="w-3 h-3 text-[#ADB5BD]" />
             </DropdownTrigger>
 
-            <DropdownContent align="start" className="w-64 p-0">
-                <DropdownLabel className="border-b border-slate-100">Os Seus Edifícios</DropdownLabel>
+            <DropdownContent align="start" className="w-56 p-0">
+                <DropdownLabel className="border-b border-[#E9ECEF]">Os Seus Edifícios</DropdownLabel>
                 <div className="max-h-60 overflow-y-auto">
                     {managerBuildings.map((mb) => (
                         <DropdownItem
@@ -74,23 +74,23 @@ export function BuildingSelector({
                             onClick={() => handleSwitch(mb.building.id)}
                             disabled={isPending}
                             className={cn(
-                                "flex items-start justify-between gap-2 py-2",
-                                mb.building.id === activeBuilding?.building.id && "bg-blue-50/50"
+                                "flex items-start justify-between gap-2 py-1.5",
+                                mb.building.id === activeBuilding?.building.id && "bg-[#E8F0EA]"
                             )}
                         >
                             <div className="flex flex-col min-w-0">
                                 <span className={cn(
-                                    "font-bold truncate",
-                                    mb.building.id === activeBuilding?.building.id ? "text-blue-700" : "text-slate-700"
+                                    "text-[11px] font-medium truncate",
+                                    mb.building.id === activeBuilding?.building.id ? "text-[#6A9B72]" : "text-[#495057]"
                                 )}>
                                     {mb.building.name}
                                 </span>
-                                <span className="text-label text-slate-400 font-mono tracking-tighter uppercase">
+                                <span className="text-[9px] text-[#ADB5BD] font-mono tracking-tight uppercase">
                                     {mb.building.code}
                                 </span>
                             </div>
                             {mb.building.subscriptionStatus !== 'active' && (
-                                <span className="shrink-0 flex items-center gap-0.5 text-micro font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-sm uppercase">
+                                <span className="shrink-0 flex items-center gap-0.5 text-[8px] font-medium text-[#E5C07B] bg-[#FBF6EC] px-1 py-0.5 rounded uppercase">
                                     <AlertCircle className="w-2.5 h-2.5" />
                                     Não Pago
                                 </span>
@@ -100,10 +100,10 @@ export function BuildingSelector({
                 </div>
                 <DropdownSeparator />
                 <DropdownItem
-                    icon={<Plus className="w-4 h-4" />}
+                    icon={<Plus className="w-3.5 h-3.5" />}
                     onClick={handleAddBuilding}
                     disabled={isCreating || isPending}
-                    className="font-bold text-slate-600 py-2.5"
+                    className="text-[#6C757D] py-2"
                 >
                     {isCreating ? "A criar..." : "Adicionar Novo Edifício"}
                 </DropdownItem>
