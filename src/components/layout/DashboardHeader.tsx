@@ -1,32 +1,25 @@
 "use client"
 
-import { Building2, Menu, LogOut, Settings } from "lucide-react"
+import { Menu, LogOut, Settings } from "lucide-react"
 import Link from "next/link"
-import { ROUTES } from "@/lib/routes"
 import { useRouter } from "next/navigation"
+import { ROUTES } from "@/lib/routes"
 import { useSidebar } from "./SidebarProvider"
 import { authClient } from "@/lib/auth-client"
 import { useDashboard } from "@/contexts/DashboardContext"
 import { NotificationBell } from "@/features/dashboard/notifications/NotificationBell"
-import {
-    Dropdown,
-    DropdownTrigger,
-    DropdownContent,
-    DropdownItem,
-    DropdownSeparator,
-    DropdownLabel
-} from "@/components/ui/Dropdown"
 import { BuildingSelector } from "./BuildingSelector"
+import { cn } from "@/lib/utils"
 
 export function DashboardHeader() {
-    const { toggleSidebar, toggleDesktopCollapse } = useSidebar()
+    const { toggleSidebar } = useSidebar()
     const { session, managerBuildings, activeBuilding, setupComplete } = useDashboard()
+    const router = useRouter()
 
     // Derived values
     const userName = session?.name || "User"
     const userRole = session?.role || "resident"
     const managerId = session?.id || ""
-    const router = useRouter()
 
     const handleSignOut = async () => {
         await authClient.signOut()
@@ -42,33 +35,30 @@ export function DashboardHeader() {
         .slice(0, 2)
 
     return (
-        <header className="h-10 bg-slate-50 border-b border-slate-300 flex items-center px-3 justify-between shrink-0 z-50">
-            <div className="flex items-center gap-2">
-                {/* Mobile Toggle */}
+        <header className="flex h-10 items-center justify-between rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] px-1.5">
+            {/* Left side */}
+            <div className="flex items-center gap-1.5">
+                {/* Mobile menu toggle */}
                 <button
                     onClick={toggleSidebar}
-                    className="lg:hidden p-1.5 hover:bg-slate-200 rounded-sm text-slate-600 transition-colors"
+                    className="flex h-7 w-7 items-center justify-center rounded text-[#6C757D] hover:bg-[#E9ECEF] transition-colors lg:hidden"
                     aria-label="Toggle menu"
                 >
-                    <Menu className="w-5 h-5" />
+                    <Menu className="h-4 w-4" />
                 </button>
 
-                {/* Desktop Toggle */}
-                <button
-                    onClick={toggleDesktopCollapse}
-                    className="hidden lg:flex p-1.5 hover:bg-slate-200 rounded-sm text-slate-600 transition-colors"
-                    aria-label="Toggle sidebar"
+                {/* Logo */}
+                <Link
+                    href={ROUTES.DASHBOARD.HOME}
+                    className="flex items-center text-[12px] font-medium hover:opacity-80 transition-opacity"
                 >
-                    <Menu className="w-4 h-4" />
-                </button>
-
-                <Link href={ROUTES.DASHBOARD.HOME} className="flex items-center font-bold tracking-tight text-content ml-1 hover:opacity-80 transition-opacity">
-                    <span className="text-slate-400 font-normal">GEST</span>
-                    <span className="text-slate-800">MAIS+</span>
+                    <span className="text-[#8E9AAF]">GEST</span>
+                    <span className="text-[#343A40] font-semibold">MAIS+</span>
                 </Link>
 
-                <div className="h-5 w-px bg-slate-300 mx-2"></div>
+                <div className="h-4 w-px bg-[#E9ECEF] mx-1"></div>
 
+                {/* Building selector for managers / Building name for residents */}
                 {userRole === "manager" && (setupComplete || managerBuildings.length > 1) ? (
                     <BuildingSelector
                         managerBuildings={managerBuildings}
@@ -76,38 +66,54 @@ export function DashboardHeader() {
                         managerId={managerId}
                     />
                 ) : userRole === "resident" && activeBuilding ? (
-                    <div className="flex items-center gap-2 px-2 py-1 text-body font-medium text-slate-700">
-                        <Building2 className="w-4 h-4 text-slate-500" />
-                        <span>{activeBuilding.building.name}</span>
-                    </div>
+                    <span className="text-[11px] text-[#6C757D] hidden sm:block">
+                        {activeBuilding.building.name}
+                    </span>
                 ) : null}
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Right side */}
+            <div className="flex items-center gap-1.5">
                 <NotificationBell />
-                <div className="h-5 w-px bg-slate-200"></div>
 
-                <Dropdown>
-                    <DropdownTrigger className="flex items-center gap-3 hover:bg-slate-100 px-2 py-1 rounded-sm transition-colors outline-none">
-                        <div className="text-right leading-3 hidden sm:block">
-                            <div className="text-body font-bold text-slate-700">{userName}</div>
-                            <div className="text-micro text-slate-500 uppercase tracking-widest">Acesso {userRole === 'manager' ? 'Gestor' : 'Residente'}</div>
+                <div className="h-4 w-px bg-[#E9ECEF]"></div>
+
+                {/* User dropdown */}
+                <div className="relative group">
+                    <button className="flex items-center gap-1.5 rounded px-1.5 py-1 hover:bg-[#E9ECEF] transition-colors">
+                        {/* User info - hidden on mobile */}
+                        <div className="text-right hidden sm:block">
+                            <p className="text-[10px] font-medium text-[#495057] leading-tight">{userName}</p>
+                            <p className="text-[9px] text-[#8E9AAF] leading-tight">
+                                {userRole === 'manager' ? 'Gestor' : 'Residente'}
+                            </p>
                         </div>
-                        <div className="w-7 h-7 bg-blue-600 text-white rounded-sm flex items-center justify-center text-body font-bold shadow-sm">
-                            {initials}
+
+                        {/* Avatar */}
+                        <div className="h-7 w-7 rounded-full bg-[#E8F0EA] flex items-center justify-center">
+                            <span className="text-[10px] font-medium text-[#6A9B72]">{initials}</span>
                         </div>
-                    </DropdownTrigger>
-                    <DropdownContent align="end" className="w-48">
-                        <DropdownLabel className="border-b border-slate-100">A Minha Conta</DropdownLabel>
-                        <DropdownItem icon={<Settings className="w-4 h-4" />} onClick={() => router.push(ROUTES.DASHBOARD.SETTINGS)}>
+                    </button>
+
+                    {/* Dropdown menu */}
+                    <div className="absolute right-0 top-full mt-1 w-40 rounded-lg border border-[#E9ECEF] bg-white py-1 shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                        <button
+                            onClick={() => router.push(ROUTES.DASHBOARD.SETTINGS)}
+                            className="flex w-full items-center gap-2 px-3 py-1.5 text-[10px] text-[#495057] hover:bg-[#F8F9FA] transition-colors"
+                        >
+                            <Settings className="h-3.5 w-3.5" />
                             Definições
-                        </DropdownItem>
-                        <DropdownSeparator />
-                        <DropdownItem icon={<LogOut className="w-4 h-4" />} destructive onClick={handleSignOut}>
+                        </button>
+                        <div className="my-1 h-px bg-[#E9ECEF]" />
+                        <button
+                            onClick={handleSignOut}
+                            className="flex w-full items-center gap-2 px-3 py-1.5 text-[10px] text-[#D4848C] hover:bg-[#F8F9FA] transition-colors"
+                        >
+                            <LogOut className="h-3.5 w-3.5" />
                             Sair
-                        </DropdownItem>
-                    </DropdownContent>
-                </Dropdown>
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
     )
