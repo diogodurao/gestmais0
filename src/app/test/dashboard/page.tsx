@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card"
 import { Badge } from "../components/ui/badge"
 import { Input } from "../components/ui/input"
 import { Select } from "../components/ui/select"
-import { Avatar } from "../components/ui/avatar"
+import { Avatar } from "../../../components/ui/avatar"
 import { IconButton } from "../components/ui/icon-button"
 import { Modal } from "../components/ui/modal"
 import { Sheet } from "../components/ui/sheet"
@@ -72,11 +72,10 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
               key={item.name}
               href="#"
               onClick={onClose}
-              className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${
-                item.active
+              className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${item.active
                   ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
                   : "text-[#6C757D] hover:bg-[#E9ECEF]"
-              }`}
+                }`}
             >
               <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
               {item.name}
@@ -91,9 +90,8 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
 function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   return (
     <aside
-      className={`hidden lg:flex flex-col rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] transition-all duration-200 ${
-        collapsed ? "w-12" : "w-48"
-      }`}
+      className={`hidden lg:flex flex-col rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] transition-all duration-200 ${collapsed ? "w-12" : "w-48"
+        }`}
     >
       <div className="flex h-10 items-center justify-between px-1.5">
         {!collapsed && (
@@ -111,11 +109,10 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
           <a
             key={item.name}
             href="#"
-            className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${
-              item.active
+            className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${item.active
                 ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
                 : "text-[#6C757D] hover:bg-[#E9ECEF]"
-            }`}
+              }`}
             title={collapsed ? item.name : undefined}
           >
             <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
@@ -176,7 +173,7 @@ function DashboardContent() {
 
   return (
     <div className="flex-1 overflow-y-auto rounded-lg border border-[#E9ECEF] bg-white p-1.5">
-      <Alert variant="info" className="mb-1.5" dismissible onDismiss={() => {}}>
+      <Alert variant="info" className="mb-1.5" dismissible onDismiss={() => { }}>
         Next monthly meeting scheduled for January 15th at 7:00 PM.
       </Alert>
 
@@ -233,7 +230,7 @@ function DashboardContent() {
                 </Button>
               </div>
             </CardHeader>
-            
+
             {/* Desktop Table */}
             <div className="hidden sm:block">
               <Table>
@@ -268,14 +265,14 @@ function DashboardContent() {
                           <DropdownItem onClick={() => setShowResidentSheet(true)}>
                             <Eye className="mr-1.5 h-3 w-3" /> View Details
                           </DropdownItem>
-                          <DropdownItem onClick={() => {}}>
+                          <DropdownItem onClick={() => { }}>
                             <Edit className="mr-1.5 h-3 w-3" /> Edit
                           </DropdownItem>
-                          <DropdownItem onClick={() => {}}>
+                          <DropdownItem onClick={() => { }}>
                             <Download className="mr-1.5 h-3 w-3" /> Download Receipt
                           </DropdownItem>
                           <DropdownDivider />
-                          <DropdownItem onClick={() => {}} destructive>
+                          <DropdownItem onClick={() => { }} destructive>
                             <Trash2 className="mr-1.5 h-3 w-3" /> Delete
                           </DropdownItem>
                         </Dropdown>
@@ -289,8 +286,8 @@ function DashboardContent() {
             {/* Mobile List View */}
             <div className="sm:hidden p-1.5 space-y-1.5">
               {recentPayments.map((payment) => (
-                <div 
-                  key={payment.id} 
+                <div
+                  key={payment.id}
                   className="flex items-center justify-between rounded-md border border-[#F1F3F5] p-1.5"
                   onClick={() => setShowResidentSheet(true)}
                 >

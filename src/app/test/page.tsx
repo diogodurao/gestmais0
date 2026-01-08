@@ -13,7 +13,7 @@ import { Label } from "./components/ui/label"
 import { FormField } from "./components/ui/form-field"
 import { Tag } from "./components/ui/tag"
 import { Divider } from "./components/ui/divider"
-import { Avatar } from "./components/ui/avatar"
+import { Avatar } from "../../components/ui/avatar"
 import { IconButton } from "./components/ui/icon-button"
 import { Modal } from "./components/ui/modal"
 import { Sheet } from "./components/ui/sheet"
@@ -188,8 +188,8 @@ function ComponentShowcase() {
         <Subsection title="Tags">
           <div className="flex flex-wrap gap-1.5">
             <Tag>Simple Tag</Tag>
-            <Tag removable onRemove={() => {}}>Removable</Tag>
-            <Tag removable onRemove={() => {}}>Category</Tag>
+            <Tag removable onRemove={() => { }}>Removable</Tag>
+            <Tag removable onRemove={() => { }}>Category</Tag>
           </div>
         </Subsection>
       </Section>
@@ -310,11 +310,11 @@ function ComponentShowcase() {
 
       <Section title="Dropdown Menu">
         <Dropdown trigger={<Button variant="outline" size="sm">Actions <MoreVertical className="h-4 w-4" /></Button>}>
-          <DropdownItem onClick={() => {}}><Eye className="mr-1.5 h-4 w-4" /> View</DropdownItem>
-          <DropdownItem onClick={() => {}}><Edit className="mr-1.5 h-4 w-4" /> Edit</DropdownItem>
-          <DropdownItem onClick={() => {}}><Download className="mr-1.5 h-4 w-4" /> Download</DropdownItem>
+          <DropdownItem onClick={() => { }}><Eye className="mr-1.5 h-4 w-4" /> View</DropdownItem>
+          <DropdownItem onClick={() => { }}><Edit className="mr-1.5 h-4 w-4" /> Edit</DropdownItem>
+          <DropdownItem onClick={() => { }}><Download className="mr-1.5 h-4 w-4" /> Download</DropdownItem>
           <DropdownDivider />
-          <DropdownItem onClick={() => {}} destructive><Trash2 className="mr-1.5 h-4 w-4" /> Delete</DropdownItem>
+          <DropdownItem onClick={() => { }} destructive><Trash2 className="mr-1.5 h-4 w-4" /> Delete</DropdownItem>
         </Dropdown>
       </Section>
 
@@ -323,7 +323,7 @@ function ComponentShowcase() {
           <Alert variant="info" title="Information">This is an informational message.</Alert>
           <Alert variant="success" title="Success">Your changes have been saved.</Alert>
           <Alert variant="warning" title="Warning">Please review your settings.</Alert>
-          <Alert variant="error" title="Error" dismissible onDismiss={() => {}}>Something went wrong.</Alert>
+          <Alert variant="error" title="Error" dismissible onDismiss={() => { }}>Something went wrong.</Alert>
         </div>
       </Section>
 

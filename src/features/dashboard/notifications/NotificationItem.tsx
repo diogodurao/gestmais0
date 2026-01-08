@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { X } from "lucide-react"
 import { Notification } from "@/lib/types"
-import { NOTIFICATION_ICONS } from "@/lib/constants"
+import { NOTIFICATION_ICONS } from "@/lib/constants/ui"
 import { markNotificationAsRead, deleteNotification } from "@/app/actions/notification"
 import { formatDistanceToNow } from "@/lib/format"
 import { cn } from "@/lib/utils"

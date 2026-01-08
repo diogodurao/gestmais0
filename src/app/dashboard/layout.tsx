@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { DashboardHeader } from "@/components/layout/DashboardHeader"
+import { MobileNav } from "@/components/layout/MobileNav"
 import { SidebarProvider } from "@/components/layout/SidebarProvider"
 import { getDashboardContext } from "@/app/actions/dashboard"
 import { DashboardProvider } from "@/contexts/DashboardContext"
@@ -15,22 +16,22 @@ export default async function DashboardLayout({
         headers: await headers()
     })
 
-    // Fetch ONCE, pass to context
+    // Fetch context data (user, building, etc.)
     const initialData = await getDashboardContext(session as any)
 
     return (
         <DashboardProvider initialData={initialData}>
             <SidebarProvider>
-                <div className="h-screen bg-slate-100 flex flex-col overflow-hidden">
-                    {/* Header - now reads from context */}
-                    <DashboardHeader />
+                <div className="h-screen w-screen overflow-hidden bg-white p-1.5 flex gap-1.5">
+                    
+                    <MobileNav />
 
-                    <div className="flex flex-1 overflow-hidden">
-                        {/* Sidebar - now reads from context */}
-                        <Sidebar />
+                    <Sidebar />
 
-                        {/* Main Content */}
-                        <main className="flex-1 overflow-y-auto bg-slate-100 border-l border-slate-300 p-4 lg:p-6 flex flex-col">
+                    <div className="flex flex-1 flex-col gap-1.5 min-w-0 overflow-hidden">
+                        <DashboardHeader />
+
+                        <main className="flex-1 overflow-y-auto rounded-lg border border-[#E9ECEF] bg-white p-1.5 relative shadow-sm">
                             {children}
                         </main>
                     </div>

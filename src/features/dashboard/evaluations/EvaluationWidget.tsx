@@ -3,7 +3,7 @@ import { Lock, Clock, CheckCircle, BarChart3 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { EvaluationStatus } from "@/lib/types"
-import { EVALUATION_MONTH_NAMES as MONTH_NAMES } from "@/lib/constants"
+import { EVALUATION_MONTH_NAMES as MONTH_NAMES } from "@/lib/constants/timing"
 import { cn } from "@/lib/utils"
 
 interface Props {
