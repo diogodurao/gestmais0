@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
+import { requireSession, requireBuildingAccess } from "@/lib/session"
 import { occurrenceService } from "@/services/occurrence.service"
 import { CreateOccurrenceInput, UpdateOccurrenceInput, OccurrenceStatus } from "@/lib/types"
 import { createOccurrenceSchema, updateOccurrenceSchema } from "@/lib/zod-schemas"

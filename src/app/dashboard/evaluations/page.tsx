@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 import { redirect } from "next/navigation"
 import {
     getEvaluationStatus,

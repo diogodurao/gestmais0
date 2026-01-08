@@ -1,16 +1,12 @@
 import { clsx, type ClassValue } from "clsx"
 import { extendTailwindMerge } from "tailwind-merge"
-import { FLOOR_OPTIONS } from "./constants"
+import { FLOOR_OPTIONS } from "@/lib/constants/project"
 import { Check, AlertCircle, LucideIcon } from "lucide-react"
 
 // ==========================================
 // CLASSNAME UTILITY
 // ==========================================
 
-/**
- * Custom tailwind-merge configuration to handle semantic typography classes
- * preventing them from conflicting with text colors
- */
 const customTwMerge = extendTailwindMerge({
     extend: {
         classGroups: {
@@ -19,34 +15,25 @@ const customTwMerge = extendTailwindMerge({
     },
 })
 
-/**
- * Merge Tailwind classes with clsx
- */
 export function cn(...inputs: ClassValue[]) {
     return customTwMerge(clsx(inputs))
 }
 
 // ==========================================
-// FLOOR & APARTMENT DISPLAY UTILITIES
+// HELPERS
 // ==========================================
 
-/**
- * Get human-readable floor label
- */
 export function getFloorLabel(floor: string): string {
     const opt = FLOOR_OPTIONS.find(f => f.value === floor)
     if (opt) return opt.label
 
-    // Fallback for floors not in options
+    // Fallbacks
     if (floor === "0") return "R/C"
     if (floor === "-1") return "Cave"
     if (floor === "-2") return "-2"
     return `${floor}º`
 }
 
-/**
- * Get apartment display name
- */
 export function getApartmentDisplayName(apt: { unit: string }): string {
     return apt.unit
 }

@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 import { notFound } from "next/navigation"
 import { getDiscussion, getDiscussionComments } from "@/app/actions/discussions"
 import { DiscussionDetail } from "@/features/dashboard/discussions/DiscussionDetail"

@@ -5,7 +5,7 @@
  */
 
 import { ExtraProjectCreate } from "@/features/dashboard/extraordinary-projects/ExtraProjectCreate"
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 import { getBuildingApartments } from "@/app/actions/building"
 import { redirect } from "next/navigation"
 

@@ -1,7 +1,7 @@
 "use server"
 import { ROUTES } from "@/lib/routes"
 import { buildingService } from "@/services/building.service"
-import { requireSession, requireBuildingAccess, requireManagerSession, requireResidentSession } from "@/lib/auth-helpers"
+import { requireSession, requireBuildingAccess, requireManagerSession, requireResidentSession } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 import {
     createBuildingSchema,
@@ -172,7 +172,7 @@ export async function updateApartment(
     // TODO: Ideally refactor service to check auth, or fetch apartment -> building here.
     // Optimization: Assume buildingService handles it? No, service is unprotected.
     // Let's use our new helper.
-    const { requireApartmentAccess } = await import("@/lib/auth-helpers")
+    const { requireApartmentAccess } = await import("@/lib/session")
     await requireApartmentAccess(apartmentId)
 
     try {
@@ -188,7 +188,7 @@ export async function updateApartment(
 }
 
 export async function deleteApartment(apartmentId: number): Promise<ActionResult<void>> {
-    const { requireApartmentAccess } = await import("@/lib/auth-helpers")
+    const { requireApartmentAccess } = await import("@/lib/session")
     await requireApartmentAccess(apartmentId)
     try {
         await buildingService.deleteApartment(apartmentId)

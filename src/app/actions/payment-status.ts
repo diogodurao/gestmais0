@@ -1,6 +1,6 @@
 "use server"
 
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 import { paymentService, PaymentStatusSummary } from "@/services/payment.service"
 
 export type { PaymentStatusSummary }

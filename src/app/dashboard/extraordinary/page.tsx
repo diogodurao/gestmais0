@@ -9,7 +9,7 @@
 
 import { Suspense } from "react"
 import { ExtraProjectsList } from "@/features/dashboard/extraordinary-projects/ExtraProjectsList"
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 import { redirect } from "next/navigation"
 import { getResidentApartment, getBuildingApartments } from "@/app/actions/building"
 import { ROUTES } from "@/lib/routes"

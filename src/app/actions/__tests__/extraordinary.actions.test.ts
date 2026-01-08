@@ -32,7 +32,7 @@ describe('Extraordinary Actions', () => {
 
     describe('createExtraordinaryProject', () => {
         it('should create project when input is valid and user has access', async () => {
-            const { requireBuildingAccess } = await import('@/lib/auth-helpers')
+            const { requireBuildingAccess } = await import('@/lib/session')
             const mockSession = { user: { id: 'u1' } }
             vi.mocked(requireBuildingAccess).mockResolvedValue({ session: mockSession } as any)
 
@@ -59,7 +59,7 @@ describe('Extraordinary Actions', () => {
         })
 
         it('should return error if validation fails', async () => {
-            const { requireBuildingAccess } = await import('@/lib/auth-helpers')
+            const { requireBuildingAccess } = await import('@/lib/session')
             const mockSession = { user: { id: 'u1' } }
             vi.mocked(requireBuildingAccess).mockResolvedValue({ session: mockSession } as any)
 
@@ -84,7 +84,7 @@ describe('Extraordinary Actions', () => {
 
     describe('getExtraordinaryProjects', () => {
         it('should return projects list', async () => {
-            const { requireBuildingAccess, requireSession } = await import('@/lib/auth-helpers')
+            const { requireBuildingAccess, requireSession } = await import('@/lib/session')
             vi.mocked(requireSession).mockResolvedValue({ user: { role: 'manager' } } as any)
             vi.mocked(requireBuildingAccess).mockResolvedValue({} as any)
 
@@ -102,7 +102,7 @@ describe('Extraordinary Actions', () => {
 
     describe('getResidentExtraordinaryPayments', () => {
         it('should return payments for the current resident', async () => {
-            const { requireResidentSession } = await import('@/lib/auth-helpers')
+            const { requireResidentSession } = await import('@/lib/session')
             const mockSession = { user: { id: 'resident-1' } }
             vi.mocked(requireResidentSession).mockResolvedValue(mockSession as any)
 

@@ -1,32 +1,21 @@
-/**
- * Validates Portuguese NIF (9 digits)
- */
+import { z } from "zod"
+
+export const nifSchema = z.string().regex(/^\d{9}$/)
+export const ibanSchema = z.string().regex(/^[A-Za-z0-9]{25}$/)
+export const emailSchema = z.string().email()
+
 export function isValidNif(nif?: string | null): boolean {
-    if (!nif) return false
-    const cleanNif = nif.replace(/\s/g, '')
-    // User requested simple length validation only
-    return /^\d{9}$/.test(cleanNif)
+    return nif ? nifSchema.safeParse(nif.replace(/\s/g, '')).success : false
 }
 
-/**
- * Validates Portuguese IBAN (25 alphanumeric characters)
- */
 export function isValidIban(iban?: string | null): boolean {
-    if (!iban) return false
-    const normalized = iban.replace(/\s+/g, "")
-    return /^[A-Za-z0-9]{25}$/.test(normalized)
+    return iban ? ibanSchema.safeParse(iban.replace(/\s+/g, "")).success : false
 }
 
-/**
- * Validates email format
- */
 export function isValidEmail(email: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    return emailSchema.safeParse(email).success
 }
 
-/**
- * Checks if a building code is valid format
- */
 export function isValidBuildingCode(code: string): boolean {
     return code.length >= 3 && /^[a-z0-9]+$/.test(code.toLowerCase())
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
+import { requireSession, requireBuildingAccess } from "@/lib/session"
 import { documentService } from "@/services/document.service"
 import { DocumentCategory } from "@/lib/types"
 

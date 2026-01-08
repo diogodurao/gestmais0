@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { type Size } from "@/lib/ui-tokens"
+import { type Size } from "@/lib/utils"
 
 interface ModalProps {
     isOpen: boolean

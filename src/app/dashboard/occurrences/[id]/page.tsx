@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 import { notFound } from "next/navigation"
 import { getOccurrence, getOccurrenceComments, getOccurrenceAttachments } from "@/app/actions/occurrences"
 import { OccurrenceStatus } from "@/lib/types"

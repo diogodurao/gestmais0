@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
+import { requireSession, requireBuildingAccess } from "@/lib/session"
 import { evaluationService, SubmitEvaluationInput } from "@/services/evaluation.service"
 import { submitEvaluationSchema } from "@/lib/zod-schemas"
 import { ActionResult } from "@/lib/types"

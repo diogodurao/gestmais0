@@ -140,15 +140,23 @@ export function formatDistanceToNow(date: Date | string): string {
 // ===========================================
 
 /**
- * Format permillage value
+ * Format permillage value (e.g. 52.3 -> "52,30%")
  */
-export function formatPermillage(value: number): string {
-    return `${value.toFixed(2)}‰`
+export function formatPercent(value: number | null | undefined, decimals = 2): string {
+    if (value === null || value === undefined) return "-"
+    return `${value.toFixed(decimals).replace('.', ',')}%`
 }
 
-/**
- * Format percentage
- */
-export function formatPercent(value: number, decimals = 0): string {
-    return `${value.toFixed(decimals)}%`
+export function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+export function getFileIcon(mimeType: string): string {
+    if (mimeType === 'application/pdf') return '.pdf'
+    if (mimeType.includes('word')) return '.word'
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet') || mimeType === 'text/csv') return '.excel'
+    if (mimeType.startsWith('image/')) return 'img'
+    return '📎'
 }

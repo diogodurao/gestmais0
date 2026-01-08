@@ -51,7 +51,6 @@ export const bulkUpdatePaymentsSchema = z.object({
 })
 
 // Extraordinary Project Schemas
-// Extraordinary Project Schemas
 export const createProjectSchema = z.object({
     buildingId: z.string().uuid(),
     name: z.string().min(1, "Project name is required"),
@@ -77,7 +76,10 @@ export const updateExtraPaymentSchema = z.object({
     paymentId: z.number().int(),
     amountPaid: z.number().min(0).optional(),
     status: z.enum(["paid", "pending", "late", "partial"]).optional(),
-    paidDate: z.string().datetime().or(z.date()).optional().nullable().transform(val => val ? new Date(val) : null)
+    paidDate: z.union([
+        z.string().datetime().transform(val => new Date(val)),
+        z.date()
+    ]).optional().nullable()
 })
 
 // Calendar Event Schemas

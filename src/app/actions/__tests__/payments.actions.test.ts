@@ -28,7 +28,7 @@ describe('Payment Actions', () => {
 
     describe('getPaymentMap', () => {
         it('should return grid data when user has access', async () => {
-            const { requireBuildingAccess, requireSession } = await import('@/lib/auth-helpers')
+            const { requireBuildingAccess, requireSession } = await import('@/lib/session')
             vi.mocked(requireSession).mockResolvedValue({ user: { role: 'manager' } } as any)
             const mockData = { gridData: [], monthlyQuota: 50 }
             vi.mocked(paymentService.getPaymentMap).mockResolvedValue(mockData)
@@ -43,7 +43,7 @@ describe('Payment Actions', () => {
 
     describe('updatePaymentStatus', () => {
         it('should update status when input is valid', async () => {
-            const { requireApartmentAccess } = await import('@/lib/auth-helpers')
+            const { requireApartmentAccess } = await import('@/lib/session')
             vi.mocked(paymentService.updatePaymentStatus).mockResolvedValue(true)
 
             const result = await updatePaymentStatus(1, 1, 2024, 'paid', 5000)

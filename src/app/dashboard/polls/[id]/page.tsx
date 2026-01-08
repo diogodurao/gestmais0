@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 import { notFound } from "next/navigation"
 import { getPoll, getPollVotes, getPollResults, getUserVote } from "@/app/actions/polls"
 import { PollDetail } from "@/features/dashboard/polls/PollDetail"

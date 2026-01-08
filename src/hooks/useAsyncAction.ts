@@ -1,62 +1,58 @@
 "use client"
 
-import { useState } from "react"
+import { useTransition } from "react"
 import { useToast } from "@/hooks/use-toast"
 
-interface AsyncActionOptions<T> {
-    onSuccess?: (data: T) => void
-    onError?: (error: string) => void
-    successMessage?: string
-    errorMessage?: string
+type ActionFn<T, A> = (args: A) => Promise<{ success: boolean; data?: T; error?: string }>
+
+interface Options<T> {
+  onSuccess?: (data?: T) => void
+  onError?: (error: string) => void
+  successMessage?: string
+  errorMessage?: string
 }
 
-export function useAsyncAction<T, Args extends any[]>(
-    action: (...args: Args) => Promise<{ success: boolean; data?: T; error?: string }>,
-    options: AsyncActionOptions<T> = {}
+export function useAsyncAction<T, A = any>(
+  action: ActionFn<T, A>,
+  options: Options<T> = {}
 ) {
-    const [isPending, setIsPending] = useState(false)
-    const { toast } = useToast()
+  const [isPending, startTransition] = useTransition()
+  const { toast } = useToast()
 
-    const execute = async (...args: Args) => {
-        setIsPending(true)
-        try {
-            const result = await action(...args)
-            if (result.success) {
-                if (options.successMessage) {
-                    toast({
-                        title: "Sucesso",
-                        description: options.successMessage,
-                    })
-                }
-                if (options.onSuccess && result.data !== undefined) {
-                    options.onSuccess(result.data as T)
-                } else if (options.onSuccess) {
-                    options.onSuccess(null as any)
-                }
-                return { success: true, data: result.data }
-            } else {
-                const errorMsg = result.error || options.errorMessage || "Ocorreu um erro"
-                toast({
-                    title: "Erro",
-                    description: errorMsg,
-                    variant: "destructive",
-                })
-                options.onError?.(errorMsg)
-                return { success: false, error: errorMsg }
-            }
-        } catch (e: any) {
-            const errorMsg = e.message || options.errorMessage || "Erro inesperado"
+  const execute = async (args: A) => {
+    startTransition(async () => {
+      try {
+        const result = await action(args)
+
+        if (result.success) {
+          if (options.successMessage) {
             toast({
-                title: "Erro",
-                description: errorMsg,
-                variant: "destructive",
+              title: "Sucesso",
+              description: options.successMessage,
+              variant: "default",
             })
-            options.onError?.(errorMsg)
-            return { success: false, error: errorMsg }
-        } finally {
-            setIsPending(false)
+          }
+          options.onSuccess?.(result.data)
+        } else {
+          const message = result.error || options.errorMessage || "Ocorreu um erro"
+          toast({
+            title: "Erro",
+            description: message,
+            variant: "destructive",
+          })
+          options.onError?.(message)
         }
-    }
+      } catch (err) {
+        const message = options.errorMessage || "Erro inesperado"
+        toast({
+          title: "Erro",
+          description: message,
+          variant: "destructive",
+        })
+        options.onError?.(message)
+      }
+    })
+  }
 
-    return { execute, isPending }
+  return { execute, isPending }
 }

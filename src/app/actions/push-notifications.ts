@@ -4,7 +4,7 @@ import webpush from 'web-push'
 import { db } from "@/db"
 import { pushSubscriptions } from "@/db/schema"
 import { eq } from "drizzle-orm"
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 
 // Initialize web-push only when needed to avoid build-time errors
 function initWebPush() {

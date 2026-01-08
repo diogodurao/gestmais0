@@ -1,14 +1,9 @@
 import { calendarEvents } from "@/db/schema"
 
 export type PaymentStatus = "paid" | "pending" | "late" | "partial"
-
 export type ProjectStatus = "active" | "completed" | "cancelled" | "archived"
-
 export type UserRole = "manager" | "resident"
-
 export type ComponentSize = "xs" | "sm" | "md" | "lg"
-
-
 
 /**
  * Payment data for a single apartment in the payment grid

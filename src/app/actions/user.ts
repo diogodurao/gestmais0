@@ -4,7 +4,7 @@ import { db } from "@/db"
 import { user } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 
 import { z } from "zod"
 

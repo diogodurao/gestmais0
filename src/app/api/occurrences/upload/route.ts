@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireSession } from "@/lib/auth-helpers"
+import { requireSession } from "@/lib/session"
 import { occurrenceService } from "@/services/occurrence.service"
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB for photos

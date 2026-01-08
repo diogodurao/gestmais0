@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createNewBuilding, joinBuilding, getOrCreateManagerBuilding } from '@/app/actions/building'
 import { buildingService } from '@/services/building.service'
-import * as authHelpers from '@/lib/auth-helpers'
+import * as authHelpers from '@/lib/session'
 
 // Mock dependencies
 vi.mock('@/services/building.service', () => ({

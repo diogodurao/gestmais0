@@ -1,11 +1,10 @@
+"use client"
+
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import { formatCurrency } from "@/lib/format"
 import type { ApartmentPaymentData } from "@/lib/types"
 
-/**
- * PDF export using jspdf and jspdf-autotable
- */
 export function exportExtraPaymentsToPDF(
     projectName: string,
     buildingName: string,
@@ -141,10 +140,7 @@ export async function exportToExcel<T extends Record<string, unknown>>({
     data: T[];
 }) {
 
-
-    if (typeof window === "undefined") return;
-
-    // Generate CSV content
+    /** generate csv content */
     const headers = columns.map(col => `"${col.header}"`).join(",");
     const rows = data.map(item => {
         return columns.map(col => {
