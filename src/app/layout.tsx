@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ToastProvider } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
   title: "GestMais - gestão de condominios inteligente",
   description: "GestMais - gestão de condominios inteligente.",
 };
-
-import { Toaster } from "@/components/ui/toaster";
 
 export default function RootLayout({
   children,
@@ -16,8 +15,9 @@ export default function RootLayout({
   return (
     <html lang="pt">
       <body className="antialiased font-sans bg-slate-50 text-slate-900">
-        {children}
-        <Toaster />
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

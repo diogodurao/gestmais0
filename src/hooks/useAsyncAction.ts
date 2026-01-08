@@ -1,7 +1,7 @@
 "use client"
 
 import { useTransition } from "react"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/toast"
 
 type ActionFn<T, A> = (args: A) => Promise<{ success: boolean; data?: T; error?: string }>
 
@@ -17,7 +17,7 @@ export function useAsyncAction<T, A = any>(
   options: Options<T> = {}
 ) {
   const [isPending, startTransition] = useTransition()
-  const { toast } = useToast()
+  const { addToast } = useToast()
 
   const execute = async (args: A) => {
     startTransition(async () => {
@@ -26,28 +26,30 @@ export function useAsyncAction<T, A = any>(
 
         if (result.success) {
           if (options.successMessage) {
-            toast({
+            addToast({
               title: "Sucesso",
               description: options.successMessage,
-              variant: "default",
+              variant: "success",
             })
           }
           options.onSuccess?.(result.data)
         } else {
           const message = result.error || options.errorMessage || "Ocorreu um erro"
-          toast({
+          addToast({
             title: "Erro",
             description: message,
-            variant: "destructive",
+            variant: "error",
+            duration: 8000,
           })
           options.onError?.(message)
         }
       } catch (err) {
         const message = options.errorMessage || "Erro inesperado"
-        toast({
+        addToast({
           title: "Erro",
           description: message,
-          variant: "destructive",
+          variant: "error",
+          duration: 8000,
         })
         options.onError?.(message)
       }
