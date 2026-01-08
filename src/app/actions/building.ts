@@ -1,7 +1,7 @@
 "use server"
 import { ROUTES } from "@/lib/routes"
 import { buildingService } from "@/services/building.service"
-import { requireSession, requireBuildingAccess, requireManagerSession, requireResidentSession } from "@/lib/session"
+import { requireSession, requireBuildingAccess, requireManagerSession, requireResidentSession, requireApartmentAccess } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 import {
     createBuildingSchema,
@@ -167,12 +167,6 @@ export async function updateApartment(
     apartmentId: number,
     data: { unit?: string; permillage?: number | null }
 ): Promise<ActionResult<{ id: number; unit: string }>> {
-    // Indirect check via requireApartmentAccess would be better, but for now:
-    // We don't have buildingId here easily without fetching.
-    // TODO: Ideally refactor service to check auth, or fetch apartment -> building here.
-    // Optimization: Assume buildingService handles it? No, service is unprotected.
-    // Let's use our new helper.
-    const { requireApartmentAccess } = await import("@/lib/session")
     await requireApartmentAccess(apartmentId)
 
     try {
@@ -188,7 +182,6 @@ export async function updateApartment(
 }
 
 export async function deleteApartment(apartmentId: number): Promise<ActionResult<void>> {
-    const { requireApartmentAccess } = await import("@/lib/session")
     await requireApartmentAccess(apartmentId)
     try {
         await buildingService.deleteApartment(apartmentId)

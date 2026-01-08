@@ -124,7 +124,6 @@ function projectProgress(total: number, collected: number) {
     return Math.round((collected / total) * 100)
 }
 
-
 /**
  * Basic Excel export using CSV format
  */

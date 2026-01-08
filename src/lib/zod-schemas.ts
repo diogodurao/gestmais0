@@ -1,15 +1,16 @@
 import { z } from "zod"
+import { nifSchema, ibanSchema } from "./validations"
 
 // Building Schemas
 export const createBuildingSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    nif: z.string().regex(/^\d{9}$/, "Invalid NIF format").optional().or(z.literal(""))
+    nif: nifSchema.optional().or(z.literal(""))
 })
 
 export const updateBuildingSchema = z.object({
     name: z.string().min(1).optional(),
-    nif: z.string().regex(/^\d{9}$/, "Invalid NIF format").optional().or(z.literal("")),
-    iban: z.string().optional().nullable(),
+    nif: nifSchema.optional().or(z.literal("")),
+    iban: ibanSchema.optional().or(z.literal("")),
     city: z.string().optional().nullable(),
     street: z.string().optional().nullable(),
     number: z.string().optional().nullable(),
@@ -78,8 +79,9 @@ export const updateExtraPaymentSchema = z.object({
     status: z.enum(["paid", "pending", "late", "partial"]).optional(),
     paidDate: z.union([
         z.string().datetime().transform(val => new Date(val)),
-        z.date()
-    ]).optional().nullable()
+        z.date(),
+        z.null()
+    ]).optional()
 })
 
 // Calendar Event Schemas

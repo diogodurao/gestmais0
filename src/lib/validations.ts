@@ -1,8 +1,27 @@
 import { z } from "zod"
 
-export const nifSchema = z.string().regex(/^\d{9}$/)
-export const ibanSchema = z.string().regex(/^[A-Za-z0-9]{25}$/)
-export const emailSchema = z.string().email()
+// ============================================
+// SCHEMAS - Single source of truth
+// ============================================
+
+export const nifSchema = z.string()
+    .regex(/^\d{9}$/, "Invalid NIF format")
+    .transform(val => val.replace(/\s/g, ''))
+
+export const ibanSchema = z.string()
+    .regex(/^[A-Za-z0-9]{25}$/, "Invalid IBAN format")  
+    .transform(val => val.replace(/\s+/g, ''))
+
+export const emailSchema = z.string().email("Invalid email format")
+
+export const buildingCodeSchema = z.string()
+    .min(3, "Building code must be at least 3 characters")
+    .regex(/^[a-z0-9]+$/i, "Building code must be alphanumeric")
+    .transform(val => val.toLowerCase())
+
+// ============================================
+// VALIDATION FUNCTIONS
+// ============================================
 
 export function isValidNif(nif?: string | null): boolean {
     return nif ? nifSchema.safeParse(nif.replace(/\s/g, '')).success : false
