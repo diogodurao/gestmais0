@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useOptimistic, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useDebouncedCallback } from "use-debounce"
 import { updatePaymentStatus } from "@/app/actions/payments"
@@ -19,8 +19,7 @@ import {
     type PaymentStats,
     type PaymentData
 } from "@/lib/types"
-import { PAYMENT_TOOL_TO_STATUS } from "@/lib/constants"
-import { useOptimisticList } from "@/hooks/useOptimisticList"
+import { PAYMENT_TOOL_TO_STATUS } from "@/lib/constants/ui"
 
 interface PaymentGridProps {
     data: PaymentData[]
@@ -39,13 +38,52 @@ export function PaymentGrid({
 }: PaymentGridProps) {
     const router = useRouter()
     const { toast } = useToast()
+    const [isPending, startTransition] = useTransition()
 
-    // Local state for optimistic updates
-    const {
-        data: localData,
-        optimisticUpdate,
-        rollback
-    } = useOptimisticList(data, (item) => item.apartmentId)
+    // 1. Native Optimistic State
+    const [optimisticData, addOptimistic] = useOptimistic(
+        data,
+        (state: PaymentData[], action: { aptId: number; monthNum: number; status: string }) => {
+            return state.map((apt) => {
+                if (apt.apartmentId === action.aptId) {
+                    const dbStatus = action.status
+                    const newPayments = {
+                        ...apt.payments,
+                        [action.monthNum]: {
+                            status: dbStatus,
+                            amount: dbStatus === 'paid' ? monthlyQuota : 0
+                        }
+                    }
+
+                    // Recalculate totals
+                    const totalPaid = Object.values(newPayments).reduce((sum, p) =>
+                        sum + (p.status === 'paid' ? (p.amount || monthlyQuota) : 0), 0
+                    )
+                    
+                    const currentMonth = new Date().getMonth() + 1
+                    // Only count up to current month for expected total, or full year? 
+                    // Keeping logic consistent with previous implementation:
+                    // If the previous code calculated balance based on elapsed months, we replicate that.
+                    // Assuming simple logic: expected = currentMonth * quota (if active year is current)
+                    // If viewing past year, expected is 12 * quota.
+                    // For safety, let's assume the previous logic for balance was correct or handled in 'data' prop.
+                    // Re-implementing simplified balance logic for optimistic UI:
+                    const isCurrentYear = new Date().getFullYear() === year
+                    const monthsToCount = isCurrentYear ? currentMonth : 12
+                    const expectedTotal = monthsToCount * monthlyQuota
+                    const balance = Math.max(0, expectedTotal - totalPaid)
+
+                    return {
+                        ...apt,
+                        payments: newPayments,
+                        totalPaid,
+                        balance
+                    }
+                }
+                return apt
+            })
+        }
+    )
 
     const [searchTerm, setSearchTerm] = useState("")
     const [highlightedId, setHighlightedId] = useState<number | null>(null)
@@ -63,22 +101,7 @@ export function PaymentGrid({
         }
     }, [highlightedId])
 
-    // Async actions with rollback on error
-    const { execute: updateStatus, isPending: isSaving } = useAsyncAction(updatePaymentStatus, {
-        onSuccess: () => {
-            router.refresh()
-        },
-        onError: () => {
-            // Rollback to server state on error
-            rollback()
-            toast({
-                title: "Erro",
-                description: "Não foi possível atualizar o pagamento",
-                variant: "destructive"
-            })
-        }
-    })
-
+    // Delete action (Keep useAsyncAction for non-optimistic destructive actions)
     const { execute: removeApartment } = useAsyncAction(deleteApartment, {
         onSuccess: () => {
             router.refresh()
@@ -96,9 +119,9 @@ export function PaymentGrid({
         }
     })
 
-    // Filter and search logic (memoized)
+    // Filter and search logic (Use optimisticData)
     const filteredData = useMemo(() => {
-        let result = localData
+        let result = optimisticData
 
         // Apply search filter
         if (searchTerm) {
@@ -123,18 +146,18 @@ export function PaymentGrid({
         }
 
         return result
-    }, [localData, searchTerm, filterMode])
+    }, [optimisticData, searchTerm, filterMode])
 
-    // Calculate stats (memoized)
+    // Calculate stats
     const stats = useMemo<PaymentStats>(() => {
-        const totalCollected = localData.reduce((acc, apt) => acc + apt.totalPaid, 0)
-        const totalOverdue = localData.reduce((acc, apt) => acc + apt.balance, 0)
-        const paidCount = localData.filter(apt => apt.balance === 0).length
-        const overdueCount = localData.filter(apt => apt.balance > 0).length
-        return { totalCollected, totalOverdue, paidCount, overdueCount, total: localData.length }
-    }, [localData])
+        const totalCollected = optimisticData.reduce((acc, apt) => acc + apt.totalPaid, 0)
+        const totalOverdue = optimisticData.reduce((acc, apt) => acc + apt.balance, 0)
+        const paidCount = optimisticData.filter(apt => apt.balance === 0).length
+        const overdueCount = optimisticData.filter(apt => apt.balance > 0).length
+        return { totalCollected, totalOverdue, paidCount, overdueCount, total: optimisticData.length }
+    }, [optimisticData])
 
-    // Debounced cell click handler - prevents rapid-fire API calls
+    // Debounced cell click handler
     const handleCellClick = useDebouncedCallback(async (
         aptId: number,
         monthIdx: number
@@ -144,34 +167,27 @@ export function PaymentGrid({
         const dbStatus = PAYMENT_TOOL_TO_STATUS[activeTool]
         const monthNum = monthIdx + 1
 
-        // Optimistic update - update UI immediately
-        optimisticUpdate(aptId, (apt) => {
-            const newPayments = {
-                ...apt.payments,
-                [monthNum]: {
-                    status: dbStatus,
-                    amount: dbStatus === 'paid' ? monthlyQuota : 0
-                }
-            }
+        // Use startTransition to wrap the Optimistic Update + Server Action
+        startTransition(async () => {
+            // 1. Update UI immediately
+            addOptimistic({ aptId, monthNum, status: dbStatus })
 
-            // Recalculate totals
-            const totalPaid = Object.values(newPayments).reduce((sum, p) =>
-                sum + (p.status === 'paid' ? (p.amount || monthlyQuota) : 0), 0
-            )
-            const currentMonth = new Date().getMonth() + 1
-            const expectedTotal = currentMonth * monthlyQuota
-            const balance = Math.max(0, expectedTotal - totalPaid)
+            // 2. Call Server
+            const result = await updatePaymentStatus(aptId, monthNum, year, dbStatus as any)
 
-            return {
-                ...apt,
-                payments: newPayments,
-                totalPaid,
-                balance
+            if (result.success) {
+                // If successful, router.refresh() fetches new data.
+                // React detects the prop change and discards the optimistic state.
+                router.refresh()
+            } else {
+                toast({
+                    title: "Erro",
+                    description: "Não foi possível atualizar o pagamento",
+                    variant: "destructive"
+                })
+                // When transition ends without data update, UI reverts automatically
             }
         })
-
-        // Fire API call (errors handled by useAsyncAction with rollback)
-        await updateStatus(aptId, monthNum, year, dbStatus as any)
     }, 150)
 
     // Search handler
@@ -235,7 +251,7 @@ export function PaymentGrid({
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
                     onSearchSubmit={handleSearch}
-                    isSaving={isSaving}
+                    isSaving={isPending}
                 />
             )}
 

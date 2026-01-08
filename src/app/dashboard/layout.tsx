@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
-import { DashboardHeader } from "@/components/layout/DashboardHeader"
+import { Header} from "@/components/layout/Header"
 import { MobileNav } from "@/components/layout/MobileNav"
 import { SidebarProvider } from "@/components/layout/SidebarProvider"
 import { getDashboardContext } from "@/app/actions/dashboard"
@@ -29,7 +29,7 @@ export default async function DashboardLayout({
                     <Sidebar />
 
                     <div className="flex flex-1 flex-col gap-1.5 min-w-0 overflow-hidden">
-                        <DashboardHeader />
+                        <Header />
 
                         <main className="flex-1 overflow-y-auto rounded-lg border border-[#E9ECEF] bg-white p-1.5 relative shadow-sm">
                             {children}

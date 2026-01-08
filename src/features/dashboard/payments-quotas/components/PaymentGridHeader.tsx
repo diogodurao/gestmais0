@@ -11,46 +11,41 @@ interface PaymentGridHeaderProps {
 
 export function PaymentGridHeader({ year, stats }: PaymentGridHeaderProps) {
     return (
-        <header className="bg-white border-b border-slate-300 shrink-0 z-30">
-            <div className="h-12 flex items-center px-4 justify-between gap-4">
-                {/* Title */}
-                <div className="flex items-center gap-3 min-w-0">
-                    <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
-                    <div className="min-w-0">
-                        <h1 className="font-bold text-slate-800 text-content leading-tight truncate">
-                            Mapa de Quotas
-                        </h1>
-                        <span className="text-micro text-slate-500 font-mono uppercase tracking-tight">
-                            Exercício {year}
-                        </span>
-                    </div>
+        <header className="bg-white border-b border-[#E9ECEF] shrink-0 z-30 px-4 h-12 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-1.5 bg-[#F8F9FA] rounded-md border border-[#E9ECEF]">
+                    <Calendar className="w-3.5 h-3.5 text-[#8E9AAF]" />
+                </div>
+                <div className="flex flex-col justify-center">
+                    <h1 className="font-semibold text-[#343A40] text-[13px] leading-none">
+                        Mapa de Quotas
+                    </h1>
+                    <span className="text-[10px] text-[#8E9AAF] font-medium uppercase tracking-wide mt-0.5">
+                        Exercício {year}
+                    </span>
+                </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-[#F8F9FA] border border-[#E9ECEF] text-[#495057] rounded-md">
+                    <span className="text-[10px] font-bold">
+                        {stats.paidCount}/{stats.total}
+                    </span>
+                    <span className="text-[10px] text-[#8E9AAF] font-medium">em dia</span>
                 </div>
 
-                {/* Stats */}
-                <div className="flex items-center gap-2 shrink-0">
-                    {/* Paid/Total ratio */}
-                    <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-slate-100 border border-slate-200 text-slate-600 rounded-sm">
-                        <span className="text-micro font-bold uppercase">
-                            {stats.paidCount}/{stats.total}
-                        </span>
-                        <span className="text-micro text-slate-400">em dia</span>
-                    </div>
+                <div className="flex flex-col items-end sm:flex-row sm:items-center gap-0.5 sm:gap-2 px-2.5 py-1 bg-[#E8F0EA] border border-[#8FB996]/30 text-[#2F5E3D] rounded-md">
+                    <span className="text-[9px] font-bold uppercase tracking-wider opacity-70 hidden sm:inline">Cobrado</span>
+                    <span className="font-mono font-bold text-[12px]">
+                        {formatCurrency(stats.totalCollected)}
+                    </span>
+                </div>
 
-                    {/* Total collected */}
-                    <div className="flex items-center gap-1 px-2 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-sm">
-                        <span className="text-micro font-bold uppercase hidden xs:inline">Cobrado</span>
-                        <span className="font-mono font-bold text-label">
-                            {formatCurrency(stats.totalCollected)}
-                        </span>
-                    </div>
-
-                    {/* Total overdue */}
-                    <div className="flex items-center gap-1 px-2 py-1 bg-rose-50 border border-rose-200 text-rose-700 rounded-sm">
-                        <span className="text-micro font-bold uppercase hidden xs:inline">Dívida</span>
-                        <span className="font-mono font-bold text-label">
-                            {formatCurrency(stats.totalOverdue)}
-                        </span>
-                    </div>
+                <div className="flex flex-col items-end sm:flex-row sm:items-center gap-0.5 sm:gap-2 px-2.5 py-1 bg-[#F9ECEE] border border-[#D4848C]/30 text-[#B86B73] rounded-md">
+                    <span className="text-[9px] font-bold uppercase tracking-wider opacity-70 hidden sm:inline">Dívida</span>
+                    <span className="font-mono font-bold text-[12px]">
+                        {formatCurrency(stats.totalOverdue)}
+                    </span>
                 </div>
             </div>
         </header>

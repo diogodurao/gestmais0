@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "../components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/Card"
 import { Badge } from "../components/ui/badge"
 import { Input } from "../components/ui/input"
 import { Select } from "../components/ui/select"
@@ -73,8 +73,8 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
               href="#"
               onClick={onClose}
               className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${item.active
-                  ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
-                  : "text-[#6C757D] hover:bg-[#E9ECEF]"
+                ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
+                : "text-[#6C757D] hover:bg-[#E9ECEF]"
                 }`}
             >
               <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
@@ -110,8 +110,8 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
             key={item.name}
             href="#"
             className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${item.active
-                ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
-                : "text-[#6C757D] hover:bg-[#E9ECEF]"
+              ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
+              : "text-[#6C757D] hover:bg-[#E9ECEF]"
               }`}
             title={collapsed ? item.name : undefined}
           >

@@ -15,7 +15,7 @@ export function Sidebar() {
 
     // 1. Determine User Role
     const userRole = session?.role || "resident"
-    
+
     // 2. Select the correct menu
     const allItems = userRole === "manager" ? managerNavItems : residentNavItems
 
@@ -25,20 +25,20 @@ export function Sidebar() {
     const filteredItems = allItems.filter((item) => {
         // Hide if setup is required but not complete
         if (item.requiresSetup && !setupComplete) return false
-        
+
         // Hide if subscription is required but not active
         if (item.requiresSubscription && !hasActiveSubscription) return false
-        
+
         // Hide if role specific (safety check, though we already selected list)
         if (item.roles && !item.roles.includes(userRole as any)) return false
-        
+
         return true
     })
 
     return (
         <aside
             className={cn(
-                "hidden lg:flex flex-col rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] transition-all duration-200 ml-1.5 my-1.5",
+                "hidden lg:flex flex-col rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] transition-all duration-200",
                 isCollapsed ? "w-12" : "w-48"
             )}
         >
@@ -59,7 +59,7 @@ export function Sidebar() {
             <nav className="flex-1 px-1.5 py-1.5 space-y-0.5">
                 {filteredItems.map((item) => {
                     const isActive = pathname === item.href
-                    
+
                     return (
                         <Link
                             key={item.href}

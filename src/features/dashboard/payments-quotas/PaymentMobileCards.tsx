@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ChevronDown, ChevronUp, User, TrendingDown } from "lucide-react"
 import { PaymentData, type PaymentToolType } from "@/lib/types"
-import { MONTHS_PT } from "@/lib/constants"
+import { MONTHS_PT } from "@/lib/constants/timing"
 import { formatCurrency } from "@/lib/format"
 import { cn } from "@/lib/utils"
 

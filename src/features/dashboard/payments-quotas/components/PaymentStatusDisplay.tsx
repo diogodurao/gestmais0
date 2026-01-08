@@ -21,33 +21,29 @@ const STATUS_ICONS: Record<string, LucideIcon> = {
 
 const STATUS_STYLES = {
     ok: {
-        iconBg: "bg-emerald-50",
-        iconBorder: "border-emerald-200",
-        iconColor: "text-emerald-600",
+        iconBg: "bg-[#E8F0EA]", // Spring Rain Light
+        iconColor: "text-[#6A9B72]", // Spring Rain Dark
     },
     warning: {
-        iconBg: "bg-none",
-        iconBorder: "border-none",
-        iconColor: "text-red-600",
+        iconBg: "bg-[#FBF6EC]", // Warning Light
+        iconColor: "text-[#E5C07B]", // Warning Main
     },
     critical: {
-        iconBg: "bg-rose-50",
-        iconBorder: "none",
-        iconColor: "text-rose-600",
+        iconBg: "bg-[#F9ECEE]", // Error Light
+        iconColor: "text-[#D4848C]", // Error Main
     },
 }
 
 export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayProps) {
     const hasExtraProjects = data.extraordinaryQuotas.activeProjects > 0
 
-    // --- HELPER TO GET STATUS FOR A SECTION ---
+    // Logic remains the same
     const getSectionStatus = (balance: number, overdueCount: number) => {
         if (balance <= 0 && overdueCount === 0) return "ok"
         if (overdueCount <= 2 && balance < 50000) return "warning"
         return "critical"
     }
 
-    // --- REGULAR QUOTAS DATA ---
     const regBalance = data.regularQuotas.balance
     const regOverdue = data.regularQuotas.overdueMonths
     const regStatus = getSectionStatus(regBalance, regOverdue)
@@ -55,7 +51,6 @@ export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayPr
         ? `Faltam ${formatCurrency(regBalance)} em quotas.`
         : "Quotas de condomínio em dia."
 
-    // --- EXTRA QUOTAS DATA ---
     const extraBalance = data.extraordinaryQuotas.balance
     const extraOverdue = data.extraordinaryQuotas.overdueInstallments
     const extraStatus = getSectionStatus(extraBalance, extraOverdue)
@@ -63,30 +58,26 @@ export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayPr
         ? `Faltam ${formatCurrency(extraBalance)} em obras.`
         : "Pagamentos de obras em dia."
 
-    // --- RENDER COMPONENT FOR A SINGLE ROW ---
     const StatusRow = ({ status, label, message, isLast = false }: { status: string, label: string, message: string, isLast?: boolean }) => {
         const Icon = STATUS_ICONS[status] || AlertCircle
         const styles = STATUS_STYLES[status as keyof typeof STATUS_STYLES] || STATUS_STYLES.critical
 
         return (
-            <div className={cn("flex items-start gap-4", !isLast && "mb-4 pb-4 border-b border-slate-100")}>
+            <div className={cn("flex items-start gap-3", !isLast && "mb-4 pb-4 border-b border-[#E9ECEF]")}>
                 <div className={cn(
-                    "w-10 h-10 flex items-center justify-center border shrink-0",
-                    styles.iconBg,
-                    styles.iconBorder
+                    "w-8 h-8 flex items-center justify-center rounded-md shrink-0",
+                    styles.iconBg
                 )}>
-                    <Icon className={cn("w-5 h-5", styles.iconColor)} />
+                    <Icon className={cn("w-4 h-4", styles.iconColor)} />
                 </div>
 
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 pt-0.5">
                     <div className="flex items-center gap-2 mb-1">
-                        <span className={cn(
-                            "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm text-slate-500 bg-slate-100"
-                        )}>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#8E9AAF]">
                             {label}
                         </span>
                     </div>
-                    <h3 className="font-bold text-slate-900 uppercase tracking-tighter text-sm leading-tight">
+                    <h3 className="font-semibold text-[#343A40] text-[13px] leading-tight">
                         {message}
                     </h3>
                 </div>
@@ -96,22 +87,21 @@ export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayPr
 
     return (
         <div className={cn(
-            "bg-white border border-slate-300 shadow-[4px_4px_0px_#cbd5e1] p-4",
+            "bg-white rounded-lg border border-[#E9ECEF] shadow-sm p-4",
             className
         )}>
-            {/* Header Badge (Unit or Building) */}
+            {/* Header Badge */}
             <div className="mb-4 flex">
                 <span className={cn(
-                    "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm",
+                    "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm border",
                     data.isBuildingSummary
-                        ? "bg-indigo-100 text-indigo-700"
-                        : "text-amber-100 text-amber-700"
+                        ? "bg-[#F8F9FA] border-[#E9ECEF] text-[#495057]"
+                        : "bg-[#FBF6EC] border-[#FBF6EC] text-[#E5C07B]"
                 )}>
-                    {data.isBuildingSummary ? "Estado do Condomínio" : `Fração ${data.apartmentUnit}`}
+                    {data.isBuildingSummary ? "Estado Geral" : `Fração ${data.apartmentUnit}`}
                 </span>
             </div>
 
-            {/* Content Rows */}
             <StatusRow
                 status={regStatus}
                 label="Quotas Mensais"
