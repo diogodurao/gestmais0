@@ -11,7 +11,7 @@ import { PaymentGridHeader } from "./components/PaymentGridHeader"
 import { PaymentGridToolbar } from "./components/PaymentGridToolbar"
 import { PaymentGridFooter } from "./components/PaymentGridFooter"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 import {
     type PaymentToolType,

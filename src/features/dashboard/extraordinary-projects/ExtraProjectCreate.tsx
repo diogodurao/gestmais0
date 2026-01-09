@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { createExtraordinaryProject } from "@/app/actions/extraordinary"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { useExtraProjectForm, ExtraProjectSchema } from "./hooks/useExtraProjectForm"
 import { ExtraProjectForm } from "./ExtraProjectForm"
 

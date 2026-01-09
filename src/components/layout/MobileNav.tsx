@@ -13,8 +13,6 @@ export function MobileNav() {
     const pathname = usePathname()
     const { session, activeBuilding, setupComplete } = useDashboard()
 
-    if (!isMobileOpen) return null
-
     // Reuse the same logic as Sidebar
     const userRole = session?.role || "resident"
     const allItems = userRole === "manager" ? managerNavItems : residentNavItems
@@ -28,28 +26,31 @@ export function MobileNav() {
     })
 
     return (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className={cn("fixed inset-0 z-50 lg:hidden transition-opacity duration-normal", isMobileOpen ? "opacity-100" : "opacity-0 pointer-events-none")}>
             {/* Backdrop */}
-            <div 
-                className="fixed inset-0 bg-black/20 backdrop-blur-[1px]" 
-                onClick={closeMobile} 
+            <div
+                className="fixed inset-0 bg-black/20 backdrop-blur-[1px]"
+                onClick={closeMobile}
             />
-            
-            {/* Drawer */}
-            <div className="fixed inset-y-0 left-0 w-64 bg-[#F8F8F6] border-r border-[#E9ECEF] p-1.5 shadow-xl">
+
+            {/* Drawer - matches desktop spacing and animation */}
+            <div className={cn(
+                "fixed top-1.5 bottom-1.5 left-1.5 w-48 bg-pearl border border-gray-200 rounded-lg shadow-xl transition-transform duration-normal flex flex-col",
+                isMobileOpen ? "translate-x-0" : "-translate-x-full"
+            )}>
                 <div className="flex h-10 items-center justify-between px-1.5 mb-2">
-                    <span className="text-[11px] font-semibold text-[#495057] pl-1.5">
+                    <span className="text-body font-semibold text-gray-700 pl-1.5">
                         Condominium
                     </span>
                     <button
                         onClick={closeMobile}
-                        className="flex h-7 w-7 items-center justify-center rounded text-[#6C757D] hover:bg-[#E9ECEF]"
+                        className="flex h-7 w-7 items-center justify-center rounded text-gray-600 hover:bg-gray-200 transition-colors"
                     >
                         <X className="h-4 w-4" />
                     </button>
                 </div>
 
-                <nav className="space-y-0.5">
+                <nav className="flex-1 px-1.5 py-1.5 space-y-0.5">
                     {filteredItems.map((item) => {
                         const isActive = pathname === item.href
 
@@ -59,14 +60,14 @@ export function MobileNav() {
                                 href={item.href}
                                 onClick={closeMobile}
                                 className={cn(
-                                    "flex items-center gap-2 rounded px-1.5 py-2 text-[11px] transition-colors",
+                                    "flex items-center gap-2 rounded px-1.5 py-1.5 text-label transition-colors",
                                     isActive
-                                        ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
-                                        : "text-[#6C757D] hover:bg-[#E9ECEF]"
+                                        ? "bg-primary-light font-medium text-primary-dark"
+                                        : "text-gray-600 hover:bg-gray-200"
                                 )}
                             >
-                                <item.icon className="h-4 w-4 flex-shrink-0" />
-                                {item.label}
+                                <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                                <span>{item.label}</span>
                             </Link>
                         )
                     })}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useTransition } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import { MoreVertical, Trash2, Home, UserX } from "lucide-react"
@@ -8,7 +8,7 @@ import { removeResidentFromBuilding, updateResidentUnit } from "@/app/actions/re
 import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import { getApartmentDisplayName } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
 
 type Resident = {
@@ -39,11 +39,11 @@ export function ResidentActionsMenu({
 }) {
     const router = useRouter()
     const { toast } = useToast()
+    const [isPending, startTransition] = useTransition()
     const [isOpen, setIsOpen] = useState(false)
     const [showAssignModal, setShowAssignModal] = useState(false)
     const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
     const [showUnassignConfirm, setShowUnassignConfirm] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
     const buttonRef = useRef<HTMLButtonElement>(null)
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
 
@@ -65,83 +65,80 @@ export function ResidentActionsMenu({
         return () => window.removeEventListener('scroll', handleScroll, true)
     }, [isOpen])
 
-    const handleRemove = async (): Promise<void> => {
-        setIsLoading(true)
-        try {
-            const result = await removeResidentFromBuilding(resident.user.id, buildingId)
-            if (result.success) {
-                setIsOpen(false)
-                router.refresh()
-            } else {
+    const handleRemove = async () => {
+        startTransition(async () => {
+            try {
+                const result = await removeResidentFromBuilding(resident.user.id, buildingId)
+                if (result.success) {
+                    setShowRemoveConfirm(false)
+                    setIsOpen(false)
+                    router.refresh()
+                } else {
+                    toast({
+                        title: "Erro",
+                        description: result.error || "Ocorreu um erro inesperado",
+                        variant: "destructive",
+                    })
+                }
+            } catch (error) {
+                console.error("Failed to remove resident", error)
                 toast({
                     title: "Erro",
-                    description: result.error || "Ocorreu um erro inesperado",
+                    description: "Ocorreu um erro inesperado",
                     variant: "destructive",
                 })
             }
-        } catch (error) {
-            console.error("Failed to remove resident", error)
-            toast({
-                title: "Erro",
-                description: "Ocorreu um erro inesperado",
-                variant: "destructive",
-            })
-        } finally {
-            setIsLoading(false)
-            setShowRemoveConfirm(false)
-        }
+        })
     }
 
-    const handleUnassignUnit = async (): Promise<void> => {
-        setIsLoading(true)
-        try {
-            const result = await updateResidentUnit(resident.user.id, null)
-            if (result.success) {
-                setIsOpen(false)
-                router.refresh()
-            } else {
+    const handleUnassignUnit = async () => {
+        startTransition(async () => {
+            try {
+                const result = await updateResidentUnit(resident.user.id, null)
+                if (result.success) {
+                    setShowUnassignConfirm(false)
+                    setIsOpen(false)
+                    router.refresh()
+                } else {
+                    toast({
+                        title: "Erro",
+                        description: result.error || "Ocorreu um erro inesperado",
+                        variant: "destructive",
+                    })
+                }
+            } catch (error) {
                 toast({
                     title: "Erro",
-                    description: result.error || "Ocorreu um erro inesperado",
+                    description: "Ocorreu um erro inesperado",
                     variant: "destructive",
                 })
             }
-        } catch (error) {
-            toast({
-                title: "Erro",
-                description: "Ocorreu um erro inesperado",
-                variant: "destructive",
-            })
-        } finally {
-            setIsLoading(false)
-            setShowUnassignConfirm(false)
-        }
+        })
     }
 
-    const handleAssignUnit = async (apartmentId: number): Promise<void> => {
-        setIsLoading(true)
-        try {
-            const result = await updateResidentUnit(resident.user.id, apartmentId)
-            if (result.success) {
-                setShowAssignModal(false)
-                setIsOpen(false)
-                router.refresh()
-            } else {
+    const handleAssignUnit = async (apartmentId: number) => {
+        startTransition(async () => {
+            try {
+                const result = await updateResidentUnit(resident.user.id, apartmentId)
+                if (result.success) {
+                    setShowAssignModal(false)
+                    setIsOpen(false)
+                    router.refresh()
+                } else {
+                    toast({
+                        title: "Erro",
+                        description: result.error || "Ocorreu um erro inesperado",
+                        variant: "destructive",
+                    })
+                }
+            } catch (error) {
                 toast({
                     title: "Erro",
-                    description: result.error || "Ocorreu um erro inesperado",
+                    description: "Ocorreu um erro inesperado",
                     variant: "destructive",
                 })
             }
-        } catch (error) {
-            toast({
-                title: "Erro",
-                description: "Ocorreu um erro inesperado",
-                variant: "destructive",
-            })
-        } finally {
-            setIsLoading(false)
-        }
+        })
     }
 
     return (
@@ -149,7 +146,7 @@ export function ResidentActionsMenu({
             <button
                 ref={buttonRef}
                 onClick={toggleOpen}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1 hover:bg-gray-100 rounded-sm transition-colors"
             >
                 <MoreVertical className="w-4 h-4 text-gray-400" />
             </button>
@@ -157,17 +154,17 @@ export function ResidentActionsMenu({
             {isOpen && typeof document !== 'undefined' && createPortal(
                 <>
                     <div
-                        className="fixed inset-0 z-60"
+                        className="fixed inset-0 z-50"
                         onClick={() => setIsOpen(false)}
                     />
                     <div
-                        className="absolute bg-white tech-border shadow-lg z-70 py-1 w-48"
+                        className="absolute bg-white rounded-md border border-gray-200 shadow-md z-50 py-1 w-48"
                         style={{
                             top: `${menuPosition.top}px`,
                             left: `${menuPosition.left}px`
                         }}
                     >
-                        <div className="px-3 py-1 text-label font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 mb-1">
+                        <div className="px-3 py-1 text-label font-medium text-gray-500 uppercase border-b border-gray-200 mb-1">
                             Operações
                         </div>
                         <button
@@ -175,9 +172,9 @@ export function ResidentActionsMenu({
                                 setIsOpen(false)
                                 setShowAssignModal(true)
                             }}
-                            className="w-full text-left px-4 py-1.5 text-body text-slate-700 hover:bg-slate-50 flex items-center gap-2 uppercase font-medium"
+                            className="w-full text-left px-4 py-1.5 text-body text-gray-700 hover:bg-gray-50 flex items-center gap-2 uppercase font-medium"
                         >
-                            <Home className="w-4 h-4 text-slate-400" />
+                            <Home className="w-4 h-4 text-gray-400" />
                             {resident.apartment ? "Mudar Fração" : "Atribuir Fração"}
                         </button>
 
@@ -187,21 +184,21 @@ export function ResidentActionsMenu({
                                     setIsOpen(false)
                                     setShowUnassignConfirm(true)
                                 }}
-                                className="w-full text-left px-4 py-1.5 text-body text-amber-600 hover:bg-amber-50 flex items-center gap-2 uppercase font-medium"
+                                className="w-full text-left px-4 py-1.5 text-body text-warning hover:bg-warning-light flex items-center gap-2 uppercase font-medium"
                             >
                                 <UserX className="w-4 h-4" />
                                 Remover da Fração
                             </button>
                         )}
 
-                        <div className="h-px bg-slate-100 my-1" />
+                        <div className="h-px bg-gray-200 my-1" />
 
                         <button
                             onClick={() => {
                                 setIsOpen(false)
                                 setShowRemoveConfirm(true)
                             }}
-                            className="w-full text-left px-4 py-1.5 text-body text-rose-600 hover:bg-rose-50 flex items-center gap-2 uppercase font-medium"
+                            className="w-full text-left px-4 py-1.5 text-body text-error hover:bg-error-light flex items-center gap-2 uppercase font-medium"
                         >
                             <Trash2 className="w-4 h-4" />
                             Remover
@@ -218,6 +215,7 @@ export function ResidentActionsMenu({
                 onConfirm={handleRemove}
                 onCancel={() => setShowRemoveConfirm(false)}
                 variant="danger"
+                loading={isPending}
             />
 
             <ConfirmModal
@@ -227,21 +225,22 @@ export function ResidentActionsMenu({
                 onConfirm={handleUnassignUnit}
                 onCancel={() => setShowUnassignConfirm(false)}
                 variant="neutral"
+                loading={isPending}
             />
 
             <Modal
-                isOpen={showAssignModal}
+                open={showAssignModal}
                 onClose={() => setShowAssignModal(false)}
                 title={`Atribuir Fração: ${resident.user.name.toUpperCase()}`}
             >
                 <div className="space-y-4">
-                    <p className="text-body font-bold text-slate-500 uppercase">
+                    <p className="text-body font-medium text-gray-500 uppercase">
                         Selecione uma fração disponível
                     </p>
 
-                    <div className="max-h-[300px] overflow-y-auto tech-border bg-slate-50">
+                    <div className="max-h-[300px] overflow-y-auto rounded-md border border-gray-200 bg-gray-50">
                         {unclaimedApartments.length === 0 ? (
-                            <p className="text-label text-slate-400 font-mono uppercase text-center py-8">
+                            <p className="text-label text-gray-400 uppercase text-center py-8">
                                 [ Sem frações disponíveis ]
                             </p>
                         ) : (
@@ -249,13 +248,13 @@ export function ResidentActionsMenu({
                                 <button
                                     key={apt.id}
                                     onClick={() => handleAssignUnit(apt.id)}
-                                    disabled={isLoading}
-                                    className="w-full text-left px-3 py-2 text-body hover:bg-white border-b border-slate-200 last:border-b-0 flex justify-between items-center group transition-colors"
+                                    disabled={isPending}
+                                    className="w-full text-left px-3 py-2 text-body hover:bg-white border-b border-gray-200 last:border-b-0 flex justify-between items-center group transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <span className="font-bold text-slate-700 uppercase font-mono">
+                                    <span className="font-medium text-gray-700 uppercase">
                                         {getApartmentDisplayName(apt)}
                                     </span>
-                                    <span className="text-label font-bold text-slate-400 group-hover:text-blue-600 uppercase tracking-tighter">
+                                    <span className="text-label font-medium text-gray-400 group-hover:text-primary uppercase">
                                         [ SELECIONAR ]
                                     </span>
                                 </button>
@@ -268,6 +267,7 @@ export function ResidentActionsMenu({
                             variant="outline"
                             size="sm"
                             onClick={() => setShowAssignModal(false)}
+                            disabled={isPending}
                         >
                             Cancelar
                         </Button>

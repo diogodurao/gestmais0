@@ -1,29 +1,142 @@
-import { type ReactNode } from "react"
-import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
+"use client"
 
-interface FormFieldProps {
-  label?: string
+import { createContext, useContext, type ReactNode, type HTMLAttributes } from "react"
+import { cn } from "@/lib/utils"
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+interface FormFieldContextValue {
   required?: boolean
   error?: string
-  description?: string
+  fieldId: string
+}
+
+const FormFieldContext = createContext<FormFieldContextValue | null>(null)
+
+function useFormFieldContext() {
+  const context = useContext(FormFieldContext)
+  if (!context) {
+    throw new Error("FormField sub-components must be used within FormField")
+  }
+  return context
+}
+
+// ============================================================================
+// FORM FIELD (Root Component)
+// ============================================================================
+
+interface FormFieldProps {
+  required?: boolean
+  error?: string
   children: ReactNode
   className?: string
 }
 
-export function FormField({ label, required, error, description, children, className }: FormFieldProps) {
+export function FormField({ required, error, children, className }: FormFieldProps) {
+  const fieldId = `field-${Math.random().toString(36).substring(2, 9)}`
+
   return (
-    <div className={cn("space-y-1", className)}>
-      {label && (
-        <Label required={required}>{label}</Label>
+    <FormFieldContext.Provider value={{ required, error, fieldId }}>
+      <div className={cn("space-y-1", className)}>
+        {children}
+      </div>
+    </FormFieldContext.Provider>
+  )
+}
+
+// ============================================================================
+// FORM LABEL
+// ============================================================================
+
+interface FormLabelProps extends HTMLAttributes<HTMLLabelElement> {
+  children: ReactNode
+}
+
+export function FormLabel({ children, className, ...props }: FormLabelProps) {
+  const { required, fieldId } = useFormFieldContext()
+
+  return (
+    <label
+      htmlFor={fieldId}
+      className={cn(
+        "text-label font-medium leading-tight text-gray-700",
+        className
       )}
+      {...props}
+    >
       {children}
-      {description && !error && (
-        <p className="text-[11px] text-gray-500">{description}</p>
-      )}
-      {error && (
-        <p className="text-[11px] text-red-600">{error}</p>
-      )}
-    </div>
+      {required && <span className="ml-0.5 text-error">*</span>}
+    </label>
+  )
+}
+
+// ============================================================================
+// FORM CONTROL
+// ============================================================================
+
+interface FormControlProps {
+  children: (props: { id: string; "aria-invalid"?: boolean; "aria-describedby"?: string }) => ReactNode
+}
+
+export function FormControl({ children }: FormControlProps) {
+  const { error, fieldId } = useFormFieldContext()
+  const errorId = error ? `${fieldId}-error` : undefined
+
+  return (
+    <>
+      {children({
+        id: fieldId,
+        "aria-invalid": !!error,
+        "aria-describedby": errorId,
+      })}
+    </>
+  )
+}
+
+// ============================================================================
+// FORM ERROR
+// ============================================================================
+
+interface FormErrorProps {
+  className?: string
+}
+
+export function FormError({ className }: FormErrorProps) {
+  const { error, fieldId } = useFormFieldContext()
+
+  if (!error) return null
+
+  return (
+    <p
+      id={`${fieldId}-error`}
+      className={cn("text-label font-medium leading-tight text-error", className)}
+      role="alert"
+    >
+      {error}
+    </p>
+  )
+}
+
+// ============================================================================
+// FORM DESCRIPTION (Optional helper)
+// ============================================================================
+
+interface FormDescriptionProps {
+  children: ReactNode
+  className?: string
+}
+
+export function FormDescription({ children, className }: FormDescriptionProps) {
+  const { fieldId } = useFormFieldContext()
+
+  return (
+    <p
+      id={`${fieldId}-description`}
+      className={cn("text-label leading-normal text-gray-500", className)}
+    >
+      {children}
+    </p>
   )
 }

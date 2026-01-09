@@ -229,7 +229,7 @@ export function ResidentOnboardingFlow({
                                 )}
 
                                 <Button
-                                    fullWidth
+                                    className="w-full"
                                     onClick={handleJoinBuilding}
                                     disabled={isLoading || !inviteCode.trim()}
                                 >
@@ -271,7 +271,7 @@ export function ResidentOnboardingFlow({
                                 )}
 
                                 <Button
-                                    fullWidth
+                                    className="w-full"
                                     onClick={handleSelectApartment}
                                     disabled={isLoading || !selectedAptId}
                                 >
@@ -323,7 +323,7 @@ export function ResidentOnboardingFlow({
                                 )}
 
                                 <Button
-                                    fullWidth
+                                    className="w-full"
                                     onClick={handleCompleteSetup}
                                     disabled={isLoading || !isValidIban(iban)}
                                 >

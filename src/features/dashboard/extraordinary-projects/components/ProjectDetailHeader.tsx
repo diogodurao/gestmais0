@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { MoreVertical, Edit, RefreshCw, Archive, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { archiveExtraordinaryProject } from "@/app/actions/extraordinary"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 
 type Project = {
     id: number

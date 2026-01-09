@@ -15,25 +15,32 @@ interface Toast {
     variant: ToastVariant
     title: string
     description?: string
-    // NEW: Action button (for retry, undo, etc)
     action?: {
         label: string
         onClick: () => void
     }
-    // NEW: Custom duration per toast
     duration?: number
-    // NEW: Don't auto-dismiss
+    persistent?: boolean
+}
+
+interface ToastOptions {
+    title: string
+    description?: string
+    variant?: "info" | "success" | "warning" | "error" | "destructive"
+    action?: {
+        label: string
+        onClick: () => void
+    }
+    duration?: number
     persistent?: boolean
 }
 
 interface ToastContextValue {
     toasts: Toast[]
-    // Now returns ID so you can update/remove it later
+    toast: (options: ToastOptions) => string
     addToast: (toast: Omit<Toast, "id">) => string
     removeToast: (id: string) => void
-    // NEW: Update existing toast
     updateToast: (id: string, updates: Partial<Toast>) => void
-    // NEW: Clear all toasts
     dismissAll: () => void
 }
 
@@ -50,14 +57,16 @@ const ToastContext = createContext<ToastContextValue | null>(null)
 export function ToastProvider({ children }: { children: ReactNode }) {
     const [toasts, setToasts] = useState<Toast[]>([])
 
-    // ADD TOAST
+    const removeToast = useCallback((id: string) => {
+        setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, [])
+
     const addToast = useCallback((toast: Omit<Toast, "id">): string => {
         const id = Math.random().toString(36).substring(2)
         const newToast = { ...toast, id }
-        
+
         setToasts((prev) => [...prev, newToast])
 
-        // Only auto-dismiss if not persistent
         if (!toast.persistent) {
             const duration = toast.duration ?? 4000
             setTimeout(() => {
@@ -66,14 +75,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         }
 
         return id
-    }, [])
+    }, [removeToast])
 
-    // REMOVE TOAST
-    const removeToast = useCallback((id: string) => {
-        setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, [])
-
-    // UPDATE TOAST
     const updateToast = useCallback((id: string, updates: Partial<Toast>) => {
         setToasts((prev) =>
             prev.map((toast) =>
@@ -82,14 +85,28 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         )
     }, [])
 
-    // DISMISS ALL
     const dismissAll = useCallback(() => {
         setToasts([])
     }, [])
 
+    // Helper function that matches the expected API
+    const toast = useCallback((options: ToastOptions): string => {
+        // Map 'destructive' to 'error' for backward compatibility
+        const variant = options.variant === "destructive" ? "error" : (options.variant ?? "info")
+
+        return addToast({
+            title: options.title,
+            description: options.description,
+            variant,
+            action: options.action,
+            duration: options.duration,
+            persistent: options.persistent,
+        })
+    }, [addToast])
+
     return (
         <ToastContext.Provider
-            value={{ toasts, addToast, removeToast, updateToast, dismissAll }}
+            value={{ toasts, toast, addToast, removeToast, updateToast, dismissAll }}
         >
             {children}
             <ToastContainer />
@@ -110,14 +127,14 @@ export function useToast() {
 }
 
 // ============================================================================
-// CONTAINER
+// CONTAINER - Displays all toasts
 // ============================================================================
 
 function ToastContainer() {
     const { toasts, removeToast } = useToast()
 
     return (
-        <div className="fixed bottom-1.5 right-1.5 z-50 flex flex-col gap-1.5">
+        <div className="fixed bottom-4 right-4 gap-2">
             {toasts.map((toast) => (
                 <ToastItem
                     key={toast.id}
@@ -130,28 +147,27 @@ function ToastContainer() {
 }
 
 // ============================================================================
-// ITEM COMPONENT
+// STYLES - ALIGNED WITH DESIGN SYSTEM
 // ============================================================================
 
 const variantStyles = {
     success: {
-        borderColor: "border-success",  // ✅ #8FB996 (Spring Rain)
-        iconColor: "text-success",      // ✅ #8FB996
+        borderColor: "border-success",
+        iconColor: "text-success",
     },
     warning: {
-        borderColor: "border-warning",  // ✅ #E5C07B (Warm Yellow)
-        iconColor: "text-warning",      // ✅ #E5C07B
+        borderColor: "border-warning",
+        iconColor: "text-warning",
     },
     error: {
-        borderColor: "border-error",    // ✅ #D4848C (Dusty Rose)
-        iconColor: "text-error",        // ✅ #D4848C
+        borderColor: "border-error",
+        iconColor: "text-error",
     },
     info: {
-        borderColor: "border-info",     // ✅ #8E9AAF (Cool Gray)
-        iconColor: "text-info",         // ✅ #8E9AAF
+        borderColor: "border-info",
+        iconColor: "text-info",
     },
 }
-
 
 const icons: Record<ToastVariant, typeof Info> = {
     info: Info,
@@ -159,6 +175,10 @@ const icons: Record<ToastVariant, typeof Info> = {
     warning: AlertTriangle,
     error: XCircle,
 }
+
+// ============================================================================
+// ITEM COMPONENT - Individual toast
+// ============================================================================
 
 function ToastItem({
     toast,
@@ -172,33 +192,35 @@ function ToastItem({
 
     return (
         <div
-            className={cn(
-                "flex items-start gap-1.5 rounded-md border border-gray-200 p-1.5 shadow-md",
-                styles.bg
+            className={cn("gap-3 p-3 border-l-4",
+                styles.borderColor,
+                "transition-all duration-fast"
             )}
-            style={{ minWidth: 240, maxWidth: 320 }}
         >
-            <Icon className={cn("h-4 w-4 flex-shrink-0 mt-0.5", styles.icon)} />
+            <Icon className={cn("h-5 w-5 flex-shrink-0 mt-0.5", styles.iconColor)} />
 
             <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-gray-900">
+                <p className={cn("text-subtitle font-semibold leading-tight", styles.iconColor)}>
                     {toast.title}
                 </p>
 
                 {toast.description && (
-                    <p className="mt-0.5 text-[11px] text-gray-500">
+                    <p className="mt-1 text-body leading-normal text-gray-600">
                         {toast.description}
                     </p>
                 )}
 
-                {/* NEW: Action button */}
                 {toast.action && (
                     <button
                         onClick={() => {
                             toast.action?.onClick()
                             onDismiss()
                         }}
-                        className="mt-2 text-[11px] font-medium text-blue-600 hover:text-blue-700 underline"
+                        className={cn(
+                            "mt-2 text-body font-medium underline",
+                            "hover:opacity-80 transition-opacity",
+                            styles.iconColor
+                        )}
                     >
                         {toast.action.label}
                     </button>
@@ -207,10 +229,10 @@ function ToastItem({
 
             <button
                 onClick={onDismiss}
-                className="flex-shrink-0 rounded p-0.5 text-gray-400 hover:text-gray-600"
+                className="flex-shrink-0 rounded p-1 text-gray-400 hover:text-gray-600 transition-colors"
                 aria-label="Dismiss"
             >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
             </button>
         </div>
     )

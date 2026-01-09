@@ -1,11 +1,20 @@
 @import "tailwindcss";
 
 /* ============================================
-   DESIGN TOKENS
+   SOURCE PATHS (replaces content in config)
    ============================================ */
 
-:root {
-  /* Color Palette: Cool Gray, Spring Rain, Pearl */
+@source "../pages/**/*.{js,ts,jsx,tsx,mdx}";
+@source "../components/**/*.{js,ts,jsx,tsx,mdx}";
+@source "../features/**/*.{js,ts,jsx,tsx,mdx}";
+@source "../lib/**/*.{js,ts,jsx,tsx,mdx}";
+
+/* ============================================
+   DESIGN TOKENS (Tailwind v4 @theme)
+   ============================================ */
+
+@theme {
+  /* Color Palette */
   --color-white: #ffffff;
   --color-pearl: #F8F8F6;
   --color-pearl-dark: #F0F0EC;
@@ -22,7 +31,7 @@
   --color-gray-800: #343A40;
   --color-gray-900: #212529;
 
-  /* Spring Rain (Primary Accent) */
+  /* Primary (Spring Rain) */
   --color-primary: #8FB996;
   --color-primary-hover: #7AAE82;
   --color-primary-light: #E8F0EA;
@@ -43,39 +52,37 @@
   --color-info: #8E9AAF;
   --color-info-light: #E9ECF0;
 
-  /* Spacing - Updated base unit to 6px */
-  --space-0: 0px;
-  --space-1: 4px;
-  --space-1-5: 6px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
+  /* Spacing Scale */
+  --spacing-0: 0px;
+  --spacing-0\.5: 2px;
+  --spacing-1: 4px;
+  --spacing-1\.5: 6px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
 
   /* Border Radius */
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
 
-  /* Border */
-  --border-color: var(--color-gray-200);
-
-  /* Typography */
+  /* Font Families */
   --font-sans: ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
 
-  /* Font Sizes (reduced) */
-  --text-xs: 10px;
-  --text-sm: 11px;
+  /* Font Sizes */
+  --text-label: 10px;
+  --text-body: 11px;
   --text-base: 12px;
-  --text-lg: 13px;
-  --text-xl: 14px;
+  --text-subtitle: 13px;
+  --text-heading: 14px;
 
   /* Line Heights */
-  --leading-tight: 1.25;
-  --leading-normal: 1.5;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
 
   /* Font Weights */
   --font-normal: 400;
@@ -86,110 +93,89 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
   --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 0.06);
 
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-normal: 200ms ease;
+  /* Transition Durations */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+
+  /* Transition Timing */
+  --ease-default: ease;
 }
 
 /* ============================================
    BASE STYLES
    ============================================ */
 
-* {
-  box-sizing: border-box;
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
-body {
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-  color: var(--color-gray-700);
-  background-color: var(--color-white);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* ============================================
-   TYPOGRAPHY
-   ============================================ */
-
-.text-label {
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  line-height: var(--leading-tight);
-  color: var(--color-gray-500);
-}
-
-.text-body {
-  font-size: var(--text-sm);
-  font-weight: var(--font-normal);
-  line-height: var(--leading-normal);
-  color: var(--color-gray-600);
-}
-
-.text-subtitle {
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
-  line-height: var(--leading-tight);
-  color: var(--color-gray-700);
-}
-
-.text-heading {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  line-height: var(--leading-tight);
-  color: var(--color-gray-800);
-}
-
-/* ============================================
-   FOCUS STYLES
-   ============================================ */
-
-.focus-ring {
-  outline: none;
-}
-
-.focus-ring:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--line-height-normal);
+    color: var(--color-gray-700);
+    background-color: var(--color-white);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 /* ============================================
    SCROLLBAR
    ============================================ */
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+@layer base {
+  ::-webkit-scrollbar {
+    width: var(--spacing-1\.5);
+    height: var(--spacing-1\.5);
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+    border-radius: var(--radius-sm);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-400);
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* ============================================
+   CUSTOM UTILITIES
+   ============================================ */
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-gray-300);
-  border-radius: var(--radius-sm);
-}
+@layer utilities {
+  .focus-ring {
+    outline: none;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gray-400);
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
 /* ============================================
    MOBILE UTILITIES
    ============================================ */
 
-@media (max-width: 640px) {
-  .mobile-stack {
-    flex-direction: column;
-  }
+@layer utilities {
+  @media (max-width: 640px) {
+    .mobile-stack {
+      flex-direction: column;
+    }
 
-  .mobile-full {
-    width: 100%;
-  }
+    .mobile-full {
+      width: 100%;
+    }
 
-  .mobile-hidden {
-    display: none;
+    .mobile-hidden {
+      display: none;
+    }
   }
 }

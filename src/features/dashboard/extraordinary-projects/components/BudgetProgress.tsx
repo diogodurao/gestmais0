@@ -1,7 +1,7 @@
 "use client"
 
 import { formatCurrency } from "@/lib/format"
-import { ProgressBar } from "@/components/ui/ProgressBar"
+import { Progress } from "@/components/ui/Progress"
 
 interface BudgetProgressProps {
     totalCollected: number
@@ -21,7 +21,7 @@ export function BudgetProgress({ totalCollected, totalBudget, progressPercent }:
                 </span>
             </div>
 
-            <ProgressBar
+            <Progress
                 value={totalCollected}
                 max={totalBudget}
                 variant="auto"

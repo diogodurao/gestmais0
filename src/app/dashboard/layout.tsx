@@ -31,7 +31,7 @@ export default async function DashboardLayout({
                     <div className="flex flex-1 flex-col gap-1.5 min-w-0 overflow-hidden">
                         <Header />
 
-                        <main className="flex-1 overflow-y-auto rounded-lg border border-[#E9ECEF] bg-white p-1.5 relative shadow-sm">
+                        <main className="flex-1 overflow-y-auto rounded-lg border border-gray-200 bg-white p-1.5 relative shadow-sm">
                             {children}
                         </main>
                     </div>

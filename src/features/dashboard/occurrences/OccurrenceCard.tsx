@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { Occurrence } from "@/lib/types"
 import { formatDistanceToNow } from "@/lib/format"
-import { OCCURRENCE_STATUS_CONFIG } from "@/lib/constants"
+import { OCCURRENCE_STATUS_CONFIG } from "@/lib/constants/ui"
 
 interface Props {
     occurrence: Occurrence

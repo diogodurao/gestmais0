@@ -1,24 +1,40 @@
-import * as React from "react"
+"use client"
 
-const MOBILE_BREAKPOINT = 768
+import { useSyncExternalStore } from "react"
 
-export function useIsMobile() {
-    const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+// Using Tailwind's sm breakpoint (640px) to match design system
+const MOBILE_BREAKPOINT = 640
 
-    React.useEffect(() => {
-        const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+/**
+ * Custom hook to detect if viewport is mobile size
+ * Uses useSyncExternalStore to prevent hydration mismatches
+ */
 
-        // Set initial value
-        setIsMobile(mql.matches)
+export function useIsMobile(): boolean {
+    return useSyncExternalStore(
+        subscribe,
+        getSnapshot,
+        getServerSnapshot
+    )
+}
 
-        const onChange = () => {
-            setIsMobile(mql.matches)
-        }
+function subscribe(callback: () => void): () => void {
+    const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
 
-        mql.addEventListener("change", onChange)
+    // Use the modern addEventListener API
+    mediaQuery.addEventListener("change", callback)
 
-        return () => mql.removeEventListener("change", onChange)
-    }, [])
+    return () => {
+        mediaQuery.removeEventListener("change", callback)
+    }
+}
 
-    return !!isMobile
+function getSnapshot(): boolean {
+    return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`).matches
+}
+
+function getServerSnapshot(): boolean {
+    // Always return false on server to prevent hydration mismatch
+    // The client will update on mount if needed
+    return false
 }

@@ -8,7 +8,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded bg-gray-200",
+        "animate-pulse rounded-sm bg-gray-200",
         className
       )}
     />
@@ -75,6 +75,20 @@ export function SkeletonTable({ rows = 5 }: { rows?: number }) {
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+export function SkeletonCompactCard({ className }: SkeletonProps) {
+  return (
+    <div className={cn("rounded-md border border-gray-200 bg-white p-4", className)}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+        <Skeleton className="h-8 w-8 rounded-sm" />
+      </div>
     </div>
   )
 }

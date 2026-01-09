@@ -1,63 +1,36 @@
 "use client"
 
-import { useState } from "react"
-import { authClient } from "@/lib/auth-client"
+import { useActionState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
-import { ROUTES } from "@/lib/routes"
+import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
+import { loginAction } from "@/app/actions/auth"
 
 export function LoginForm() {
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const router = useRouter()
+    const [state, formAction, isPending] = useActionState(loginAction, null)
 
-    const [formData, setFormData] = useState({
-        email: "",
-        password: ""
-    })
-
-    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault()
-        setLoading(true)
-        setError("")
-
-        try {
-            await authClient.signIn.email({
-                email: formData.email,
-                password: formData.password,
-                callbackURL: ROUTES.DASHBOARD.HOME
-            }, {
-                onRequest: () => {
-                    setLoading(true)
-                },
-                onSuccess: () => {
-                    router.push("/dashboard")
-                },
-                onError: (ctx) => {
-                    setError(ctx.error.message || "Credenciais inválidas")
-                    setLoading(false)
-                }
-            })
-        } catch (err) {
-            setError("Ocorreu um erro")
-            setLoading(false)
+    // Redirect on success
+    useEffect(() => {
+        if (state?.success) {
+            router.push("/dashboard")
         }
-    }
+    }, [state?.success, router])
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action={formAction} className="space-y-4">
             <FormField required>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
                     {(props) => (
                         <Input
                             {...props}
+                            name="email"
                             type="email"
                             placeholder="tiago123@gmail.com"
-                            value={formData.email}
-                            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                            autoComplete="email"
+                            required
                         />
                     )}
                 </FormControl>
@@ -70,20 +43,21 @@ export function LoginForm() {
                     {(props) => (
                         <Input
                             {...props}
+                            name="password"
                             type="password"
                             placeholder="••••••••"
-                            value={formData.password}
-                            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                            autoComplete="current-password"
+                            required
                         />
                     )}
                 </FormControl>
                 <FormError />
             </FormField>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {state?.error && <p className="text-label text-error">{state.error}</p>}
 
-            <Button type="submit" fullWidth disabled={loading}>
-                {loading ? "A entrar..." : "Entrar"}
+            <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? "A entrar..." : "Entrar"}
             </Button>
         </form>
     )

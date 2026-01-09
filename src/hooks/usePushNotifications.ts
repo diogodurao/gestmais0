@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { saveSubscription } from '@/app/actions/push-notifications'
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -22,6 +22,7 @@ export function usePushNotifications() {
     const [permission, setPermission] = useState<NotificationPermission>('default')
     const [isSubscribed, setIsSubscribed] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [isPending, startTransition] = useTransition()
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -72,14 +73,23 @@ export function usePushNotifications() {
                 applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!)
             })
 
-            await saveSubscription(subscription.toJSON())
-            setIsSubscribed(true)
-            console.log('User subscribed to push notifications')
+            // Use transition for server action
+            startTransition(async () => {
+                try {
+                    await saveSubscription(subscription.toJSON())
+                    setIsSubscribed(true)
+                    setLoading(false)
+                    console.log('User subscribed to push notifications')
+                } catch (serverError) {
+                    console.error('Failed to save subscription:', serverError)
+                    setError(serverError instanceof Error ? serverError.message : 'Failed to save subscription')
+                    setLoading(false)
+                }
+            })
         } catch (error) {
             console.error('Failed to subscribe:', error)
             setError(error instanceof Error ? error.message : 'Failed to subscribe')
             alert('Failed: ' + (error instanceof Error ? error.message : 'Unknown error'))
-        } finally {
             setLoading(false)
         }
     }
@@ -87,7 +97,7 @@ export function usePushNotifications() {
     return {
         permission,
         isSubscribed,
-        loading,
+        loading: loading || isPending,
         error,
         subscribeToPush
     }

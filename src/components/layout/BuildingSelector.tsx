@@ -55,18 +55,18 @@ export function BuildingSelector({
     return (
         <Dropdown>
             <DropdownTrigger
-                className="flex items-center gap-2 px-2 py-1 hover:bg-slate-200 rounded-sm text-body font-medium text-slate-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-200 text-body font-medium text-gray-700 transition-colors disabled:opacity-50"
                 disabled={isPending}
             >
-                <Building2 className="w-4 h-4 text-slate-500" />
+                <Building2 className="w-4 h-4 text-gray-500" />
                 <span className="truncate max-w-[150px]">
                     {activeBuilding?.building.name || "Selecionar Edifício"}
                 </span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
+                <ChevronDown className="w-3 h-3 text-gray-400" />
             </DropdownTrigger>
 
             <DropdownContent align="start" className="w-64 p-0">
-                <DropdownLabel className="border-b border-slate-100">Os Seus Edifícios</DropdownLabel>
+                <DropdownLabel className="border-b border-gray-100">Os Seus Edifícios</DropdownLabel>
                 <div className="max-h-60 overflow-y-auto">
                     {managerBuildings.map((mb) => (
                         <DropdownItem
@@ -75,22 +75,22 @@ export function BuildingSelector({
                             disabled={isPending}
                             className={cn(
                                 "flex items-start justify-between gap-2 py-2",
-                                mb.building.id === activeBuilding?.building.id && "bg-blue-50/50"
+                                mb.building.id === activeBuilding?.building.id && "bg-primary-light"
                             )}
                         >
                             <div className="flex flex-col min-w-0">
                                 <span className={cn(
                                     "font-bold truncate",
-                                    mb.building.id === activeBuilding?.building.id ? "text-blue-700" : "text-slate-700"
+                                    mb.building.id === activeBuilding?.building.id ? "text-primary-dark" : "text-gray-700"
                                 )}>
                                     {mb.building.name}
                                 </span>
-                                <span className="text-label text-slate-400 font-mono tracking-tighter uppercase">
+                                <span className="text-label text-gray-400 font-mono tracking-tighter uppercase">
                                     {mb.building.code}
                                 </span>
                             </div>
                             {mb.building.subscriptionStatus !== 'active' && (
-                                <span className="shrink-0 flex items-center gap-0.5 text-micro font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-sm uppercase">
+                                <span className="shrink-0 flex items-center gap-0.5 text-label font-semibold text-warning bg-warning-light px-1.5 py-0.5 rounded uppercase">
                                     <AlertCircle className="w-2.5 h-2.5" />
                                     Não Pago
                                 </span>
@@ -103,7 +103,7 @@ export function BuildingSelector({
                     icon={<Plus className="w-4 h-4" />}
                     onClick={handleAddBuilding}
                     disabled={isCreating || isPending}
-                    className="font-bold text-slate-600 py-2.5"
+                    className="font-bold text-gray-600 py-2.5"
                 >
                     {isCreating ? "A criar..." : "Adicionar Novo Edifício"}
                 </DropdownItem>

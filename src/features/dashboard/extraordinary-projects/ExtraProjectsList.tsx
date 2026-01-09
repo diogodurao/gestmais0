@@ -19,7 +19,7 @@ const ExtraProjectCreate = dynamic(
         loading: () => <div className="p-8 text-center text-slate-400">A carregar formulário...</div>
     }
 )
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { Skeleton } from "@/components/ui/Skeleton"
 
 type Apartment = {

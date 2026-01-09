@@ -1,7 +1,7 @@
 "use client"
 
 import { useTransition } from "react"
-import { useToast } from "@/components/ui/toast"
+import { useToast } from "@/components/ui/Toast"
 
 type ActionFn<T, A> = (args: A) => Promise<{ success: boolean; data?: T; error?: string }>
 

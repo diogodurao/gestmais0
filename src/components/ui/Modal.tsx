@@ -40,7 +40,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-1.5">
       <div
-        className="fixed inset-0 bg-black/20"
+        className="fixed inset-0 bg-gray-900/20"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -49,7 +49,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}
         className={cn(
-          "relative w-full rounded-md border border-gray-200 bg-white shadow-lg",
+          "relative w-full rounded-md border border-gray-200 bg-white shadow-md",
           sizeStyles[size]
         )}
       >
@@ -58,17 +58,17 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             <div className="flex items-start justify-between">
               <div>
                 {title && (
-                  <h2 id="modal-title" className="text-[14px] font-medium text-gray-900">
+                  <h2 id="modal-title" className="text-heading font-semibold leading-tight text-gray-900">
                     {title}
                   </h2>
                 )}
                 {description && (
-                  <p className="mt-1 text-[11px] text-gray-500">{description}</p>
+                  <p className="mt-1 text-body leading-normal text-gray-500">{description}</p>
                 )}
               </div>
               <button
                 onClick={onClose}
-                className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                className="rounded-sm p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               >
                 <X className="h-4 w-4" />
               </button>

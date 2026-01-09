@@ -7,7 +7,7 @@ import { getMonthName, formatCurrency } from "@/lib/format"
 import {
     updateExtraordinaryPayment,
 } from "@/app/actions/extraordinary"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 
 // Sub-components

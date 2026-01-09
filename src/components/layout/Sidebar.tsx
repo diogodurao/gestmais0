@@ -38,19 +38,19 @@ export function Sidebar() {
     return (
         <aside
             className={cn(
-                "hidden lg:flex flex-col rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] transition-all duration-200",
+                "hidden lg:flex flex-col rounded-lg border border-gray-200 bg-pearl transition-all duration-normal",
                 isCollapsed ? "w-12" : "w-48"
             )}
         >
             <div className="flex h-10 items-center justify-between px-1.5">
                 {!isCollapsed && (
-                    <span className="text-[11px] font-semibold text-[#495057] pl-1.5">
+                    <span className="text-body font-semibold text-gray-700 pl-1.5">
                         Condominium
                     </span>
                 )}
                 <button
                     onClick={toggleCollapsed}
-                    className="flex h-7 w-7 items-center justify-center rounded text-[#6C757D] hover:bg-[#E9ECEF]"
+                    className="flex h-7 w-7 items-center justify-center rounded text-gray-600 hover:bg-gray-200 transition-colors"
                 >
                     <Menu className="h-4 w-4" />
                 </button>
@@ -65,10 +65,10 @@ export function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                "flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors",
+                                "flex items-center gap-2 rounded px-1.5 py-1.5 text-label transition-colors",
                                 isActive
-                                    ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
-                                    : "text-[#6C757D] hover:bg-[#E9ECEF]"
+                                    ? "bg-primary-light font-medium text-primary-dark"
+                                    : "text-gray-600 hover:bg-gray-200"
                             )}
                             title={isCollapsed ? item.label : undefined}
                         >

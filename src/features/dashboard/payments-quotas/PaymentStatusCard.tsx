@@ -9,7 +9,7 @@ import {
     getBuildingPaymentStatus,
     type PaymentStatusSummary
 } from "@/app/actions/payment-status"
-import { SkeletonCompactCard } from "@/components/ui/Skeletons"
+import { SkeletonCompactCard } from "@/components/ui/Skeleton"
 import { PaymentStatusDisplay } from "./components/PaymentStatusDisplay"
 
 interface PaymentStatusCardProps {
@@ -80,8 +80,8 @@ export function PaymentStatusCard({
         // but for now, showing the error in a small card is acceptable behavior.
         // We just ensure it doesn't break layout.
         return (
-            <div className={cn("bg-slate-50 border border-slate-300 p-4", className)}>
-                <div className="flex items-center gap-3 text-slate-500">
+            <div className={cn("bg-gray-50 border border-gray-300 rounded-md p-4", className)}>
+                <div className="flex items-center gap-3 text-gray-500">
                     <AlertCircle className="w-5 h-5" />
                     <p className="text-body">{error || "Erro ao carregar dados"}</p>
                 </div>

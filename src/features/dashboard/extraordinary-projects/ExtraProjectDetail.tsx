@@ -16,7 +16,7 @@ const EditProjectModal = dynamic(
     () => import("@/features/dashboard/extraordinary-projects/EditProjectModal").then(mod => mod.EditProjectModal),
     { ssr: false }
 )
-import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { useAsyncAction } from "@/hooks/useAsyncAction" // Keep this for mutations
 
@@ -117,7 +117,7 @@ export function ExtraProjectDetail({ initialProject, readOnly = false }: ExtraPr
             <ProjectDetailStats stats={project.stats} />
 
             {/* Payment Grid */}
-            <FeatureErrorBoundary>
+            <ErrorBoundary>
                 <ExtraPaymentGrid
                     project={{
                         id: project.id,
@@ -132,7 +132,7 @@ export function ExtraProjectDetail({ initialProject, readOnly = false }: ExtraPr
                     onRefresh={handleRefresh} // Pass refresh handler
                     readOnly={readOnly}
                 />
-            </FeatureErrorBoundary>
+            </ErrorBoundary>
         </div>
     )
 }

@@ -6,12 +6,12 @@ import { Modal } from "@/components/ui/Modal"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
-import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
+import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
 import { PhotoUpload } from "./PhotoUpload"
 import { createOccurrence, updateOccurrence } from "@/app/actions/occurrences"
-import { Occurrence } from "@/lib/types"
-import { MAX_PHOTOS_PER_OCCURRENCE } from "@/lib/constants"
-import { useToast } from "@/hooks/use-toast"
+import { Occurrence, UpdateOccurrenceInput } from "@/lib/types"
+import { MAX_PHOTOS_PER_OCCURRENCE } from "@/lib/constants/project"
+import { useToast } from "@/components/ui/Toast"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 
 interface SelectedPhoto {
@@ -95,12 +95,15 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
         }
     })
 
-    const { execute: updateOcc, isPending: isUpdating } = useAsyncAction(updateOccurrence, {
-        successMessage: "Ocorrência atualizada com sucesso",
-        onSuccess: () => {
-            handleClose()
+    const { execute: updateOcc, isPending: isUpdating } = useAsyncAction(
+        async (args: { id: number; data: UpdateOccurrenceInput }) => updateOccurrence(args.id, args.data),
+        {
+            successMessage: "Ocorrência atualizada com sucesso",
+            onSuccess: () => {
+                handleClose()
+            }
         }
-    })
+    )
 
     const isLoading = isCreating || isUpdating
 
@@ -111,10 +114,13 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
         }
 
         if (isEditing && occurrence) {
-            await updateOcc(occurrence.id, {
-                title: title.trim(),
-                type: type.trim(),
-                description: description.trim() || undefined,
+            await updateOcc({
+                id: occurrence.id,
+                data: {
+                    title: title.trim(),
+                    type: type.trim(),
+                    description: description.trim() || undefined,
+                }
             })
         } else {
             await createOcc({
@@ -128,7 +134,7 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
 
     return (
         <Modal
-            isOpen={isOpen}
+            open={isOpen}
             onClose={handleClose}
             title={isEditing ? "Editar Ocorrência" : "Nova Ocorrência"}
         >
@@ -192,7 +198,7 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
                     <Button variant="outline" onClick={handleClose} disabled={isLoading}>
                         Cancelar
                     </Button>
-                    <Button onClick={handleSubmit} isLoading={isLoading} className="flex-1">
+                    <Button onClick={handleSubmit} loading={isLoading} className="flex-1">
                         {isEditing ? "Guardar" : "Criar Ocorrência"}
                     </Button>
                 </div>
