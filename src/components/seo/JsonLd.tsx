@@ -1,6 +1,13 @@
-export function JsonLd() {
+import { City } from "@/data/cities"
+import { BASE_URL } from "@/seo/utils/constants"
+
+interface JsonLdProps {
+    city?: City
+}
+
+export function JsonLd({ city }: JsonLdProps) {
     // Schema.org SoftwareApplication
-    const jsonLd = {
+    const softwareAppLd = {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "GestMais",
@@ -44,9 +51,53 @@ export function JsonLd() {
         ]
     };
 
+    // Build graph array - use any[] to allow different schema types
+    const graphItems: any[] = [softwareAppLd, faqLd];
+
+    // If city is provided, add LocalBusiness schema for that specific city
+    if (city) {
+        const localBusinessLd = {
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": `GestMais - Gestão de Condomínios em ${city.name}`,
+            "description": `Software de gestão de condomínios para prédios em ${city.name}. Simplifique a administração com transparência e velocidade.`,
+            "url": `${BASE_URL}/solucoes/${city.slug}`,
+            "areaServed": {
+                "@type": "City",
+                "name": city.name,
+                "addressRegion": city.district,
+                "addressCountry": "PT"
+            },
+            "sameAs": [
+                BASE_URL
+            ],
+            "priceRange": "€€",
+            "hasOfferCatalog": {
+                "@type": "OfferCatalog",
+                "name": "Serviços de Gestão de Condomínios",
+                "itemListElement": [
+                    {
+                        "@type": "Offer",
+                        "itemOffered": {
+                            "@type": "Service",
+                            "name": `Gestão de Condomínios em ${city.name}`,
+                            "description": "Sistema completo de gestão de quotas, ocorrências e arquivo digital.",
+                            "areaServed": {
+                                "@type": "City",
+                                "name": city.name
+                            }
+                        }
+                    }
+                ]
+            }
+        };
+
+        graphItems.push(localBusinessLd);
+    }
+
     const graph = {
         "@context": "https://schema.org",
-        "@graph": [jsonLd, faqLd]
+        "@graph": graphItems
     };
 
     return (

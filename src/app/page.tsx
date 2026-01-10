@@ -4,6 +4,7 @@ import { Features } from "@/components/landing/Features";
 import { Pricing } from "@/components/landing/Pricing";
 import { Footer } from "@/components/landing/Footer";
 import { Faq } from "@/components/landing/Faq";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export default function Home() {
     return (
@@ -14,6 +15,7 @@ export default function Home() {
             <Pricing />
             <Faq />
             <Footer />
+            <JsonLd />
         </div>
     );
 }

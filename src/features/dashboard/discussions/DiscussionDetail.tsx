@@ -10,7 +10,7 @@ import { DiscussionModal } from "./DiscussionModal"
 import { DiscussionCommentSection } from "./DiscussionCommentSection"
 import { Discussion, DiscussionComment } from "@/lib/types"
 import { deleteDiscussion, toggleDiscussionPin, closeDiscussion } from "@/app/actions/discussions"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { formatDistanceToNow } from "@/lib/format"
 
 interface Props {

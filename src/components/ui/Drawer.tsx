@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, type ReactNode } from "react"
+import { useEffect, useCallback, memo, type ReactNode } from "react"
 import { X } from "lucide-react"
 
 interface DrawerProps {
@@ -12,11 +12,12 @@ interface DrawerProps {
   footer?: ReactNode
 }
 
-export function Drawer({ open, onClose, title, description, children, footer }: DrawerProps) {
+const DrawerComponent = ({ open, onClose, title, description, children, footer }: DrawerProps) => {
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape") onClose()
+  }, [onClose])
+
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
     if (open) {
       document.addEventListener("keydown", handleEscape)
       document.body.style.overflow = "hidden"
@@ -25,7 +26,7 @@ export function Drawer({ open, onClose, title, description, children, footer }: 
       document.removeEventListener("keydown", handleEscape)
       document.body.style.overflow = ""
     }
-  }, [open, onClose])
+  }, [open, handleEscape])
 
   if (!open) return null
 
@@ -49,10 +50,10 @@ export function Drawer({ open, onClose, title, description, children, footer }: 
             <div className="flex items-start justify-between">
               <div>
                 {title && (
-                  <h2 className="text-[14px] font-medium text-gray-900">{title}</h2>
+                  <h2 className="text-heading font-medium text-gray-900">{title}</h2>
                 )}
                 {description && (
-                  <p className="mt-1 text-[11px] text-gray-500">{description}</p>
+                  <p className="mt-1 text-body text-gray-500">{description}</p>
                 )}
               </div>
               <button
@@ -72,3 +73,5 @@ export function Drawer({ open, onClose, title, description, children, footer }: 
     </div>
   )
 }
+
+export const Drawer = memo(DrawerComponent)

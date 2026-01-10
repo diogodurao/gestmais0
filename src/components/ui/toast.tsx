@@ -62,7 +62,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }, [])
 
     const addToast = useCallback((toast: Omit<Toast, "id">): string => {
-        const id = Math.random().toString(36).substring(2)
+        // ✅ Modern pattern - crypto.randomUUID() for guaranteed unique, stable IDs
+        // Generated once when toast is created, stored in state
+        const id = crypto.randomUUID()
         const newToast = { ...toast, id }
 
         setToasts((prev) => [...prev, newToast])

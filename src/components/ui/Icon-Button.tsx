@@ -14,8 +14,8 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<IconButtonVariant, string> = {
-  default: "border border-[#E9ECEF] bg-white hover:bg-[#F8F9FA] active:bg-[#F1F3F5]",
-  ghost: "bg-transparent hover:bg-[#F8F9FA] active:bg-[#F1F3F5]",
+  default: "border border-gray-200 bg-white hover:bg-gray-50 active:bg-gray-100",
+  ghost: "bg-transparent hover:bg-gray-50 active:bg-gray-100",
 }
 
 const sizeStyles: Record<IconButtonSize, string> = {
@@ -29,8 +29,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       ref={ref}
       aria-label={label}
       className={cn(
-        "inline-flex items-center justify-center rounded text-[#6C757D] transition-colors",
-        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#8FB996] focus-visible:ring-offset-1",
+        "inline-flex items-center justify-center rounded text-gray-600 transition-colors",
+        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-1",
         "disabled:cursor-not-allowed disabled:opacity-50",
         variantStyles[variant],
         sizeStyles[size],

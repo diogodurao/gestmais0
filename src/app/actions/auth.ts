@@ -1,9 +1,7 @@
 "use server"
 
-import { redirect } from "next/navigation"
 import { authClient } from "@/lib/auth-client"
 import { isValidNif } from "@/lib/validations"
-import { ROUTES } from "@/lib/routes"
 
 // Server Action State Types
 export type LoginState = {
@@ -20,6 +18,7 @@ export type RegisterState = {
     form?: string
   }
   success?: boolean
+  role?: "manager" | "resident"
 }
 
 // Login Server Action
@@ -114,8 +113,8 @@ export async function registerAction(
       }
     }
 
-    // Success - redirect will happen in the component
-    return { success: true }
+    // Success - redirect will happen in the component based on role
+    return { success: true, role }
   } catch (err) {
     return {
       errors: {

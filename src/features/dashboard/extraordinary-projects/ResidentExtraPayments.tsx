@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Layers, TrendingDown, TrendingUp } from "lucide-react"
 import { getResidentExtraordinaryPayments, type ResidentProjectPayment } from "@/app/actions/extraordinary"
 import { formatCurrency } from "@/lib/format"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { Skeleton } from "@/components/ui/Skeleton"
 
 export function ResidentExtraPayments() {

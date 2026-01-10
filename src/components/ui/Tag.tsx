@@ -12,7 +12,7 @@ export const Tag = forwardRef<HTMLSpanElement, TagProps>(
     <span
       ref={ref}
       className={cn(
-        "inline-flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-700",
+        "inline-flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5 text-body text-gray-700",
         className
       )}
       {...props}

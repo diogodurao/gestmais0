@@ -7,6 +7,7 @@ import { Footer } from "@/components/landing/Footer"
 import { Faq } from "@/components/landing/Faq"
 import { notFound } from "next/navigation"
 import { JsonLd } from "@/components/seo/JsonLd"
+import { generateCityMetadata } from "@/seo/utils/metadata"
 
 export async function generateStaticParams() {
     return cities.map((city) => ({
@@ -20,10 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     if (!city) return {}
 
-    return {
-        title: `Software de Condomínio em ${city.name} | GestMais`,
-        description: `A solução de gestão de condomínios mais rápida e transparente para prédios em ${city.name}.`
-    }
+    return generateCityMetadata(city)
 }
 
 export default async function CityPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -42,7 +40,7 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
             <Pricing />
             <Faq />
             <Footer />
-            <JsonLd />
+            <JsonLd city={city} />
         </div>
     )
 }

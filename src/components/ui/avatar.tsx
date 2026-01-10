@@ -1,4 +1,4 @@
-import { forwardRef, type HTMLAttributes } from "react"
+import { forwardRef, useMemo, type HTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 
 type AvatarSize = "sm" | "md"
@@ -11,19 +11,23 @@ interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const sizeStyles: Record<AvatarSize, string> = {
-  sm: "h-6 w-6 text-[9px]",
-  md: "h-8 w-8 text-[10px]",
+  sm: "h-6 w-6 text-label",
+  md: "h-8 w-8 text-label",
 }
 
 export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, src, alt, fallback, size = "md", ...props }, ref) => {
-    const initials = fallback || alt?.charAt(0)?.toUpperCase() || "?"
+    // useMemo is valuable here - string manipulation on every render
+    const initials = useMemo(
+      () => fallback || alt?.charAt(0)?.toUpperCase() || "?",
+      [fallback, alt]
+    )
 
     return (
       <div
         ref={ref}
         className={cn(
-          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E8F0EA]",
+          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-light",
           sizeStyles[size],
           className
         )}
@@ -32,7 +36,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {src ? (
           <img src={src} alt={alt} className="h-full w-full object-cover" />
         ) : (
-          <span className="font-medium text-[#6A9B72]">{initials}</span>
+          <span className="font-medium text-primary-dark">{initials}</span>
         )}
       </div>
     )

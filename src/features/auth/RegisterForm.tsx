@@ -12,12 +12,16 @@ export function RegisterForm() {
     const [role, setRole] = useState<"manager" | "resident">("resident")
     const [state, formAction, isPending] = useActionState(registerAction, null)
 
-    // Redirect on success
+    // Redirect on success - different route based on role
     useEffect(() => {
-        if (state?.success) {
-            router.push("/dashboard")
+        if (state?.success && state?.role) {
+            if (state.role === "manager") {
+                router.push("/onboarding/manager/personal")
+            } else {
+                router.push("/onboarding/resident/join")
+            }
         }
-    }, [state?.success, router])
+    }, [state?.success, state?.role, router])
 
     return (
         <form action={formAction} className="space-y-4">

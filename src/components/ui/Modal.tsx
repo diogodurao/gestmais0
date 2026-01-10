@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, type ReactNode } from "react"
+import { useEffect, useCallback, memo, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
 
@@ -20,11 +20,12 @@ const sizeStyles = {
   lg: "max-w-lg",
 }
 
-export function Modal({ open, onClose, title, description, children, footer, size = "md" }: ModalProps) {
+const ModalComponent = ({ open, onClose, title, description, children, footer, size = "md" }: ModalProps) => {
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape") onClose()
+  }, [onClose])
+
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
     if (open) {
       document.addEventListener("keydown", handleEscape)
       document.body.style.overflow = "hidden"
@@ -33,7 +34,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
       document.removeEventListener("keydown", handleEscape)
       document.body.style.overflow = ""
     }
-  }, [open, onClose])
+  }, [open, handleEscape])
 
   if (!open) return null
 
@@ -83,3 +84,5 @@ export function Modal({ open, onClose, title, description, children, footer, siz
     </div>
   )
 }
+
+export const Modal = memo(ModalComponent)

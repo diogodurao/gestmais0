@@ -8,11 +8,11 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: "bg-[#F1F3F5] text-[#495057] border-[#E9ECEF]",
-  success: "bg-[#E8F0EA] text-[#6A9B72] border-[#D4E5D7]",
-  warning: "bg-[#FBF6EC] text-[#B8963E] border-[#F0E4C8]",
-  error: "bg-[#F9ECEE] text-[#B86B73] border-[#EFCDD1]",
-  info: "bg-[#E9ECF0] text-[#6C757D] border-[#DEE2E6]",
+  default: "bg-gray-100 text-gray-700 border-gray-200",
+  success: "bg-primary-light text-primary-dark border-primary",
+  warning: "bg-warning-light text-warning border-warning",
+  error: "bg-error-light text-error border-error",
+  info: "bg-secondary-light text-gray-600 border-gray-300",
 }
 
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
@@ -20,7 +20,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     <span
       ref={ref}
       className={cn(
-        "inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium",
+        "inline-flex items-center rounded border px-1 py-0.5 text-label font-medium",
         variantStyles[variant],
         className
       )}

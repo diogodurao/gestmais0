@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, type ReactNode, type HTMLAttributes } from "react"
+import { createContext, useContext, useId, type ReactNode, type HTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 
 // ============================================================================
@@ -35,7 +35,8 @@ interface FormFieldProps {
 }
 
 export function FormField({ required, error, children, className }: FormFieldProps) {
-  const fieldId = `field-${Math.random().toString(36).substring(2, 9)}`
+  // ✅ Modern React 19 pattern - useId() generates stable IDs across SSR/client
+  const fieldId = useId()
 
   return (
     <FormFieldContext.Provider value={{ required, error, fieldId }}>
