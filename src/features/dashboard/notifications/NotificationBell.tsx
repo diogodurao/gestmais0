@@ -27,14 +27,14 @@ export function NotificationBell() {
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                     "relative p-2 rounded-lg transition-colors",
-                    isOpen ? "bg-slate-100" : "hover:bg-slate-100"
+                    isOpen ? "bg-gray-100" : "hover:bg-gray-100"
                 )}
             >
-                <Bell className="w-5 h-5 text-slate-600" />
+                <Bell className="w-5 h-5 text-gray-600" />
 
                 {/* Badge */}
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-micro font-bold text-white bg-red-500 rounded-full">
+                    <span className="absolute -top-1 -right-1 min-w-4 h-4 flex items-center justify-center px-1 text-label font-semibold text-white bg-error rounded-full">
                         {displayCount}
                     </span>
                 )}

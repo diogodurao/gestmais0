@@ -50,7 +50,7 @@ export function DocumentVersions({ document, onClose }: Props) {
                 {isLoading ? (
                     <div className="space-y-2 p-1">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="flex justify-between items-center p-3 border border-slate-100 rounded-lg">
+                            <div key={i} className="flex justify-between items-center p-3 border border-gray-100 rounded-lg">
                                 <div className="space-y-2">
                                     <Skeleton className="h-4 w-24" />
                                     <Skeleton className="h-3 w-48" />
@@ -60,25 +60,25 @@ export function DocumentVersions({ document, onClose }: Props) {
                         ))}
                     </div>
                 ) : versions.length === 0 ? (
-                    <p className="text-body text-slate-500 text-center py-4">Sem versões anteriores</p>
+                    <p className="text-body text-gray-500 text-center py-4">Sem versões anteriores</p>
                 ) : (
                     versions.map((version, index) => (
                         <div
                             key={version.id}
-                            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                         >
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-body font-medium text-slate-700">
+                                    <span className="text-body font-medium text-gray-700">
                                         Versão {version.version}
                                     </span>
                                     {index === 0 && (
-                                        <span className="text-label px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
+                                        <span className="text-label px-2 py-0.5 bg-info-light text-info rounded">
                                             Atual
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-label text-slate-500">
+                                <p className="text-label text-gray-500">
                                     {version.uploaderName} • {formatDistanceToNow(version.uploadedAt)} • {formatFileSize(version.fileSize)}
                                 </p>
                             </div>

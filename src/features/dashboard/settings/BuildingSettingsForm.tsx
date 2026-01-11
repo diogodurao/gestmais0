@@ -77,20 +77,20 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         <Building2 className="w-4 h-4" />
                         Parâmetros do Edifício
                     </CardTitle>
-                    <button type="button" className="text-label text-blue-600 hover:underline">
+                    <button type="button" className="text-label text-info hover:underline">
                         Modo Edição
                     </button>
                 </CardHeader>
 
                 <form onSubmit={handleSubmit} className="p-0">
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
                         <div className="label-col border-none">Código do Edifício</div>
-                        <div className="value-col border-none bg-slate-50 text-slate-500 px-3 py-1.5 font-mono text-body uppercase">
+                        <div className="value-col border-none bg-gray-50 text-gray-500 px-3 py-1.5 font-mono text-body uppercase">
                             {building.code}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
                         <div className="label-col border-none">Rua / Avenida</div>
                         <div className="value-col border-none">
                             <input
@@ -102,14 +102,14 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
                         <div className="label-col border-none">Nº / Cidade</div>
                         <div className="value-col border-none grid grid-cols-2">
                             <input
                                 type="text"
                                 value={formData.number}
                                 onChange={e => handleChange("number", e.target.value)}
-                                className="input-cell h-8 border-r border-slate-100"
+                                className="input-cell h-8 border-r border-gray-100"
                                 placeholder="Nº"
                             />
                             <input
@@ -122,7 +122,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
                         <div className="label-col border-none">NIF do Edifício</div>
                         <div className="value-col border-none">
                             <input
@@ -135,7 +135,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
                         <div className="label-col border-none">IBAN do Edifício</div>
                         <div className="value-col border-none">
                             <input
@@ -147,11 +147,11 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 text-body font-bold text-slate-500 uppercase">
+                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 text-body font-bold text-gray-500 uppercase">
                         Configuração Financeira
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
                         <div className="label-col border-none">Modo de Cálculo</div>
                         <div className="value-col border-none p-2 flex flex-col sm:flex-row gap-4 bg-white">
                             <label className="flex items-center gap-2 cursor-pointer">
@@ -184,20 +184,20 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                 type="number"
                                 value={monthlyQuotaStr}
                                 onChange={e => setMonthlyQuotaStr(e.target.value)}
-                                className="input-cell h-8 font-mono font-bold text-slate-700"
+                                className="input-cell h-8 font-mono font-bold text-gray-700"
                                 placeholder="0.00"
                             />
                         </div>
                     </div>
 
-                    <div className="p-3 flex justify-end border-t border-slate-100">
+                    <div className="p-3 flex justify-end border-t border-gray-100">
                         <Button type="submit" size="xs" isLoading={isPending} variant="primary">
                             Guardar Alterações
                         </Button>
                     </div>
                 </form>
             </Card>
-            {error && <p className="text-label text-rose-600 font-bold uppercase text-right">{error}</p>}
+            {error && <p className="text-label text-error font-bold uppercase text-right">{error}</p>}
         </div>
     )
 }

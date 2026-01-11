@@ -156,17 +156,17 @@ export function ResidentOnboardingFlow({
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4">
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
             <div className="max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-2">
+                    <div className="text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-2">
                         NOVO PORTAL DE RESIDENTE
                     </div>
-                    <h1 className="text-2xl font-bold text-slate-800 uppercase tracking-wide">
+                    <h1 className="text-2xl font-bold text-gray-800 uppercase tracking-wide">
                         Bem-vindo a Bordo
                     </h1>
-                    <p className="text-sm text-slate-500 mt-2">
+                    <p className="text-sm text-gray-500 mt-2">
                         Vamos ligá-lo ao seu condomínio em segundos.
                     </p>
                 </div>
@@ -179,10 +179,10 @@ export function ResidentOnboardingFlow({
                             <div key={step.number} className="flex items-center">
                                 <div
                                     className={`flex items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase ${currentStep === step.number
-                                        ? "bg-blue-600 text-white"
+                                        ? "bg-info text-white"
                                         : step.isComplete
                                             ? "bg-emerald-100 text-emerald-700"
-                                            : "bg-slate-100 text-slate-400"
+                                            : "bg-gray-100 text-gray-400"
                                         }`}
                                 >
                                     {step.isComplete ? (
@@ -193,7 +193,7 @@ export function ResidentOnboardingFlow({
                                     <span className="hidden sm:inline">{step.title}</span>
                                 </div>
                                 {idx < steps.length - 1 && (
-                                    <ChevronRight className="w-4 h-4 text-slate-300 mx-1" />
+                                    <ChevronRight className="w-4 h-4 text-gray-300 mx-1" />
                                 )}
                             </div>
                         )
@@ -207,8 +207,8 @@ export function ResidentOnboardingFlow({
                         {currentStep === 1 && (
                             <div className="space-y-6">
                                 <div className="text-center">
-                                    <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                    <h2 className="text-sm font-bold text-slate-700 uppercase mb-2">
+                                    <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                    <h2 className="text-sm font-bold text-gray-700 uppercase mb-2">
                                         Insira o Código de Convite
                                     </h2>
                                 </div>
@@ -219,13 +219,13 @@ export function ResidentOnboardingFlow({
                                         value={inviteCode}
                                         onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                                         placeholder="XXXXXX"
-                                        className="w-full text-center text-2xl font-mono font-bold tracking-[0.5em] px-4 py-4 border-2 border-slate-200 focus:outline-none focus:border-blue-400 uppercase"
+                                        className="w-full text-center text-2xl font-mono font-bold tracking-[0.5em] px-4 py-4 border-2 border-gray-200 focus:outline-none focus:border-gray-400 uppercase"
                                         maxLength={6}
                                     />
                                 </div>
 
                                 {error && (
-                                    <p className="text-center text-xs text-rose-600 font-bold">{error}</p>
+                                    <p className="text-center text-xs text-error font-bold">{error}</p>
                                 )}
 
                                 <Button
@@ -242,12 +242,12 @@ export function ResidentOnboardingFlow({
                         {currentStep === 2 && (
                             <div className="space-y-6">
                                 <div className="text-center">
-                                    <Home className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                    <h2 className="text-sm font-bold text-slate-700 uppercase mb-2">
+                                    <Home className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                    <h2 className="text-sm font-bold text-gray-700 uppercase mb-2">
                                         Selecione a sua Unidade
                                     </h2>
                                     {building && (
-                                        <p className="text-xs text-slate-400">{building.name}</p>
+                                        <p className="text-xs text-gray-400">{building.name}</p>
                                     )}
                                 </div>
 
@@ -255,7 +255,7 @@ export function ResidentOnboardingFlow({
                                     <select
                                         value={selectedAptId || ""}
                                         onChange={(e) => setSelectedAptId(Number(e.target.value) || null)}
-                                        className="w-full px-4 py-3 text-sm border border-slate-200 focus:outline-none focus:border-blue-400 uppercase font-mono"
+                                        className="w-full px-4 py-3 text-sm border border-gray-200 focus:outline-none focus:border-gray-400 uppercase font-mono"
                                     >
                                         <option value="">SELECIONAR FRAÇÃO</option>
                                         {unclaimedApartments.map(apt => (
@@ -267,7 +267,7 @@ export function ResidentOnboardingFlow({
                                 </div>
 
                                 {error && (
-                                    <p className="text-center text-xs text-rose-600 font-bold">{error}</p>
+                                    <p className="text-center text-xs text-error font-bold">{error}</p>
                                 )}
 
                                 <Button
@@ -284,17 +284,17 @@ export function ResidentOnboardingFlow({
                         {currentStep === 3 && (
                             <div className="space-y-6">
                                 <div className="text-center">
-                                    <CreditCard className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                    <h2 className="text-sm font-bold text-slate-700 uppercase mb-2">
+                                    <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                    <h2 className="text-sm font-bold text-gray-700 uppercase mb-2">
                                         Configuração do IBAN
                                     </h2>
-                                    <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                                    <p className="text-xs text-gray-400 max-w-sm mx-auto">
                                         Adicione o seu IBAN para automatizar a informação relativa aos pagamentos.
                                     </p>
                                 </div>
 
                                 <div className="relative">
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                                         Número IBAN
                                     </label>
                                     <input
@@ -302,7 +302,7 @@ export function ResidentOnboardingFlow({
                                         value={iban}
                                         onChange={(e) => setIban(e.target.value.toUpperCase())}
                                         placeholder="PT50 1234 4321 5678 9012 3456 7"
-                                        className="w-full px-4 py-3 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400 uppercase pr-10"
+                                        className="w-full px-4 py-3 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400 uppercase pr-10"
                                     />
                                     {isValidIban(iban) && (
                                         <Check className="absolute right-3 top-3 w-5 h-5 text-emerald-500" />
@@ -319,7 +319,7 @@ export function ResidentOnboardingFlow({
                                 )}
 
                                 {error && (
-                                    <p className="text-center text-xs text-rose-600 font-bold">{error}</p>
+                                    <p className="text-center text-xs text-error font-bold">{error}</p>
                                 )}
 
                                 <Button

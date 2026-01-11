@@ -79,9 +79,9 @@ export function CalendarView({ buildingId, initialEvents, initialYear, initialMo
                 readOnly={readOnly}
             />
             <CardContent className="p-0">
-                <div className="grid grid-cols-7 border-b border-slate-200">
+                <div className="grid grid-cols-7 border-b border-gray-200">
                     {WEEKDAYS.map(d => (
-                        <div key={d} className="p-2 text-center text-label font-bold text-slate-500 uppercase bg-slate-50">
+                        <div key={d} className="p-2 text-center text-label font-bold text-gray-500 uppercase bg-gray-50">
                             {d}
                         </div>
                     ))}

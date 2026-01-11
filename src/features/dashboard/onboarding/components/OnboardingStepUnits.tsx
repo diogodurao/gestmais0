@@ -80,18 +80,18 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
     return (
         <div className="space-y-6">
             {/* Instructions */}
-            <div className="bg-blue-50 border border-blue-200 p-4">
-                <h3 className="text-xs font-bold text-blue-700 uppercase mb-1">
+            <div className="bg-info-light border border-gray-200 p-4">
+                <h3 className="text-xs font-bold text-info uppercase mb-1">
                     INSTRUÇÕES DE REGISTO
                 </h3>
-                <p className="text-xs text-blue-600">
+                <p className="text-xs text-info">
                     Ao adicionar frações, a permilagem total deve somar exatamente 1000. Pode adicionar mais frações posteriormente no painel de definições.
                 </p>
             </div>
 
             {/* Unit List */}
-            <div className="border border-slate-200">
-                <div className="grid grid-cols-12 bg-slate-100 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase">
+            <div className="border border-gray-200">
+                <div className="grid grid-cols-12 bg-gray-100 border-b border-gray-200 text-[10px] font-bold text-gray-500 uppercase">
                     <div className="col-span-5 p-2">FRAÇÃO</div>
                     <div className="col-span-4 p-2">PERMILAGEM</div>
                     <div className="col-span-3 p-2"></div>
@@ -101,7 +101,7 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
                     {apartments.map((apt) => (
                         <div
                             key={apt.id}
-                            className="grid grid-cols-12 border-b border-slate-100 items-center hover:bg-slate-50"
+                            className="grid grid-cols-12 border-b border-gray-100 items-center hover:bg-gray-50"
                         >
                             <div className="col-span-5 p-2 text-sm font-mono font-bold uppercase">
                                 {apt.unit}
@@ -112,7 +112,7 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
                             <div className="col-span-3 p-2 text-right">
                                 <button
                                     onClick={() => handleDeleteUnit(apt.id)}
-                                    className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                                    className="p-1 text-gray-400 hover:text-error transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -121,7 +121,7 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
                     ))}
 
                     {apartments.length === 0 && (
-                        <div className="p-4 text-center text-xs text-slate-400 italic">
+                        <div className="p-4 text-center text-xs text-gray-400 italic">
                             Nenhuma fração definida
                         </div>
                     )}
@@ -129,14 +129,14 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
 
                 {/* Add New Unit Row */}
                 {!isAtLimit && (
-                    <div className="grid grid-cols-12 border-t border-slate-200 items-center bg-slate-50">
+                    <div className="grid grid-cols-12 border-t border-gray-200 items-center bg-gray-50">
                         <div className="col-span-5 p-2">
                             <input
                                 type="text"
                                 value={newUnit}
                                 onChange={(e) => setNewUnit(e.target.value)}
                                 placeholder="Ex: 1º Esq"
-                                className="w-full px-2 py-1 text-sm border border-slate-200 focus:outline-none focus:border-blue-400"
+                                className="w-full px-2 py-1 text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
                             />
                         </div>
                         <div className="col-span-4 p-2">
@@ -145,7 +145,7 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
                                 value={newPermillage}
                                 onChange={(e) => setNewPermillage(e.target.value)}
                                 placeholder="0"
-                                className="w-full px-2 py-1 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400"
+                                className="w-full px-2 py-1 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400"
                             />
                         </div>
                         <div className="col-span-3 p-2">
@@ -164,18 +164,18 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
 
             {/* Limit Warning */}
             {isAtLimit && (
-                <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 text-amber-700">
+                <div className="flex items-center gap-2 p-3 bg-warning-light border border-gray-200 text-warning">
                     <AlertCircle className="w-4 h-4" />
                     <span className="text-xs font-bold uppercase">Limite de frações atingido</span>
                 </div>
             )}
 
             {error && (
-                <p className="text-xs text-rose-600 font-bold">{error}</p>
+                <p className="text-xs text-error font-bold">{error}</p>
             )}
 
             {/* Summary */}
-            <div className="flex items-center justify-between text-xs text-slate-500">
+            <div className="flex items-center justify-between text-xs text-gray-500">
                 <span>
                     {apartments.length} FRAÇÕES
                 </span>

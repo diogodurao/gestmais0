@@ -66,7 +66,7 @@ describe("ApartmentRow", () => {
 
         // Late installment
         const lateCell = screen.getByText("EM ATRASO").closest("td")
-        expect(lateCell?.className).toContain("bg-rose-50")
+        expect(lateCell?.className).toContain("bg-error-light")
     })
 
     it("calls onCellClick when interactive", () => {

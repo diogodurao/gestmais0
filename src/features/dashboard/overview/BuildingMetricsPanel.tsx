@@ -23,7 +23,7 @@ export function BuildingMetricsPanel({
     const occupancyRate = totalUnits > 0 ? Math.round((residentCount / totalUnits) * 100) : 0
 
     return (
-        <Card className="h-full border border-slate-300 shadow-[4px_4px_0px_#cbd5e1]">
+        <Card className="h-full border border-gray-300">
             <CardHeader>
                 <CardTitle>
                     <BarChart3 className="w-4 h-4" />
@@ -34,25 +34,25 @@ export function BuildingMetricsPanel({
                 <div className="p-4 h-32 flex flex-col justify-center">
                     {isManager ? (
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="text-center border-r border-slate-100">
-                                <div className="text-2xl font-bold text-slate-700">{residents.length}</div>
-                                <div className="text-micro text-slate-400 uppercase font-bold mt-1 tracking-tighter">Residentes</div>
+                            <div className="text-center border-r border-gray-100">
+                                <div className="text-2xl font-semibold text-gray-700">{residents?.length || 0}</div>
+                                <div className="text-label text-gray-400 uppercase font-semibold mt-1">Residentes</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-amber-600">{unclaimedUnits.length}</div>
-                                <div className="text-micro text-amber-600/70 uppercase font-bold mt-1 tracking-tighter">não atribuídos</div>
+                                <div className="text-2xl font-semibold text-warning">{unclaimedUnits?.length || 0}</div>
+                                <div className="text-label text-warning uppercase font-semibold mt-1">não atribuídos</div>
                             </div>
                         </div>
                     ) : residentBuildingInfo ? (
                         <div className="space-y-1">
-                            <p className="text-body font-bold text-slate-800 truncate uppercase">{residentBuildingInfo.building.name}</p>
-                            <p className="text-label font-medium text-slate-500 uppercase tracking-tighter">Gestor: {residentBuildingInfo.manager.name}</p>
+                            <p className="text-body font-semibold text-gray-800 truncate uppercase">{residentBuildingInfo.building.name}</p>
+                            <p className="text-label font-medium text-gray-500 uppercase">Gestor: {residentBuildingInfo.manager.name}</p>
                         </div>
                     ) : null}
                 </div>
             </CardContent>
             <CardFooter className="text-center justify-center">
-                {isManager ? `${occupancyRate}% Ocupação` : "Metadata do Condomínio Carregados"}
+                {isManager ? `${occupancyRate}% Ocupação` : "Metadados do Condomínio Carregados"}
             </CardFooter>
         </Card>
     )

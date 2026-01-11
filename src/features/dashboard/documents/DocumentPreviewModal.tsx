@@ -50,8 +50,8 @@ export function DocumentPreviewModal({ document, onClose }: Props) {
             {/* Modal */}
             <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col m-4">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-slate-200">
-                    <h2 className="text-h4 font-bold text-slate-900 truncate">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <h2 className="text-h4 font-bold text-gray-900 truncate">
                         {document.title}
                     </h2>
                     <div className="flex items-center gap-2">
@@ -61,15 +61,15 @@ export function DocumentPreviewModal({ document, onClose }: Props) {
                         </Button>
                         <button
                             onClick={onClose}
-                            className="p-2 hover:bg-slate-100 rounded-lg"
+                            className="p-2 hover:bg-gray-100 rounded-lg"
                         >
-                            <X className="w-5 h-5 text-slate-500" />
+                            <X className="w-5 h-5 text-gray-500" />
                         </button>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-auto p-4 bg-slate-100">
+                <div className="flex-1 overflow-auto p-4 bg-gray-100">
                     {isLoading ? (
                         <div className="w-full h-full min-h-[600px] bg-white rounded-lg p-8">
                             <Skeleton className="w-full h-full rounded-lg" />
@@ -90,7 +90,7 @@ export function DocumentPreviewModal({ document, onClose }: Props) {
                         ) : null
                     ) : (
                         <div className="flex items-center justify-center h-full">
-                            <p className="text-body text-slate-500">Erro ao carregar documento</p>
+                            <p className="text-body text-gray-500">Erro ao carregar documento</p>
                         </div>
                     )}
                 </div>

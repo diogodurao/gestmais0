@@ -9,7 +9,7 @@ import { StarRating } from "./StarRating"
 import { submitEvaluation } from "@/app/actions/evaluations"
 import { EvaluationStatus, EvaluationCategoryKey as CategoryKey } from "@/lib/types"
 import { EVALUATION_CATEGORIES as CATEGORIES, EVALUATION_MONTH_NAMES as MONTH_NAMES } from "@/lib/constants"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 
 interface Props {
     buildingId: string
@@ -84,7 +84,7 @@ export function EvaluationForm({ buildingId, status }: Props) {
                     <div className="space-y-4">
                         {CATEGORIES.map(({ key, label }) => (
                             <div key={key} className="flex items-center justify-between">
-                                <span className="text-body font-medium text-slate-700">
+                                <span className="text-body font-medium text-gray-700">
                                     {label}
                                 </span>
                                 <StarRating
@@ -115,7 +115,7 @@ export function EvaluationForm({ buildingId, status }: Props) {
 
                     {/* Submit */}
                     <div className="flex items-center justify-between pt-2">
-                        <p className="text-label text-slate-500">
+                        <p className="text-label text-gray-500">
                             {status.daysRemaining === 0
                                 ? "Último dia para submeter"
                                 : `Faltam ${status.daysRemaining} dias`}

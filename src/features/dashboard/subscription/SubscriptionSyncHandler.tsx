@@ -81,49 +81,49 @@ export function SubscriptionSyncHandler({ buildingId }: { buildingId: string | n
 
     return (
         <div className={`mb-6 p-4 rounded-lg border ${status === 'success'
-            ? 'bg-green-50 border-green-200'
+            ? 'bg-success-light border-gray-200'
             : status === 'error'
-                ? 'bg-amber-50 border-amber-200'
-                : 'bg-blue-50 border-blue-200'
+                ? 'bg-warning-light border-gray-200'
+                : 'bg-info-light border-gray-200'
             }`}>
             <div className="flex items-start gap-3">
                 {status === 'idle' || status === 'syncing' ? (
                     <>
-                        <Loader2 className="w-5 h-5 text-blue-600 animate-spin shrink-0 mt-0.5" />
+                        <Loader2 className="w-5 h-5 text-info animate-spin shrink-0 mt-0.5" />
                         <div className="flex-1">
-                            <p className="font-medium text-blue-900">Verifying your payment...</p>
-                            <p className="text-sm text-blue-700">Please wait while we activate your subscription.</p>
+                            <p className="font-medium text-info">Verifying your payment...</p>
+                            <p className="text-sm text-info">Please wait while we activate your subscription.</p>
                         </div>
                     </>
                 ) : null}
 
                 {status === 'success' && (
                     <>
-                        <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                        <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
                         <div className="flex-1">
-                            <p className="font-medium text-green-900">{message}</p>
-                            <p className="text-sm text-green-700">Redirecting to your dashboard...</p>
+                            <p className="font-medium text-success">{message}</p>
+                            <p className="text-sm text-success">Redirecting to your dashboard...</p>
                         </div>
                     </>
                 )}
 
                 {status === 'error' && (
                     <>
-                        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                        <AlertCircle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                         <div className="flex-1">
-                            <p className="font-medium text-amber-900">Payment verification pending</p>
-                            <p className="text-sm text-amber-700 mb-3">{message}</p>
+                            <p className="font-medium text-warning">Payment verification pending</p>
+                            <p className="text-sm text-warning mb-3">{message}</p>
                             <div className="flex gap-2">
                                 <button
                                     onClick={handleRetry}
-                                    className="inline-flex items-center gap-1 text-sm bg-amber-100 text-amber-800 px-3 py-1.5 rounded-md hover:bg-amber-200 transition-colors"
+                                    className="inline-flex items-center gap-1 text-sm bg-warning-light text-warning px-3 py-1.5 rounded-md hover:bg-warning-light transition-colors"
                                 >
                                     <RefreshCw className="w-3 h-3" />
                                     Retry ({retryCount})
                                 </button>
                                 <button
                                     onClick={handleManualRefresh}
-                                    className="text-sm text-amber-700 underline hover:text-amber-900"
+                                    className="text-sm text-warning underline hover:text-warning"
                                 >
                                     Refresh page manually
                                 </button>

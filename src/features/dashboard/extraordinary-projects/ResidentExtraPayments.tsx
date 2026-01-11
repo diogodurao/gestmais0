@@ -59,13 +59,13 @@ export function ResidentExtraPayments() {
             </CardHeader>
             <CardContent className="p-0">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 border-b border-slate-100">
-                    <div className="p-4 border-r border-slate-100 text-center">
-                        <div className="flex items-center justify-center gap-1 text-rose-500 mb-1">
+                <div className="grid grid-cols-2 border-b border-gray-100">
+                    <div className="p-4 border-r border-gray-100 text-center">
+                        <div className="flex items-center justify-center gap-1 text-error mb-1">
                             <TrendingDown className="w-3 h-3" />
                             <span className="text-label font-bold uppercase">Total em Dívida</span>
                         </div>
-                        <div className="text-xl font-bold font-mono text-rose-600">
+                        <div className="text-xl font-bold font-mono text-error">
                             {formatCurrency(totalDebt)}
                         </div>
                     </div>
@@ -99,19 +99,19 @@ export function ResidentExtraPayments() {
                     </div>
                 ) : payments.length === 0 ? (
                     <div className="p-8 text-center">
-                        <p className="text-body text-slate-400">
+                        <p className="text-body text-gray-400">
                             Não existem projetos extraordinários ativos ou passados neste condomínio.
                         </p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y divide-gray-100">
                         {payments.map((payment, idx) => (
                             <div key={idx} className="p-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-content font-bold text-slate-700 uppercase">
+                                    <h3 className="text-content font-bold text-gray-700 uppercase">
                                         {payment.projectName}
                                     </h3>
-                                    <span className={`text-body font-bold font-mono ${payment.balance > 0 ? "text-rose-600" : "text-emerald-600"
+                                    <span className={`text-body font-bold font-mono ${payment.balance > 0 ? "text-error" : "text-emerald-600"
                                         }`}>
                                         {payment.balance > 0
                                             ? `-${formatCurrency(payment.balance)}`

@@ -69,7 +69,7 @@ export function DocumentsList({ buildingId, documents, isManager }: Props) {
 
                     {/* Documents */}
                     {filteredDocuments.length === 0 ? (
-                        <p className="text-body text-slate-500 text-center py-8">
+                        <p className="text-body text-gray-500 text-center py-8">
                             Nenhum documento encontrado.
                         </p>
                     ) : categoryFilter === 'all' ? (
@@ -77,7 +77,7 @@ export function DocumentsList({ buildingId, documents, isManager }: Props) {
                         <div className="space-y-6">
                             {Object.entries(groupedDocuments).map(([category, docs]) => (
                                 <div key={category}>
-                                    <h3 className="text-body font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                    <h3 className="text-body font-bold text-gray-700 mb-3 flex items-center gap-2">
                                         <span>{CATEGORY_CONFIG[category as DocumentCategory].icon}</span>
                                         {CATEGORY_CONFIG[category as DocumentCategory].label}
                                     </h3>

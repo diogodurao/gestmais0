@@ -16,20 +16,20 @@ export function EvaluationWidget({ status }: Props) {
     // State 1: Locked (before day 24)
     if (!isOpen) {
         return (
-            <Card className="bg-slate-50 border-slate-200">
+            <Card className="bg-gray-50 border-gray-200">
                 <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                        <div className="p-2 bg-slate-200 rounded-lg">
-                            <Lock className="w-5 h-5 text-slate-500" />
+                        <div className="p-2 bg-gray-200 rounded-lg">
+                            <Lock className="w-5 h-5 text-gray-500" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-body font-bold text-slate-700">
+                            <h3 className="text-body font-bold text-gray-700">
                                 Avaliação de {MONTH_NAMES[month - 1]}
                             </h3>
-                            <p className="text-label text-slate-500 mt-1">
+                            <p className="text-label text-gray-500 mt-1">
                                 A avaliação abre dia 24
                             </p>
-                            <p className="text-label text-slate-400">
+                            <p className="text-label text-gray-400">
                                 Faltam {daysUntilOpen} dias
                             </p>
                         </div>
@@ -45,20 +45,20 @@ export function EvaluationWidget({ status }: Props) {
     // State 2: Open, not submitted
     if (!hasSubmitted) {
         return (
-            <Card className="bg-blue-50 border-blue-200">
+            <Card className="bg-info-light border-gray-200">
                 <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                            <Clock className="w-5 h-5 text-blue-600" />
+                        <div className="p-2 bg-gray-100 rounded-lg">
+                            <Clock className="w-5 h-5 text-info" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-body font-bold text-slate-700">
+                            <h3 className="text-body font-bold text-gray-700">
                                 Avaliação de {MONTH_NAMES[month - 1]}
                             </h3>
-                            <p className="text-label text-blue-600 mt-1">
+                            <p className="text-label text-info mt-1">
                                 A avaliação está aberta!
                             </p>
-                            <p className="text-label text-slate-500">
+                            <p className="text-label text-gray-500">
                                 {daysRemaining === 0
                                     ? "Último dia para submeter"
                                     : `Faltam ${daysRemaining} dias para submeter`}
@@ -77,20 +77,20 @@ export function EvaluationWidget({ status }: Props) {
 
     // State 3: Open, already submitted
     return (
-        <Card className="bg-green-50 border-green-200">
+        <Card className="bg-success-light border-gray-200">
             <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
+                    <div className="p-2 bg-primary-light rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-success" />
                     </div>
                     <div className="flex-1">
-                        <h3 className="text-body font-bold text-slate-700">
+                        <h3 className="text-body font-bold text-gray-700">
                             Avaliação de {MONTH_NAMES[month - 1]}
                         </h3>
-                        <p className="text-label text-green-600 mt-1">
+                        <p className="text-label text-success mt-1">
                             Avaliação submetida ✓
                         </p>
-                        <p className="text-label text-slate-500">
+                        <p className="text-label text-gray-500">
                             Pode editar até dia {new Date(year, month, 0).getDate()}
                         </p>
                     </div>

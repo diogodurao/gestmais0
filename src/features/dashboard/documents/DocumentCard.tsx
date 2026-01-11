@@ -8,7 +8,7 @@ import { Document } from "@/lib/types"
 import { DOCUMENT_CATEGORY_CONFIG as CATEGORY_CONFIG } from "@/lib/constants"
 import { formatFileSize, getFileIcon, canPreview } from "@/lib/utils"
 import { getDocumentDownloadUrl, deleteDocument } from "@/app/actions/documents"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { formatDistanceToNow } from "@/lib/format"
 
 interface Props {
@@ -62,13 +62,13 @@ export function DocumentCard({
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-body font-bold text-slate-900 truncate">
+                    <h3 className="text-body font-bold text-gray-900 truncate">
                         {document.title}
                     </h3>
-                    <p className="text-label text-slate-500">
+                    <p className="text-label text-gray-500">
                         {CATEGORY_CONFIG[document.category].label}
                     </p>
-                    <div className="flex items-center gap-2 mt-1 text-label text-slate-400">
+                    <div className="flex items-center gap-2 mt-1 text-label text-gray-400">
                         <span>{formatFileSize(document.fileSize)}</span>
                         <span>•</span>
                         <span>v{document.version}</span>
@@ -125,13 +125,13 @@ export function DocumentCard({
                                         className="fixed inset-0 z-40"
                                         onClick={() => setMenuOpen(false)}
                                     />
-                                    <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 py-1 min-w-[160px]">
+                                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 min-w-[160px]">
                                         <button
                                             onClick={() => {
                                                 onNewVersion(document)
                                                 setMenuOpen(false)
                                             }}
-                                            className="flex items-center gap-2 px-3 py-2 text-body hover:bg-slate-50 w-full text-left"
+                                            className="flex items-center gap-2 px-3 py-2 text-body hover:bg-gray-50 w-full text-left"
                                         >
                                             <History className="w-4 h-4" />
                                             Nova versão
@@ -139,7 +139,7 @@ export function DocumentCard({
                                         <button
                                             onClick={handleDelete}
                                             disabled={isDeleting}
-                                            className="flex items-center gap-2 px-3 py-2 text-body text-red-600 hover:bg-slate-50 w-full text-left"
+                                            className="flex items-center gap-2 px-3 py-2 text-body text-error hover:bg-gray-50 w-full text-left"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                             Eliminar
@@ -153,7 +153,7 @@ export function DocumentCard({
             </div>
 
             {document.description && (
-                <p className="text-label text-slate-500 mt-2 line-clamp-2">
+                <p className="text-label text-gray-500 mt-2 line-clamp-2">
                     {document.description}
                 </p>
             )}

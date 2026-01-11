@@ -146,13 +146,13 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex flex-col items-center justify-center p-12 bg-slate-50 tech-border border-dashed text-center h-[300px]">
-                                <div className="p-4 bg-slate-200 rounded-full mb-4">
-                                    <Lock className="w-6 h-6 text-slate-500" />
+                            <div className="flex flex-col items-center justify-center p-12 bg-gray-50 tech-border border-dashed text-center h-[300px]">
+                                <div className="p-4 bg-gray-200 rounded-full mb-4">
+                                    <Lock className="w-6 h-6 text-gray-500" />
                                 </div>
-                                <h3 className="font-bold text-slate-900 uppercase text-sm mb-1">Subscrição necessária</h3>
-                                <p className="text-xs text-slate-500 mb-6 uppercase tracking-tight">Subscreva para gerir residentes e registos financeiros.</p>
-                                <a href="/dashboard/settings?tab=payments" className="px-6 py-2 bg-slate-900 text-white text-xs font-bold uppercase rounded-sm hover:bg-slate-800 transition-colors">
+                                <h3 className="font-bold text-gray-900 uppercase text-sm mb-1">Subscrição necessária</h3>
+                                <p className="text-xs text-gray-500 mb-6 uppercase tracking-tight">Subscreva para gerir residentes e registos financeiros.</p>
+                                <a href="/dashboard/settings?tab=payments" className="px-6 py-2 bg-gray-900 text-white text-xs font-bold uppercase rounded-sm hover:bg-gray-800 transition-colors">
                                     Subscrever
                                 </a>
                             </div>

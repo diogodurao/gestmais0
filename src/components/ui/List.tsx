@@ -5,7 +5,7 @@ const ListComponent = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListEleme
   ({ className, ...props }, ref) => (
     <ul
       ref={ref}
-      className={cn("divide-y divide-gray-100 rounded-md border border-gray-200", className)}
+      className={cn("divide-y divide-gray-100 rounded-lg border border-gray-200", className)}
       {...props}
     />
   )

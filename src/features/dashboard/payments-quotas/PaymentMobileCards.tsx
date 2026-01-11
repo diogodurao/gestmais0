@@ -38,11 +38,11 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
     return (
         <div className={cn(
             "tech-border bg-white overflow-hidden transition-colors",
-            hasDebt && "border-rose-200"
+            hasDebt && "border-gray-200"
         )}>
             {/* Card Header - Clickable to expand */}
             <div
-                className="p-3 cursor-pointer active:bg-slate-50"
+                className="p-3 cursor-pointer active:bg-gray-50"
                 onClick={() => setIsExpanded(!isExpanded)}
                 role="button"
                 tabIndex={0}
@@ -56,21 +56,21 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                         <div className={cn(
                             "shrink-0 w-10 h-10 flex items-center justify-center font-bold text-body rounded-sm border",
                             hasDebt
-                                ? "bg-rose-100 text-rose-700 border-rose-200"
+                                ? "bg-error-light text-error border-gray-200"
                                 : "bg-emerald-100 text-emerald-700 border-emerald-200"
                         )}>
                             {item.unit}
                         </div>
                         <div className="min-w-0 flex-1">
                             {item.residentName ? (
-                                <span className="text-body font-medium text-slate-800 truncate block flex items-center gap-1">
-                                    <User className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="text-body font-medium text-gray-800 truncate block flex items-center gap-1">
+                                    <User className="w-3 h-3 text-gray-400 shrink-0" />
                                     {item.residentName}
                                 </span>
                             ) : (
-                                <span className="text-body text-slate-400 italic">Sem residente</span>
+                                <span className="text-body text-gray-400 italic">Sem residente</span>
                             )}
-                            <div className="text-label text-slate-400 mt-0.5">
+                            <div className="text-label text-gray-400 mt-0.5">
                                 {formatCurrency(item.totalPaid)} de {formatCurrency(expectedTotal)}
                             </div>
                         </div>
@@ -81,7 +81,7 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                         <div className={cn(
                             "px-2 py-1 rounded-sm text-label font-bold",
                             hasDebt
-                                ? "bg-rose-100 text-rose-700 border border-rose-200"
+                                ? "bg-error-light text-error border border-gray-200"
                                 : "bg-emerald-100 text-emerald-700 border border-emerald-200"
                         )}>
                             {hasDebt ? (
@@ -94,21 +94,21 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                             )}
                         </div>
                         {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-slate-400" />
+                            <ChevronUp className="w-4 h-4 text-gray-400" />
                         ) : (
-                            <ChevronDown className="w-4 h-4 text-slate-400" />
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
                         )}
                     </div>
                 </div>
 
                 {/* Progress Bar */}
                 <div className="mt-2">
-                    <div className="h-1.5 bg-slate-100 overflow-hidden rounded-full">
+                    <div className="h-1.5 bg-gray-100 overflow-hidden rounded-full">
                         <div
                             className={cn(
                                 "h-full transition-all rounded-full",
                                 progressPercent >= 100 ? "bg-emerald-500" :
-                                    progressPercent >= 50 ? "bg-amber-500" : "bg-rose-500"
+                                    progressPercent >= 50 ? "bg-warning-light0" : "bg-error-light0"
                             )}
                             style={{ width: `${Math.min(progressPercent, 100)}%` }}
                         />
@@ -118,8 +118,8 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
 
             {/* Expanded Content - Month Grid */}
             {isExpanded && (
-                <div className="border-t border-slate-100 bg-slate-50/50 p-3">
-                    <div className="text-micro font-bold text-slate-500 uppercase tracking-tight mb-2">
+                <div className="border-t border-gray-100 bg-gray-50/50 p-3">
+                    <div className="text-micro font-bold text-gray-500 uppercase tracking-tight mb-2">
                         QUOTAS MENSAIS
                     </div>
 
@@ -144,18 +144,18 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                                     className={cn(
                                         "p-2 text-center transition-all border rounded-sm",
                                         status === 'paid' && "bg-emerald-50 border-emerald-200",
-                                        status === 'late' && "bg-rose-50 border-rose-200",
-                                        status === 'pending' && "bg-white border-slate-200",
+                                        status === 'late' && "bg-error-light border-gray-200",
+                                        status === 'pending' && "bg-white border-gray-200",
                                         isInteractive && "active:scale-95 cursor-pointer",
                                         !isInteractive && "cursor-default"
                                     )}
                                 >
-                                    <div className="text-micro font-bold text-slate-500">{monthName}</div>
+                                    <div className="text-micro font-bold text-gray-500">{monthName}</div>
                                     <div className={cn(
                                         "text-label font-mono font-bold mt-0.5",
                                         status === 'paid' && "text-emerald-700",
-                                        status === 'late' && "text-rose-700",
-                                        status === 'pending' && "text-slate-400"
+                                        status === 'late' && "text-error",
+                                        status === 'pending' && "text-gray-400"
                                     )}>
                                         {status === 'paid' ? "✓" : status === 'late' ? "!" : "—"}
                                     </div>
@@ -165,21 +165,21 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                     </div>
 
                     {/* Legend */}
-                    <div className="flex items-center justify-center gap-3 mt-3 pt-2 border-t border-slate-200">
-                        <span className="flex items-center gap-1 text-micro text-slate-500">
+                    <div className="flex items-center justify-center gap-3 mt-3 pt-2 border-t border-gray-200">
+                        <span className="flex items-center gap-1 text-micro text-gray-500">
                             <span className="w-2 h-2 bg-emerald-500 rounded-sm" /> Pago
                         </span>
-                        <span className="flex items-center gap-1 text-micro text-slate-500">
-                            <span className="w-2 h-2 bg-slate-300 rounded-sm" /> Pendente
+                        <span className="flex items-center gap-1 text-micro text-gray-500">
+                            <span className="w-2 h-2 bg-gray-300 rounded-sm" /> Pendente
                         </span>
-                        <span className="flex items-center gap-1 text-micro text-slate-500">
-                            <span className="w-2 h-2 bg-rose-500 rounded-sm" /> Dívida
+                        <span className="flex items-center gap-1 text-micro text-gray-500">
+                            <span className="w-2 h-2 bg-error-light0 rounded-sm" /> Dívida
                         </span>
                     </div>
 
                     {/* Edit mode indicator */}
                     {isEditing && (
-                        <div className="mt-2 text-center text-micro text-blue-500 animate-pulse">
+                        <div className="mt-2 text-center text-micro text-info animate-pulse">
                             Toque num mês para alterar
                         </div>
                     )}
@@ -199,7 +199,7 @@ export function PaymentMobileCards({
     if (data.length === 0) {
         return (
             <div className="flex items-center justify-center h-48 p-4">
-                <p className="text-label font-bold text-slate-400 uppercase tracking-widest text-center">
+                <p className="text-label font-bold text-gray-400 uppercase tracking-widest text-center">
                     [ Sem frações ]
                 </p>
             </div>
@@ -224,13 +224,13 @@ export function PaymentMobileCards({
             ))}
 
             {/* Summary Card */}
-            <div className="tech-border bg-slate-100 p-3 mt-4">
+            <div className="tech-border bg-gray-100 p-3 mt-4">
                 <div className="flex items-center justify-between text-label font-bold uppercase tracking-tight">
-                    <span className="text-slate-500">{data.length} Frações</span>
+                    <span className="text-gray-500">{data.length} Frações</span>
                     <div className="flex items-center gap-3">
                         <span className="text-emerald-700">{formatCurrency(totalPaid)} Cobrado</span>
                         {totalDebt > 0 && (
-                            <span className="text-rose-700">{formatCurrency(totalDebt)} Dívida</span>
+                            <span className="text-error">{formatCurrency(totalDebt)} Dívida</span>
                         )}
                     </div>
                 </div>

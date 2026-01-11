@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/Badge"
 import { VoteForm } from "./VoteForm"
 import { PollResults } from "./PollResults"
 import { Poll, PollVote, PollResults as PollResultsType } from "@/lib/types"
-import { POLL_STATUS_CONFIG, POLL_TYPE_CONFIG, WEIGHT_MODE_CONFIG } from "@/lib/constants"
+import { POLL_STATUS_CONFIG, POLL_TYPE_CONFIG, WEIGHT_MODE_CONFIG } from "@/lib/constants/ui"
 import { closePoll, deletePoll } from "@/app/actions/polls"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { formatDistanceToNow } from "@/lib/format"
 
 interface Props {
@@ -88,7 +88,7 @@ export function PollDetail({ poll, votes, results, userVote, isManager, building
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
                             <Badge status={poll.status} config={POLL_STATUS_CONFIG} />
-                            <span className="text-label text-slate-400">
+                            <span className="text-label text-gray-400">
                                 {formatDistanceToNow(poll.createdAt)}
                             </span>
                         </div>
@@ -119,16 +119,16 @@ export function PollDetail({ poll, votes, results, userVote, isManager, building
                         )}
                     </div>
 
-                    <h1 className="text-h3 font-bold text-slate-900 mb-2">
+                    <h1 className="text-h3 font-bold text-gray-900 mb-2">
                         {poll.title}
                     </h1>
 
-                    <p className="text-body text-slate-500 mb-4">
+                    <p className="text-body text-gray-500 mb-4">
                         {POLL_TYPE_CONFIG[poll.type].label} • {WEIGHT_MODE_CONFIG[poll.weightMode].label}
                     </p>
 
                     {poll.description && (
-                        <p className="text-body text-slate-700 whitespace-pre-wrap">
+                        <p className="text-body text-gray-700 whitespace-pre-wrap">
                             {poll.description}
                         </p>
                     )}
@@ -152,7 +152,7 @@ export function PollDetail({ poll, votes, results, userVote, isManager, building
                                 votes={votes}
                             />
                             {canVote && userVote && (
-                                <div className="mt-4 pt-4 border-t border-slate-200">
+                                <div className="mt-4 pt-4 border-t border-gray-200">
                                     <Button
                                         variant="outline"
                                         onClick={() => setShowVoteForm(true)}
@@ -164,7 +164,7 @@ export function PollDetail({ poll, votes, results, userVote, isManager, building
                         </>
                     ) : isRestricted ? (
                         <div className="text-center py-8">
-                            <p className="text-body text-slate-500 mb-4">
+                            <p className="text-body text-gray-500 mb-4">
                                 {(results as { message: string }).message}
                             </p>
                             {canVote && (
@@ -175,7 +175,7 @@ export function PollDetail({ poll, votes, results, userVote, isManager, building
                         </div>
                     ) : (
                         <div className="text-center py-8">
-                            <p className="text-body text-slate-500">
+                            <p className="text-body text-gray-500">
                                 Votação encerrada
                             </p>
                         </div>

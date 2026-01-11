@@ -78,19 +78,19 @@ export function OnboardingStepPersonal({ user, onComplete }: OnboardingStepPerso
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                         Nome Completo *
                     </label>
                     <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => handleChange("name", e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:border-blue-400"
+                        className="w-full px-3 py-2 text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                         NIF Pessoal *
                     </label>
                     <div className="relative">
@@ -100,7 +100,7 @@ export function OnboardingStepPersonal({ user, onComplete }: OnboardingStepPerso
                             pattern="[0-9]*"
                             value={formData.nif}
                             onChange={(e) => handleChange("nif", e.target.value.replace(/\D/g, ''))}
-                            className="w-full px-3 py-2 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400"
+                            className="w-full px-3 py-2 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400"
                             maxLength={9}
                         />
                         {isValidNif(formData.nif) && (
@@ -110,7 +110,7 @@ export function OnboardingStepPersonal({ user, onComplete }: OnboardingStepPerso
                 </div>
 
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                         IBAN Pessoal
                     </label>
                     <div className="relative">
@@ -118,7 +118,7 @@ export function OnboardingStepPersonal({ user, onComplete }: OnboardingStepPerso
                             type="text"
                             value={formData.iban}
                             onChange={(e) => handleChange("iban", e.target.value.toUpperCase())}
-                            className="w-full px-3 py-2 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400 uppercase"
+                            className="w-full px-3 py-2 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400 uppercase"
                         />
                         {isValidIban(formData.iban) && (
                             <Check className="absolute right-2 top-2.5 w-4 h-4 text-emerald-500" />
@@ -128,7 +128,7 @@ export function OnboardingStepPersonal({ user, onComplete }: OnboardingStepPerso
             </div>
 
             {error && (
-                <p className="text-xs text-rose-600 font-bold">{error}</p>
+                <p className="text-xs text-error font-bold">{error}</p>
             )}
 
             <div className="flex justify-end">

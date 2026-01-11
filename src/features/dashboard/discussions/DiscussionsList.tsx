@@ -45,7 +45,7 @@ export function DiscussionsList({ buildingId, initialDiscussions }: Props) {
                 </CardHeader>
                 <CardContent>
                     {/* Tabs */}
-                    <div className="flex gap-1 mb-4 border-b border-slate-200">
+                    <div className="flex gap-1 mb-4 border-b border-gray-200">
                         {TABS.map((tab) => (
                             <button
                                 key={tab.value}
@@ -53,8 +53,8 @@ export function DiscussionsList({ buildingId, initialDiscussions }: Props) {
                                 className={cn(
                                     "px-3 py-2 text-body font-medium border-b-2 -mb-px transition-colors",
                                     activeTab === tab.value
-                                        ? "border-blue-600 text-blue-600"
-                                        : "border-transparent text-slate-500 hover:text-slate-700"
+                                        ? "border-info text-info"
+                                        : "border-transparent text-gray-500 hover:text-gray-700"
                                 )}
                             >
                                 {tab.label}
@@ -64,7 +64,7 @@ export function DiscussionsList({ buildingId, initialDiscussions }: Props) {
 
                     {/* List */}
                     {filteredDiscussions.length === 0 ? (
-                        <p className="text-body text-slate-500 text-center py-8">
+                        <p className="text-body text-gray-500 text-center py-8">
                             Nenhuma discussão encontrada.
                         </p>
                     ) : (

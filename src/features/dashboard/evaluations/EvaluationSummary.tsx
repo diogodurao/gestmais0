@@ -18,7 +18,7 @@ export function EvaluationSummary({ averages, evaluations, submissionStats, isMa
                     <CardTitle>Resultados</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-body text-slate-500 text-center py-4">
+                    <p className="text-body text-gray-500 text-center py-4">
                         Ainda não há avaliações submetidas.
                     </p>
                 </CardContent>
@@ -42,7 +42,7 @@ export function EvaluationSummary({ averages, evaluations, submissionStats, isMa
                         Resultados de {MONTH_NAMES[averages.month - 1]} {averages.year}
                     </CardTitle>
                     {submissionStats && (
-                        <span className="text-label text-slate-500">
+                        <span className="text-label text-gray-500">
                             {submissionStats.submitted} de {submissionStats.total} residentes ({submissionStats.percentage}%)
                         </span>
                     )}
@@ -53,12 +53,12 @@ export function EvaluationSummary({ averages, evaluations, submissionStats, isMa
                 <div className="space-y-3 mb-6">
                     {CATEGORIES.map(({ key, label }) => (
                         <div key={key} className="flex items-center justify-between">
-                            <span className="text-body font-medium text-slate-700">
+                            <span className="text-body font-medium text-gray-700">
                                 {label}
                             </span>
                             <div className="flex items-center gap-2">
                                 <StarRating value={Math.round(avgMap[key])} readonly size="sm" />
-                                <span className="text-body text-slate-600 min-w-[2rem]">
+                                <span className="text-body text-gray-600 min-w-[2rem]">
                                     {avgMap[key].toFixed(1)}
                                 </span>
                             </div>
@@ -68,21 +68,21 @@ export function EvaluationSummary({ averages, evaluations, submissionStats, isMa
 
                 {/* Individual responses (manager only) */}
                 {isManager && evaluations && evaluations.length > 0 && (
-                    <div className="border-t border-slate-200 pt-4">
-                        <h4 className="text-body font-bold text-slate-700 mb-3">
+                    <div className="border-t border-gray-200 pt-4">
+                        <h4 className="text-body font-bold text-gray-700 mb-3">
                             Respostas individuais
                         </h4>
                         <div className="space-y-3 max-h-64 overflow-y-auto">
                             {evaluations.map((evaluation) => (
                                 <div
                                     key={evaluation.id}
-                                    className="bg-slate-50 rounded-lg p-3"
+                                    className="bg-gray-50 rounded-lg p-3"
                                 >
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-body font-medium text-slate-700">
+                                        <span className="text-body font-medium text-gray-700">
                                             {evaluation.userName}
                                         </span>
-                                        <span className="text-label text-slate-400">
+                                        <span className="text-label text-gray-400">
                                             Média: {(
                                                 (evaluation.securityRating +
                                                     evaluation.cleaningRating +
@@ -92,7 +92,7 @@ export function EvaluationSummary({ averages, evaluations, submissionStats, isMa
                                             ).toFixed(1)} ⭐
                                         </span>
                                     </div>
-                                    <div className="flex gap-4 text-label text-slate-600 mb-2">
+                                    <div className="flex gap-4 text-label text-gray-600 mb-2">
                                         <span>Seg: {evaluation.securityRating}</span>
                                         <span>Lim: {evaluation.cleaningRating}</span>
                                         <span>Man: {evaluation.maintenanceRating}</span>
@@ -100,7 +100,7 @@ export function EvaluationSummary({ averages, evaluations, submissionStats, isMa
                                         <span>Ger: {evaluation.generalRating}</span>
                                     </div>
                                     {evaluation.comments && (
-                                        <p className="text-body text-slate-600 italic">
+                                        <p className="text-body text-gray-600 italic">
                                             "{evaluation.comments}"
                                         </p>
                                     )}

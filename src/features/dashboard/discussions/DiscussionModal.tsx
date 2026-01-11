@@ -5,10 +5,10 @@ import { Modal } from "@/components/ui/Modal"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
-import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
+import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
 import { createDiscussion, updateDiscussion } from "@/app/actions/discussions"
 import { Discussion } from "@/lib/types"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 
 interface Props {
     isOpen: boolean
@@ -81,7 +81,7 @@ export function DiscussionModal({ isOpen, onClose, buildingId, discussion }: Pro
 
     return (
         <Modal
-            isOpen={isOpen}
+            open={isOpen}
             onClose={handleClose}
             title={isEditing ? "Editar Discussão" : "Nova Discussão"}
         >
@@ -121,7 +121,7 @@ export function DiscussionModal({ isOpen, onClose, buildingId, discussion }: Pro
                     <Button variant="outline" onClick={handleClose} disabled={isLoading}>
                         Cancelar
                     </Button>
-                    <Button onClick={handleSubmit} isLoading={isLoading} className="flex-1">
+                    <Button onClick={handleSubmit} loading={isLoading} className="flex-1">
                         {isEditing ? "Guardar" : "Criar Discussão"}
                     </Button>
                 </div>

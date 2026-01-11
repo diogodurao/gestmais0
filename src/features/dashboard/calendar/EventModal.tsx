@@ -9,8 +9,8 @@ import { Select } from "@/components/ui/Select"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
 import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "@/app/actions/calendar"
 import { CalendarEvent } from "@/lib/types"
-import { EVENT_TYPE_SUGGESTIONS } from "@/lib/constants"
-import { useToast } from "@/hooks/use-toast"
+import { EVENT_TYPE_SUGGESTIONS } from "@/lib/constants/ui"
+import { useToast } from "@/components/ui/Toast"
 
 interface Props {
     isOpen: boolean
@@ -98,7 +98,7 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={readOnly ? "Detalhes do Evento" : isEditing ? "Editar Evento" : "Novo Evento"}>
+        <Modal open={isOpen} onClose={onClose} title={readOnly ? "Detalhes do Evento" : isEditing ? "Editar Evento" : "Novo Evento"}>
             <div className="space-y-4">
                 <FormField required>
                     <FormLabel>Título</FormLabel>
@@ -235,7 +235,7 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                         <Button variant="outline" onClick={onClose} disabled={isLoading}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleSubmit} isLoading={isLoading}>
+                        <Button onClick={handleSubmit} loading={isLoading}>
                             {isEditing ? "Guardar" : "Criar"}
                         </Button>
                     </div>

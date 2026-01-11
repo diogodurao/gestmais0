@@ -24,7 +24,7 @@ export function EvaluationChart({ history }: Props) {
                     <CardTitle>Histórico</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-body text-slate-500 text-center py-4">
+                    <p className="text-body text-gray-500 text-center py-4">
                         Ainda não há dados históricos suficientes.
                     </p>
                 </CardContent>
@@ -57,7 +57,7 @@ export function EvaluationChart({ history }: Props) {
                                 className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: COLORS[key] }}
                             />
-                            <span className="text-label text-slate-600">{label}</span>
+                            <span className="text-label text-gray-600">{label}</span>
                         </div>
                     ))}
                 </div>
@@ -88,7 +88,7 @@ export function EvaluationChart({ history }: Props) {
                                     })}
                                 </div>
                                 {/* Month label */}
-                                <span className="text-label text-slate-500 mt-2">
+                                <span className="text-label text-gray-500 mt-2">
                                     {getMonthLabel(month)}
                                 </span>
                             </div>
@@ -97,7 +97,7 @@ export function EvaluationChart({ history }: Props) {
                 </div>
 
                 {/* Y-axis labels */}
-                <div className="flex justify-between text-label text-slate-400 mt-2">
+                <div className="flex justify-between text-label text-gray-400 mt-2">
                     <span>1 ⭐</span>
                     <span>3 ⭐</span>
                     <span>5 ⭐</span>

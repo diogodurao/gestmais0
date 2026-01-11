@@ -115,13 +115,13 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                         <Home className="w-4 h-4" />
                         Inventário de Frações
                     </CardTitle>
-                    <span className="text-label text-slate-400 font-mono">
+                    <span className="text-label text-gray-400 font-mono">
                         {totalPermillage}/1000 ‰
                     </span>
                 </CardHeader>
                 <CardContent className="p-0">
                     {/* Table Header */}
-                    <div className="grid grid-cols-12 bg-slate-100 border-b border-slate-200 text-label font-bold text-slate-500 uppercase">
+                    <div className="grid grid-cols-12 bg-gray-100 border-b border-gray-200 text-label font-bold text-gray-500 uppercase">
                         <div className="col-span-3 p-3">Fração</div>
                         <div className="col-span-2 p-3 text-right">Permilagem</div>
                         <div className="col-span-5 p-3">Residente</div>
@@ -133,7 +133,7 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                         {apartments.map((apt) => (
                             <div
                                 key={apt.id}
-                                className="grid grid-cols-12 border-b border-slate-100 items-center hover:bg-slate-50"
+                                className="grid grid-cols-12 border-b border-gray-100 items-center hover:bg-gray-50"
                             >
                                 <div className="col-span-3 p-3 text-body font-mono font-bold uppercase">
                                     {apt.unit}
@@ -143,9 +143,9 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                                 </div>
                                 <div className="col-span-5 p-3">
                                     {apt.resident ? (
-                                        <span className="text-body text-slate-700">{apt.resident.name}</span>
+                                        <span className="text-body text-gray-700">{apt.resident.name}</span>
                                     ) : (
-                                        <span className="text-label text-slate-400 italic">
+                                        <span className="text-label text-gray-400 italic">
                                             Sem residente
                                         </span>
                                     )}
@@ -154,7 +154,7 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                                     {apt.resident && (
                                         <button
                                             onClick={() => setDisconnectTarget(apt)}
-                                            className="p-1 text-slate-400 hover:text-amber-600 transition-colors"
+                                            className="p-1 text-gray-400 hover:text-warning transition-colors"
                                             title="Desassociar Residente"
                                         >
                                             <UserX className="w-4 h-4" />
@@ -162,7 +162,7 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                                     )}
                                     <button
                                         onClick={() => setDeleteTarget(apt)}
-                                        className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                                        className="p-1 text-gray-400 hover:text-error transition-colors"
                                         title="Eliminar Fração"
                                         data-testid={`delete-unit-button-${apt.id}`}
                                     >
@@ -173,7 +173,7 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                         ))}
 
                         {apartments.length === 0 && (
-                            <div className="p-8 text-center text-body text-slate-400 italic">
+                            <div className="p-8 text-center text-body text-gray-400 italic">
                                 Nenhuma fração definida.
                             </div>
                         )}
@@ -181,14 +181,14 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
 
                     {/* Add New Apartment */}
                     {!isAtLimit && (
-                        <div className="grid grid-cols-12 border-t border-slate-200 items-center bg-slate-50 p-2">
+                        <div className="grid grid-cols-12 border-t border-gray-200 items-center bg-gray-50 p-2">
                             <div className="col-span-3 px-1">
                                 <input
                                     type="text"
                                     value={newUnit}
                                     onChange={(e) => setNewUnit(e.target.value)}
                                     placeholder="Nova Fração"
-                                    className="w-full px-2 py-1.5 text-body border border-slate-200 focus:outline-none focus:border-blue-400"
+                                    className="w-full px-2 py-1.5 text-body border border-gray-200 focus:outline-none focus:border-gray-400"
                                 />
                             </div>
                             <div className="col-span-2 px-1">
@@ -197,7 +197,7 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                                     value={newPermillage}
                                     onChange={(e) => setNewPermillage(e.target.value)}
                                     placeholder="‰"
-                                    className="w-full px-2 py-1.5 text-body font-mono border border-slate-200 focus:outline-none focus:border-blue-400"
+                                    className="w-full px-2 py-1.5 text-body font-mono border border-gray-200 focus:outline-none focus:border-gray-400"
                                 />
                             </div>
                             <div className="col-span-5"></div>
@@ -216,7 +216,7 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
 
                     {/* Limit Warning */}
                     {isAtLimit && (
-                        <div className="flex items-center gap-2 p-3 bg-amber-50 border-t border-amber-200 text-amber-700">
+                        <div className="flex items-center gap-2 p-3 bg-warning-light border-t border-gray-200 text-warning">
                             <AlertCircle className="w-4 h-4" />
                             <span className="text-label font-bold uppercase">
                                 Limite de frações atingido
@@ -225,8 +225,8 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                     )}
 
                     {error && (
-                        <div className="p-3 border-t border-slate-100">
-                            <p className="text-label text-rose-600 font-bold">{error}</p>
+                        <div className="p-3 border-t border-gray-100">
+                            <p className="text-label text-error font-bold">{error}</p>
                         </div>
                     )}
                 </CardContent>

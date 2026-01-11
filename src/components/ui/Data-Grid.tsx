@@ -37,7 +37,7 @@ interface DataGridItemProps {
 
 function DataGridItemComponent({ label, value, className }: DataGridItemProps) {
   return (
-    <div className={cn("rounded-md border border-gray-200 bg-white p-1.5", className)}>
+    <div className={cn("rounded-lg border border-gray-200 bg-white p-1.5", className)}>
       <dt className="text-body font-medium text-gray-500">{label}</dt>
       <dd className="mt-1 text-heading font-medium text-gray-900">{value}</dd>
     </div>

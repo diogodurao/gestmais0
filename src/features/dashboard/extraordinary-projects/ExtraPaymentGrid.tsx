@@ -195,9 +195,9 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                     />
                 ))}
 
-                <div className="tech-border bg-slate-100 p-3">
+                <div className="tech-border bg-gray-100 p-3">
                     <div className="flex items-center justify-between text-label font-bold uppercase tracking-tight">
-                        <span className="text-slate-500">Unidades: {localPayments.length}</span>
+                        <span className="text-gray-500">Unidades: {localPayments.length}</span>
                         <span className="text-emerald-700">{formatCurrency(totalCollected)} Angariado</span>
                     </div>
                 </div>
@@ -209,7 +209,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                     <table className="w-full text-left border-collapse whitespace-nowrap text-body">
                         <thead>
                             <tr>
-                                <th className="header-cell w-16 text-center sticky left-0 bg-slate-100 z-10">Fração</th>
+                                <th className="header-cell w-16 text-center sticky left-0 bg-gray-100 z-10">Fração</th>
                                 <th className="header-cell w-40">Residente</th>
                                 <th className="header-cell w-20 text-right">%</th>
                                 <th className="header-cell w-28 text-right">Quota Total</th>
@@ -220,7 +220,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                                     return (
                                         <th key={i} className="header-cell w-20 text-center">
                                             <div className="text-label">P{i + 1}</div>
-                                            <div className="text-micro text-slate-400 font-normal">
+                                            <div className="text-micro text-gray-400 font-normal">
                                                 {getMonthName(month, true)}/{String(year).slice(-2)}
                                             </div>
                                         </th>
@@ -245,8 +245,8 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                             ))}
                         </tbody>
                         <tfoot>
-                            <tr className="bg-slate-100 font-bold">
-                                <td className="data-cell sticky left-0 bg-slate-100 z-10">TOTAL</td>
+                            <tr className="bg-gray-100 font-bold">
+                                <td className="data-cell sticky left-0 bg-gray-100 z-10">TOTAL</td>
                                 <td className="data-cell">{localPayments.length} Frações</td>
                                 <td className="data-cell text-right">{localPayments.reduce((sum, p) => sum + p.permillage, 0).toFixed(2)}%</td>
                                 <td className="data-cell text-right font-mono">{formatCurrency(project.totalBudget)}</td>
@@ -257,7 +257,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                                         <td key={i} className="data-cell text-center text-label">
                                             <span className={cn(
                                                 paidCount === total ? "text-emerald-600" :
-                                                    paidCount > 0 ? "text-amber-600" : "text-slate-400"
+                                                    paidCount > 0 ? "text-warning" : "text-gray-400"
                                             )}>
                                                 {paidCount}/{total}
                                             </span>
@@ -265,7 +265,7 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                                     )
                                 })}
                                 <td className="data-cell text-right font-mono text-emerald-700">{formatCurrency(totalCollected)}</td>
-                                <td className="data-cell text-right font-mono text-rose-700">{formatCurrency(project.totalBudget - totalCollected)}</td>
+                                <td className="data-cell text-right font-mono text-error">{formatCurrency(project.totalBudget - totalCollected)}</td>
                                 <td className="data-cell text-center"><span className="text-label">{progressPercent}%</span></td>
                             </tr>
                         </tfoot>

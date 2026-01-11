@@ -1,15 +1,22 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useOptimistic, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Edit, Trash2, Pin, PinOff, Lock } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { DiscussionModal } from "./DiscussionModal"
-import { DiscussionCommentSection } from "./DiscussionCommentSection"
+import { CommentSection } from "@/components/ui/CommentSection"
 import { Discussion, DiscussionComment } from "@/lib/types"
-import { deleteDiscussion, toggleDiscussionPin, closeDiscussion } from "@/app/actions/discussions"
+import {
+    deleteDiscussion,
+    toggleDiscussionPin,
+    closeDiscussion,
+    addDiscussionComment,
+    updateDiscussionComment,
+    deleteDiscussionComment
+} from "@/app/actions/discussions"
 import { useToast } from "@/components/ui/Toast"
 import { formatDistanceToNow } from "@/lib/format"
 
@@ -34,10 +41,19 @@ export function DiscussionDetail({
     const { toast } = useToast()
     const [editModalOpen, setEditModalOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
-    const [isTogglingPin, setIsTogglingPin] = useState(false)
-    const [isClosing, setIsClosing] = useState(false)
+    const [isTogglingPin, startPinTransition] = useTransition()
+    const [isClosing, startCloseTransition] = useTransition()
 
-    const isOwner = discussion.createdBy === currentUserId
+    // Optimistic state for discussion
+    const [optimisticDiscussion, setOptimisticDiscussion] = useOptimistic(
+        discussion,
+        (state, update: Partial<Discussion>) => ({
+            ...state,
+            ...update
+        })
+    )
+
+    const isOwner = optimisticDiscussion.createdBy === currentUserId
     const canEdit = isOwner
     const canDelete = isManager || (isOwner && (comments.length === 0))
 
@@ -45,7 +61,7 @@ export function DiscussionDetail({
         if (!confirm("Eliminar esta discussão?")) return
 
         setIsDeleting(true)
-        const result = await deleteDiscussion(discussion.id)
+        const result = await deleteDiscussion(optimisticDiscussion.id)
 
         if (result.success) {
             toast({ title: "Sucesso", description: "Discussão eliminada" })
@@ -57,32 +73,48 @@ export function DiscussionDetail({
     }
 
     const handleTogglePin = async () => {
-        setIsTogglingPin(true)
-        const result = await toggleDiscussionPin(discussion.id)
+        const newPinnedState = !optimisticDiscussion.isPinned
 
-        if (result.success) {
-            toast({
-                title: "Sucesso",
-                description: discussion.isPinned ? "Discussão desafixada" : "Discussão fixada"
-            })
-        } else {
-            toast({ title: "Erro", description: result.error, variant: "destructive" })
-        }
-        setIsTogglingPin(false)
+        startPinTransition(async () => {
+            // Update UI immediately
+            setOptimisticDiscussion({ isPinned: newPinnedState })
+
+            // Call server action
+            const result = await toggleDiscussionPin(optimisticDiscussion.id)
+
+            if (result.success) {
+                toast({
+                    title: "Sucesso",
+                    description: newPinnedState ? "Discussão fixada" : "Discussão desafixada"
+                })
+                // Refresh to sync with server
+                router.refresh()
+            } else {
+                toast({ title: "Erro", description: result.error, variant: "destructive" })
+                // Optimistic state auto-reverts
+            }
+        })
     }
 
     const handleClose = async () => {
         if (!confirm("Encerrar esta discussão? Não será possível adicionar mais comentários.")) return
 
-        setIsClosing(true)
-        const result = await closeDiscussion(discussion.id)
+        startCloseTransition(async () => {
+            // Update UI immediately
+            setOptimisticDiscussion({ isClosed: true })
 
-        if (result.success) {
-            toast({ title: "Sucesso", description: "Discussão encerrada" })
-        } else {
-            toast({ title: "Erro", description: result.error, variant: "destructive" })
-        }
-        setIsClosing(false)
+            // Call server action
+            const result = await closeDiscussion(optimisticDiscussion.id)
+
+            if (result.success) {
+                toast({ title: "Sucesso", description: "Discussão encerrada" })
+                // Refresh to sync with server
+                router.refresh()
+            } else {
+                toast({ title: "Erro", description: result.error, variant: "destructive" })
+                // Optimistic state auto-reverts
+            }
+        })
     }
 
     return (
@@ -101,33 +133,33 @@ export function DiscussionDetail({
                 <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            {discussion.isPinned && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label font-medium bg-blue-100 text-blue-700">
+                            {optimisticDiscussion.isPinned && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label font-medium bg-info-light text-info">
                                     <Pin className="w-3 h-3" />
                                     Fixada
                                 </span>
                             )}
-                            {discussion.isClosed && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label font-medium bg-slate-100 text-slate-600">
+                            {optimisticDiscussion.isClosed && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label font-medium bg-gray-100 text-gray-600">
                                     <Lock className="w-3 h-3" />
                                     Encerrada
                                 </span>
                             )}
-                            <span className="text-label text-slate-400">
-                                {formatDistanceToNow(discussion.createdAt)}
+                            <span className="text-label text-gray-400">
+                                {formatDistanceToNow(optimisticDiscussion.createdAt)}
                             </span>
                         </div>
 
                         <div className="flex gap-2">
-                            {isManager && !discussion.isClosed && (
+                            {isManager && !optimisticDiscussion.isClosed && (
                                 <>
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={handleTogglePin}
-                                        isLoading={isTogglingPin}
+                                        loading={isTogglingPin}
                                     >
-                                        {discussion.isPinned ? (
+                                        {optimisticDiscussion.isPinned ? (
                                             <><PinOff className="w-4 h-4 mr-1" /> Desafixar</>
                                         ) : (
                                             <><Pin className="w-4 h-4 mr-1" /> Fixar</>
@@ -137,7 +169,7 @@ export function DiscussionDetail({
                                         variant="outline"
                                         size="sm"
                                         onClick={handleClose}
-                                        isLoading={isClosing}
+                                        loading={isClosing}
                                     >
                                         <Lock className="w-4 h-4 mr-1" /> Encerrar
                                     </Button>
@@ -165,17 +197,17 @@ export function DiscussionDetail({
                         </div>
                     </div>
 
-                    <h1 className="text-h3 font-bold text-slate-900 mb-2">
-                        {discussion.title}
+                    <h1 className="text-h3 font-bold text-gray-900 mb-2">
+                        {optimisticDiscussion.title}
                     </h1>
 
-                    <p className="text-body text-slate-500 mb-4">
-                        Criado por {discussion.creatorName}
+                    <p className="text-body text-gray-500 mb-4">
+                        Criado por {optimisticDiscussion.creatorName}
                     </p>
 
-                    {discussion.content && (
-                        <p className="text-body text-slate-700 whitespace-pre-wrap">
-                            {discussion.content}
+                    {optimisticDiscussion.content && (
+                        <p className="text-body text-gray-700 whitespace-pre-wrap">
+                            {optimisticDiscussion.content}
                         </p>
                     )}
                 </CardContent>
@@ -184,13 +216,24 @@ export function DiscussionDetail({
             {/* Comments */}
             <Card>
                 <CardContent className="p-6">
-                    <DiscussionCommentSection
-                        discussionId={discussion.id}
+                    <CommentSection
+                        entityId={optimisticDiscussion.id}
+                        entityType="discussion"
                         comments={comments}
                         currentUserId={currentUserId}
                         currentUserName={currentUserName}
                         isManager={isManager}
-                        isClosed={discussion.isClosed}
+                        isClosed={optimisticDiscussion.isClosed}
+                        actions={{
+                            add: addDiscussionComment,
+                            update: updateDiscussionComment,
+                            delete: deleteDiscussionComment,
+                        }}
+                        features={{
+                            allowEdit: true,
+                            allowDelete: true,
+                            allowAttachments: false,
+                        }}
                     />
                 </CardContent>
             </Card>
@@ -200,7 +243,7 @@ export function DiscussionDetail({
                 isOpen={editModalOpen}
                 onClose={() => setEditModalOpen(false)}
                 buildingId={buildingId}
-                discussion={discussion}
+                discussion={optimisticDiscussion}
             />
         </div>
     )

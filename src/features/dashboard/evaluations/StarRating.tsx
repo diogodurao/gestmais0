@@ -43,8 +43,8 @@ export function StarRating({ value, onChange, readonly = false, size = "md" }: P
                         className={cn(
                             SIZE_CLASSES[size],
                             star <= displayValue
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "fill-none text-slate-300"
+                                ? "fill-warning text-warning"
+                                : "fill-none text-gray-300"
                         )}
                     />
                 </button>

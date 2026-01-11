@@ -4,7 +4,7 @@ import { useState } from "react"
 import { X, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
 import { OccurrenceAttachment } from "@/lib/types"
 import { deleteOccurrenceAttachment } from "@/app/actions/occurrences"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 
 interface Props {
     attachments: OccurrenceAttachment[]

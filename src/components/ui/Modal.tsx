@@ -50,7 +50,7 @@ const ModalComponent = ({ open, onClose, title, description, children, footer, s
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}
         className={cn(
-          "relative w-full rounded-md border border-gray-200 bg-white shadow-md",
+          "relative w-full rounded-lg border border-gray-200 bg-white shadow-md",
           sizeStyles[size]
         )}
       >

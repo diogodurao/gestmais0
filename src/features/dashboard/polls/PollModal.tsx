@@ -11,7 +11,7 @@ import { FormField, FormLabel, FormControl, FormError, FormDescription } from "@
 import { createPoll } from "@/app/actions/polls"
 import { PollType, PollWeightMode } from "@/lib/types"
 import { POLL_TYPE_CONFIG, WEIGHT_MODE_CONFIG } from "@/lib/constants"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 
 interface Props {
     isOpen: boolean

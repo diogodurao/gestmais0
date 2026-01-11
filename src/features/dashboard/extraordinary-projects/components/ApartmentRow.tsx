@@ -26,14 +26,14 @@ export const ApartmentRow = memo(function ApartmentRow({
     startYear
 }: ApartmentRowProps) {
     return (
-        <tr className="group hover:bg-slate-50/50">
-            <td className="data-cell text-center font-bold bg-slate-50 sticky left-0 z-10 group-hover:bg-slate-100">
+        <tr className="group hover:bg-gray-50/50">
+            <td className="data-cell text-center font-bold bg-gray-50 sticky left-0 z-10 group-hover:bg-gray-100">
                 {apartment.unit}
             </td>
             <td className="data-cell">
-                {apartment.residentName || <span className="text-slate-400 italic">—</span>}
+                {apartment.residentName || <span className="text-gray-400 italic">—</span>}
             </td>
-            <td className="data-cell text-right font-mono text-slate-500">{apartment.permillage.toFixed(2)}</td>
+            <td className="data-cell text-right font-mono text-gray-500">{apartment.permillage.toFixed(2)}</td>
             <td className="data-cell text-right font-mono font-bold">{formatCurrency(apartment.totalShare)}</td>
 
             {apartment.installments.map((inst, idx) => {
@@ -56,9 +56,9 @@ export const ApartmentRow = memo(function ApartmentRow({
                             inst.status === "paid" && "status-active",
                             inst.status === "late" && "status-alert font-bold",
                             inst.status === "partial" && "status-pending",
-                            inst.status === "pending" && "text-slate-400",
+                            inst.status === "pending" && "text-gray-400",
                             toolMode && !readOnly && inst.status === "pending" && "hover:bg-emerald-100",
-                            toolMode && !readOnly && inst.status === "paid" && "hover:bg-rose-100",
+                            toolMode && !readOnly && inst.status === "paid" && "hover:bg-error-light",
                             toolMode && !readOnly && inst.status === "late" && "hover:bg-emerald-100"
                         )}
                     >
@@ -73,7 +73,7 @@ export const ApartmentRow = memo(function ApartmentRow({
             <td className="data-cell text-right font-mono text-emerald-700">{formatCurrency(apartment.totalPaid)}</td>
             <td className={cn(
                 "data-cell text-right font-mono font-bold",
-                apartment.balance > 0 ? "status-alert" : "text-slate-400"
+                apartment.balance > 0 ? "status-alert" : "text-gray-400"
             )}>
                 {formatCurrency(apartment.balance)}
             </td>

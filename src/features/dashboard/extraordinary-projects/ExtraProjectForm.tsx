@@ -56,34 +56,34 @@ export function ExtraProjectForm({
                 <form onSubmit={onSubmit} className="space-y-6">
                     {/* Project Info Section */}
                     <div className="space-y-4">
-                        <h3 className="text-label font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">
+                        <h3 className="text-label font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
                             Informação do Projeto
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
-                                <label className="block text-label font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-label font-bold text-gray-500 uppercase mb-1">
                                     Nome do Projeto *
                                 </label>
                                 <input
                                     type="text"
                                     {...register("name")}
-                                    className="w-full px-3 py-2 text-body border border-slate-200 focus:outline-none focus:border-blue-400"
+                                    className="w-full px-3 py-2 text-body border border-gray-200 focus:outline-none focus:border-gray-400"
                                     placeholder="Nome do Projeto"
                                 />
                                 {errors.name && (
-                                    <p className="text-xs text-rose-600 mt-1">{errors.name.message}</p>
+                                    <p className="text-xs text-error mt-1">{errors.name.message}</p>
                                 )}
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-label font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-label font-bold text-gray-500 uppercase mb-1">
                                     Descrição
                                 </label>
                                 <textarea
                                     {...register("description")}
                                     rows={2}
-                                    className="w-full px-3 py-2 text-body border border-slate-200 focus:outline-none focus:border-blue-400 resize-none"
+                                    className="w-full px-3 py-2 text-body border border-gray-200 focus:outline-none focus:border-gray-400 resize-none"
                                 />
                             </div>
                         </div>
@@ -91,13 +91,13 @@ export function ExtraProjectForm({
 
                     {/* Budget Section */}
                     <div className="space-y-4">
-                        <h3 className="text-label font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">
+                        <h3 className="text-label font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
                             Orçamento e Prestações
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-label font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-label font-bold text-gray-500 uppercase mb-1">
                                     Orçamento Total (€) *
                                 </label>
                                 <input
@@ -105,16 +105,16 @@ export function ExtraProjectForm({
                                     step="0.01"
                                     min="0"
                                     {...register("budget")}
-                                    className="w-full px-3 py-2 text-body border border-slate-200 focus:outline-none focus:border-blue-400 font-mono"
+                                    className="w-full px-3 py-2 text-body border border-gray-200 focus:outline-none focus:border-gray-400 font-mono"
                                     placeholder="0.00"
                                 />
                                 {errors.budget && (
-                                    <p className="text-xs text-rose-600 mt-1">{errors.budget.message}</p>
+                                    <p className="text-xs text-error mt-1">{errors.budget.message}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="block text-label font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-label font-bold text-gray-500 uppercase mb-1">
                                     Nº de Prestações *
                                 </label>
                                 <input
@@ -122,18 +122,18 @@ export function ExtraProjectForm({
                                     min="1"
                                     max="60"
                                     {...register("installments")}
-                                    className="w-full px-3 py-2 text-body border border-slate-200 focus:outline-none focus:border-blue-400 font-mono"
+                                    className="w-full px-3 py-2 text-body border border-gray-200 focus:outline-none focus:border-gray-400 font-mono"
                                 />
                                 {errors.installments && (
-                                    <p className="text-xs text-rose-600 mt-1">{errors.installments.message}</p>
+                                    <p className="text-xs text-error mt-1">{errors.installments.message}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="block text-label font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-label font-bold text-gray-500 uppercase mb-1">
                                     Média por Prestação
                                 </label>
-                                <div className="px-3 py-2 text-body bg-slate-50 border border-slate-200 font-mono font-bold text-slate-600">
+                                <div className="px-3 py-2 text-body bg-gray-50 border border-gray-200 font-mono font-bold text-gray-600">
                                     {budgetCents > 0
                                         ? formatCurrency(Math.round(budgetCents / installmentCount))
                                         : "€0.00"}
@@ -143,12 +143,12 @@ export function ExtraProjectForm({
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-label font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-label font-bold text-gray-500 uppercase mb-1">
                                     Mês de Início
                                 </label>
                                 <select
                                     {...register("startMonth")}
-                                    className="w-full px-3 py-2 text-body border border-slate-200 focus:outline-none focus:border-blue-400"
+                                    className="w-full px-3 py-2 text-body border border-gray-200 focus:outline-none focus:border-gray-400"
                                 >
                                     {MONTH_OPTIONS.map(opt => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -157,12 +157,12 @@ export function ExtraProjectForm({
                             </div>
 
                             <div>
-                                <label className="block text-label font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-label font-bold text-gray-500 uppercase mb-1">
                                     Ano de Início
                                 </label>
                                 <select
                                     {...register("startYear")}
-                                    className="w-full px-3 py-2 text-body border border-slate-200 focus:outline-none focus:border-blue-400"
+                                    className="w-full px-3 py-2 text-body border border-gray-200 focus:outline-none focus:border-gray-400"
                                 >
                                     {[currentYear, currentYear + 1, currentYear + 2].map(year => (
                                         <option key={year} value={year}>{year}</option>
@@ -174,11 +174,11 @@ export function ExtraProjectForm({
 
                     {/* Document Upload */}
                     <div className="space-y-4">
-                        <h3 className="text-label font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">
+                        <h3 className="text-label font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
                             Documento do Orçamento
                         </h3>
 
-                        <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-blue-300 cursor-pointer transition-colors">
+                        <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 hover:border-gray-300 cursor-pointer transition-colors">
                             <input
                                 type="file"
                                 accept=".pdf"
@@ -187,19 +187,19 @@ export function ExtraProjectForm({
                             />
                             {selectedFile ? (
                                 <>
-                                    <FileText className="w-8 h-8 text-blue-500 mb-2" />
-                                    <span className="text-body font-bold text-slate-700">{selectedFile.name}</span>
-                                    <span className="text-label text-slate-400 mt-1">
+                                    <FileText className="w-8 h-8 text-info mb-2" />
+                                    <span className="text-body font-bold text-gray-700">{selectedFile.name}</span>
+                                    <span className="text-label text-gray-400 mt-1">
                                         Documento selecionado
                                     </span>
                                 </>
                             ) : (
                                 <>
-                                    <Upload className="w-8 h-8 text-slate-300 mb-2" />
-                                    <span className="text-body text-slate-500">
+                                    <Upload className="w-8 h-8 text-gray-300 mb-2" />
+                                    <span className="text-body text-gray-500">
                                         Arraste o PDF ou clique para selecionar
                                     </span>
-                                    <span className="text-label text-slate-400 mt-1">
+                                    <span className="text-label text-gray-400 mt-1">
                                         O documento será guardado com o projeto
                                     </span>
                                 </>
@@ -217,14 +217,14 @@ export function ExtraProjectForm({
 
                     {/* Validation Errors */}
                     {apartments.length === 0 && (
-                        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 text-amber-700">
+                        <div className="flex items-center gap-2 p-3 bg-warning-light border border-gray-200 text-warning">
                             <AlertTriangle className="w-4 h-4" />
                             <span className="text-label font-bold uppercase">Nenhuma fração definida</span>
                         </div>
                     )}
 
                     {/* Actions */}
-                    <div className="flex gap-2 justify-end pt-4 border-t border-slate-100">
+                    <div className="flex gap-2 justify-end pt-4 border-t border-gray-100">
                         <Button
                             type="button"
                             variant="outline"

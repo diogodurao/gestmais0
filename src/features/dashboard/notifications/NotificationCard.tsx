@@ -16,11 +16,11 @@ export function NotificationCard({ notifications }: Props) {
             </CardHeader>
             <CardContent className="p-0">
                 {displayNotifications.length === 0 ? (
-                    <p className="text-body text-slate-500 text-center py-6">
+                    <p className="text-body text-gray-500 text-center py-6">
                         Sem atividade recente
                     </p>
                 ) : (
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y divide-gray-100">
                         {displayNotifications.map(notification => (
                             <NotificationItem
                                 key={notification.id}

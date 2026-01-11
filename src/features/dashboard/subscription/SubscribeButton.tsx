@@ -35,12 +35,12 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
 
     return (
         <div className="space-y-3 w-full max-w-sm">
-            <div className="flex justify-between items-center bg-slate-50 p-3 tech-border">
+            <div className="flex justify-between items-center bg-gray-50 p-3 tech-border">
                 <div>
-                    <p className="text-label font-bold text-slate-400 uppercase tracking-widest">Cálculo Total</p>
-                    <p className="text-body text-slate-600 font-mono">{quantity} UNITS × €{(pricePerUnit / 100).toFixed(2)}</p>
+                    <p className="text-label font-bold text-gray-400 uppercase tracking-widest">Cálculo Total</p>
+                    <p className="text-body text-gray-600 font-mono">{quantity} UNITS × €{(pricePerUnit / 100).toFixed(2)}</p>
                 </div>
-                <p className="text-xl font-bold font-mono text-slate-900">€{total}</p>
+                <p className="text-xl font-bold font-mono text-gray-900">€{total}</p>
             </div>
 
             <Button
@@ -53,8 +53,8 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
             >
                 {isPending ? "A redirecionar..." : "CONFIRMAR SUBSCRIÇÃO"}
             </Button>
-            <p className="text-micro text-center text-slate-400 uppercase font-bold tracking-tighter">*valor sujeito a IVA*</p>
-            <p className="text-micro text-center text-slate-400 uppercase font-bold tracking-tighter">Transação Segura via Stripe</p>
+            <p className="text-micro text-center text-gray-400 uppercase font-bold tracking-tighter">*valor sujeito a IVA*</p>
+            <p className="text-micro text-center text-gray-400 uppercase font-bold tracking-tighter">Transação Segura via Stripe</p>
         </div>
     )
 }
@@ -85,12 +85,12 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
     }
 
     return (
-        <div className="p-3 bg-blue-50/50 tech-border border-blue-100 max-w-sm">
+        <div className="p-3 bg-info-light/50 tech-border border-gray-200 max-w-sm">
             <div className="flex items-start gap-3">
-                <RefreshCw className="w-4 h-4 text-blue-600 mt-0.5" />
+                <RefreshCw className="w-4 h-4 text-info mt-0.5" />
                 <div className="flex-1">
-                    <p className="text-body font-bold text-blue-900 uppercase">A Aguardar Sincronização</p>
-                    <p className="text-label text-blue-700/70 mb-2 uppercase tracking-tight">
+                    <p className="text-body font-bold text-info uppercase">A Aguardar Sincronização</p>
+                    <p className="text-label text-info/70 mb-2 uppercase tracking-tight">
                         Se o pagamento foi concluído mas o estado não alterou, force a sincronização.
                     </p>
                     <Button
@@ -98,12 +98,12 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
                         variant="outline"
                         onClick={handleSync}
                         disabled={isPending}
-                        className="text-blue-700 border-blue-200 hover:bg-blue-100"
+                        className="text-info border-gray-200 hover:bg-info-light"
                     >
                         {isPending ? "A sincronizar..." : "Sincronizar Pagamento"}
                     </Button>
                     {result && (
-                        <div className={`mt-2 flex items-center gap-1 text-label font-bold uppercase ${result.status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
+                        <div className={`mt-2 flex items-center gap-1 text-label font-bold uppercase ${result.status === 'active' ? 'text-success' : 'text-warning'}`}>
                             {result.status === 'active' ? (
                                 <><CheckCircle className="w-3 h-3" /> Estado: Ativo</>
                             ) : (

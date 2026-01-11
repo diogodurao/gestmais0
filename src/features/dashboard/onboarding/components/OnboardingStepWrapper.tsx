@@ -26,7 +26,7 @@ export function OnboardingStepWrapper({
         <div
             className={cn(
                 "tech-card transition-all duration-300 relative overflow-hidden",
-                !isActive && !disabled && "cursor-pointer hover:border-slate-400 opacity-60 hover:opacity-100",
+                !isActive && !disabled && "cursor-pointer hover:border-gray-400 opacity-60 hover:opacity-100",
                 disabled && "opacity-40 pointer-events-none grayscale"
             )}
             onClick={onClick}
@@ -34,20 +34,20 @@ export function OnboardingStepWrapper({
             {/* Status Indicator Line */}
             <div className={cn(
                 "absolute top-0 left-0 w-1 h-full transition-colors",
-                isActive ? "bg-blue-600" : isComplete ? "bg-emerald-500" : "bg-slate-200"
+                isActive ? "bg-info" : isComplete ? "bg-emerald-500" : "bg-gray-200"
             )}></div>
 
-            <div className="flex items-center justify-between px-6 py-4 bg-slate-50/50 border-b border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 bg-gray-50/50 border-b border-gray-200">
                 <div className="flex items-center gap-3">
                     <div className={cn(
                         "w-8 h-8 flex items-center justify-center border rounded-sm",
-                        isActive ? "bg-blue-50 border-blue-200 text-blue-600" : "bg-white border-slate-200 text-slate-400"
+                        isActive ? "bg-info-light border-gray-200 text-info" : "bg-white border-gray-200 text-gray-400"
                     )}>
                         <Icon className="w-4 h-4" />
                     </div>
                     <span className={cn(
                         "font-mono font-bold text-sm uppercase tracking-wider",
-                        isActive ? "text-slate-900" : "text-slate-500"
+                        isActive ? "text-gray-900" : "text-gray-500"
                     )}>
                         {title}
                     </span>

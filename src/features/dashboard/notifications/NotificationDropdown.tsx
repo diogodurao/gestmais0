@@ -55,10 +55,10 @@ export function NotificationDropdown({ isOpen, onClose, onCountChange }: Props) 
             />
 
             {/* Dropdown */}
-            <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border border-slate-200 z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-md border border-gray-200 z-50 overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-3 border-b border-slate-200">
-                    <h3 className="text-body font-bold text-slate-700">
+                <div className="flex items-center justify-between p-3 border-b border-gray-200">
+                    <h3 className="text-body font-semibold text-gray-700">
                         Notificações
                     </h3>
                     {unreadCount > 0 && (
@@ -75,9 +75,9 @@ export function NotificationDropdown({ isOpen, onClose, onCountChange }: Props) 
                 </div>
 
                 {/* List */}
-                <div className="max-h-96 overflow-y-auto divide-y divide-slate-100">
+                <div className="max-h-96 overflow-y-auto divide-y divide-gray-100">
                     {notifications.length === 0 ? (
-                        <p className="text-body text-slate-500 text-center py-8">
+                        <p className="text-body text-gray-500 text-center py-8">
                             Sem notificações
                         </p>
                     ) : (

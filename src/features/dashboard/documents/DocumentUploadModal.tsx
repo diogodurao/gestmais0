@@ -12,7 +12,7 @@ import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Fo
 import { DocumentCategory } from "@/lib/types"
 import { DOCUMENT_CATEGORY_OPTIONS as CATEGORY_OPTIONS } from "@/lib/constants"
 import { formatFileSize } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/Toast"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -200,15 +200,15 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
                     className={cn(
                         "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
                         dragActive
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-slate-300 hover:border-slate-400"
+                            ? "border-info bg-info-light"
+                            : "border-gray-300 hover:border-gray-400"
                     )}
                 >
-                    <Upload className="w-10 h-10 text-slate-400 mx-auto mb-2" />
-                    <p className="text-body text-slate-600">
+                    <Upload className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                    <p className="text-body text-gray-600">
                         Arraste ficheiros ou clique para selecionar
                     </p>
-                    <p className="text-label text-slate-400 mt-1">
+                    <p className="text-label text-gray-400 mt-1">
                         PDF, Word, Excel, CSV, Imagens (máx. 10 MB)
                     </p>
                 </div>
@@ -226,8 +226,8 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
                 {selectedFiles.length > 0 && (
                     <div className="space-y-2">
                         {selectedFiles.map((sf, index) => (
-                            <div key={index} className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg">
-                                <File className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                            <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                                <File className="w-5 h-5 text-gray-400 flex-shrink-0" />
                                 <div className="flex-1 min-w-0">
                                     <FormField>
                                         <FormControl>
@@ -242,15 +242,15 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
                                             )}
                                         </FormControl>
                                     </FormField>
-                                    <p className="text-label text-slate-400 mt-1">
+                                    <p className="text-label text-gray-400 mt-1">
                                         {sf.file.name} • {formatFileSize(sf.file.size)}
                                     </p>
                                 </div>
                                 <button
                                     onClick={() => removeFile(index)}
-                                    className="p-1 hover:bg-slate-200 rounded"
+                                    className="p-1 hover:bg-gray-200 rounded"
                                 >
-                                    <X className="w-4 h-4 text-slate-500" />
+                                    <X className="w-4 h-4 text-gray-500" />
                                 </button>
                             </div>
                         ))}

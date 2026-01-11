@@ -4,8 +4,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { castVote } from "@/app/actions/polls"
 import { Poll, PollVote } from "@/lib/types"
-import { YES_NO_OPTIONS } from "@/lib/constants"
-import { useToast } from "@/hooks/use-toast"
+import { YES_NO_OPTIONS } from "@/lib/constants/"
+import { useToast } from "@/components/ui/Toast"
 import { cn } from "@/lib/utils"
 
 interface Props {
@@ -84,7 +84,7 @@ export function VoteForm({ poll, existingVote, onVoted }: Props) {
 
     return (
         <div className="space-y-4">
-            <h3 className="text-body font-bold text-slate-700">
+            <h3 className="text-body font-semibold text-gray-700">
                 {existingVote ? "Alterar o seu voto" : "Votar"}
             </h3>
 
@@ -97,8 +97,8 @@ export function VoteForm({ poll, existingVote, onVoted }: Props) {
                             className={cn(
                                 "p-3 rounded-lg border-2 text-body font-medium transition-colors",
                                 selected === option.value
-                                    ? "border-blue-600 bg-blue-50 text-blue-700"
-                                    : "border-slate-200 hover:border-slate-300"
+                                    ? "border-primary bg-primary-light text-primary-dark"
+                                    : "border-gray-200 hover:border-gray-300"
                             )}
                         >
                             {option.label}
@@ -115,8 +115,8 @@ export function VoteForm({ poll, existingVote, onVoted }: Props) {
                             className={cn(
                                 "w-full p-3 rounded-lg border-2 text-left text-body transition-colors",
                                 (selected as string[]).includes(option)
-                                    ? "border-blue-600 bg-blue-50 text-blue-700 font-medium"
-                                    : "border-slate-200 hover:border-slate-300",
+                                    ? "border-primary bg-primary-light text-primary-dark font-medium"
+                                    : "border-gray-200 hover:border-gray-300",
                                 isAbstain && "opacity-50 cursor-not-allowed"
                             )}
                         >
@@ -128,13 +128,13 @@ export function VoteForm({ poll, existingVote, onVoted }: Props) {
                         className={cn(
                             "w-full p-3 rounded-lg border-2 text-left text-body transition-colors",
                             isAbstain
-                                ? "border-slate-600 bg-slate-50 text-slate-700 font-medium"
-                                : "border-slate-200 hover:border-slate-300"
+                                ? "border-gray-600 bg-gray-50 text-gray-700 font-medium"
+                                : "border-gray-200 hover:border-gray-300"
                         )}
                     >
                         Abstenção
                     </button>
-                    <p className="text-label text-slate-400">
+                    <p className="text-label text-gray-400">
                         {poll.type === "single_choice"
                             ? "Selecione uma opção"
                             : "Selecione uma ou mais opções"}

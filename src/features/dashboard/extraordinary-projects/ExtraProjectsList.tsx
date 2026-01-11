@@ -16,7 +16,7 @@ const ExtraProjectCreate = dynamic(
     () => import("./ExtraProjectCreate").then(mod => mod.ExtraProjectCreate),
     {
         ssr: false,
-        loading: () => <div className="p-8 text-center text-slate-400">A carregar formulário...</div>
+        loading: () => <div className="p-8 text-center text-gray-400">A carregar formulário...</div>
     }
 )
 import { useToast } from "@/components/ui/Toast"
@@ -113,11 +113,11 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                     </div>
                 ) : projects.length === 0 ? (
                     <div className="p-8 text-center">
-                        <FileText className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                        <h3 className="text-body font-bold text-slate-600 uppercase mb-2">
+                        <FileText className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                        <h3 className="text-body font-bold text-gray-600 uppercase mb-2">
                             Sem projetos extraordinários
                         </h3>
-                        <p className="text-body text-slate-400 max-w-xs mx-auto mb-4">
+                        <p className="text-body text-gray-400 max-w-xs mx-auto mb-4">
                             {isManager
                                 ? "Crie o primeiro projeto para começar a gerir quotas extraordinárias para obras ou fundos de reserva."
                                 : "Não existem projetos extraordinários ativos ou passados neste condomínio."}
@@ -134,32 +134,32 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                         )}
                     </div>
                 ) : (
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y divide-gray-100">
                         {projects.map((project) => (
                             <Link
                                 key={project.id}
                                 href={`/dashboard/extraordinary/${project.id}`}
-                                className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
+                                className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors group"
                             >
                                 <div className="min-w-0">
-                                    <h3 className="text-body font-bold text-slate-700 uppercase truncate">
+                                    <h3 className="text-body font-bold text-gray-700 uppercase truncate">
                                         {project.name}
                                     </h3>
                                     <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-body text-slate-400 font-mono">
+                                        <span className="text-body text-gray-400 font-mono">
                                             {formatCurrency(project.totalBudget)}
                                         </span>
-                                        <span className="text-micro text-slate-300">•</span>
-                                        <span className="text-body text-slate-400">
+                                        <span className="text-micro text-gray-300">•</span>
+                                        <span className="text-body text-gray-400">
                                             {project.numInstallments} prestações
                                         </span>
-                                        <span className="text-micro text-slate-300">•</span>
-                                        <span className="text-body text-slate-400">
+                                        <span className="text-micro text-gray-300">•</span>
+                                        <span className="text-body text-gray-400">
                                             {project.startMonth}/{project.startYear}
                                         </span>
                                     </div>
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
                             </Link>
                         ))}
                     </div>

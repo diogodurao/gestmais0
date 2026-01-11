@@ -69,11 +69,11 @@ export function ProjectDetailHeader({
     return (
         <div className="flex items-center justify-between mb-6">
             <div>
-                <h1 className="text-lg font-bold text-slate-800 uppercase tracking-wide">
+                <h1 className="text-lg font-bold text-gray-800 uppercase tracking-wide">
                     {project.name}
                 </h1>
                 {project.description && (
-                    <p className="text-xs text-slate-500 mt-1">{project.description}</p>
+                    <p className="text-xs text-gray-500 mt-1">{project.description}</p>
                 )}
             </div>
 
@@ -99,9 +99,9 @@ export function ProjectDetailHeader({
                                         setIsMenuOpen(false)
                                         setIsEditing(true)
                                     }}
-                                    className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                    className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                                 >
-                                    <Edit className="w-4 h-4 text-slate-400" />
+                                    <Edit className="w-4 h-4 text-gray-400" />
                                     Editar Detalhes
                                 </button>
 
@@ -110,22 +110,22 @@ export function ProjectDetailHeader({
                                         setIsMenuOpen(false)
                                         loadProject()
                                     }}
-                                    className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                    className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                                 >
-                                    <RefreshCw className="w-4 h-4 text-slate-400" />
+                                    <RefreshCw className="w-4 h-4 text-gray-400" />
                                     Atualizar Dados
                                 </button>
 
 
 
-                                <div className="h-px bg-slate-100 my-1" />
+                                <div className="h-px bg-gray-100 my-1" />
 
                                 <button
                                     onClick={() => {
                                         setIsMenuOpen(false)
                                         setShowArchiveConfirm(true)
                                     }}
-                                    className="w-full text-left px-3 py-2 text-xs text-amber-600 hover:bg-amber-50 flex items-center gap-2"
+                                    className="w-full text-left px-3 py-2 text-xs text-warning hover:bg-warning-light flex items-center gap-2"
                                 >
                                     <Archive className="w-4 h-4" />
                                     Arquivar Projeto
@@ -136,7 +136,7 @@ export function ProjectDetailHeader({
                                         setIsMenuOpen(false)
                                         setShowDeleteConfirm(true)
                                     }}
-                                    className="w-full text-left px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+                                    className="w-full text-left px-3 py-2 text-xs text-error hover:bg-error-light flex items-center gap-2"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                     Eliminar Projeto

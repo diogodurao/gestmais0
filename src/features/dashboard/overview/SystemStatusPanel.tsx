@@ -9,7 +9,7 @@ interface SystemStatusPanelProps {
 
 export function SystemStatusPanel({ sessionUser }: SystemStatusPanelProps) {
     return (
-        <Card className="h-full border border-slate-300 shadow-[4px_4px_0px_#cbd5e1]">
+        <Card className="h-full border border-gray-300 shadow-[4px_4px_0px_#cbd5e1]">
             <CardHeader>
                 <CardTitle>
                     <Activity className="w-4 h-4" />
@@ -18,18 +18,18 @@ export function SystemStatusPanel({ sessionUser }: SystemStatusPanelProps) {
             </CardHeader>
             <CardContent className="p-0">
                 <div className="p-4 space-y-3">
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                        <span className="text-body text-slate-500 font-bold uppercase">Função</span>
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                        <span className="text-body text-gray-500 font-bold uppercase">Função</span>
                         <span className="status-badge status-active">{sessionUser.role}</span>
                     </div>
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                        <span className="text-body text-slate-500 font-bold uppercase">Conta</span>
-                        <div className="flex items-center gap-1 text-body font-mono text-slate-700">
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                        <span className="text-body text-gray-500 font-bold uppercase">Conta</span>
+                        <div className="flex items-center gap-1 text-body font-mono text-gray-700">
                             {sessionUser.email.split('@')[0]}...
                         </div>
                     </div>
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                        <span className="text-body text-slate-500 font-bold uppercase">Sincronização</span>
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                        <span className="text-body text-gray-500 font-bold uppercase">Sincronização</span>
                         <div className="flex items-center gap-1 text-label font-bold text-emerald-600 uppercase">
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                             Ativa

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useOptimistic, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
@@ -10,12 +10,12 @@ import { Select } from "@/components/ui/Select"
 import { Badge } from "@/components/ui/Badge"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Formfield"
 import { OccurrenceModal } from "./OccurrenceModal"
-import { CommentSection } from "./CommentSection"
+import { CommentSection } from "@/components/ui/CommentSection"
 import { PhotoGallery } from "./PhotoGallery"
 import { Occurrence, OccurrenceComment, OccurrenceStatus, OccurrenceAttachment } from "@/lib/types"
 import { OCCURRENCE_STATUS_CONFIG } from "@/lib/constants"
-import { deleteOccurrence, updateOccurrenceStatus } from "@/app/actions/occurrences"
-import { useToast } from "@/hooks/use-toast"
+import { deleteOccurrence, updateOccurrenceStatus, addOccurrenceComment } from "@/app/actions/occurrences"
+import { useToast } from "@/components/ui/Toast"
 import { formatDistanceToNow } from "@/lib/format"
 
 interface Props {
@@ -43,7 +43,16 @@ export function OccurrenceDetail({
     const { toast } = useToast()
     const [editModalOpen, setEditModalOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
-    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+    const [isUpdatingStatus, startTransition] = useTransition()
+
+    // Optimistic state for occurrence status
+    const [optimisticOccurrence, setOptimisticOccurrence] = useOptimistic(
+        occurrence,
+        (state, newStatus: OccurrenceStatus) => ({
+            ...state,
+            status: newStatus
+        })
+    )
 
     const handleDelete = async () => {
         if (!confirm("Eliminar esta ocorrência?")) return
@@ -61,15 +70,24 @@ export function OccurrenceDetail({
     }
 
     const handleStatusChange = async (newStatus: string) => {
-        setIsUpdatingStatus(true)
-        const result = await updateOccurrenceStatus(occurrence.id, newStatus as OccurrenceStatus)
+        const status = newStatus as OccurrenceStatus
 
-        if (result.success) {
-            toast({ title: "Sucesso", description: "Estado atualizado" })
-        } else {
-            toast({ title: "Erro", description: result.error, variant: "destructive" })
-        }
-        setIsUpdatingStatus(false)
+        startTransition(async () => {
+            // Update UI immediately
+            setOptimisticOccurrence(status)
+
+            // Call server action
+            const result = await updateOccurrenceStatus(occurrence.id, status)
+
+            if (result.success) {
+                toast({ title: "Sucesso", description: "Estado atualizado" })
+                // Refresh to get real data from server
+                router.refresh()
+            } else {
+                toast({ title: "Erro", description: result.error, variant: "destructive" })
+                // Optimistic state will auto-revert on error
+            }
+        })
     }
 
     return (
@@ -88,9 +106,9 @@ export function OccurrenceDetail({
                 <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <Badge status={occurrence.status} config={OCCURRENCE_STATUS_CONFIG} />
-                            <span className="text-label text-slate-400">
-                                {formatDistanceToNow(occurrence.createdAt)}
+                            <Badge status={optimisticOccurrence.status} config={OCCURRENCE_STATUS_CONFIG} />
+                            <span className="text-label text-gray-400">
+                                {formatDistanceToNow(optimisticOccurrence.createdAt)}
                             </span>
                         </div>
 
@@ -115,29 +133,29 @@ export function OccurrenceDetail({
                         )}
                     </div>
 
-                    <h1 className="text-h3 font-bold text-slate-900 mb-2">
-                        {occurrence.title}
+                    <h1 className="text-h3 font-bold text-gray-900 mb-2">
+                        {optimisticOccurrence.title}
                     </h1>
 
-                    <p className="text-body text-slate-500 mb-4">
-                        Tipo: {occurrence.type} • Reportado por {occurrence.creatorName}
+                    <p className="text-body text-gray-500 mb-4">
+                        Tipo: {optimisticOccurrence.type} • Reportado por {optimisticOccurrence.creatorName}
                     </p>
 
-                    {occurrence.description && (
-                        <p className="text-body text-slate-700 whitespace-pre-wrap mb-4">
-                            {occurrence.description}
+                    {optimisticOccurrence.description && (
+                        <p className="text-body text-gray-700 whitespace-pre-wrap mb-4">
+                            {optimisticOccurrence.description}
                         </p>
                     )}
 
                     {/* Occurrence Photos */}
                     {attachments.length > 0 && (
                         <div className="mb-6">
-                            <h4 className="text-label font-bold text-slate-500 uppercase mb-2">
+                            <h4 className="text-label font-bold text-gray-500 uppercase mb-2">
                                 Fotos
                             </h4>
                             <PhotoGallery
                                 attachments={attachments}
-                                canDelete={occurrence.status === 'open'}
+                                canDelete={optimisticOccurrence.status === 'open'}
                                 currentUserId={currentUserId}
                             />
                         </div>
@@ -145,7 +163,7 @@ export function OccurrenceDetail({
 
                     {/* Status Control (Manager Only) */}
                     {canChangeStatus && (
-                        <div className="pt-4 border-t border-slate-200">
+                        <div className="pt-4 border-t border-gray-200">
                             <FormField>
                                 <FormLabel>Alterar Estado</FormLabel>
                                 <FormControl>
@@ -156,7 +174,7 @@ export function OccurrenceDetail({
                                                 value,
                                                 label,
                                             }))}
-                                            value={occurrence.status}
+                                            value={optimisticOccurrence.status}
                                             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleStatusChange(e.target.value)}
                                             disabled={isUpdatingStatus}
                                         />
@@ -173,12 +191,21 @@ export function OccurrenceDetail({
             <Card>
                 <CardContent className="p-6">
                     <CommentSection
-                        occurrenceId={occurrence.id}
+                        entityId={optimisticOccurrence.id}
+                        entityType="occurrence"
                         comments={comments}
                         currentUserId={currentUserId}
                         currentUserName={currentUserName}
                         isManager={canChangeStatus}
-                        isClosed={occurrence.status === 'resolved'}
+                        isClosed={optimisticOccurrence.status === 'resolved'}
+                        actions={{
+                            add: addOccurrenceComment,
+                        }}
+                        features={{
+                            allowEdit: false,
+                            allowDelete: false,
+                            allowAttachments: true,
+                        }}
                     />
                 </CardContent>
             </Card>

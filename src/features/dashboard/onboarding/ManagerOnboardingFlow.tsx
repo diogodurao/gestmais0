@@ -116,17 +116,17 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4">
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-2">
+                    <div className="text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-2">
                         INICIALIZAÇÃO DO SISTEMA
                     </div>
-                    <h1 className="text-2xl font-bold text-slate-800 uppercase tracking-wide">
+                    <h1 className="text-2xl font-bold text-gray-800 uppercase tracking-wide">
                         Configuração do Condomínio
                     </h1>
-                    <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
+                    <p className="text-sm text-gray-500 mt-2 max-w-md mx-auto">
                         Vamos configurar o seu condomínio em 4 passos simples. Pode alterar estas definições mais tarde.
                     </p>
                     {/* Add escape hatch if multiple buildings exist */}
@@ -141,7 +141,7 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
                                     router.push("/dashboard")
                                     router.refresh()
                                 }}
-                                className="text-xs font-bold text-blue-600 uppercase hover:underline"
+                                className="text-xs font-bold text-info uppercase hover:underline"
                             >
                                 ← Voltar para os outros edifícios
                             </button>
@@ -162,10 +162,10 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
                                     onClick={() => isReachable && setCurrentStep(step.number)}
                                     disabled={!isReachable}
                                     className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase transition-colors ${currentStep === step.number
-                                        ? "bg-blue-600 text-white"
+                                        ? "bg-info text-white"
                                         : step.isComplete
                                             ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
-                                            : "bg-white text-slate-500 border border-slate-200"
+                                            : "bg-white text-gray-500 border border-gray-200"
                                         } ${!isReachable ? "opacity-40 cursor-not-allowed" : "hover:opacity-80"}`}
                                 >
                                     {step.isComplete ? (
@@ -178,7 +178,7 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
                                     <span className="hidden sm:inline">{step.title}</span>
                                 </button>
                                 {idx < steps.length - 1 && (
-                                    <ChevronRight className="w-4 h-4 text-slate-300 mx-1" />
+                                    <ChevronRight className="w-4 h-4 text-gray-300 mx-1" />
                                 )}
                             </div>
                         )
@@ -244,7 +244,7 @@ export function ManagerOnboardingFlow({ user, building, apartments, initialStep,
 
                 {/* Status Summary */}
                 <div className="mt-8 text-center">
-                    <div className="inline-flex items-center gap-4 text-[10px] text-slate-400 uppercase">
+                    <div className="inline-flex items-center gap-4 text-[10px] text-gray-400 uppercase">
                         <span>
                             {apartments.length} FRAÇÕES CONFIGURADAS
                         </span>

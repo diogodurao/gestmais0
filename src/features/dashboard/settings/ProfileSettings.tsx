@@ -88,11 +88,11 @@ export function ProfileSettings({ user }: { user: UserData }) {
                     </CardTitle>
                     <div className="flex items-center gap-3">
                         {profileComplete ? (
-                            <span className="text-label text-green-600 font-mono flex items-center gap-1">
+                            <span className="text-label text-success font-mono flex items-center gap-1">
                                 <Check className="w-3 h-3" /> VALIDADO
                             </span>
                         ) : (
-                            <span className="text-label text-amber-600 font-mono flex items-center gap-1">
+                            <span className="text-label text-warning font-mono flex items-center gap-1">
                                 <AlertCircle className="w-3 h-3" /> INCOMPLETO
                             </span>
                         )}
@@ -100,7 +100,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
                 </CardHeader>
 
                 <form onSubmit={handleSubmit} className="p-0">
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
                         <div className="label-col border-none">Nome Completo</div>
                         <div className="value-col border-none">
                             <input
@@ -111,20 +111,20 @@ export function ProfileSettings({ user }: { user: UserData }) {
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-slate-100 border-t">
+                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100 border-t">
                         <div className="label-col border-none">Endereço de Email</div>
-                        <div className="value-col border-none bg-slate-50">
+                        <div className="value-col border-none bg-gray-50">
                             <input
                                 type="text"
                                 value={user.email}
                                 readOnly
-                                className="input-cell border-none h-8 bg-transparent text-slate-500 cursor-not-allowed"
+                                className="input-cell border-none h-8 bg-transparent text-gray-500 cursor-not-allowed"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2">
-                        <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b md:border-b-0 md:border-r border-slate-100 border-t md:border-t-0">
+                        <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b md:border-b-0 md:border-r border-gray-100 border-t md:border-t-0">
                             <div className="label-col border-none">NIF</div>
                             <div className="value-col border-none relative">
                                 <input
@@ -135,7 +135,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
                                     maxLength={9}
                                 />
                                 {isValidNif(formData.nif) && (
-                                    <div className="absolute right-2 top-2 text-green-500">
+                                    <div className="absolute right-2 top-2 text-success">
                                         <Check className="w-4 h-4" />
                                     </div>
                                 )}
@@ -155,14 +155,14 @@ export function ProfileSettings({ user }: { user: UserData }) {
                     </div>
 
                     {user.unitName && (
-                        <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-t border-slate-100">
+                        <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-t border-gray-100">
                             <div className="label-col border-none">Fração Atribuída</div>
-                            <div className="value-col border-none bg-slate-50">
+                            <div className="value-col border-none bg-gray-50">
                                 <input
                                     type="text"
                                     value={user.unitName}
                                     readOnly
-                                    className="input-cell border-none h-8 bg-transparent text-slate-500 font-bold"
+                                    className="input-cell border-none h-8 bg-transparent text-gray-500 font-bold"
                                 />
                             </div>
                         </div>
@@ -175,7 +175,7 @@ export function ProfileSettings({ user }: { user: UserData }) {
                     </div>
                 </form>
             </Card>
-            {error && <p className="text-label text-rose-600 font-bold uppercase text-right">{error}</p>}
+            {error && <p className="text-label text-error font-bold uppercase text-right">{error}</p>}
         </div>
     )
 }

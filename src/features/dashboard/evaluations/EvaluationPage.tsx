@@ -33,16 +33,16 @@ export function EvaluationPage({
             {status.isOpen ? (
                 <EvaluationForm buildingId={buildingId} status={status} />
             ) : (
-                <Card className="bg-slate-50">
+                <Card className="bg-gray-50">
                     <CardContent className="p-6 text-center">
-                        <Lock className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                        <h2 className="text-h4 font-bold text-slate-700 mb-2">
+                        <Lock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h2 className="text-h4 font-bold text-gray-700 mb-2">
                             Avaliação de {MONTH_NAMES[status.month - 1]} {status.year}
                         </h2>
-                        <p className="text-body text-slate-500">
+                        <p className="text-body text-gray-500">
                             A avaliação abre no dia 24 deste mês.
                         </p>
-                        <p className="text-body text-slate-400 mt-1">
+                        <p className="text-body text-gray-400 mt-1">
                             Faltam {status.daysUntilOpen} dias.
                         </p>
                     </CardContent>

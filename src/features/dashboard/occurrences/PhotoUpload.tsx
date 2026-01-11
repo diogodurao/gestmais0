@@ -48,7 +48,7 @@ export function PhotoUpload({ photos, onChange, maxPhotos = 3, disabled }: Props
 
     return (
         <div className="space-y-2">
-            <label className="block text-body font-bold text-slate-500 uppercase">
+            <label className="block text-body font-bold text-gray-500 uppercase">
                 Fotos (máx. {maxPhotos})
             </label>
 
@@ -65,7 +65,7 @@ export function PhotoUpload({ photos, onChange, maxPhotos = 3, disabled }: Props
                             <button
                                 type="button"
                                 onClick={() => removePhoto(index)}
-                                className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                className="absolute -top-2 -right-2 p-1 bg-error text-white rounded-full hover:bg-error"
                             >
                                 <X className="w-3 h-3" />
                             </button>
@@ -79,9 +79,9 @@ export function PhotoUpload({ photos, onChange, maxPhotos = 3, disabled }: Props
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         className={cn(
-                            "w-20 h-20 border-2 border-dashed border-slate-300 rounded-lg",
+                            "w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg",
                             "flex flex-col items-center justify-center gap-1",
-                            "text-slate-400 hover:border-slate-400 hover:text-slate-500 transition-colors"
+                            "text-gray-400 hover:border-gray-400 hover:text-gray-500 transition-colors"
                         )}
                     >
                         <Camera className="w-5 h-5" />
@@ -99,7 +99,7 @@ export function PhotoUpload({ photos, onChange, maxPhotos = 3, disabled }: Props
                 className="hidden"
             />
 
-            <p className="text-label text-slate-400">
+            <p className="text-label text-gray-400">
                 JPG, PNG ou WebP (máx. 5 MB cada)
             </p>
         </div>

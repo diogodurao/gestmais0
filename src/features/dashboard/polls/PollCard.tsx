@@ -19,27 +19,27 @@ export function PollCard({ poll, hasVoted }: Props) {
                     <div className="flex items-center gap-2">
                         <Badge status={poll.status} config={POLL_STATUS_CONFIG} />
                         {hasVoted && (
-                            <span className="text-label text-blue-600 font-medium">
+                            <span className="text-label text-primary font-medium">
                                 ✓ Votou
                             </span>
                         )}
                     </div>
-                    <span className="text-label text-slate-400">
+                    <span className="text-label text-gray-400">
                         {formatDistanceToNow(poll.createdAt)}
                     </span>
                 </div>
 
-                <h3 className="text-body font-bold text-slate-900 mb-1">
+                <h3 className="text-body font-semibold text-gray-900 mb-1">
                     {poll.title}
                 </h3>
 
                 {poll.description && (
-                    <p className="text-body text-slate-600 line-clamp-2 mb-3">
+                    <p className="text-body text-gray-600 line-clamp-2 mb-3">
                         {poll.description}
                     </p>
                 )}
 
-                <div className="flex items-center justify-between text-label text-slate-500">
+                <div className="flex items-center justify-between text-label text-gray-500">
                     <div className="flex items-center gap-3">
                         <span>{POLL_TYPE_CONFIG[poll.type].label}</span>
                         <span>•</span>

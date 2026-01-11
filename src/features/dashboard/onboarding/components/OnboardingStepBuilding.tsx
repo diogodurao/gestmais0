@@ -99,43 +99,43 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                         Rua / Avenida *
                     </label>
                     <input
                         type="text"
                         value={formData.street}
                         onChange={(e) => handleChange("street", e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:border-blue-400"
+                        className="w-full px-3 py-2 text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                         Nº *
                     </label>
                     <input
                         type="text"
                         value={formData.number}
                         onChange={(e) => handleChange("number", e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:border-blue-400"
+                        className="w-full px-3 py-2 text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                         CIDADE *
                     </label>
                     <input
                         type="text"
                         value={formData.city}
                         onChange={(e) => handleChange("city", e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:border-blue-400"
+                        className="w-full px-3 py-2 text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                         NIF do Edifício *
                     </label>
                     <div className="relative">
@@ -143,7 +143,7 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
                             type="text"
                             value={formData.nif}
                             onChange={(e) => handleChange("nif", e.target.value)}
-                            className="w-full px-3 py-2 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400"
+                            className="w-full px-3 py-2 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400"
                             maxLength={9}
                         />
                         {isValidNif(formData.nif) && (
@@ -153,7 +153,7 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
                 </div>
 
                 <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                         IBAN do Edifício *
                     </label>
                     <div className="relative">
@@ -161,7 +161,7 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
                             type="text"
                             value={formData.iban}
                             onChange={(e) => handleChange("iban", e.target.value.toUpperCase())}
-                            className="w-full px-3 py-2 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400 uppercase"
+                            className="w-full px-3 py-2 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400 uppercase"
                         />
                         {isValidIban(formData.iban) && (
                             <Check className="absolute right-2 top-2.5 w-4 h-4 text-emerald-500" />
@@ -170,14 +170,14 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
                 </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-4">
-                <h3 className="text-[10px] font-bold text-slate-400 uppercase mb-4">
+            <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-[10px] font-bold text-gray-400 uppercase mb-4">
                     Configuração de Quotas
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                             Total de Frações *
                         </label>
                         <input
@@ -185,12 +185,12 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
                             min="1"
                             value={formData.totalApartments}
                             onChange={(e) => handleChange("totalApartments", e.target.value)}
-                            className="w-full px-3 py-2 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400"
+                            className="w-full px-3 py-2 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                             Modo de Cálculo
                         </label>
                         <div className="flex gap-2">
@@ -218,7 +218,7 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
                     </div>
 
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                             Valor Base (€) *
                         </label>
                         <input
@@ -227,7 +227,7 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
                             min="0"
                             value={formData.monthlyQuota}
                             onChange={(e) => handleChange("monthlyQuota", e.target.value)}
-                            className="w-full px-3 py-2 text-sm font-mono border border-slate-200 focus:outline-none focus:border-blue-400"
+                            className="w-full px-3 py-2 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400"
                             placeholder="0.00"
                         />
                     </div>
@@ -235,7 +235,7 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
             </div>
 
             {error && (
-                <p className="text-xs text-rose-600 font-bold">{error}</p>
+                <p className="text-xs text-error font-bold">{error}</p>
             )}
 
             <div className="flex justify-end">
