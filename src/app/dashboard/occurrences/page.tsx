@@ -1,8 +1,8 @@
 import { requireSession } from "@/lib/session"
 import { redirect } from "next/navigation"
-import { getOccurrences } from "@/app/actions/occurrences"
+import { getOccurrences } from "@/components/dashboard/occurrences/actions"
 import { ROUTES } from "@/lib/routes"
-import { OccurrencesList } from "@/features/dashboard/occurrences/OccurrencesList"
+import { OccurrencesList } from "@/components/dashboard/occurrences/OccurrencesList"
 
 export const dynamic = 'force-dynamic'
 

@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getResidentApartment } from "@/app/actions/building"
+import { getResidentApartment } from "@/components/dashboard/settings/actions"
 import { FinancialStepClient } from "./FinancialStepClient"
 import { getApartmentDisplayName } from "@/lib/utils"
 

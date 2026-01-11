@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Home } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { selectApartment } from "@/app/actions/onboarding"
+import { selectApartment } from "@/lib/actions/onboarding"
 
 export function ClaimStepClient({
     buildingName,

@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/layout/Sidebar"
 import { Header} from "@/components/layout/Header"
 import { MobileNav } from "@/components/layout/MobileNav"
 import { SidebarProvider } from "@/components/layout/SidebarProvider"
-import { getDashboardContext } from "@/app/actions/dashboard"
+import { getDashboardContext } from "@/lib/actions/dashboard"
 import { DashboardProvider } from "@/contexts/DashboardContext"
 import { DashboardSkeleton } from "@/components/performance/DashboardSkeleton"
 

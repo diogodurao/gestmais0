@@ -8,10 +8,10 @@
  */
 
 import { Suspense } from "react"
-import { ExtraProjectsList } from "@/features/dashboard/extraordinary-projects/ExtraProjectsList"
+import { ExtraProjectsList } from "@/components/dashboard/extraordinary-projects/ExtraProjectsList"
 import { requireSession } from "@/lib/session"
 import { redirect } from "next/navigation"
-import { getResidentApartment, getBuildingApartments } from "@/app/actions/building"
+import { getResidentApartment, getBuildingApartments } from "@/components/dashboard/settings/actions"
 import { ROUTES } from "@/lib/routes"
 
 export const metadata = {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useTransition } from 'react'
-import { saveSubscription } from '@/app/actions/push-notifications'
+import { saveSubscription } from '@/lib/actions/push-notifications'
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4)

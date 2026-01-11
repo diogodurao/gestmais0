@@ -1,8 +1,8 @@
 import { requireSession } from "@/lib/session"
 import { redirect } from "next/navigation"
-import { getPolls, getUserVote } from "@/app/actions/polls"
+import { getPolls, getUserVote } from "@/components/dashboard/polls/actions"
 import { ROUTES } from "@/lib/routes"
-import { PollsList } from "@/features/dashboard/polls/PollsList"
+import { PollsList } from "@/components/dashboard/polls/PollsList"
 
 export const dynamic = 'force-dynamic'
 

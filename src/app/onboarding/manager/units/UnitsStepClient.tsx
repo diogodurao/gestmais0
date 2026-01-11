@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { OnboardingStepUnits } from "@/features/dashboard/onboarding/components/OnboardingStepUnits"
+import { OnboardingStepUnits } from "@/components/dashboard/onboarding/components/OnboardingStepUnits"
 import { Button } from "@/components/ui/Button"
 
 export function UnitsStepClient({

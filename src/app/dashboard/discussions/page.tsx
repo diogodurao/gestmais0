@@ -1,8 +1,8 @@
 import { requireSession } from "@/lib/session"
 import { redirect } from "next/navigation"
-import { getDiscussions } from "@/app/actions/discussions"
+import { getDiscussions } from "@/components/dashboard/discussions/actions"
 import { ROUTES } from "@/lib/routes"
-import { DiscussionsList } from "@/features/dashboard/discussions/DiscussionsList"
+import { DiscussionsList } from "@/components/dashboard/discussions/DiscussionsList"
 
 export const dynamic = 'force-dynamic'
 

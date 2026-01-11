@@ -3,8 +3,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { isManager } from "@/lib/permissions";
 import type { SessionUser } from "@/lib/types";
-import { ManagerDashboard } from "@/features/dashboard/ManagerDashboard";
-import { ResidentDashboard } from "@/features/dashboard/ResidentDashboard";
+import { ManagerDashboard } from "@/components/dashboard/ManagerDashboard";
+import { ResidentDashboard } from "@/components/dashboard/ResidentDashboard";
 
 export const dynamic = 'force-dynamic'
 

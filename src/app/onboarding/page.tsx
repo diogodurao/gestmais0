@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getOrCreateManagerBuilding, getBuildingApartments, getResidentApartment } from "@/app/actions/building";
+import { getOrCreateManagerBuilding, getBuildingApartments, getResidentApartment } from "@/components/dashboard/settings/actions";
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations";
 import { isManager, isResident } from "@/lib/permissions";
 import type { SessionUser } from "@/lib/types";

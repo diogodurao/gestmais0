@@ -3,10 +3,10 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getPaymentMap } from "@/app/actions/payments"
-import { PaymentGrid } from "@/features/dashboard/payments-quotas/PaymentGrid"
+import { getPaymentMap } from "@/components/dashboard/payments-quotas/actions"
+import { PaymentGrid } from "@/components/dashboard/payments-quotas/PaymentGrid"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
-import { getResidentApartment } from "@/app/actions/building"
+import { getResidentApartment } from "@/components/dashboard/settings/actions"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
 
 export const dynamic = 'force-dynamic'

@@ -1,8 +1,8 @@
 import { requireSession } from "@/lib/session"
 import { notFound } from "next/navigation"
-import { getOccurrence, getOccurrenceComments, getOccurrenceAttachments } from "@/app/actions/occurrences"
+import { getOccurrence, getOccurrenceComments, getOccurrenceAttachments } from "@/components/dashboard/occurrences/actions"
 import { OccurrenceStatus } from "@/lib/types"
-import { OccurrenceDetail } from "@/features/dashboard/occurrences/OccurrenceDetail"
+import { OccurrenceDetail } from "@/components/dashboard/occurrences/OccurrenceDetail"
 
 export const dynamic = 'force-dynamic'
 

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { CreditCard, Check } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { completeResidentOnboarding } from "@/app/actions/onboarding"
+import { completeResidentOnboarding } from "@/lib/actions/onboarding"
 
 export function FinancialStepClient({
     userId,

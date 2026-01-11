@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Building2, ChevronDown, Plus, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { switchActiveBuilding, createNewBuilding } from "@/app/actions/building"
+import { switchActiveBuilding, createNewBuilding } from "@/components/dashboard/settings/actions"
 import { ManagedBuilding } from "@/lib/types"
 import {
     Dropdown,

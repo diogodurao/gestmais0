@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getUnclaimedApartments, getResidentBuildingDetails } from "@/app/actions/building"
+import { getUnclaimedApartments, getResidentBuildingDetails } from "@/components/dashboard/settings/actions"
 import { ClaimStepClient } from "./ClaimStepClient"
 
 export default async function ClaimStepPage() {

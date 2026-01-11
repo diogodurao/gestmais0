@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/session"
 import { redirect } from "next/navigation"
-import { getCalendarEvents } from "@/app/actions/calendar"
-import { CalendarView } from "@/features/dashboard/calendar/CalendarView"
+import { getCalendarEvents } from "@/components/dashboard/calendar/actions"
+import { CalendarView } from "@/components/dashboard/calendar/CalendarView"
 import { ROUTES } from "@/lib/routes"
 
 export const dynamic = 'force-dynamic'

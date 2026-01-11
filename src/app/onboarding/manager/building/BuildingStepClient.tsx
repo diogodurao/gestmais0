@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { OnboardingStepBuilding } from "@/features/dashboard/onboarding/components/OnboardingStepBuilding"
+import { OnboardingStepBuilding } from "@/components/dashboard/onboarding/components/OnboardingStepBuilding"
 
 export function BuildingStepClient({ building }: { building: any }) {
     const router = useRouter()

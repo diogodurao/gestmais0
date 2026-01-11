@@ -2,9 +2,9 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { OnboardingStepManagerUnit } from "@/features/dashboard/onboarding/components/OnboardingStepManagerUnit"
+import { OnboardingStepManagerUnit } from "@/components/dashboard/onboarding/components/OnboardingStepManagerUnit"
 import { Button } from "@/components/ui/Button"
-import { completeOnboarding } from "@/app/actions/onboarding"
+import { completeOnboarding } from "@/lib/actions/onboarding"
 
 export function ClaimStepClient({
     apartments,

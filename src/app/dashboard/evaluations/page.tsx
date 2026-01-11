@@ -6,9 +6,9 @@ import {
     getHistoricalAverages,
     getMonthEvaluations,
     getSubmissionStats,
-} from "@/app/actions/evaluations"
+} from "@/components/dashboard/evaluations/actions"
 import { ROUTES } from "@/lib/routes"
-import { EvaluationPage } from "@/features/dashboard/evaluations/EvaluationPage"
+import { EvaluationPage } from "@/components/dashboard/evaluations/EvaluationPage"
 
 export const dynamic = 'force-dynamic'
 

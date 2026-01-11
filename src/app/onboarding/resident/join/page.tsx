@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Building2 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { joinBuilding } from "@/app/actions/onboarding"
+import { joinBuilding } from "@/lib/actions/onboarding"
 
 export default function JoinStepPage() {
     const router = useRouter()

@@ -4,9 +4,9 @@
  * Route: /dashboard/extraordinary/new
  */
 
-import { ExtraProjectCreate } from "@/features/dashboard/extraordinary-projects/ExtraProjectCreate"
+import { ExtraProjectCreate } from "@/components/dashboard/extraordinary-projects/ExtraProjectCreate"
 import { requireSession } from "@/lib/session"
-import { getBuildingApartments } from "@/app/actions/building"
+import { getBuildingApartments } from "@/components/dashboard/settings/actions"
 import { redirect } from "next/navigation"
 
 export const metadata = {

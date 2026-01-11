@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getPaymentMap } from "@/app/actions/payments"
-import { PaymentGrid } from "@/features/dashboard/payments-quotas/PaymentGrid"
+import { getPaymentMap } from "@/components/dashboard/payments-quotas/actions"
+import { PaymentGrid } from "@/components/dashboard/payments-quotas/PaymentGrid"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
-import { getOrCreateManagerBuilding, getBuilding } from "@/app/actions/building"
+import { getOrCreateManagerBuilding, getBuilding } from "@/components/dashboard/settings/actions"
 import { isProfileComplete, isBuildingComplete } from "@/lib/validations"
 
 export const dynamic = 'force-dynamic'
