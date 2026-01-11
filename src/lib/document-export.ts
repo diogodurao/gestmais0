@@ -100,7 +100,7 @@ export function exportExtraPaymentsToPDF(
             halign: 'center'
         },
         styles: {
-            fontSize: 9,
+            fontSize: 11,
             cellPadding: 3,
             halign: 'center',
             valign: 'middle',

@@ -120,7 +120,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                                     )}
                                 >
                                     <div className="text-micro font-bold text-gray-500">P{idx + 1}</div>
-                                    <div className="text-[7px] text-gray-400">
+                                    <div className="text-label text-gray-400">
                                         {getMonthName(month, true)}/{String(year).slice(-2)}
                                     </div>
                                     <div className={cn(

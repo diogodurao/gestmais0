@@ -9,7 +9,7 @@ interface SystemStatusPanelProps {
 
 export function SystemStatusPanel({ sessionUser }: SystemStatusPanelProps) {
     return (
-        <Card className="h-full border border-gray-300 shadow-[4px_4px_0px_#cbd5e1]">
+        <Card className="h-full border border-gray-300 shadow-md">
             <CardHeader>
                 <CardTitle>
                     <Activity className="w-4 h-4" />

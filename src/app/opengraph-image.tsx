@@ -22,7 +22,7 @@ export default async function Image() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontFamily: 'sans-serif',
-                    border: '20px solid #e2e8f0', // slate-200
+                    border: '20px solid var(--color-gray-200)', // slate-200
                 }}
             >
                 <div
@@ -37,7 +37,7 @@ export default async function Image() {
                         style={{
                             width: '40px',
                             height: '40px',
-                            background: '#0f172a', // slate-900
+                            background: 'var(--color-gray-900)', // slate-900
                             color: 'white',
                             borderRadius: '4px',
                             display: 'flex',
@@ -53,7 +53,7 @@ export default async function Image() {
                         style={{
                             fontSize: '40px',
                             fontWeight: 800,
-                            color: '#0f172a', // slate-900
+                            color: 'var(--color-gray-900)', // slate-900
                             letterSpacing: '-0.05em',
                         }}
                     >
@@ -69,7 +69,7 @@ export default async function Image() {
                         fontSize: '60px',
                         fontWeight: 900,
                         textAlign: 'center',
-                        color: '#0f172a', // slate-900
+                        color: 'var(--color-gray-900)', // slate-900
                         lineHeight: 1.1,
                         marginBottom: '20px',
                         letterSpacing: '-0.025em',
@@ -82,7 +82,7 @@ export default async function Image() {
                 <div
                     style={{
                         fontSize: '24px',
-                        color: '#64748b', // slate-500
+                        color: 'var(--color-gray-600)', // slate-500
                         textAlign: 'center',
                         maxWidth: '800px',
                     }}

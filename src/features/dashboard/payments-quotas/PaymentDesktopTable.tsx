@@ -44,21 +44,21 @@ function ApartmentRow({ index, style, data }: ListChildComponentProps<RowData>) 
     const isInteractive = !readOnly && activeTool
 
     // New Color Logic
-    // Highlight (Search): Gold Light (#FBF6EC)
-    // Row Hover: Gray 50 (#F8F9FA)
+    // Highlight (Search): Gold Light (var(--color-warning-light))
+    // Row Hover: Gray 50 (var(--color-gray-50))
     return (
         <div
             style={style}
             className={cn(
-                "group flex border-b border-[#E9ECEF] transition-colors bg-white",
-                isHighlighted ? "bg-[#FBF6EC]" : "hover:bg-[#F8F9FA]"
+                "group flex border-b border-[var(--color-gray-200)] transition-colors bg-white",
+                isHighlighted ? "bg-[var(--color-warning-light)]" : "hover:bg-[var(--color-gray-50)]"
             )}
         >
             {/* Unit Cell - Sticky */}
             <div
                 className={cn(
-                    "sticky left-0 z-10 border-r border-[#E9ECEF] px-3 font-semibold text-[#343A40] flex items-center text-[12px]",
-                    isHighlighted ? "bg-[#FBF6EC]" : "bg-white group-hover:bg-[#F8F9FA]"
+                    "sticky left-0 z-10 border-r border-[var(--color-gray-200)] px-3 font-semibold text-[var(--color-gray-800)] flex items-center text-[12px]",
+                    isHighlighted ? "bg-[var(--color-warning-light)]" : "bg-white group-hover:bg-[var(--color-gray-50)]"
                 )}
                 style={{ width: UNIT_WIDTH, minWidth: UNIT_WIDTH }}
             >
@@ -68,12 +68,12 @@ function ApartmentRow({ index, style, data }: ListChildComponentProps<RowData>) 
             {/* Resident Cell - Sticky */}
             <div
                 className={cn(
-                    "sticky z-10 border-r border-[#E9ECEF] px-3 text-[#495057] truncate flex items-center text-[12px]",
-                    isHighlighted ? "bg-[#FBF6EC]" : "bg-white group-hover:bg-[#F8F9FA]"
+                    "sticky z-10 border-r border-[var(--color-gray-200)] px-3 text-[var(--color-gray-700)] truncate flex items-center text-[12px]",
+                    isHighlighted ? "bg-[var(--color-warning-light)]" : "bg-white group-hover:bg-[var(--color-gray-50)]"
                 )}
                 style={{ left: UNIT_WIDTH, width: RESIDENT_WIDTH, minWidth: RESIDENT_WIDTH }}
             >
-                {apt.residentName || <span className="text-[#ADB5BD] italic text-[11px]">Sem residente</span>}
+                {apt.residentName || <span className="text-[var(--color-gray-400)] italic text-[11px]">Sem residente</span>}
             </div>
 
             {/* Month Cells */}
@@ -90,19 +90,19 @@ function ApartmentRow({ index, style, data }: ListChildComponentProps<RowData>) 
                         onClick={() => isInteractive && onCellClick(apt.apartmentId, idx)}
                         aria-label={`${monthName} - ${apt.unit} - ${status}`}
                         className={cn(
-                            "border-r border-[#E9ECEF] text-center text-[11px] font-mono transition-all flex items-center justify-center",
-                            // Paid: Spring Rain Light (#E8F0EA) + Dark Green Text
-                            status === 'paid' && "bg-[#E8F0EA] text-[#2F5E3D] font-semibold",
-                            // Late: Error Light (#F9ECEE) + Dark Red Text
-                            status === 'late' && "bg-[#F9ECEE] text-[#B86B73] font-semibold",
+                            "border-r border-[var(--color-gray-200)] text-center text-[11px] font-mono transition-all flex items-center justify-center",
+                            // Paid: Spring Rain Light (var(--color-primary-light)) + Dark Green Text
+                            status === 'paid' && "bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] font-semibold",
+                            // Late: Error Light (var(--color-error-light)) + Dark Red Text
+                            status === 'late' && "bg-[var(--color-error-light)] text-[var(--color-error)] font-semibold",
                             // Pending: Gray Text
-                            status === 'pending' && "text-[#ADB5BD]",
+                            status === 'pending' && "text-[var(--color-gray-400)]",
                             
                             // Interactive States
                             isInteractive && "cursor-crosshair",
-                            isInteractive && activeTool === 'paid' && "hover:bg-[#8FB996] hover:text-white",
-                            isInteractive && activeTool === 'late' && "hover:bg-[#D4848C] hover:text-white",
-                            isInteractive && activeTool === 'clear' && "hover:bg-[#6C757D] hover:text-white",
+                            isInteractive && activeTool === 'paid' && "hover:bg-[var(--color-primary)] hover:text-white",
+                            isInteractive && activeTool === 'late' && "hover:bg-[var(--color-error)] hover:text-white",
+                            isInteractive && activeTool === 'clear' && "hover:bg-[var(--color-gray-600)] hover:text-white",
                             
                             !isInteractive && "cursor-default"
                         )}
@@ -115,7 +115,7 @@ function ApartmentRow({ index, style, data }: ListChildComponentProps<RowData>) 
 
             {/* Total Paid */}
             <div
-                className="sticky z-10 border-l border-r border-[#E9ECEF] px-3 text-right font-mono font-semibold text-[#2F5E3D] bg-[#F8F9FA] flex items-center justify-end text-[12px]"
+                className="sticky z-10 border-l border-r border-[var(--color-gray-200)] px-3 text-right font-mono font-semibold text-[var(--color-primary-dark)] bg-[var(--color-gray-50)] flex items-center justify-end text-[12px]"
                 style={{ right: TOTAL_WIDTH, width: TOTAL_WIDTH, minWidth: TOTAL_WIDTH }}
             >
                 {formatCurrency(apt.totalPaid)}
@@ -125,7 +125,7 @@ function ApartmentRow({ index, style, data }: ListChildComponentProps<RowData>) 
             <div
                 className={cn(
                     "sticky right-0 z-10 px-3 text-right font-mono font-semibold flex items-center justify-end text-[12px]",
-                    apt.balance > 0 ? "text-[#B86B73] bg-[#F9ECEE]" : "text-[#ADB5BD] bg-[#F8F9FA]"
+                    apt.balance > 0 ? "text-[var(--color-error)] bg-[var(--color-error-light)]" : "text-[var(--color-gray-400)] bg-[var(--color-gray-50)]"
                 )}
                 style={{ width: TOTAL_WIDTH, minWidth: TOTAL_WIDTH }}
             >
@@ -172,22 +172,22 @@ export function PaymentDesktopTable({
     const listHeight = Math.min(Math.max(data.length * ROW_HEIGHT, ROW_HEIGHT), maxListHeight)
 
     return (
-        <div ref={containerRef} className="hidden md:block overflow-hidden border-b border-[#E9ECEF] bg-white">
+        <div ref={containerRef} className="hidden md:block overflow-hidden border-b border-[var(--color-gray-200)] bg-white">
             <div className="overflow-x-auto custom-scrollbar">
                 <div style={{ minWidth: totalWidth }}>
                     {/* Header */}
                     <div
-                        className="flex bg-[#F8F9FA] border-b border-[#E9ECEF] text-[10px] font-bold uppercase tracking-wider text-[#8E9AAF] sticky top-0 z-20"
+                        className="flex bg-[var(--color-gray-50)] border-b border-[var(--color-gray-200)] text-[10px] font-bold uppercase tracking-wider text-[var(--color-gray-500)] sticky top-0 z-20"
                         style={{ height: 32 }}
                     >
                         <div
-                            className="sticky left-0 z-30 bg-[#F8F9FA] border-r border-[#E9ECEF] px-3 flex items-center"
+                            className="sticky left-0 z-30 bg-[var(--color-gray-50)] border-r border-[var(--color-gray-200)] px-3 flex items-center"
                             style={{ width: UNIT_WIDTH, minWidth: UNIT_WIDTH }}
                         >
                             Fração
                         </div>
                         <div
-                            className="sticky z-30 bg-[#F8F9FA] border-r border-[#E9ECEF] px-3 flex items-center"
+                            className="sticky z-30 bg-[var(--color-gray-50)] border-r border-[var(--color-gray-200)] px-3 flex items-center"
                             style={{ left: UNIT_WIDTH, width: RESIDENT_WIDTH, minWidth: RESIDENT_WIDTH }}
                         >
                             Residente
@@ -195,20 +195,20 @@ export function PaymentDesktopTable({
                         {MONTHS_PT.map(m => (
                             <div
                                 key={m}
-                                className="border-r border-[#E9ECEF] flex items-center justify-center"
+                                className="border-r border-[var(--color-gray-200)] flex items-center justify-center"
                                 style={{ width: CELL_WIDTH, minWidth: CELL_WIDTH }}
                             >
                                 {m.slice(0, 3)}
                             </div>
                         ))}
                         <div
-                            className="sticky z-30 bg-[#F8F9FA] border-l border-r border-[#E9ECEF] px-3 flex items-center justify-end text-[#2F5E3D]"
+                            className="sticky z-30 bg-[var(--color-gray-50)] border-l border-r border-[var(--color-gray-200)] px-3 flex items-center justify-end text-[var(--color-primary-dark)]"
                             style={{ right: TOTAL_WIDTH, width: TOTAL_WIDTH, minWidth: TOTAL_WIDTH }}
                         >
                             Pago
                         </div>
                         <div
-                            className="sticky right-0 z-30 bg-[#F8F9FA] px-3 flex items-center justify-end text-right text-[#B86B73]"
+                            className="sticky right-0 z-30 bg-[var(--color-gray-50)] px-3 flex items-center justify-end text-right text-[var(--color-error)]"
                             style={{ width: TOTAL_WIDTH, minWidth: TOTAL_WIDTH }}
                         >
                             Dívida
@@ -229,7 +229,7 @@ export function PaymentDesktopTable({
                         </List>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-20 bg-white">
-                            <p className="text-[11px] font-medium text-[#ADB5BD] uppercase tracking-wider">
+                            <p className="text-[11px] font-medium text-[var(--color-gray-400)] uppercase tracking-wider">
                                 Sem resultados
                             </p>
                         </div>

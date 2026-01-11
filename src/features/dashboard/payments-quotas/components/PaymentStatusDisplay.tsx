@@ -21,16 +21,16 @@ const STATUS_ICONS: Record<string, LucideIcon> = {
 
 const STATUS_STYLES = {
     ok: {
-        iconBg: "bg-[#E8F0EA]", // Spring Rain Light
-        iconColor: "text-[#6A9B72]", // Spring Rain Dark
+        iconBg: "bg-[var(--color-primary-light)]", // Spring Rain Light
+        iconColor: "text-[var(--color-primary-dark)]", // Spring Rain Dark
     },
     warning: {
-        iconBg: "bg-[#FBF6EC]", // Warning Light
-        iconColor: "text-[#E5C07B]", // Warning Main
+        iconBg: "bg-[var(--color-warning-light)]", // Warning Light
+        iconColor: "text-[var(--color-warning)]", // Warning Main
     },
     critical: {
-        iconBg: "bg-[#F9ECEE]", // Error Light
-        iconColor: "text-[#D4848C]", // Error Main
+        iconBg: "bg-[var(--color-error-light)]", // Error Light
+        iconColor: "text-[var(--color-error)]", // Error Main
     },
 }
 
@@ -63,7 +63,7 @@ export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayPr
         const styles = STATUS_STYLES[status as keyof typeof STATUS_STYLES] || STATUS_STYLES.critical
 
         return (
-            <div className={cn("flex items-start gap-3", !isLast && "mb-4 pb-4 border-b border-[#E9ECEF]")}>
+            <div className={cn("flex items-start gap-3", !isLast && "mb-4 pb-4 border-b border-[var(--color-gray-200)]")}>
                 <div className={cn(
                     "w-8 h-8 flex items-center justify-center rounded-md shrink-0",
                     styles.iconBg
@@ -73,11 +73,11 @@ export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayPr
 
                 <div className="min-w-0 flex-1 pt-0.5">
                     <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#8E9AAF]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-gray-500)]">
                             {label}
                         </span>
                     </div>
-                    <h3 className="font-semibold text-[#343A40] text-[13px] leading-tight">
+                    <h3 className="font-semibold text-[var(--color-gray-800)] text-[13px] leading-tight">
                         {message}
                     </h3>
                 </div>
@@ -87,7 +87,7 @@ export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayPr
 
     return (
         <div className={cn(
-            "bg-white rounded-lg border border-[#E9ECEF] shadow-sm p-4",
+            "bg-white rounded-lg border border-[var(--color-gray-200)] shadow-sm p-4",
             className
         )}>
             {/* Header Badge */}
@@ -95,8 +95,8 @@ export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayPr
                 <span className={cn(
                     "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm border",
                     data.isBuildingSummary
-                        ? "bg-[#F8F9FA] border-[#E9ECEF] text-[#495057]"
-                        : "bg-[#FBF6EC] border-[#FBF6EC] text-[#E5C07B]"
+                        ? "bg-[var(--color-gray-50)] border-[var(--color-gray-200)] text-[var(--color-gray-700)]"
+                        : "bg-[var(--color-warning-light)] border-[var(--color-warning-light)] text-[var(--color-warning)]"
                 )}>
                     {data.isBuildingSummary ? "Estado Geral" : `Fração ${data.apartmentUnit}`}
                 </span>

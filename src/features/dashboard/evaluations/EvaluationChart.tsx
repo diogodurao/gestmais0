@@ -9,11 +9,11 @@ interface Props {
 }
 
 const COLORS: Record<string, string> = {
-    securityRating: "#3b82f6", // blue
-    cleaningRating: "#22c55e", // green
-    maintenanceRating: "#f59e0b", // amber
-    communicationRating: "#8b5cf6", // purple
-    generalRating: "#64748b", // slate
+    securityRating: "var(--color-info)", // blue
+    cleaningRating: "var(--color-success)", // green
+    maintenanceRating: "var(--color-warning)", // amber
+    communicationRating: "var(--color-secondary)", // purple
+    generalRating: "var(--color-gray-600)", // slate
 }
 
 export function EvaluationChart({ history }: Props) {
