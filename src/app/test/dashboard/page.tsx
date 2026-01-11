@@ -1,25 +1,25 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "../../../components/ui/Button"
-import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/Card"
-import { Badge } from "../../../components/ui/Badge"
-import { Input } from "../../../components/ui/Input"
-import { Select } from "../../../components/ui/Select"
-import { Avatar } from "../../../components/ui/Avatar"
-import { IconButton } from "../../../components/ui/Icon-Button"
-import { Modal } from "../../../components/ui/Modal"
-import { Sheet } from "../../../components/ui/Sheet"
-import { Drawer } from "../../../components/ui/Drawer"
-import { FormField } from "../../../components/ui/Form-Field"
-import { Textarea } from "../../../components/ui/Textarea"
-import { Dropdown, DropdownItem, DropdownDivider } from "../../../components/ui/Dropdown"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../../components/ui/Table"
-import { StatCard } from "../../../components/ui/Stat-Card"
-import { Alert } from "../../../components/ui/Alert"
-import { Divider } from "../../../components/ui/Divider"
-import { ToastProvider, useToast } from "../../../components/ui/Toast"
-import { Progress } from "../../../components/ui/Progress"
+import { Button } from "../components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card"
+import { Badge } from "../components/ui/badge"
+import { Input } from "../components/ui/input"
+import { Select } from "../components/ui/select"
+import { Avatar } from "../components/ui/avatar"
+import { IconButton } from "../components/ui/icon-button"
+import { Modal } from "../components/ui/modal"
+import { Sheet } from "../components/ui/sheet"
+import { Drawer } from "../components/ui/drawer"
+import { FormField } from "../components/ui/form-field"
+import { Textarea } from "../components/ui/textarea"
+import { Dropdown, DropdownItem, DropdownDivider } from "../components/ui/dropdown"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../components/ui/table"
+import { StatCard } from "../components/ui/stat-card"
+import { Alert } from "../components/ui/alert"
+import { Divider } from "../components/ui/divider"
+import { ToastProvider, useToast } from "../components/ui/toast"
+import { Progress } from "../components/ui/progress"
 import {
   Plus, Filter, MoreVertical, Menu, X,
   Users, DollarSign, TrendingUp, Calendar,
@@ -56,12 +56,12 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <div className="fixed inset-0 bg-black/20" onClick={onClose} />
-      <div className="fixed inset-y-0 left-0 w-64 bg-[var(--color-pearl)] border-r border-[var(--color-gray-200)] p-1.5">
+      <div className="fixed inset-y-0 left-0 w-64 bg-[#F8F8F6] border-r border-[#E9ECEF] p-1.5">
         <div className="flex h-10 items-center justify-between px-1.5">
-          <span className="text-[11px] font-semibold text-[var(--color-gray-700)]">Condominium</span>
+          <span className="text-[11px] font-semibold text-[#495057]">Condominium</span>
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded text-[var(--color-gray-600)] hover:bg-[var(--color-gray-200)]"
+            className="flex h-7 w-7 items-center justify-center rounded text-[#6C757D] hover:bg-[#E9ECEF]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -72,10 +72,11 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
               key={item.name}
               href="#"
               onClick={onClose}
-              className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${item.active
-                ? "bg-[var(--color-primary-light)] font-medium text-[var(--color-primary-dark)]"
-                : "text-[var(--color-gray-600)] hover:bg-[var(--color-gray-200)]"
-                }`}
+              className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${
+                item.active
+                  ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
+                  : "text-[#6C757D] hover:bg-[#E9ECEF]"
+              }`}
             >
               <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
               {item.name}
@@ -90,16 +91,17 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
 function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   return (
     <aside
-      className={`hidden lg:flex flex-col rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-pearl)] transition-all duration-200 ${collapsed ? "w-12" : "w-48"
-        }`}
+      className={`hidden lg:flex flex-col rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] transition-all duration-200 ${
+        collapsed ? "w-12" : "w-48"
+      }`}
     >
       <div className="flex h-10 items-center justify-between px-1.5">
         {!collapsed && (
-          <span className="text-[11px] font-semibold text-[var(--color-gray-700)]">Condominium</span>
+          <span className="text-[11px] font-semibold text-[#495057]">Condominium</span>
         )}
         <button
           onClick={onToggle}
-          className="flex h-7 w-7 items-center justify-center rounded text-[var(--color-gray-600)] hover:bg-[var(--color-gray-200)]"
+          className="flex h-7 w-7 items-center justify-center rounded text-[#6C757D] hover:bg-[#E9ECEF]"
         >
           <Menu className="h-4 w-4" />
         </button>
@@ -109,10 +111,11 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
           <a
             key={item.name}
             href="#"
-            className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${item.active
-              ? "bg-[var(--color-primary-light)] font-medium text-[var(--color-primary-dark)]"
-              : "text-[var(--color-gray-600)] hover:bg-[var(--color-gray-200)]"
-              }`}
+            className={`flex items-center gap-2 rounded px-1.5 py-1.5 text-[10px] transition-colors ${
+              item.active
+                ? "bg-[#E8F0EA] font-medium text-[#6A9B72]"
+                : "text-[#6C757D] hover:bg-[#E9ECEF]"
+            }`}
             title={collapsed ? item.name : undefined}
           >
             <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
@@ -126,15 +129,15 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
 
 function Header({ onMenuClick }: { onMenuClick: () => void }) {
   return (
-    <header className="flex h-10 items-center justify-between rounded-lg border border-[var(--color-gray-200)] bg-[var(--color-pearl)] px-1.5">
+    <header className="flex h-10 items-center justify-between rounded-lg border border-[#E9ECEF] bg-[#F8F8F6] px-1.5">
       <div className="flex items-center gap-1.5">
         <button
           onClick={onMenuClick}
-          className="flex h-7 w-7 items-center justify-center rounded text-[var(--color-gray-600)] hover:bg-[var(--color-gray-200)] lg:hidden"
+          className="flex h-7 w-7 items-center justify-center rounded text-[#6C757D] hover:bg-[#E9ECEF] lg:hidden"
         >
           <Menu className="h-4 w-4" />
         </button>
-        <span className="text-[12px] font-medium text-[var(--color-gray-700)]">Overview</span>
+        <span className="text-[12px] font-medium text-[#495057]">Overview</span>
       </div>
       <div className="flex items-center gap-1.5">
         <Avatar size="sm" fallback="AD" alt="Admin" />
@@ -172,15 +175,15 @@ function DashboardContent() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto rounded-lg border border-[var(--color-gray-200)] bg-white p-1.5">
-      <Alert variant="info" className="mb-1.5" dismissible onDismiss={() => { }}>
+    <div className="flex-1 overflow-y-auto rounded-lg border border-[#E9ECEF] bg-white p-1.5">
+      <Alert variant="info" className="mb-1.5" dismissible onDismiss={() => {}}>
         Next monthly meeting scheduled for January 15th at 7:00 PM.
       </Alert>
 
       <div className="mb-1.5 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-[13px] font-semibold text-[var(--color-gray-800)]">Dashboard</h2>
-          <p className="text-[10px] text-[var(--color-gray-500)]">Welcome back. Here is your overview.</p>
+          <h2 className="text-[13px] font-semibold text-[#343A40]">Dashboard</h2>
+          <p className="text-[10px] text-[#8E9AAF]">Welcome back. Here is your overview.</p>
         </div>
         <div className="flex gap-1.5">
           <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
@@ -230,7 +233,7 @@ function DashboardContent() {
                 </Button>
               </div>
             </CardHeader>
-
+            
             {/* Desktop Table */}
             <div className="hidden sm:block">
               <Table>
@@ -265,14 +268,14 @@ function DashboardContent() {
                           <DropdownItem onClick={() => setShowResidentSheet(true)}>
                             <Eye className="mr-1.5 h-3 w-3" /> View Details
                           </DropdownItem>
-                          <DropdownItem onClick={() => { }}>
+                          <DropdownItem onClick={() => {}}>
                             <Edit className="mr-1.5 h-3 w-3" /> Edit
                           </DropdownItem>
-                          <DropdownItem onClick={() => { }}>
+                          <DropdownItem onClick={() => {}}>
                             <Download className="mr-1.5 h-3 w-3" /> Download Receipt
                           </DropdownItem>
                           <DropdownDivider />
-                          <DropdownItem onClick={() => { }} destructive>
+                          <DropdownItem onClick={() => {}} destructive>
                             <Trash2 className="mr-1.5 h-3 w-3" /> Delete
                           </DropdownItem>
                         </Dropdown>
@@ -286,20 +289,20 @@ function DashboardContent() {
             {/* Mobile List View */}
             <div className="sm:hidden p-1.5 space-y-1.5">
               {recentPayments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex items-center justify-between rounded-md border border-[var(--color-gray-100)] p-1.5"
+                <div 
+                  key={payment.id} 
+                  className="flex items-center justify-between rounded-md border border-[#F1F3F5] p-1.5"
                   onClick={() => setShowResidentSheet(true)}
                 >
                   <div className="flex items-center gap-1.5">
                     <Avatar size="sm" fallback={payment.resident.charAt(0)} alt={payment.resident} />
                     <div>
-                      <p className="text-[11px] font-medium text-[var(--color-gray-700)]">{payment.resident}</p>
-                      <p className="text-[10px] text-[var(--color-gray-500)]">{payment.unit} • {payment.date}</p>
+                      <p className="text-[11px] font-medium text-[#495057]">{payment.resident}</p>
+                      <p className="text-[10px] text-[#8E9AAF]">{payment.unit} • {payment.date}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] font-medium text-[var(--color-gray-700)]">${payment.amount}</p>
+                    <p className="text-[11px] font-medium text-[#495057]">${payment.amount}</p>
                     {getStatusBadge(payment.status)}
                   </div>
                 </div>
@@ -319,8 +322,8 @@ function DashboardContent() {
                 {upcomingTasks.map((task) => (
                   <div key={task.id} className="flex items-center justify-between">
                     <div>
-                      <p className="text-[11px] font-medium text-[var(--color-gray-700)]">{task.title}</p>
-                      <p className="text-[10px] text-[var(--color-gray-500)]">{task.date}</p>
+                      <p className="text-[11px] font-medium text-[#495057]">{task.title}</p>
+                      <p className="text-[10px] text-[#8E9AAF]">{task.date}</p>
                     </div>
                     <Badge variant={task.type === "deadline" ? "warning" : "default"}>
                       {task.type}
@@ -339,22 +342,22 @@ function DashboardContent() {
               <div className="space-y-1.5">
                 <div>
                   <div className="mb-1 flex justify-between text-[10px]">
-                    <span className="text-[var(--color-gray-500)]">January 2025</span>
-                    <span className="font-medium text-[var(--color-gray-700)]">87%</span>
+                    <span className="text-[#8E9AAF]">January 2025</span>
+                    <span className="font-medium text-[#495057]">87%</span>
                   </div>
                   <Progress value={87} />
                 </div>
                 <div>
                   <div className="mb-1 flex justify-between text-[10px]">
-                    <span className="text-[var(--color-gray-500)]">December 2024</span>
-                    <span className="font-medium text-[var(--color-gray-700)]">94%</span>
+                    <span className="text-[#8E9AAF]">December 2024</span>
+                    <span className="font-medium text-[#495057]">94%</span>
                   </div>
                   <Progress value={94} />
                 </div>
                 <div>
                   <div className="mb-1 flex justify-between text-[10px]">
-                    <span className="text-[var(--color-gray-500)]">November 2024</span>
-                    <span className="font-medium text-[var(--color-gray-700)]">91%</span>
+                    <span className="text-[#8E9AAF]">November 2024</span>
+                    <span className="font-medium text-[#495057]">91%</span>
                   </div>
                   <Progress value={91} />
                 </div>
@@ -454,8 +457,8 @@ function DashboardContent() {
           <div className="flex items-center gap-1.5">
             <Avatar fallback="MS" alt="Maria Silva" />
             <div>
-              <p className="text-[12px] font-medium text-[var(--color-gray-800)]">Maria Silva</p>
-              <p className="text-[11px] text-[var(--color-gray-500)]">maria.silva@email.com</p>
+              <p className="text-[12px] font-medium text-[#343A40]">Maria Silva</p>
+              <p className="text-[11px] text-[#8E9AAF]">maria.silva@email.com</p>
             </div>
           </div>
 
@@ -463,39 +466,39 @@ function DashboardContent() {
 
           <div className="space-y-1.5">
             <div className="flex justify-between">
-              <span className="text-[11px] text-[var(--color-gray-500)]">Unit</span>
-              <span className="text-[11px] font-medium text-[var(--color-gray-800)]">Apt 101</span>
+              <span className="text-[11px] text-[#8E9AAF]">Unit</span>
+              <span className="text-[11px] font-medium text-[#343A40]">Apt 101</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[11px] text-[var(--color-gray-500)]">Status</span>
+              <span className="text-[11px] text-[#8E9AAF]">Status</span>
               <Badge variant="success">Active</Badge>
             </div>
             <div className="flex justify-between">
-              <span className="text-[11px] text-[var(--color-gray-500)]">Balance</span>
-              <span className="text-[11px] font-medium text-[var(--color-gray-800)]">$0.00</span>
+              <span className="text-[11px] text-[#8E9AAF]">Balance</span>
+              <span className="text-[11px] font-medium text-[#343A40]">$0.00</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[11px] text-[var(--color-gray-500)]">Member since</span>
-              <span className="text-[11px] font-medium text-[var(--color-gray-800)]">Jan 2023</span>
+              <span className="text-[11px] text-[#8E9AAF]">Member since</span>
+              <span className="text-[11px] font-medium text-[#343A40]">Jan 2023</span>
             </div>
           </div>
 
           <Divider />
 
           <div>
-            <p className="mb-1.5 text-[10px] font-medium text-[var(--color-gray-500)]">RECENT PAYMENTS</p>
+            <p className="mb-1.5 text-[10px] font-medium text-[#8E9AAF]">RECENT PAYMENTS</p>
             <div className="space-y-1.5">
               <div className="flex justify-between text-[11px]">
-                <span className="text-[var(--color-gray-700)]">January 2025</span>
-                <span className="font-medium text-[var(--color-primary)]">$85.00</span>
+                <span className="text-[#495057]">January 2025</span>
+                <span className="font-medium text-[#8FB996]">$85.00</span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-[var(--color-gray-700)]">December 2024</span>
-                <span className="font-medium text-[var(--color-primary)]">$85.00</span>
+                <span className="text-[#495057]">December 2024</span>
+                <span className="font-medium text-[#8FB996]">$85.00</span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-[var(--color-gray-700)]">November 2024</span>
-                <span className="font-medium text-[var(--color-primary)]">$85.00</span>
+                <span className="text-[#495057]">November 2024</span>
+                <span className="font-medium text-[#8FB996]">$85.00</span>
               </div>
             </div>
           </div>
