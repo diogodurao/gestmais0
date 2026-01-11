@@ -146,17 +146,3 @@ export function formatPercent(value: number | null | undefined, decimals = 2): s
     if (value === null || value === undefined) return "-"
     return `${value.toFixed(decimals).replace('.', ',')}%`
 }
-
-export function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-export function getFileIcon(mimeType: string): string {
-    if (mimeType === 'application/pdf') return '.pdf'
-    if (mimeType.includes('word')) return '.word'
-    if (mimeType.includes('excel') || mimeType.includes('spreadsheet') || mimeType === 'text/csv') return '.excel'
-    if (mimeType.startsWith('image/')) return 'img'
-    return '📎'
-}

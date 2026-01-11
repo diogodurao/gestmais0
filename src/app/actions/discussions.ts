@@ -5,7 +5,7 @@ import { requireSession, requireBuildingAccess } from "@/lib/session"
 import { discussionService, CreateDiscussionInput, UpdateDiscussionInput } from "@/services/discussion.service"
 import { createDiscussionSchema, updateDiscussionSchema } from "@/lib/zod-schemas"
 import { ActionResult } from "@/lib/types"
-import { notifyDiscussionCreated, notifyDiscussionComment } from "@/lib/notifications"
+import { notifyDiscussionCreated, notifyDiscussionComment } from "@/app/actions/notification"
 
 // Get all discussions for building
 export async function getDiscussions(buildingId: string) {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Terminal } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface HeroProps {
     cityName?: string;
@@ -12,74 +12,68 @@ export function Hero({ cityName }: HeroProps) {
         : "Abandone o caos de grupos de WhatsApp e recibos em papel. Software de gestão desenhado para redução de trabalho a 90%.";
 
     return (
-        <header className="pt-32 pb-20 px-6 lg:px-12 bg-grid min-h-screen flex flex-col items-center justify-center text-center relative">
-            <div className="max-w-3xl z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-300 rounded-full text-xs font-mono text-slate-600 mb-6">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                    ESTADO DO SISTEMA: OPERACIONAL
-                </div>
-
-                <h1 className="text-4xl md:text-6xl font-bold text-slate-900 tracking-tight mb-6 leading-tight">
+        <header className="pt-24 pb-8 px-6 bg-pearl min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center text-center">
+            <div className="max-w-2xl mt-8 mb-4">
+                <h1 className="text-[28px] md:text-[32px] font-semibold text-gray-900 mb-4 leading-tight">
                     {titleLine1}
                     <br />
-                    <span className="text-slate-400">Engenharia de Precisão.</span>
+                    <span className="text-gray-500">Engenharia de Precisão.</span>
                 </h1>
 
-                <p className="text-lg text-slate-600 mb-8 max-w-xl mx-auto leading-relaxed">
+                <p className="text-base text-gray-600 mb-6 max-w-lg mx-auto">
                     {subtitle}
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Link href="/sign-in" className="btn-primary cursor-pointer">
-                        <Terminal className="w-4 h-4" />
+                <Link href="/sign-in">
+                    <Button size="md" className="h-8">
                         Iniciar Sistema
-                    </Link>
-                </div>
+                    </Button>
+                </Link>
             </div>
 
             {/* DASHBOARD PREVIEW */}
-            <div className="mt-16 w-full max-w-5xl bg-white border border-slate-300 shadow-2xl shadow-slate-300/50 rounded-sm overflow-hidden z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                <div className="h-8 bg-slate-100 border-b border-slate-300 flex items-center px-3 justify-between">
-                    <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-slate-300"></div>
-                        <div className="w-3 h-3 rounded-full bg-slate-300"></div>
-                        <div className="w-3 h-3 rounded-full bg-slate-300"></div>
+            <div className="mt-8 w-full max-w-4xl bg-white border border-gray-200 rounded-md overflow-hidden" style={{ boxShadow: 'var(--shadow-md)' }}>
+                <div className="h-7 bg-gray-50 border-b border-gray-200 flex items-center px-3 justify-between">
+                    <div className="flex gap-1">
+                        <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                        <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                        <div className="w-2 h-2 rounded-full bg-gray-300"></div>
                     </div>
-                    <div className="text-[10px] font-mono text-slate-400">
-                        admin@gestmais.com — /dashboard/overview
+                    <div className="text-label text-gray-400">
+                        admin@gestmais.com
                     </div>
-                    <div className="w-10"></div>
+                    <div className="w-8"></div>
                 </div>
 
-                <div className="p-1 bg-slate-200 grid grid-cols-[200px_1fr] gap-px h-[400px] text-left">
-                    <div className="bg-slate-50 p-4 space-y-2 hidden md:block">
-                        <div className="h-4 w-24 bg-slate-200 rounded-sm mb-6"></div>
-                        <div className="h-8 w-full bg-white border-l-2 border-blue-600 shadow-sm"></div>
-                        <div className="h-8 w-full bg-transparent"></div>
-                        <div className="h-8 w-full bg-transparent"></div>
+                <div className="bg-gray-100 grid grid-cols-[160px_1fr] h-[320px] text-left">
+                    <div className="bg-pearl p-3 space-y-1 hidden md:block border-r border-gray-200">
+                        <div className="h-3 w-16 bg-gray-200 rounded-sm mb-4"></div>
+                        <div className="h-7 w-full bg-white border-l-2 border-primary"></div>
+                        <div className="h-7 w-full"></div>
+                        <div className="h-7 w-full"></div>
                     </div>
-                    <div className="bg-white p-6 relative overflow-hidden w-full">
-                        <div className="flex justify-between mb-8">
-                            <div className="h-8 w-48 bg-slate-100 rounded-sm"></div>
-                            <div className="h-8 w-24 bg-slate-900 rounded-sm"></div>
+                    <div className="bg-white p-4 relative overflow-hidden w-full">
+                        <div className="flex justify-between mb-6">
+                            <div className="h-6 w-32 bg-gray-100 rounded-sm"></div>
+                            <div className="h-6 w-16 bg-gray-800 rounded-sm"></div>
                         </div>
-                        <div className="border border-slate-200">
-                            <div className="h-8 bg-slate-50 border-b border-slate-200"></div>
-                            <div className="h-10 border-b border-slate-100 flex items-center px-4 justify-between">
-                                <div className="w-1/3 h-3 bg-slate-100 rounded-sm"></div>
-                                <div className="w-16 h-5 bg-emerald-50 text-emerald-700 text-[10px] flex items-center justify-center font-bold">
+                        <div className="border border-gray-200 rounded-sm overflow-hidden">
+                            <div className="h-7 bg-gray-50 border-b border-gray-200"></div>
+                            <div className="h-8 border-b border-gray-100 flex items-center px-3 justify-between">
+                                <div className="w-1/3 h-2 bg-gray-100 rounded-sm"></div>
+                                <div className="px-2 py-0.5 bg-success-light text-success text-label font-medium rounded-sm">
                                     PAGO
                                 </div>
                             </div>
-                            <div className="h-10 border-b border-slate-100 flex items-center px-4 justify-between">
-                                <div className="w-1/4 h-3 bg-slate-100 rounded-sm"></div>
-                                <div className="w-16 h-5 bg-emerald-50 text-emerald-700 text-[10px] flex items-center justify-center font-bold">
+                            <div className="h-8 border-b border-gray-100 flex items-center px-3 justify-between">
+                                <div className="w-1/4 h-2 bg-gray-100 rounded-sm"></div>
+                                <div className="px-2 py-0.5 bg-success-light text-success text-label font-medium rounded-sm">
                                     PAGO
                                 </div>
                             </div>
-                            <div className="h-10 border-b border-slate-100 flex items-center px-4 justify-between">
-                                <div className="w-1/3 h-3 bg-slate-100 rounded-sm"></div>
-                                <div className="w-16 h-5 bg-rose-50 text-rose-700 text-[10px] flex items-center justify-center font-bold">
+                            <div className="h-8 border-b border-gray-100 flex items-center px-3 justify-between">
+                                <div className="w-1/3 h-2 bg-gray-100 rounded-sm"></div>
+                                <div className="px-2 py-0.5 bg-error-light text-error text-label font-medium rounded-sm">
                                     ATRASO
                                 </div>
                             </div>

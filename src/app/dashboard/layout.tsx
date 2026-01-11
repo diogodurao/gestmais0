@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
@@ -6,6 +7,7 @@ import { MobileNav } from "@/components/layout/MobileNav"
 import { SidebarProvider } from "@/components/layout/SidebarProvider"
 import { getDashboardContext } from "@/app/actions/dashboard"
 import { DashboardProvider } from "@/contexts/DashboardContext"
+import { DashboardSkeleton } from "@/components/performance/DashboardSkeleton"
 
 export default async function DashboardLayout({
     children,
@@ -32,7 +34,9 @@ export default async function DashboardLayout({
                         <Header />
 
                         <main className="flex-1 overflow-y-auto rounded-lg border border-gray-200 bg-white p-1.5 relative shadow-sm">
-                            {children}
+                            <Suspense fallback={<DashboardSkeleton />}>
+                                {children}
+                            </Suspense>
                         </main>
                     </div>
                 </div>

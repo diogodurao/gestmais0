@@ -8,8 +8,7 @@ import { ActionResult } from "@/lib/types"
 import { db } from "@/db"
 import { building } from "@/db/schema"
 import { eq } from "drizzle-orm"
-import { createNotification } from "@/app/actions/notification"
-import { notifyEvaluationOpen } from "@/lib/notifications"
+import { createNotification, notifyEvaluationOpen } from "@/app/actions/notification"
 
 // Get evaluation period status
 export async function getEvaluationStatus(buildingId: string) {

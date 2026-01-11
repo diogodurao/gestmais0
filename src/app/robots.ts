@@ -8,6 +8,9 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: '/dashboard/',
         },
-        sitemap: `${BASE_URL}/sitemap.xml`,
+        sitemap: [
+            `${BASE_URL}/sitemap.xml`,
+            `${BASE_URL}/sitemap-images.xml`
+        ],
     }
 }

@@ -7,8 +7,7 @@ import { createPollSchema, castVoteSchema } from "@/lib/zod-schemas"
 import { ActionResult, PollResults } from "@/lib/types"
 import { db } from "@/db"
 import { apartments, building } from "@/db/schema"
-import { notifyBuildingResidents, createNotification } from "@/app/actions/notification"
-import { notifyPollClosed } from "@/lib/notifications"
+import { notifyBuildingResidents, createNotification, notifyPollClosed } from "@/app/actions/notification"
 import { eq, and } from "drizzle-orm"
 
 // Get all polls for building

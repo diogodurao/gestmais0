@@ -6,7 +6,7 @@ import { calendarService, CreateEventInput, UpdateEventInput } from "@/services/
 import { createCalendarEventSchema, updateCalendarEventSchema } from "@/lib/zod-schemas"
 import { ActionResult } from "@/lib/types"
 import { ROUTES } from "@/lib/routes"
-import { notifyUpcomingEvent } from "@/lib/notifications"
+import { notifyUpcomingEvent } from "@/app/actions/notification"
 
 export async function getCalendarEvents(buildingId: string, year: number, month: number) {
     const session = await requireSession()

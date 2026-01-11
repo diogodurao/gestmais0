@@ -1,54 +1,55 @@
 import Link from "next/link";
+import { Check } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 export function Pricing() {
+    const features = [
+        "Frações Ilimitadas",
+        "Automatização integrada",
+        "Gestão de Quotas Extraordinárias"
+    ];
+
     return (
-        <section id="pricing" className="py-24 bg-grid relative">
-            <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-                <div className="mb-12">
-                    <h2 className="text-2xl font-bold text-slate-900 bg-white inline-block px-4 py-1 border border-slate-300 shadow-sm">
+        <section id="pricing" className="py-8 bg-pearl">
+            <div className="max-w-4xl mx-auto px-6 text-center">
+                <div className="mb-8">
+                    <h2 className="text-heading font-semibold text-gray-900 inline-block px-3 py-1.5 bg-white border border-gray-200 rounded-sm">
                         Estrutura de Custos
                     </h2>
-                    <br />
-                    <p className="text-slate-500 mt-4 bg-white/80 backdrop-blur-sm inline-block px-3 py-1 text-sm border border-slate-200">
+                    <p className="text-body text-gray-600 mt-3 inline-block px-2 py-1">
                         Preços transparentes.
                     </p>
                 </div>
 
-                <div className="max-w-sm mx-auto tech-card p-8 hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_#e2e8f0] transition-all duration-300 bg-white">
-                    <div className="mb-6">
-                        <span className="text-5xl font-bold text-slate-900 tracking-tight">3€</span>
-                        <span className="text-sm text-slate-500 font-bold font-mono block mt-2 uppercase tracking-wide">/ por fração</span>
-                    </div>
-
-                    <div className="h-px bg-slate-200 w-full mb-6"></div>
-
-                    <ul className="space-y-4 mb-8 text-left">
-                        <li className="flex items-center gap-3 text-slate-700 font-medium text-sm">
-                            <div className="w-5 h-5 bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center rounded-sm">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                <div className="max-w-xs mx-auto">
+                    <Card variant="neutral" className="transition-shadow" style={{ boxShadow: 'var(--shadow-sm)' }}>
+                        <CardContent className="p-6">
+                            <div className="mb-4">
+                                <span className="text-[24px] font-semibold text-gray-900">3€</span>
+                                <span className="text-body text-gray-600 block mt-1">/ por fração</span>
                             </div>
-                            Frações Ilimitadas
-                        </li>
-                        <li className="flex items-center gap-3 text-slate-700 font-medium text-sm">
-                            <div className="w-5 h-5 bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center rounded-sm">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                            </div>
-                            Automatização integrada
-                        </li>
-                        <li className="flex items-center gap-3 text-slate-700 font-medium text-sm">
-                            <div className="w-5 h-5 bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center rounded-sm">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                            </div>
-                            Gestão de Quotas Extraordinárias
-                        </li>
-                    </ul>
 
-                    <Link
-                        href="/sign-in"
-                        className="btn-primary w-full py-3 justify-center text-sm"
-                    >
-                        Começar Agora
-                    </Link>
+                            <div className="h-px bg-gray-200 w-full mb-4"></div>
+
+                            <ul className="space-y-2 mb-6 text-left">
+                                {features.map((feature, i) => (
+                                    <li key={i} className="flex items-center gap-2 text-body text-gray-700">
+                                        <div className="w-4 h-4 bg-success-light text-success border border-gray-200 flex items-center justify-center rounded-sm flex-shrink-0">
+                                            <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                                        </div>
+                                        {feature}
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <Link href="/sign-in" className="block">
+                                <Button variant="primary" size="md" className="w-full h-8">
+                                    Começar Agora
+                                </Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </section>

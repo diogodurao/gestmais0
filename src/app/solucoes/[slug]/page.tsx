@@ -6,7 +6,7 @@ import { Pricing } from "@/components/landing/Pricing"
 import { Footer } from "@/components/landing/Footer"
 import { Faq } from "@/components/landing/Faq"
 import { notFound } from "next/navigation"
-import { JsonLd } from "@/components/seo/JsonLd"
+import { JsonLd } from "@/seo/components/JsonLd"
 import { generateCityMetadata } from "@/seo/utils/metadata"
 
 export async function generateStaticParams() {

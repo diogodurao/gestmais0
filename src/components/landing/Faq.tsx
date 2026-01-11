@@ -13,25 +13,25 @@ export function Faq() {
     ];
 
     return (
-        <section id="faq" className="py-24 bg-white relative border-b border-slate-200">
-            <div className="max-w-3xl mx-auto px-6 relative z-10">
-                <div className="mb-12 text-center">
-                    <h2 className="text-2xl font-bold text-slate-900 inline-block px-4 py-1 border border-slate-300 shadow-sm bg-slate-50">
+        <section id="faq" className="py-8 bg-white border-b border-gray-200">
+            <div className="max-w-3xl mx-auto px-6">
+                <div className="mb-8 text-center">
+                    <h2 className="text-heading font-semibold text-gray-900 inline-block px-3 py-1.5 border border-gray-200 rounded-sm bg-pearl">
                         Perguntas Frequentes
                     </h2>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {items.map((item, i) => (
                         <details
                             key={i}
-                            className="group tech-card bg-white [&_summary::-webkit-details-marker]:hidden"
+                            className="group bg-white border border-gray-200 rounded-lg [&_summary::-webkit-details-marker]:hidden"
                         >
-                            <summary className="flex cursor-pointer items-center justify-between gap-1.5 p-6 text-slate-900 font-bold transition-colors group-hover:bg-slate-50">
-                                <h3 className="text-base">{item.question}</h3>
-                                <ChevronDown className="h-5 w-5 shrink-0 transition duration-300 group-open:-rotate-180 text-slate-400" />
+                            <summary className="flex cursor-pointer items-center justify-between gap-2 p-4 text-gray-900 font-semibold transition-colors group-hover:bg-gray-50 rounded-lg">
+                                <h3 className="text-body">{item.question}</h3>
+                                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180 text-gray-400" />
                             </summary>
-                            <div className="px-6 pb-6 leading-relaxed text-slate-600 border-t border-slate-100 pt-4">
+                            <div className="px-4 pb-4 text-body text-gray-600 border-t border-gray-100 pt-3">
                                 <p>{item.answer}</p>
                             </div>
                         </details>
