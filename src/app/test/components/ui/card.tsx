@@ -1,14 +1,28 @@
 import { forwardRef, type HTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {}
+type CardVariant = "default" | "interactive" | "highlighted" | "success" | "warning" | "error"
+
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  variant?: CardVariant
+}
+
+const variantStyles: Record<CardVariant, string> = {
+  default: "border-[#E9ECEF] bg-white",
+  interactive: "border-[#E9ECEF] bg-white transition-colors hover:bg-[#F8F9FA] hover:border-[#DEE2E6] cursor-pointer",
+  highlighted: "border-[#D4E5D7] bg-[#F8FAF8]",
+  success: "border-[#D4E5D7] bg-[#F8FAF8]",
+  warning: "border-[#F0E4C8] bg-[#FDFBF6]",
+  error: "border-[#EFCDD1] bg-[#FDF8F8]",
+}
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => (
+  ({ className, variant = "default", ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border border-[#E9ECEF] bg-white",
+        "rounded-lg border",
+        variantStyles[variant],
         className
       )}
       {...props}
@@ -67,3 +81,24 @@ export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
   )
 )
 CardFooter.displayName = "CardFooter"
+
+// Clickable Card (shorthand for interactive)
+interface ClickableCardProps extends CardProps {
+  onClick?: () => void
+}
+
+export const ClickableCard = forwardRef<HTMLDivElement, ClickableCardProps>(
+  ({ className, onClick, ...props }, ref) => (
+    <Card
+      ref={ref}
+      variant="interactive"
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onClick?.()}
+      className={className}
+      {...props}
+    />
+  )
+)
+ClickableCard.displayName = "ClickableCard"
