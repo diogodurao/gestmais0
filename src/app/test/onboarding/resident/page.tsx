@@ -9,12 +9,12 @@ import { Select } from "../../components/ui/select"
 import { FormField } from "../../components/ui/form-field"
 import { Alert } from "../../components/ui/alert"
 import { Progress } from "../../components/ui/progress"
-import { Divider } from "../../components/ui/divider"
 import { ToastProvider, useToast } from "../../components/ui/toast"
-import { cn } from "@/lib/utils"
+import { Stepper, StepperItem, StepperConnector } from "../../components/ui/stepper"
+import { ValidationCheck } from "../../components/ui/validation-check"
 import {
   Building2, Home, CreditCard, Check, ChevronRight,
-  KeyRound, AlertCircle, User,
+  KeyRound, AlertCircle,
 } from "lucide-react"
 
 // Types
@@ -54,63 +54,6 @@ const mockApartments: ApartmentOption[] = [
 // Validation helpers
 function isValidIban(iban: string): boolean {
   return /^[A-Z0-9]{25}$/.test(iban.replace(/\s/g, "").toUpperCase())
-}
-
-// Step indicator component
-function StepIndicator({
-  step,
-  currentStep,
-  title,
-  icon: Icon,
-  isCompleted,
-}: {
-  step: number
-  currentStep: number
-  title: string
-  icon: React.ElementType
-  isCompleted: boolean
-}) {
-  const isCurrent = step === currentStep
-  const isPast = step < currentStep || isCompleted
-
-  return (
-    <div className="flex flex-col items-center gap-0.5">
-      <div
-        className={cn(
-          "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-          isCurrent && "bg-[#8FB996] text-white",
-          isPast && "bg-[#E8F0EA] text-[#6A9B72]",
-          !isCurrent && !isPast && "bg-[#F1F3F5] text-[#ADB5BD]"
-        )}
-      >
-        {isPast ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
-      </div>
-      <span
-        className={cn(
-          "text-[9px] font-medium text-center",
-          isCurrent && "text-[#495057]",
-          isPast && "text-[#6A9B72]",
-          !isCurrent && !isPast && "text-[#ADB5BD]"
-        )}
-      >
-        {title}
-      </span>
-    </div>
-  )
-}
-
-// Validation indicator
-function ValidationCheck({ isValid }: { isValid: boolean }) {
-  return (
-    <div
-      className={cn(
-        "w-5 h-5 rounded-full flex items-center justify-center shrink-0",
-        isValid ? "bg-[#E8F0EA] text-[#6A9B72]" : "bg-[#F1F3F5] text-[#ADB5BD]"
-      )}
-    >
-      <Check className="w-3 h-3" />
-    </div>
-  )
 }
 
 // Step 1: Join Building
@@ -426,31 +369,37 @@ function ResidentOnboardingContent() {
         </div>
 
         {/* Step Indicators */}
-        <div className="flex items-center justify-center gap-6 mb-2">
-          <StepIndicator
+        <Stepper className="justify-center gap-6 mb-2">
+          <StepperItem
             step={1}
             currentStep={currentStep}
             title="Edifício"
             icon={Building2}
             isCompleted={completedSteps.has(1)}
+            size="md"
+            orientation="vertical"
           />
-          <div className="w-8 h-px bg-[#E9ECEF]" />
-          <StepIndicator
+          <StepperConnector variant="line" size="md" />
+          <StepperItem
             step={2}
             currentStep={currentStep}
             title="Fração"
             icon={Home}
             isCompleted={completedSteps.has(2)}
+            size="md"
+            orientation="vertical"
           />
-          <div className="w-8 h-px bg-[#E9ECEF]" />
-          <StepIndicator
+          <StepperConnector variant="line" size="md" />
+          <StepperItem
             step={3}
             currentStep={currentStep}
             title="Financeiro"
             icon={CreditCard}
             isCompleted={completedSteps.has(3)}
+            size="md"
+            orientation="vertical"
           />
-        </div>
+        </Stepper>
 
         {/* Current Step Content */}
         {currentStep === 1 && (

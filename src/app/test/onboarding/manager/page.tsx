@@ -11,10 +11,12 @@ import { Alert } from "../../components/ui/alert"
 import { Progress } from "../../components/ui/progress"
 import { Divider } from "../../components/ui/divider"
 import { ToastProvider, useToast } from "../../components/ui/toast"
+import { Stepper, StepperItem, StepperConnector } from "../../components/ui/stepper"
+import { ValidationCheck } from "../../components/ui/validation-check"
 import { cn } from "@/lib/utils"
 import {
   User, Building2, LayoutGrid, Home, Check, ChevronRight,
-  CreditCard, Hash, MapPin, Trash2, Plus, AlertCircle,
+  Trash2, Plus,
 } from "lucide-react"
 
 // Types
@@ -50,70 +52,6 @@ function isValidNif(nif: string): boolean {
 
 function isValidIban(iban: string): boolean {
   return /^[A-Z0-9]{25}$/.test(iban.replace(/\s/g, "").toUpperCase())
-}
-
-// Step indicator component
-function StepIndicator({
-  step,
-  currentStep,
-  title,
-  icon: Icon,
-  isCompleted,
-}: {
-  step: number
-  currentStep: number
-  title: string
-  icon: React.ElementType
-  isCompleted: boolean
-}) {
-  const isCurrent = step === currentStep
-  const isPast = step < currentStep || isCompleted
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <div
-        className={cn(
-          "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors",
-          isCurrent && "bg-[#8FB996] text-white",
-          isPast && "bg-[#E8F0EA] text-[#6A9B72]",
-          !isCurrent && !isPast && "bg-[#F1F3F5] text-[#ADB5BD]"
-        )}
-      >
-        {isPast ? <Check className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5" />}
-      </div>
-      <span
-        className={cn(
-          "text-[10px] font-medium hidden sm:block",
-          isCurrent && "text-[#495057]",
-          isPast && "text-[#6A9B72]",
-          !isCurrent && !isPast && "text-[#ADB5BD]"
-        )}
-      >
-        {title}
-      </span>
-    </div>
-  )
-}
-
-// Validation indicator
-function ValidationCheck({ isValid, label }: { isValid: boolean; label?: string }) {
-  return (
-    <div className="flex items-center gap-1">
-      <div
-        className={cn(
-          "w-4 h-4 rounded-full flex items-center justify-center",
-          isValid ? "bg-[#E8F0EA] text-[#6A9B72]" : "bg-[#F1F3F5] text-[#ADB5BD]"
-        )}
-      >
-        <Check className="w-2.5 h-2.5" />
-      </div>
-      {label && (
-        <span className={cn("text-[9px]", isValid ? "text-[#6A9B72]" : "text-[#ADB5BD]")}>
-          {label}
-        </span>
-      )}
-    </div>
-  )
 }
 
 // Step 1: Personal Identity
@@ -674,39 +612,43 @@ function ManagerOnboardingContent() {
         </div>
 
         {/* Step Indicators */}
-        <div className="flex items-center justify-between mb-2 px-1">
-          <StepIndicator
+        <Stepper className="justify-between mb-2 px-1">
+          <StepperItem
             step={1}
             currentStep={currentStep}
             title="Identidade"
             icon={User}
             isCompleted={completedSteps.has(1)}
+            size="sm"
           />
-          <ChevronRight className="w-3 h-3 text-[#DEE2E6]" />
-          <StepIndicator
+          <StepperConnector variant="arrow" size="sm" />
+          <StepperItem
             step={2}
             currentStep={currentStep}
             title="Edifício"
             icon={Building2}
             isCompleted={completedSteps.has(2)}
+            size="sm"
           />
-          <ChevronRight className="w-3 h-3 text-[#DEE2E6]" />
-          <StepIndicator
+          <StepperConnector variant="arrow" size="sm" />
+          <StepperItem
             step={3}
             currentStep={currentStep}
             title="Frações"
             icon={LayoutGrid}
             isCompleted={completedSteps.has(3)}
+            size="sm"
           />
-          <ChevronRight className="w-3 h-3 text-[#DEE2E6]" />
-          <StepIndicator
+          <StepperConnector variant="arrow" size="sm" />
+          <StepperItem
             step={4}
             currentStep={currentStep}
             title="Fração"
             icon={Home}
             isCompleted={completedSteps.has(4)}
+            size="sm"
           />
-        </div>
+        </Stepper>
 
         {/* Current Step Content */}
         {currentStep === 1 && (
