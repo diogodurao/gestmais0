@@ -9,16 +9,19 @@ import { IconButton } from "../components/ui/icon-button"
 import { StatCard } from "../components/ui/stat-card"
 import { Progress } from "../components/ui/progress"
 import { Modal } from "../components/ui/modal"
-import { Sheet } from "../components/ui/sheet"
 import { Dropdown, DropdownItem, DropdownDivider } from "../components/ui/dropdown"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../components/ui/table"
-import { List, ListItem } from "../components/ui/list"
 import { ToastProvider, useToast } from "../components/ui/toast"
 import { EmptyState } from "../components/ui/empty-state"
-import { Divider } from "../components/ui/divider"
 import { FormField } from "../components/ui/form-field"
 import { Select } from "../components/ui/select"
+import { ToolButton, ToolButtonGroup } from "../components/ui/tool-button"
 import { cn } from "@/lib/utils"
+
+// Feature components from quotas
+import {
+  PaymentGridLegend,
+  EditModeIndicator,
+} from "../components/features/quotas"
 import {
   Plus, DollarSign, TrendingUp, Calendar, Layers,
   Check, X, RotateCcw, Filter, ChevronRight,
@@ -250,41 +253,6 @@ function BudgetProgress({
   )
 }
 
-// Tool Button Component
-function ToolButton({
-  icon,
-  label,
-  active,
-  onClick,
-  variant = "default",
-}: {
-  icon: React.ReactNode
-  label: string
-  active: boolean
-  onClick: () => void
-  variant?: "default" | "success" | "warning" | "error"
-}) {
-  const variantStyles = {
-    default: active ? "bg-[#E9ECF0] text-[#495057]" : "text-[#8E9AAF]",
-    success: active ? "bg-[#E8F0EA] text-[#6A9B72]" : "text-[#8E9AAF]",
-    warning: active ? "bg-[#FBF6EC] text-[#B8963E]" : "text-[#8E9AAF]",
-    error: active ? "bg-[#F9ECEE] text-[#B86B73]" : "text-[#8E9AAF]",
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium transition-colors",
-        "hover:bg-[#F8F9FA]",
-        variantStyles[variant]
-      )}
-    >
-      {icon}
-      <span className="hidden sm:inline">{label}</span>
-    </button>
-  )
-}
 
 // Mobile Card for Apartment
 function MobileApartmentCard({
@@ -745,8 +713,7 @@ function ProjectDetail({
       <Card className="mb-1.5">
         <CardContent className="flex flex-wrap items-center justify-between gap-1.5">
           {/* Tools */}
-          <div className="flex items-center gap-1">
-            <span className="text-[9px] font-medium text-[#8E9AAF] mr-1">FERRAMENTAS:</span>
+          <ToolButtonGroup label="Ferramentas">
             <ToolButton
               icon={<Check className="h-3 w-3" />}
               label="Pago"
@@ -768,7 +735,7 @@ function ProjectDetail({
               onClick={() => handleToolClick("toggle")}
               variant="default"
             />
-          </div>
+          </ToolButtonGroup>
 
           {/* Filter */}
           <Dropdown
@@ -789,14 +756,7 @@ function ProjectDetail({
       </Card>
 
       {/* Edit mode indicator */}
-      {toolMode && (
-        <div className="mb-1.5 rounded-lg bg-[#E8F0EA] border border-[#D4E5D7] p-1.5 text-center">
-          <span className="text-[10px] font-medium text-[#6A9B72]">
-            Modo de edição ativo: clique nas células para{" "}
-            {toolMode === "markPaid" ? "marcar como pago" : toolMode === "markPending" ? "marcar como pendente" : "alternar estado"}
-          </span>
-        </div>
-      )}
+      <EditModeIndicator activeTool={toolMode} className="mb-1.5" />
 
       {/* Desktop Table */}
       <div className="hidden sm:block overflow-x-auto rounded-lg border border-[#E9ECEF] bg-white">
@@ -955,17 +915,7 @@ function ProjectDetail({
       </div>
 
       {/* Footer Legend */}
-      <div className="mt-1.5 flex items-center justify-center gap-3 py-1.5 border-t border-[#F1F3F5]">
-        <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-          <span className="w-2 h-2 bg-[#8FB996] rounded" /> Pago
-        </span>
-        <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-          <span className="w-2 h-2 bg-[#DEE2E6] rounded" /> Pendente
-        </span>
-        <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-          <span className="w-2 h-2 bg-[#D4848C] rounded" /> Em atraso
-        </span>
-      </div>
+      <PaymentGridLegend className="mt-1.5" />
     </div>
   )
 }

@@ -187,23 +187,36 @@ export function PaymentGridLegend({ className }: PaymentGridLegendProps) {
 // =============================================================================
 
 interface EditModeIndicatorProps {
-  activeTool: ToolType
+  activeTool: string | null
   className?: string
+  /** Custom labels for tool types. Falls back to defaults if not provided */
+  toolLabels?: Record<string, string>
+  /** Custom message prefix. Defaults to "Modo de edição ativo: clique nas células para" */
+  messagePrefix?: string
 }
 
-export function EditModeIndicator({ activeTool, className }: EditModeIndicatorProps) {
+const defaultToolLabels: Record<string, string> = {
+  markPaid: "marcar como pago",
+  markPending: "marcar como pendente",
+  markLate: "marcar como em dívida",
+  toggle: "alternar estado",
+}
+
+export function EditModeIndicator({
+  activeTool,
+  className,
+  toolLabels,
+  messagePrefix = "Modo de edição ativo: clique nas células para",
+}: EditModeIndicatorProps) {
   if (!activeTool) return null
 
-  const toolLabels = {
-    markPaid: "pago",
-    markPending: "pendente",
-    markLate: "em dívida",
-  }
+  const labels = { ...defaultToolLabels, ...toolLabels }
+  const label = labels[activeTool] || activeTool
 
   return (
     <div className={cn("rounded-lg bg-[#E8F0EA] border border-[#D4E5D7] p-1.5 text-center", className)}>
       <span className="text-[10px] font-medium text-[#6A9B72]">
-        Modo de edição ativo: clique nas células para marcar como {toolLabels[activeTool]}
+        {messagePrefix} {label}
       </span>
     </div>
   )
