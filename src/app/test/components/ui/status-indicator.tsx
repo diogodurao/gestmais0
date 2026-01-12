@@ -2,7 +2,7 @@ import { forwardRef, type HTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 import { CheckCircle, Clock, XCircle, AlertTriangle } from "lucide-react"
 
-type StatusType = "success" | "warning" | "error" | "info" | "pending" | "active" | "inactive"
+type StatusType = "success" | "warning" | "error" | "info" | "pending" | "active" | "inactive" | "ok"
 
 interface StatusIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   status: StatusType
@@ -75,6 +75,14 @@ const statusConfig: Record<StatusType, {
     dot: "bg-[#ADB5BD]",
     icon: XCircle,
     label: "Inativo",
+  },
+  ok: {
+    bg: "bg-[#E8F0EA]",
+    text: "text-[#6A9B72]",
+    border: "border-[#D4E5D7]",
+    dot: "bg-[#8FB996]",
+    icon: CheckCircle,
+    label: "Operacional",
   },
 }
 
