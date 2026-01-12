@@ -2,31 +2,31 @@
 
 import { useState } from "react"
 import { Button } from "../../components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
-import { Input } from "../../components/ui/input"
 import { Avatar } from "../../components/ui/avatar"
-import { IconButton } from "../../components/ui/icon-button"
-import { Modal } from "../../components/ui/modal"
-import { Sheet } from "../../components/ui/sheet"
-import { FormField } from "../../components/ui/form-field"
-import { Dropdown, DropdownItem, DropdownDivider } from "../../components/ui/dropdown"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table"
 import { StatCard } from "../../components/ui/stat-card"
 import { Alert } from "../../components/ui/alert"
 import { ToastProvider, useToast } from "../../components/ui/toast"
 import { Progress } from "../../components/ui/progress"
-import { List, ListItem, ClickableListItem, ListHeader } from "../../components/ui/list"
-import { StatusIndicator } from "../../components/ui/status-indicator"
-import { InfoRow } from "../../components/ui/info-row"
 import { cn } from "@/lib/utils"
+
+// Import Panels (composed components)
 import {
-  Plus, Filter, MoreVertical, Menu, X,
+  SystemStatusPanel,
+  InviteCodePanel,
+  ResidentsPanel,
+  type SystemStatus,
+  type InviteCodeData,
+  type Resident,
+} from "../../components/panels"
+
+import {
+  Menu, X,
   Users, DollarSign, TrendingUp, Calendar,
-  Eye, Edit, Trash2, Download, ChevronRight,
+  ChevronRight,
   Home, FileText, CreditCard, MessageSquare, Settings,
-  Building2, Copy, RefreshCw, CheckCircle2, Bell,
-  Mail, Phone, UserMinus, UserCog, AlertCircle, Clock,
 } from "lucide-react"
 
 // =============================================================================
@@ -42,7 +42,7 @@ const navigation = [
 ]
 
 // =============================================================================
-// MOCK DATA
+// MOCK DATA (In real app, this would come from server/API)
 // =============================================================================
 const recentPayments = [
   { id: 1, resident: "Maria Silva", unit: "1º Esq", amount: "85.00", status: "paid", date: "5 Jan" },
@@ -51,22 +51,31 @@ const recentPayments = [
   { id: 4, resident: "Pedro Lima", unit: "2º Dir", amount: "85.00", status: "late", date: "2 Jan" },
 ]
 
-const residents = [
-  { id: 1, name: "Maria Silva", email: "maria@email.com", phone: "+351 912 345 678", unit: "1º Esq", status: "active" as const },
-  { id: 2, name: "João Santos", email: "joao@email.com", unit: "1º Dir", status: "active" as const },
-  { id: 3, name: "Ana Costa", email: "ana@email.com", phone: "+351 923 456 789", unit: "2º Esq", status: "pending" as const },
-  { id: 4, name: "Pedro Lima", email: "pedro@email.com", unit: "2º Dir", status: "inactive" as const },
-]
-
-const systemStatus = {
-  payments: "ok" as const,
-  documents: "ok" as const,
-  notifications: "warning" as const,
-  subscription: "active" as const,
+// Data for panels (would be fetched from server in real app)
+const systemStatusData: SystemStatus = {
+  payments: "ok",
+  documents: "ok",
+  notifications: "warning",
+  subscription: "active",
 }
 
+const inviteCodeData: InviteCodeData = {
+  code: "ABC123",
+  buildingName: "Edifício Flores",
+  expiresIn: "7 dias",
+  usageCount: 3,
+  maxUsage: 10,
+}
+
+const residentsData: Resident[] = [
+  { id: 1, name: "Maria Silva", email: "maria@email.com", phone: "+351 912 345 678", unit: "1º Esq", status: "active" },
+  { id: 2, name: "João Santos", email: "joao@email.com", unit: "1º Dir", status: "active" },
+  { id: 3, name: "Ana Costa", email: "ana@email.com", phone: "+351 923 456 789", unit: "2º Esq", status: "pending" },
+  { id: 4, name: "Pedro Lima", email: "pedro@email.com", unit: "2º Dir", status: "inactive" },
+]
+
 // =============================================================================
-// SHARED COMPONENTS
+// LAYOUT COMPONENTS
 // =============================================================================
 function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null
@@ -155,254 +164,24 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 }
 
 // =============================================================================
-// MANAGER-SPECIFIC PANELS (Composed from UI components)
-// =============================================================================
-
-// System Status Panel
-function SystemStatusPanel() {
-  const statusConfig = {
-    ok: { label: "Operacional", variant: "success" as const },
-    warning: { label: "Atenção", variant: "warning" as const },
-    error: { label: "Erro", variant: "error" as const },
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-1.5">
-          <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
-            <CheckCircle2 className="w-4 h-4 text-[#6A9B72]" />
-          </div>
-          <div>
-            <CardTitle>Estado do Sistema</CardTitle>
-            <CardDescription>Monitorização de serviços</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <List variant="divided">
-          <ListItem
-            title="Pagamentos"
-            description="Processamento"
-            leading={<CreditCard className="w-4 h-4 text-[#8E9AAF]" />}
-            trailing={<StatusIndicator status={systemStatus.payments} label={statusConfig[systemStatus.payments].label} showDot />}
-          />
-          <ListItem
-            title="Documentos"
-            description="Armazenamento"
-            leading={<FileText className="w-4 h-4 text-[#8E9AAF]" />}
-            trailing={<StatusIndicator status={systemStatus.documents} label={statusConfig[systemStatus.documents].label} showDot />}
-          />
-          <ListItem
-            title="Notificações"
-            description="Envio de alertas"
-            leading={<Bell className="w-4 h-4 text-[#8E9AAF]" />}
-            trailing={<StatusIndicator status={systemStatus.notifications} label={statusConfig[systemStatus.notifications].label} showDot />}
-          />
-        </List>
-      </CardContent>
-    </Card>
-  )
-}
-
-// Invite Code Panel
-function InviteCodePanel() {
-  const { addToast } = useToast()
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText("ABC123")
-    addToast({ variant: "success", title: "Código copiado!" })
-  }
-
-  const handleRefresh = () => {
-    addToast({ variant: "info", title: "Código atualizado", description: "Novo código gerado" })
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-1.5">
-          <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
-            <Building2 className="w-4 h-4 text-[#6A9B72]" />
-          </div>
-          <div className="flex-1">
-            <CardTitle>Código de Convite</CardTitle>
-            <CardDescription>Edifício Flores</CardDescription>
-          </div>
-          <Badge variant="success">3/10 usos</Badge>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="rounded-lg bg-[#F8F9FA] border-2 border-dashed border-[#E9ECEF] p-2 text-center">
-          <p className="text-[9px] font-medium text-[#8E9AAF] uppercase tracking-wide mb-1">Partilhe este código</p>
-          <p className="text-[20px] font-bold font-mono text-[#343A40] tracking-[0.3em]">ABC123</p>
-          <p className="text-[9px] text-[#ADB5BD] mt-1 flex items-center justify-center gap-1">
-            <Clock className="w-3 h-3" />
-            Expira em 7 dias
-          </p>
-        </div>
-        <div className="flex gap-1.5 mt-2">
-          <Button variant="outline" className="flex-1" onClick={handleCopy}>
-            <Copy className="w-3 h-3 mr-1" />
-            Copiar
-          </Button>
-          <Button variant="outline" onClick={handleRefresh}>
-            <RefreshCw className="w-3 h-3" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-// Resident Actions Menu
-function ResidentActionsMenu({ resident, onAction }: {
-  resident: typeof residents[0]
-  onAction: (action: string) => void
-}) {
-  return (
-    <Dropdown
-      trigger={
-        <button className="p-1 rounded hover:bg-[#F1F3F5] text-[#8E9AAF] transition-colors">
-          <MoreVertical className="w-4 h-4" />
-        </button>
-      }
-      align="right"
-    >
-      <DropdownItem onClick={() => onAction("view")}>
-        <Eye className="w-3 h-3 mr-1.5" />
-        Ver Perfil
-      </DropdownItem>
-      <DropdownItem onClick={() => onAction("message")}>
-        <Mail className="w-3 h-3 mr-1.5" />
-        Enviar Mensagem
-      </DropdownItem>
-      {resident.phone && (
-        <DropdownItem onClick={() => onAction("call")}>
-          <Phone className="w-3 h-3 mr-1.5" />
-          Ligar
-        </DropdownItem>
-      )}
-      <DropdownDivider />
-      <DropdownItem onClick={() => onAction("manage")}>
-        <UserCog className="w-3 h-3 mr-1.5" />
-        Gerir Permissões
-      </DropdownItem>
-      <DropdownItem onClick={() => onAction("remove")} className="text-[#B86B73] hover:bg-[#F9ECEE]">
-        <UserMinus className="w-3 h-3 mr-1.5" />
-        Remover
-      </DropdownItem>
-    </Dropdown>
-  )
-}
-
-// Residents Panel
-function ResidentsPanel() {
-  const { addToast } = useToast()
-  const [selectedResident, setSelectedResident] = useState<typeof residents[0] | null>(null)
-  const [sheetOpen, setSheetOpen] = useState(false)
-
-  const handleAction = (action: string, resident: typeof residents[0]) => {
-    if (action === "view") {
-      setSelectedResident(resident)
-      setSheetOpen(true)
-    } else {
-      addToast({ variant: "info", title: action, description: `${resident.name} (${resident.unit})` })
-    }
-  }
-
-  return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
-                <Users className="w-4 h-4 text-[#6A9B72]" />
-              </div>
-              <div>
-                <CardTitle>Residentes</CardTitle>
-                <CardDescription>{residents.length} registados</CardDescription>
-              </div>
-            </div>
-            <Badge>{residents.filter(r => r.status === "active").length} ativos</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <List variant="card">
-            {residents.map((resident) => (
-              <ListItem
-                key={resident.id}
-                title={resident.name}
-                description={resident.unit}
-                leading={
-                  <Avatar
-                    fallback={resident.name.charAt(0)}
-                    status={resident.status === "active" ? "online" : "offline"}
-                    size="sm"
-                  />
-                }
-                trailing={
-                  <div className="flex items-center gap-1">
-                    <Badge
-                      size="sm"
-                      variant={
-                        resident.status === "active" ? "success" :
-                        resident.status === "pending" ? "warning" : "default"
-                      }
-                    >
-                      {resident.status === "active" ? "Ativo" :
-                       resident.status === "pending" ? "Pendente" : "Inativo"}
-                    </Badge>
-                    <ResidentActionsMenu resident={resident} onAction={(action) => handleAction(action, resident)} />
-                  </div>
-                }
-              />
-            ))}
-          </List>
-        </CardContent>
-      </Card>
-
-      {/* Resident Detail Sheet */}
-      <Sheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        title="Detalhes do Residente"
-        description={selectedResident ? `${selectedResident.name} - ${selectedResident.unit}` : ""}
-        footer={
-          <div className="flex gap-1.5">
-            <Button variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>Fechar</Button>
-            <Button className="flex-1"><Mail className="w-3 h-3 mr-1" />Mensagem</Button>
-          </div>
-        }
-      >
-        {selectedResident && (
-          <div className="space-y-2">
-            <div className="rounded-lg bg-[#F8F9FA] border border-[#E9ECEF] p-1.5 space-y-1">
-              <InfoRow label="Email" value={selectedResident.email} />
-              <InfoRow label="Telefone" value={selectedResident.phone || "Não definido"} />
-              <InfoRow label="Fração" value={selectedResident.unit} />
-              <InfoRow
-                label="Estado"
-                value={
-                  <Badge size="sm" variant={selectedResident.status === "active" ? "success" : "warning"}>
-                    {selectedResident.status === "active" ? "Ativo" : "Pendente"}
-                  </Badge>
-                }
-              />
-            </div>
-          </div>
-        )}
-      </Sheet>
-    </>
-  )
-}
-
-// =============================================================================
 // MAIN DASHBOARD CONTENT
 // =============================================================================
 function ManagerDashboardContent() {
   const { addToast } = useToast()
+
+  // Panel event handlers
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(inviteCodeData.code)
+    addToast({ variant: "success", title: "Código copiado!" })
+  }
+
+  const handleRefreshCode = () => {
+    addToast({ variant: "info", title: "Código atualizado", description: "Novo código gerado" })
+  }
+
+  const handleResidentAction = (action: string, resident: Resident) => {
+    addToast({ variant: "info", title: action, description: `${resident.name} (${resident.unit})` })
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -429,8 +208,9 @@ function ManagerDashboardContent() {
 
       {/* Main Content Grid */}
       <div className="grid gap-1.5 lg:grid-cols-3">
-        {/* Left Column - Payments Table */}
+        {/* Left Column - Payments Table + Residents Panel */}
         <div className="lg:col-span-2 space-y-1.5">
+          {/* Recent Payments Card */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -488,14 +268,22 @@ function ManagerDashboardContent() {
             </div>
           </Card>
 
-          {/* Residents Panel */}
-          <ResidentsPanel />
+          {/* Residents Panel (imported from panels folder) */}
+          <ResidentsPanel
+            residents={residentsData}
+            onAction={handleResidentAction}
+          />
         </div>
 
-        {/* Right Column - Panels */}
+        {/* Right Column - Panels (imported from panels folder) */}
         <div className="space-y-1.5">
-          <SystemStatusPanel />
-          <InviteCodePanel />
+          <SystemStatusPanel status={systemStatusData} />
+
+          <InviteCodePanel
+            data={inviteCodeData}
+            onCopy={handleCopyCode}
+            onRefresh={handleRefreshCode}
+          />
 
           {/* Collection Progress */}
           <Card>
