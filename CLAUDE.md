@@ -1,25 +1,84 @@
-- avoid barrel files; only if strictly necessary;
-- don´t use any mock data
-- use Typescript strict mode; too many problems with [any] types;
-- Be sure to typecheck when you’re done making a series of code changes;
-- avoid hardcoded data or variables and inline components that should be extracted.
-- replace [isLoading] (manual loading state) with other better suited options for use case:
-    - [useTransition] for asynchronous actions (for rendering data);
-    - [useAsyncState] is for fetching data. Use it for server actions instead of manual try/catch;
-    
-- enforce TailwindCSS v4 modern pattern = CSS-first configuration
-- server actions should return results, not void. (Promise<void> return types)
-- avoid monolithic files and hardcoded inline; quick fix monolithic is dangerous!
-- don't mix server-side data fetching with UI presentation logic.
-- think twice; do not touch good working code. Only change what is asked.
-- Prefer running single tests, and not the whole test suite, for performance.
+# CLAUDE.md
 
-- useID react hook (stable across SSR/hydration) instead of Math.random() = because causes hydration problems
-    - math.random() problems:
-    - react remounts components constantly; breaks animations, transitions, and component state; terrible performance; lost focus/scroll position
+## Tech Stack
 
-Attention to:
-- inefficient data fetching and hydration delays
-- large javascript bundles (needed code splitting or dynamic imports)
+- **Framework**: Next.js 16 + React 19 (React Compiler enabled)
+- **Language**: TypeScript (strict mode)
+- **Database**: PostgreSQL + Drizzle ORM
+- **Auth**: Better Auth
+- **Styling**: TailwindCSS v4 (CSS-first configuration)
+- **Validation**: Zod + React Hook Form
 
-- Keep this simple. Don't add abstractions I didn't ask for. One file if possible.
+---
+
+## TypeScript
+
+- Use strict mode; avoid `any` types
+- Always typecheck after making code changes
+- Centralize types in `src/lib/types.ts`
+
+---
+
+## React Patterns
+
+### Async State Management
+
+Replace manual `isLoading` state with:
+
+- **`useTransition`** - for async actions that update UI/render data
+- **`useAsyncAction`** - for server actions (wraps with toast notifications)
+- **`useOptimisticAction`** - for optimistic updates
+
+### Component IDs
+
+Use `useId()` instead of `Math.random()` for stable IDs across SSR/hydration.
+
+> `Math.random()` causes: hydration mismatches, component remounts, broken animations, lost focus/scroll position.
+
+---
+
+## Server Actions
+
+- Return results, not `void` (avoid `Promise<void>` return types)
+- Use pattern: `Promise<{ success: boolean; data?: T; error?: string }>`
+- Use `useAsyncAction` hook on client instead of manual try/catch
+
+---
+
+## Styling
+
+- TailwindCSS v4 with CSS-first configuration
+- Design tokens defined in `globals.css` via `@theme`
+- Use `clsx` + `tailwind-merge` for className composition
+
+---
+
+## Architecture
+
+- Avoid barrel files (only if strictly necessary)
+- Avoid monolithic files; extract components and logic
+- Don't mix server-side data fetching with UI presentation
+- Avoid hardcoded data/variables and inline components
+- No mock data
+
+---
+
+## Performance
+
+Watch for:
+- Inefficient data fetching and hydration delays
+- Large JavaScript bundles (use code splitting / dynamic imports)
+
+---
+
+## Testing
+
+- Prefer running single tests over the whole suite
+
+---
+
+## General Principles
+
+- **Keep it simple** - don't add abstractions not asked for; one file if possible
+- **Minimal changes** - don't touch working code; only change what's asked
+- **Think twice** before modifying existing code
