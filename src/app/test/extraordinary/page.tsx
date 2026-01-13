@@ -1,20 +1,20 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "../components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/card"
-import { Badge } from "../components/ui/badge"
-import { Input } from "../components/ui/input"
-import { IconButton } from "../components/ui/icon-button"
-import { StatCard } from "../components/ui/stat-card"
-import { Progress } from "../components/ui/progress"
-import { Modal } from "../components/ui/modal"
-import { Dropdown, DropdownItem, DropdownDivider } from "../components/ui/dropdown"
-import { ToastProvider, useToast } from "../components/ui/toast"
-import { EmptyState } from "../components/ui/empty-state"
-import { FormField } from "../components/ui/form-field"
-import { Select } from "../components/ui/select"
-import { ToolButton, ToolButtonGroup } from "../components/ui/tool-button"
+import { Button } from "../components/ui/Button"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card"
+import { Badge } from "../components/ui/Badge"
+import { Input } from "../components/ui/Input"
+import { IconButton } from "../components/ui/Icon-Button"
+import { StatCard } from "../components/ui/Stat-Card"
+import { Progress } from "../components/ui/Progress"
+import { Modal } from "../components/ui/Modal"
+import { Dropdown, DropdownItem, DropdownDivider } from "../components/ui/Dropdown"
+import { ToastProvider, useToast } from "../components/ui/Toast"
+import { EmptyState } from "../components/ui/Empty-State"
+import { FormField } from "../components/ui/Form-Field"
+import { Select } from "../components/ui/Select"
+import { ToolButton, ToolButtonGroup } from "../components/ui/Tool-Button"
 import { cn } from "@/lib/utils"
 
 // Feature components from quotas
@@ -671,7 +671,7 @@ function ProjectDetail({
             <Download className="mr-1.5 h-3 w-3" /> Exportar Excel
           </DropdownItem>
           <DropdownDivider />
-          <DropdownItem onClick={() => {}} destructive>
+          <DropdownItem onClick={() => { }} destructive>
             <Trash2 className="mr-1.5 h-3 w-3" /> Eliminar Projeto
           </DropdownItem>
         </Dropdown>

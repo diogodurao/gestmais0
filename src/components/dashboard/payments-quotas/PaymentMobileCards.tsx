@@ -1,135 +1,120 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, ChevronUp, User, TrendingDown } from "lucide-react"
-import { PaymentData, type PaymentToolType } from "@/lib/types"
+import { ChevronDown, ChevronUp, TrendingDown, User } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Progress } from "@/components/ui/Progress"
 import { MONTHS_PT } from "@/lib/constants/timing"
 import { formatCurrency } from "@/lib/format"
-import { cn } from "@/lib/utils"
+import { type PaymentToolType, type PaymentData } from "@/lib/types"
 
 interface PaymentMobileCardsProps {
     data: PaymentData[]
     monthlyQuota: number
-    isEditing: boolean
     activeTool: PaymentToolType
     onCellClick: (aptId: number, monthIdx: number) => void
 }
 
-interface MobileCardProps {
-    item: PaymentData
+interface MobilePaymentCardProps {
+    apartment: PaymentData
     monthlyQuota: number
-    isEditing: boolean
     activeTool: PaymentToolType
     onCellClick: (aptId: number, monthIdx: number) => void
 }
 
-/**
- * Individual expandable card for mobile view
- */
-function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: MobileCardProps) {
+function MobilePaymentCard({
+    apartment,
+    monthlyQuota,
+    activeTool,
+    onCellClick,
+}: MobilePaymentCardProps) {
     const [isExpanded, setIsExpanded] = useState(false)
-
-    const hasDebt = item.balance > 0
+    const hasDebt = apartment.balance > 0
     const expectedTotal = 12 * monthlyQuota
-    const progressPercent = expectedTotal > 0
-        ? Math.round((item.totalPaid / expectedTotal) * 100)
-        : 0
+    const progressPercent = expectedTotal > 0 ? Math.round((apartment.totalPaid / expectedTotal) * 100) : 0
+    const isInteractive = !!activeTool
 
     return (
         <div className={cn(
-            "tech-border bg-white overflow-hidden transition-colors",
-            hasDebt && "border-gray-200"
+            "rounded-lg border bg-white overflow-hidden",
+            hasDebt ? "border-error" : "border-gray-200"
         )}>
-            {/* Card Header - Clickable to expand */}
+            {/* Header - Always visible */}
             <div
-                className="p-3 cursor-pointer active:bg-gray-50"
+                className="p-1.5 cursor-pointer"
                 onClick={() => setIsExpanded(!isExpanded)}
-                role="button"
-                tabIndex={0}
-                aria-expanded={isExpanded}
-                aria-label={isExpanded ? "Fechar detalhes" : "Expandir detalhes"}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setIsExpanded(!isExpanded)}
             >
-                <div className="flex items-start justify-between gap-3">
-                    {/* Unit & Resident */}
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-1.5">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        {/* Unit badge */}
                         <div className={cn(
-                            "shrink-0 w-10 h-10 flex items-center justify-center font-bold text-body rounded-sm border",
+                            "shrink-0 w-8 h-8 flex items-center justify-center font-medium text-body rounded border",
                             hasDebt
-                                ? "bg-error-light text-error border-gray-200"
-                                : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                ? "bg-error-light text-error border-error"
+                                : "bg-primary-light text-primary-dark border-primary"
                         )}>
-                            {item.unit}
+                            {apartment.unit}
                         </div>
+
+                        {/* Resident info */}
                         <div className="min-w-0 flex-1">
-                            {item.residentName ? (
-                                <span className="text-body font-medium text-gray-800 truncate block flex items-center gap-1">
-                                    <User className="w-3 h-3 text-gray-400 shrink-0" />
-                                    {item.residentName}
+                            {apartment.residentName ? (
+                                <span className="text-body font-medium text-gray-700 truncate block items-center gap-1">
+                                    <User className="w-3 h-3 text-gray-500 shrink-0 inline mr-1" />
+                                    {apartment.residentName}
                                 </span>
                             ) : (
-                                <span className="text-body text-gray-400 italic">Sem residente</span>
+                                <span className="text-label text-gray-500 italic">Sem residente</span>
                             )}
-                            <div className="text-label text-gray-400 mt-0.5">
-                                {formatCurrency(item.totalPaid)} de {formatCurrency(expectedTotal)}
+                            <div className="text-xs text-gray-500 mt-0.5">
+                                {formatCurrency(apartment.totalPaid)} de {formatCurrency(expectedTotal)}
                             </div>
                         </div>
                     </div>
 
-                    {/* Status & Expand */}
-                    <div className="flex items-center gap-2">
+                    {/* Status badge and chevron */}
+                    <div className="flex items-center gap-1.5">
                         <div className={cn(
-                            "px-2 py-1 rounded-sm text-label font-bold",
+                            "px-1.5 py-0.5 rounded text-xs font-medium border",
                             hasDebt
-                                ? "bg-error-light text-error border border-gray-200"
-                                : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                                ? "bg-error-light text-error border-error"
+                                : "bg-primary-light text-primary-dark border-primary"
                         )}>
                             {hasDebt ? (
-                                <span className="flex items-center gap-1">
+                                <span className="flex items-center gap-0.5">
                                     <TrendingDown className="w-3 h-3" />
-                                    {formatCurrency(item.balance)}
+                                    {formatCurrency(apartment.balance)}
                                 </span>
                             ) : (
                                 "Em dia"
                             )}
                         </div>
                         {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-gray-400" />
+                            <ChevronUp className="w-3 h-3 text-gray-500" />
                         ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                            <ChevronDown className="w-3 h-3 text-gray-500" />
                         )}
                     </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="mt-2">
-                    <div className="h-1.5 bg-gray-100 overflow-hidden rounded-full">
-                        <div
-                            className={cn(
-                                "h-full transition-all rounded-full",
-                                progressPercent >= 100 ? "bg-emerald-500" :
-                                    progressPercent >= 50 ? "bg-warning-light0" : "bg-error-light0"
-                            )}
-                            style={{ width: `${Math.min(progressPercent, 100)}%` }}
-                        />
-                    </div>
+                {/* Progress bar */}
+                <div className="mt-1.5">
+                    <Progress value={progressPercent} size="sm" />
                 </div>
             </div>
 
-            {/* Expanded Content - Month Grid */}
+            {/* Expanded content - Monthly payments grid */}
             {isExpanded && (
-                <div className="border-t border-gray-100 bg-gray-50/50 p-3">
-                    <div className="text-micro font-bold text-gray-500 uppercase tracking-tight mb-2">
-                        QUOTAS MENSAIS
+                <div className="border-t border-gray-100 bg-gray-50 p-1.5">
+                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+                        Quotas Mensais
                     </div>
 
-                    {/* Month Grid - 6 columns */}
-                    <div className="grid grid-cols-6 gap-1.5">
+                    <div className="grid grid-cols-6 gap-1">
                         {MONTHS_PT.map((monthName, idx) => {
                             const monthNum = idx + 1
-                            const payment = item.payments[monthNum]
-                            const status = payment?.status || 'pending'
-                            const isInteractive = isEditing && activeTool
+                            const payment = apartment.payments[monthNum]
+                            const status = payment?.status || "pending"
 
                             return (
                                 <button
@@ -137,27 +122,26 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                                     type="button"
                                     onClick={(e) => {
                                         e.stopPropagation()
-                                        if (isInteractive) onCellClick(item.apartmentId, idx)
+                                        if (isInteractive) onCellClick(apartment.apartmentId, idx)
                                     }}
                                     disabled={!isInteractive}
-                                    aria-label={`${monthName} - ${status === 'paid' ? 'Pago' : status === 'late' ? 'Em atraso' : 'Pendente'}`}
                                     className={cn(
-                                        "p-2 text-center transition-all border rounded-sm",
-                                        status === 'paid' && "bg-emerald-50 border-emerald-200",
-                                        status === 'late' && "bg-error-light border-gray-200",
-                                        status === 'pending' && "bg-white border-gray-200",
-                                        isInteractive && "active:scale-95 cursor-pointer",
+                                        "p-1.5 text-center transition-all border rounded",
+                                        status === "paid" && "bg-primary-light border-primary",
+                                        status === "late" && "bg-error-light border-error",
+                                        status === "pending" && "bg-white border-gray-200",
+                                        isInteractive && "cursor-pointer active:scale-95",
                                         !isInteractive && "cursor-default"
                                     )}
                                 >
-                                    <div className="text-micro font-bold text-gray-500">{monthName}</div>
+                                    <div className="text-[10px] font-medium text-gray-500">{monthName.slice(0, 3)}</div>
                                     <div className={cn(
-                                        "text-label font-mono font-bold mt-0.5",
-                                        status === 'paid' && "text-emerald-700",
-                                        status === 'late' && "text-error",
-                                        status === 'pending' && "text-gray-400"
+                                        "text-label font-bold mt-0.5",
+                                        status === "paid" && "text-primary-dark",
+                                        status === "late" && "text-error",
+                                        status === "pending" && "text-gray-500"
                                     )}>
-                                        {status === 'paid' ? "✓" : status === 'late' ? "!" : "—"}
+                                        {status === "paid" ? "✓" : status === "late" ? "!" : "—"}
                                     </div>
                                 </button>
                             )
@@ -165,21 +149,21 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
                     </div>
 
                     {/* Legend */}
-                    <div className="flex items-center justify-center gap-3 mt-3 pt-2 border-t border-gray-200">
-                        <span className="flex items-center gap-1 text-micro text-gray-500">
-                            <span className="w-2 h-2 bg-emerald-500 rounded-sm" /> Pago
+                    <div className="flex items-center justify-center gap-2 mt-1.5 pt-1.5 border-t border-gray-200">
+                        <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
+                            <span className="w-2 h-2 bg-primary rounded-sm" /> Pago
                         </span>
-                        <span className="flex items-center gap-1 text-micro text-gray-500">
+                        <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
                             <span className="w-2 h-2 bg-gray-300 rounded-sm" /> Pendente
                         </span>
-                        <span className="flex items-center gap-1 text-micro text-gray-500">
-                            <span className="w-2 h-2 bg-error-light0 rounded-sm" /> Dívida
+                        <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
+                            <span className="w-2 h-2 bg-error rounded-sm" /> Dívida
                         </span>
                     </div>
 
-                    {/* Edit mode indicator */}
-                    {isEditing && (
-                        <div className="mt-2 text-center text-micro text-info animate-pulse">
+                    {/* Edit mode hint */}
+                    {activeTool && (
+                        <div className="mt-1.5 text-center text-xs text-primary animate-pulse">
                             Toque num mês para alterar
                         </div>
                     )}
@@ -192,45 +176,43 @@ function MobileCard({ item, monthlyQuota, isEditing, activeTool, onCellClick }: 
 export function PaymentMobileCards({
     data,
     monthlyQuota,
-    isEditing,
     activeTool,
     onCellClick
 }: PaymentMobileCardsProps) {
     if (data.length === 0) {
         return (
             <div className="flex items-center justify-center h-48 p-4">
-                <p className="text-label font-bold text-gray-400 uppercase tracking-widest text-center">
-                    [ Sem frações ]
+                <p className="text-label font-medium text-gray-400 uppercase tracking-wide text-center">
+                    Sem frações
                 </p>
             </div>
         )
     }
 
     // Calculate totals for summary
-    const totalPaid = data.reduce((sum, item) => sum + item.totalPaid, 0)
-    const totalDebt = data.reduce((sum, item) => sum + item.balance, 0)
+    const totalCollected = data.reduce((sum, item) => sum + item.totalPaid, 0)
+    const totalOverdue = data.reduce((sum, item) => sum + item.balance, 0)
 
     return (
-        <div className="p-3 space-y-2">
-            {data.map((item) => (
-                <MobileCard
-                    key={item.apartmentId}
-                    item={item}
+        <div className="p-2 space-y-2">
+            {data.map((apartment) => (
+                <MobilePaymentCard
+                    key={apartment.apartmentId}
+                    apartment={apartment}
                     monthlyQuota={monthlyQuota}
-                    isEditing={isEditing}
                     activeTool={activeTool}
                     onCellClick={onCellClick}
                 />
             ))}
 
-            {/* Summary Card */}
-            <div className="tech-border bg-gray-100 p-3 mt-4">
-                <div className="flex items-center justify-between text-label font-bold uppercase tracking-tight">
+            {/* Summary */}
+            <div className="rounded-lg bg-gray-50 border border-gray-200 p-1.5">
+                <div className="flex items-center justify-between text-label font-medium uppercase tracking-wide">
                     <span className="text-gray-500">{data.length} Frações</span>
-                    <div className="flex items-center gap-3">
-                        <span className="text-emerald-700">{formatCurrency(totalPaid)} Cobrado</span>
-                        {totalDebt > 0 && (
-                            <span className="text-error">{formatCurrency(totalDebt)} Dívida</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-primary-dark">{formatCurrency(totalCollected)} Cobrado</span>
+                        {totalOverdue > 0 && (
+                            <span className="text-error">{formatCurrency(totalOverdue)} Dívida</span>
                         )}
                     </div>
                 </div>

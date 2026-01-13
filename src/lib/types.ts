@@ -21,7 +21,7 @@ export interface PaymentData {
 /**
  * Tool modes for the payment grid
  */
-export type PaymentToolType = "paid" | "late" | "clear" | null
+export type PaymentToolType = "markPaid" | "markPending" | "markLate" | null
 
 /**
  * Filter modes for displaying payments

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { Progress } from "../../ui/progress"
+import { Progress } from "../../ui/Progress"
 import { ChevronDown, ChevronUp, TrendingDown, User } from "lucide-react"
 import {
   type ApartmentData,

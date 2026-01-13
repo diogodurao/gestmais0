@@ -2,21 +2,28 @@
 
 import { useState, useEffect, useCallback, useMemo, useOptimistic, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { useDebouncedCallback } from "use-debounce"
+import {
+    DollarSign, Users, TrendingDown,
+    Check, X, RotateCcw, Search, Filter,
+    MoreVertical, Download, FileText, Inbox,
+} from "lucide-react"
 import { updatePaymentStatus } from "@/lib/actions/payments-quotas"
 import { deleteApartment } from "@/lib/actions/building"
+import { formatCurrency } from "@/lib/format"
 import { PaymentDesktopTable } from "./PaymentDesktopTable"
 import { PaymentMobileCards } from "./PaymentMobileCards"
-import { PaymentGridHeader } from "./components/PaymentGridHeader"
-import { PaymentGridToolbar } from "./components/PaymentGridToolbar"
-import { PaymentGridFooter } from "./components/PaymentGridFooter"
+import { Card, CardContent } from "@/components/ui/Card"
+import { Input } from "@/components/ui/Input"
+import { StatCard } from "@/components/ui/Stat-Card"
+import { ToolButton, ToolButtonGroup } from "@/components/ui/Tool-Button"
+import { Dropdown, DropdownTrigger, DropdownContent, DropdownItem } from "@/components/ui/Dropdown"
+import { EmptyState } from "@/components/ui/Empty-State"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { useToast } from "@/components/ui/Toast"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 import {
     type PaymentToolType,
     type PaymentFilterMode,
-    type PaymentStats,
     type PaymentData
 } from "@/lib/types"
 import { PAYMENT_TOOL_TO_STATUS } from "@/lib/constants/ui"
@@ -32,15 +39,15 @@ interface PaymentGridProps {
 export function PaymentGrid({
     data,
     monthlyQuota,
-    buildingId,
+    buildingId: _buildingId,
     year,
     readOnly = false,
 }: PaymentGridProps) {
     const router = useRouter()
-    const { toast } = useToast()
+    const { addToast } = useToast()
     const [isPending, startTransition] = useTransition()
 
-    // 1. Native Optimistic State
+    // Optimistic State
     const [optimisticData, addOptimistic] = useOptimistic(
         data,
         (state: PaymentData[], action: { aptId: number; monthNum: number; status: string }) => {
@@ -55,19 +62,11 @@ export function PaymentGrid({
                         }
                     }
 
-                    // Recalculate totals
                     const totalPaid = Object.values(newPayments).reduce((sum, p) =>
                         sum + (p.status === 'paid' ? (p.amount || monthlyQuota) : 0), 0
                     )
-                    
+
                     const currentMonth = new Date().getMonth() + 1
-                    // Only count up to current month for expected total, or full year? 
-                    // Keeping logic consistent with previous implementation:
-                    // If the previous code calculated balance based on elapsed months, we replicate that.
-                    // Assuming simple logic: expected = currentMonth * quota (if active year is current)
-                    // If viewing past year, expected is 12 * quota.
-                    // For safety, let's assume the previous logic for balance was correct or handled in 'data' prop.
-                    // Re-implementing simplified balance logic for optimistic UI:
                     const isCurrentYear = new Date().getFullYear() === year
                     const monthsToCount = isCurrentYear ? currentMonth : 12
                     const expectedTotal = monthsToCount * monthlyQuota
@@ -87,7 +86,6 @@ export function PaymentGrid({
 
     const [searchTerm, setSearchTerm] = useState("")
     const [highlightedId, setHighlightedId] = useState<number | null>(null)
-
     const [activeTool, setActiveTool] = useState<PaymentToolType>(null)
     const [filterMode, setFilterMode] = useState<PaymentFilterMode>("all")
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -101,29 +99,29 @@ export function PaymentGrid({
         }
     }, [highlightedId])
 
-    // Delete action (Keep useAsyncAction for non-optimistic destructive actions)
+    // Delete action
     const { execute: removeApartment } = useAsyncAction(deleteApartment, {
         onSuccess: () => {
             router.refresh()
-            toast({
+            addToast({
                 title: "Sucesso",
-                description: "Fração removida com sucesso"
+                description: "Fração removida com sucesso",
+                variant: "success"
             })
         },
         onError: () => {
-            toast({
+            addToast({
                 title: "Erro",
                 description: "Não foi possível remover a fração",
-                variant: "destructive"
+                variant: "error"
             })
         }
     })
 
-    // Filter and search logic (Use optimisticData)
+    // Filter and search logic
     const filteredData = useMemo(() => {
         let result = optimisticData
 
-        // Apply search filter
         if (searchTerm) {
             const term = searchTerm.toLowerCase()
             result = result.filter(apt =>
@@ -132,14 +130,12 @@ export function PaymentGrid({
             )
         }
 
-        // Apply status filter
         if (filterMode !== "all") {
             result = result.filter(apt => {
                 if (filterMode === "paid") return apt.balance === 0
                 if (filterMode === "late") return apt.balance > 0
                 if (filterMode === "pending") {
-                    const hasAnyPending = Object.values(apt.payments).some(p => p.status === 'pending')
-                    return hasAnyPending
+                    return Object.values(apt.payments).some(p => p.status === 'pending')
                 }
                 return true
             })
@@ -149,67 +145,41 @@ export function PaymentGrid({
     }, [optimisticData, searchTerm, filterMode])
 
     // Calculate stats
-    const stats = useMemo<PaymentStats>(() => {
-        const totalCollected = optimisticData.reduce((acc, apt) => acc + apt.totalPaid, 0)
-        const totalOverdue = optimisticData.reduce((acc, apt) => acc + apt.balance, 0)
-        const paidCount = optimisticData.filter(apt => apt.balance === 0).length
-        const overdueCount = optimisticData.filter(apt => apt.balance > 0).length
-        return { totalCollected, totalOverdue, paidCount, overdueCount, total: optimisticData.length }
-    }, [optimisticData])
+    const totalCollected = optimisticData.reduce((sum, apt) => sum + apt.totalPaid, 0)
+    const totalOverdue = optimisticData.reduce((sum, apt) => sum + apt.balance, 0)
+    const paidCount = optimisticData.filter(apt => apt.balance === 0).length
+    const overdueCount = optimisticData.filter(apt => apt.balance > 0).length
 
-    // Debounced cell click handler
-    const handleCellClick = useDebouncedCallback(async (
-        aptId: number,
-        monthIdx: number
-    ): Promise<void> => {
+    // Cell click handler - optimistic updates with background sync
+    const handleCellClick = useCallback((aptId: number, monthIdx: number) => {
         if (!activeTool || readOnly) return
 
         const dbStatus = PAYMENT_TOOL_TO_STATUS[activeTool]
         const monthNum = monthIdx + 1
 
-        // Use startTransition to wrap the Optimistic Update + Server Action
+        // Optimistic update - UI changes immediately
         startTransition(async () => {
-            // 1. Update UI immediately
             addOptimistic({ aptId, monthNum, status: dbStatus })
 
-            // 2. Call Server
-            const result = await updatePaymentStatus(aptId, monthNum, year, dbStatus as any)
+            // Background sync - no blocking
+            const result = await updatePaymentStatus(aptId, monthNum, year, dbStatus as 'paid' | 'late' | 'pending')
 
-            if (result.success) {
-                // If successful, router.refresh() fetches new data.
-                // React detects the prop change and discards the optimistic state.
-                router.refresh()
-            } else {
-                toast({
+            if (!result.success) {
+                // Only show error toast on failure (optimistic update will be reverted on next refresh)
+                addToast({
                     title: "Erro",
                     description: "Não foi possível atualizar o pagamento",
-                    variant: "destructive"
+                    variant: "error"
                 })
-                // When transition ends without data update, UI reverts automatically
+                router.refresh() // Revert optimistic state
             }
         })
-    }, 150)
+    }, [activeTool, readOnly, year, startTransition, addOptimistic, addToast, router])
 
-    // Search handler
-    const handleSearch = useCallback((e: React.FormEvent) => {
-        e.preventDefault()
-        if (!searchTerm) return
-
-        const match = filteredData[0]
-        if (match) {
-            setHighlightedId(match.apartmentId)
-            toast({
-                title: "Fração encontrada",
-                description: `${match.unit} - ${match.residentName || 'Sem residente'}`,
-            })
-        } else {
-            toast({
-                title: "Não encontrado",
-                description: "Nenhuma fração corresponde à pesquisa",
-                variant: "destructive"
-            })
-        }
-    }, [searchTerm, filteredData, toast])
+    // Tool toggle
+    const handleToolClick = (tool: PaymentToolType) => {
+        setActiveTool(prev => prev === tool ? null : tool)
+    }
 
     // Delete handlers
     const handleDeleteClick = useCallback((aptId: number) => {
@@ -225,7 +195,7 @@ export function PaymentGrid({
     }
 
     return (
-        <div className="flex flex-col h-full min-h-0 bg-white tech-border overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-1.5">
             <ConfirmModal
                 isOpen={showDeleteConfirm}
                 title="Eliminar Fração"
@@ -233,52 +203,169 @@ export function PaymentGrid({
                 onConfirm={handleDeleteConfirm}
                 onCancel={() => setShowDeleteConfirm(false)}
                 variant="danger"
-                confirmLabel="Eliminar"
-                cancelLabel="Cancelar"
+                confirmText="Eliminar"
+                cancelText="Cancelar"
             />
 
-            <PaymentGridHeader
-                year={year}
-                stats={stats}
-            />
+            {/* Page header */}
+            <div className="mb-1.5">
+                <h1 className="text-[14px] font-semibold text-gray-800">Quotas Mensais</h1>
+                <p className="text-[10px] text-gray-500">Gestão de pagamentos de quotas do condomínio - {year}</p>
+            </div>
 
+            {/* Stats */}
+            <div className="mb-1.5 grid grid-cols-2 gap-1.5 lg:grid-cols-4">
+                <StatCard
+                    label="Total Cobrado"
+                    value={formatCurrency(totalCollected)}
+                    icon={<DollarSign className="h-4 w-4" />}
+                />
+                <StatCard
+                    label="Frações"
+                    value={optimisticData.length.toString()}
+                    icon={<Users className="h-4 w-4" />}
+                />
+                <StatCard
+                    label="Em Dia"
+                    value={paidCount.toString()}
+                    icon={<Check className="h-4 w-4" />}
+                />
+                <StatCard
+                    label="Em Dívida"
+                    value={formatCurrency(totalOverdue)}
+                    change={overdueCount > 0 ? { value: `${overdueCount} frações`, positive: false } : undefined}
+                    icon={<TrendingDown className="h-4 w-4" />}
+                />
+            </div>
+
+            {/* Toolbar */}
             {!readOnly && (
-                <PaymentGridToolbar
+                <Card className="mb-1.5">
+                    <CardContent className="flex flex-wrap items-center justify-between gap-1.5">
+                        {/* Tools */}
+                        <ToolButtonGroup label="Ferramentas">
+                            <ToolButton
+                                icon={<Check className="h-3 w-3" />}
+                                label="Pago"
+                                active={activeTool === "markPaid"}
+                                onClick={() => handleToolClick("markPaid")}
+                                variant="success"
+                            />
+                            <ToolButton
+                                icon={<RotateCcw className="h-3 w-3" />}
+                                label="Pendente"
+                                active={activeTool === "markPending"}
+                                onClick={() => handleToolClick("markPending")}
+                                variant="warning"
+                            />
+                            <ToolButton
+                                icon={<X className="h-3 w-3" />}
+                                label="Dívida"
+                                active={activeTool === "markLate"}
+                                onClick={() => handleToolClick("markLate")}
+                                variant="error"
+                            />
+                        </ToolButtonGroup>
+
+                        {/* Search & Filter */}
+                        <div className="flex items-center gap-1.5">
+                            <div className="relative">
+                                <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+                                <Input
+                                    type="text"
+                                    placeholder="Pesquisar..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-6 w-32 h-7 text-[10px]"
+                                />
+                            </div>
+
+                            <Dropdown>
+                                <DropdownTrigger className="inline-flex items-center justify-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">
+                                    <Filter className="h-3 w-3" />
+                                    <span className="hidden sm:inline">
+                                        {filterMode === "all" ? "Todos" : filterMode === "paid" ? "Em dia" : filterMode === "late" ? "Em dívida" : "Pendentes"}
+                                    </span>
+                                </DropdownTrigger>
+                                <DropdownContent>
+                                    <DropdownItem onClick={() => setFilterMode("all")}>Todos</DropdownItem>
+                                    <DropdownItem onClick={() => setFilterMode("paid")}>Em dia</DropdownItem>
+                                    <DropdownItem onClick={() => setFilterMode("pending")}>Pendentes</DropdownItem>
+                                    <DropdownItem onClick={() => setFilterMode("late")}>Em dívida</DropdownItem>
+                                </DropdownContent>
+                            </Dropdown>
+
+                            <Dropdown>
+                                <DropdownTrigger className="inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 bg-white text-gray-600 hover:bg-gray-50">
+                                    <MoreVertical className="h-3 w-3" />
+                                </DropdownTrigger>
+                                <DropdownContent align="end">
+                                    <DropdownItem onClick={() => addToast({ variant: "info", title: "Exportar", description: "Exportando para PDF..." })}>
+                                        <FileText className="mr-1.5 h-3 w-3" /> Exportar PDF
+                                    </DropdownItem>
+                                    <DropdownItem onClick={() => addToast({ variant: "info", title: "Exportar", description: "Exportando para Excel..." })}>
+                                        <Download className="mr-1.5 h-3 w-3" /> Exportar Excel
+                                    </DropdownItem>
+                                </DropdownContent>
+                            </Dropdown>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Edit mode indicator */}
+            {activeTool && (
+                <div className="rounded-lg bg-primary-light border border-primary p-1.5 text-center mb-1.5">
+                    <span className="text-label font-medium text-primary-dark">
+                        Modo de edição ativo: clique nas células para {activeTool === 'markPaid' ? 'marcar como pago' : activeTool === 'markLate' ? 'marcar como em dívida' : 'marcar como pendente'}
+                        {isPending && <span className="ml-2 italic opacity-70">— A guardar...</span>}
+                    </span>
+                </div>
+            )}
+
+            {/* Desktop Table */}
+            <PaymentDesktopTable
+                data={filteredData}
+                monthlyQuota={monthlyQuota}
+                readOnly={readOnly}
+                activeTool={activeTool}
+                highlightedId={highlightedId}
+                onCellClick={handleCellClick}
+                onDelete={handleDeleteClick}
+            />
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden">
+                <PaymentMobileCards
+                    data={filteredData}
+                    monthlyQuota={monthlyQuota}
                     activeTool={activeTool}
-                    onToolChange={setActiveTool}
-                    filterMode={filterMode}
-                    onFilterChange={setFilterMode}
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    onSearchSubmit={handleSearch}
-                    isSaving={isPending}
+                    onCellClick={handleCellClick}
+                />
+            </div>
+
+            {/* Empty state */}
+            {filteredData.length === 0 && (
+                <EmptyState
+                    icon={<Inbox className="h-6 w-6" />}
+                    title="Sem frações"
+                    description="Nenhum registo corresponde ao filtro"
+                    className="h-48 rounded-lg border border-dashed border-gray-300 bg-gray-50"
                 />
             )}
 
-            {/* Content */}
-            <div className="flex-1 overflow-auto relative">
-                <PaymentDesktopTable
-                    data={filteredData}
-                    monthlyQuota={monthlyQuota}
-                    readOnly={readOnly}
-                    activeTool={activeTool}
-                    highlightedId={highlightedId}
-                    onCellClick={handleCellClick}
-                    onDelete={handleDeleteClick}
-                />
-
-                <div className="md:hidden">
-                    <PaymentMobileCards
-                        data={filteredData}
-                        monthlyQuota={monthlyQuota}
-                        isEditing={!readOnly && !!activeTool}
-                        activeTool={activeTool}
-                        onCellClick={handleCellClick}
-                    />
-                </div>
+            {/* Footer Legend */}
+            <div className="flex items-center justify-center gap-3 py-1.5 mt-1.5 border-t border-gray-100 bg-white">
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <span className="w-2 h-2 bg-primary rounded" /> Pago
+                </span>
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <span className="w-2 h-2 bg-gray-300 rounded" /> Pendente
+                </span>
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <span className="w-2 h-2 bg-error rounded" /> Em dívida
+                </span>
             </div>
-
-            <PaymentGridFooter />
         </div>
     )
 }

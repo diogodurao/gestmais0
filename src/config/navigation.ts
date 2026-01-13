@@ -59,7 +59,6 @@ export const managerNavItems: NavItem[] = [
         label: "Quotas Extra",
         icon: Hammer,
         requiresSetup: true,
-        requiresSubscription: true,
     },
     {
         href: "/dashboard/calendar",

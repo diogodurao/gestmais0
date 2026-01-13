@@ -10,7 +10,7 @@ import {
     type PaymentStatusSummary
 } from "@/lib/actions/payment-status"
 import { SkeletonCompactCard } from "@/components/ui/Skeleton"
-import { PaymentStatusDisplay } from "./components/PaymentStatusDisplay"
+import { PaymentStatusDisplay } from "./PaymentStatusDisplay"
 
 interface PaymentStatusCardProps {
     userId?: string

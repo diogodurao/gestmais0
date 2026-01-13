@@ -16,9 +16,9 @@ export const OCCURRENCE_STATUS_CONFIG = {
 } as const
 
 export const PAYMENT_TOOL_TO_STATUS = {
-    paid: 'paid',
-    late: 'late',
-    clear: 'pending',
+    markPaid: 'paid',
+    markLate: 'late',
+    markPending: 'pending',
 } as const
 
 export const POLL_TYPE_CONFIG = {

@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
-import { getOccurrences } from "@/components/dashboard/occurrences/actions"
+import { getOccurrences } from "@/lib/actions/occurrences"
 import { ROUTES } from "@/lib/routes"
 import { OccurrencesList } from "@/components/dashboard/occurrences/OccurrencesList"
 

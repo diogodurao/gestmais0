@@ -22,7 +22,7 @@ interface Props {
 }
 
 export function EventModal({ isOpen, onClose, buildingId, initialDate, event, readOnly }: Props) {
-    const { toast } = useToast()
+    const { addToast } = useToast()
     const isEditing = !!event
 
     const [title, setTitle] = useState(event?.title || "")
@@ -46,7 +46,7 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
 
     const handleSubmit = async () => {
         if (!title || !type || !startDate) {
-            toast({ title: "Erro", description: "Preencha os campos obrigatórios", variant: "destructive" })
+            addToast({ title: "Erro", description: "Preencha os campos obrigatórios", variant: "error" })
             return
         }
 
@@ -59,10 +59,10 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                 startTime: startTime || null,
             })
             if (result.success) {
-                toast({ title: "Sucesso", description: "Evento atualizado" })
+                addToast({ title: "Sucesso", description: "Evento atualizado", variant: "success" })
                 onClose()
             } else {
-                toast({ title: "Erro", description: result.error, variant: "destructive" })
+                addToast({ title: "Erro", description: result.error, variant: "error" })
             }
         } else {
             const result = await createCalendarEvent({
@@ -72,10 +72,10 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                 recurrence,
             })
             if (result.success) {
-                toast({ title: "Sucesso", description: `${result.data.count} evento(s) criado(s)` })
+                addToast({ title: "Sucesso", description: `${result.data.count} evento(s) criado(s)`, variant: "success" })
                 onClose()
             } else {
-                toast({ title: "Erro", description: result.error, variant: "destructive" })
+                addToast({ title: "Erro", description: result.error, variant: "error" })
             }
         }
 
@@ -89,10 +89,10 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
         setIsLoading(true)
         const result = await deleteCalendarEvent(event.id)
         if (result.success) {
-            toast({ title: "Sucesso", description: "Evento eliminado" })
+            addToast({ title: "Sucesso", description: "Evento eliminado", variant: "success" })
             onClose()
         } else {
-            toast({ title: "Erro", description: result.error, variant: "destructive" })
+            addToast({ title: "Erro", description: result.error, variant: "error" })
         }
         setIsLoading(false)
     }
@@ -208,16 +208,14 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                             {(props) => (
                                 <Select
                                     {...props}
-                                    options={[
-                                        { value: "none", label: "Não repetir" },
-                                        { value: "weekly", label: "Semanal (4x)" },
-                                        { value: "biweekly", label: "Quinzenal (4x)" },
-                                        { value: "monthly", label: "Mensal (4x)" },
-                                    ]}
                                     value={recurrence}
                                     onChange={(e) => setRecurrence(e.target.value as typeof recurrence)}
-                                    fullWidth
-                                />
+                                >
+                                    <option value="none">Não repetir</option>
+                                    <option value="weekly">Semanal (4x)</option>
+                                    <option value="biweekly">Quinzenal (4x)</option>
+                                    <option value="monthly">Mensal (4x)</option>
+                                </Select>
                             )}
                         </FormControl>
                         <FormError />
@@ -227,7 +225,7 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                 {!readOnly && (
                     <div className="flex gap-2 pt-2">
                         {isEditing && (
-                            <Button variant="danger" onClick={handleDelete} disabled={isLoading}>
+                            <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={handleDelete} disabled={isLoading}>
                                 Eliminar
                             </Button>
                         )}
@@ -242,7 +240,7 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                 )}
 
                 {readOnly && (
-                    <Button variant="outline" onClick={onClose} fullWidth>
+                    <Button variant="outline" onClick={onClose} className="w-full">
                         Fechar
                     </Button>
                 )}
