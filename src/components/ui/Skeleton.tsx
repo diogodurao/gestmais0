@@ -50,6 +50,20 @@ export function SkeletonCard({ className }: SkeletonProps) {
   )
 }
 
+export function SkeletonCompactCard({ className }: SkeletonProps) {
+  return (
+    <div className={cn("rounded-md border border-gray-200 bg-white p-3", className)}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="space-y-1.5 flex-1">
+          <Skeleton className="h-3 w-1/3" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </div>
+    </div>
+  )
+}
+
 export function SkeletonTable({ rows = 5 }: { rows?: number }) {
   return (
     <div className="rounded-md border border-gray-200 overflow-hidden">

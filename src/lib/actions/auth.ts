@@ -112,7 +112,7 @@ export async function registerAction(
         },
       }
     }
-
+    
     // Success - redirect will happen in the component based on role
     return { success: true, role }
   } catch (err) {
