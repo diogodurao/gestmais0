@@ -4,13 +4,13 @@ import { db } from "@/db"
 import { user, building } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { ActionResult } from "@/lib/types"
 import { ROUTES } from "@/lib/routes"
 import { updateUserProfile } from "@/lib/actions/user"
 
 // Import original actions
-import { joinBuilding as _joinBuilding, claimApartment as _claimApartment } from "@/components/dashboard/settings/actions"
+import { joinBuilding as _joinBuilding, claimApartment as _claimApartment } from "@/lib/actions/building"
 
 // Wrap re-exports in async functions to satisfy "use server" requirements
 export async function joinBuilding(code: string) {

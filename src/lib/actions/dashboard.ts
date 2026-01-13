@@ -1,6 +1,6 @@
 "use server"
 
-import { getResidentApartment, getManagerBuildings, getBuilding, getBuildingApartments, getResidentBuildingDetails } from "@/components/dashboard/settings/actions"
+import { getResidentApartment, getManagerBuildings, getBuilding, getBuildingApartments, getResidentBuildingDetails } from "@/lib/actions/building"
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
 import { isManager, isResident } from "@/lib/permissions"
 import type { SessionUser, DashboardInitialData, ManagedBuilding } from "@/lib/types"

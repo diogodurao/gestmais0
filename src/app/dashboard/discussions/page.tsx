@@ -1,6 +1,6 @@
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
-import { getDiscussions } from "@/components/dashboard/discussions/actions"
+import { getDiscussions } from "@/lib/actions/discussions"
 import { ROUTES } from "@/lib/routes"
 import { DiscussionsList } from "@/components/dashboard/discussions/DiscussionsList"
 

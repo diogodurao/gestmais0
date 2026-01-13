@@ -48,7 +48,7 @@ export default function ResidentOnboardingLayout({
             <div className="max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-2">
+                    <div className="text-label font-mono text-slate-400 uppercase tracking-widest mb-2">
                         NOVO PORTAL DE RESIDENTE
                     </div>
                     <h1 className="text-2xl font-bold text-slate-800 uppercase tracking-wide">
@@ -69,7 +69,7 @@ export default function ResidentOnboardingLayout({
                         return (
                             <div key={step.id} className="flex items-center">
                                 <div
-                                    className={`flex items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase transition-colors ${isCurrent
+                                    className={`flex items-center gap-2 px-3 py-2 text-label font-bold uppercase transition-colors ${isCurrent
                                         ? "bg-blue-600 text-white"
                                         : isComplete
                                             ? "bg-emerald-100 text-emerald-700"

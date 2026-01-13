@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, cleanup } from "@testing-library/react"
 import { describe, it, expect, vi, afterEach } from "vitest"
 import { ApartmentRow } from "../ApartmentRow"
-import { type ApartmentPaymentData } from "../../actions"
+import { type ApartmentPaymentData } from "@/lib/actions/extraordinary-projects"
 
 // Mock Badge since it's a UI component
 vi.mock("@/components/ui/Badge", () => ({

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Check } from "lucide-react"
-import { updateBuilding } from "@/components/dashboard/settings/actions"
+import { updateBuilding } from "@/lib/actions/building"
 import { isValidNif, isValidIban } from "@/lib/validations"
 
 type BuildingData = {

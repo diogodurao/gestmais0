@@ -74,6 +74,8 @@
   --font-mono: ui-monospace, monospace;
 
   /* Font Sizes */
+  --text-micro: 8px;
+  --text-xs: 9px;
   --text-label: 10px;
   --text-body: 11px;
   --text-base: 12px;
@@ -142,6 +144,40 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background: var(--color-gray-400);
+  }
+}
+
+/* ============================================
+   TYPOGRAPHY UTILITIES
+   ============================================ */
+
+@layer utilities {
+  .text-label {
+    font-size: var(--text-label);
+    font-weight: var(--font-medium);
+    line-height: var(--line-height-tight);
+    color: var(--color-gray-500);
+  }
+
+  .text-body {
+    font-size: var(--text-body);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-normal);
+    color: var(--color-gray-600);
+  }
+
+  .text-subtitle {
+    font-size: var(--text-subtitle);
+    font-weight: var(--font-medium);
+    line-height: var(--line-height-tight);
+    color: var(--color-gray-700);
+  }
+
+  .text-heading {
+    font-size: var(--text-heading);
+    font-weight: var(--font-semibold);
+    line-height: var(--line-height-tight);
+    color: var(--color-gray-800);
   }
 }
 

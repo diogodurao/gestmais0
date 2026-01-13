@@ -28,30 +28,30 @@ export function DesktopPaymentTable({
   className,
 }: DesktopPaymentTableProps) {
   return (
-    <div className={cn("hidden sm:block overflow-x-auto rounded-lg border border-[#E9ECEF]", className)}>
-      <table className="w-full border-collapse text-[10px]">
+    <div className={cn("hidden sm:block overflow-x-auto rounded-lg border border-gray-200", className)}>
+      <table className="w-full border-collapse text-label">
         <thead>
-          <tr className="bg-[#F8F9FA] border-b border-[#E9ECEF]">
+          <tr className="bg-gray-50 border-b border-gray-200">
             {/* Sticky columns - Unit & Resident */}
-            <th className="sticky left-0 z-10 bg-[#F8F9FA] px-1.5 py-1 text-left text-[9px] font-medium uppercase tracking-wide text-[#8E9AAF] border-r border-[#E9ECEF] w-12">
+            <th className="sticky left-0 z-10 bg-gray-50 px-1.5 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500 border-r border-gray-200 w-12">
               Fração
             </th>
-            <th className="sticky left-12 z-10 bg-[#F8F9FA] px-1.5 py-1 text-left text-[9px] font-medium uppercase tracking-wide text-[#8E9AAF] border-r border-[#E9ECEF] w-28">
+            <th className="sticky left-12 z-10 bg-gray-50 px-1.5 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500 border-r border-gray-200 w-28">
               Residente
             </th>
 
             {/* Month columns */}
             {MONTHS.map((month) => (
-              <th key={month} className="px-1.5 py-1 text-center text-[9px] font-medium uppercase tracking-wide text-[#8E9AAF] w-12">
+              <th key={month} className="px-1.5 py-1 text-center text-xs font-medium uppercase tracking-wide text-gray-500 w-12">
                 {month}
               </th>
             ))}
 
             {/* Sticky columns - Totals */}
-            <th className="sticky right-16 z-10 bg-[#F8F9FA] px-1.5 py-1 text-right text-[9px] font-medium uppercase tracking-wide text-[#8E9AAF] border-l border-[#E9ECEF] w-16">
+            <th className="sticky right-16 z-10 bg-gray-50 px-1.5 py-1 text-right text-xs font-medium uppercase tracking-wide text-gray-500 border-l border-gray-200 w-16">
               Pago
             </th>
-            <th className="sticky right-0 z-10 bg-[#F8F9FA] px-1.5 py-1 text-right text-[9px] font-medium uppercase tracking-wide text-[#8E9AAF] w-16">
+            <th className="sticky right-0 z-10 bg-gray-50 px-1.5 py-1 text-right text-xs font-medium uppercase tracking-wide text-gray-500 w-16">
               Dívida
             </th>
           </tr>
@@ -61,18 +61,18 @@ export function DesktopPaymentTable({
             <tr
               key={apt.id}
               className={cn(
-                "border-b border-[#F1F3F5] transition-colors hover:bg-[#F8F9FA]",
-                idx % 2 === 1 && "bg-[#FAFBFC]"
+                "border-b border-gray-100 transition-colors hover:bg-gray-50",
+                idx % 2 === 1 && "bg-gray-50"
               )}
             >
               {/* Unit */}
-              <td className="sticky left-0 z-10 bg-inherit px-1.5 py-1 font-medium text-[#343A40] border-r border-[#E9ECEF]">
+              <td className="sticky left-0 z-10 bg-inherit px-1.5 py-1 font-medium text-gray-800 border-r border-gray-200">
                 {apt.unit}
               </td>
 
               {/* Resident */}
-              <td className="sticky left-12 z-10 bg-inherit px-1.5 py-1 text-[#495057] border-r border-[#E9ECEF] truncate max-w-28">
-                {apt.residentName || <span className="text-[#ADB5BD] italic">Sem residente</span>}
+              <td className="sticky left-12 z-10 bg-inherit px-1.5 py-1 text-gray-700 border-r border-gray-200 truncate max-w-28">
+                {apt.residentName || <span className="text-gray-400 italic">Sem residente</span>}
               </td>
 
               {/* Payment cells */}
@@ -89,11 +89,11 @@ export function DesktopPaymentTable({
                       disabled={!isInteractive}
                       onClick={() => isInteractive && onCellClick(apt.id, monthIdx)}
                       className={cn(
-                        "w-full h-6 flex items-center justify-center rounded text-[9px] font-medium transition-all",
-                        status === "paid" && "bg-[#E8F0EA] text-[#6A9B72]",
-                        status === "late" && "bg-[#F9ECEE] text-[#B86B73]",
-                        status === "pending" && "text-[#ADB5BD]",
-                        isInteractive && "cursor-crosshair hover:ring-1 hover:ring-[#8FB996]",
+                        "w-full h-6 flex items-center justify-center rounded text-xs font-medium transition-all",
+                        status === "paid" && "bg-primary-light text-primary-dark",
+                        status === "late" && "bg-error-light text-error",
+                        status === "pending" && "text-gray-400",
+                        isInteractive && "cursor-crosshair hover:ring-1 hover:ring-primary",
                         !isInteractive && "cursor-default"
                       )}
                     >
@@ -104,14 +104,14 @@ export function DesktopPaymentTable({
               })}
 
               {/* Total paid */}
-              <td className="sticky right-16 z-10 bg-inherit px-1.5 py-1 text-right font-mono font-medium text-[#6A9B72] border-l border-[#E9ECEF]">
+              <td className="sticky right-16 z-10 bg-inherit px-1.5 py-1 text-right font-medium text-primary-dark border-l border-gray-200">
                 {formatCurrency(apt.totalPaid)}
               </td>
 
               {/* Balance/Debt */}
               <td className={cn(
-                "sticky right-0 z-10 bg-inherit px-1.5 py-1 text-right font-mono font-medium",
-                apt.balance > 0 ? "text-[#B86B73] bg-[#F9ECEE]" : "text-[#ADB5BD]"
+                "sticky right-0 z-10 bg-inherit px-1.5 py-1 text-right font-medium",
+                apt.balance > 0 ? "text-error bg-error-light" : "text-gray-400"
               )}>
                 {formatCurrency(apt.balance)}
               </td>
@@ -142,13 +142,13 @@ export function PaymentGridSummary({
   className,
 }: PaymentGridSummaryProps) {
   return (
-    <div className={cn("rounded-lg bg-[#F8F9FA] border border-[#E9ECEF] p-1.5", className)}>
-      <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-wide">
-        <span className="text-[#8E9AAF]">{count} Frações</span>
+    <div className={cn("rounded-lg bg-gray-50 border border-gray-200 p-1.5", className)}>
+      <div className="flex items-center justify-between text-label font-medium uppercase tracking-wide">
+        <span className="text-gray-500">{count} Frações</span>
         <div className="flex items-center gap-2">
-          <span className="text-[#6A9B72]">{formatCurrency(totalCollected)} Cobrado</span>
+          <span className="text-primary-dark">{formatCurrency(totalCollected)} Cobrado</span>
           {totalOverdue > 0 && (
-            <span className="text-[#B86B73]">{formatCurrency(totalOverdue)} Dívida</span>
+            <span className="text-error">{formatCurrency(totalOverdue)} Dívida</span>
           )}
         </div>
       </div>
@@ -167,15 +167,15 @@ interface PaymentGridLegendProps {
 
 export function PaymentGridLegend({ className }: PaymentGridLegendProps) {
   return (
-    <div className={cn("flex items-center justify-center gap-3 py-1.5 border-t border-[#F1F3F5]", className)}>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#8FB996] rounded" /> Pago
+    <div className={cn("flex items-center justify-center gap-3 py-1.5 border-t border-gray-100", className)}>
+      <span className="flex items-center gap-1 text-xs text-gray-500">
+        <span className="w-2 h-2 bg-primary rounded" /> Pago
       </span>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#DEE2E6] rounded" /> Pendente
+      <span className="flex items-center gap-1 text-xs text-gray-500">
+        <span className="w-2 h-2 bg-gray-300 rounded" /> Pendente
       </span>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#D4848C] rounded" /> Em dívida
+      <span className="flex items-center gap-1 text-xs text-gray-500">
+        <span className="w-2 h-2 bg-error rounded" /> Em dívida
       </span>
     </div>
   )
@@ -214,8 +214,8 @@ export function EditModeIndicator({
   const label = labels[activeTool] || activeTool
 
   return (
-    <div className={cn("rounded-lg bg-[#E8F0EA] border border-[#D4E5D7] p-1.5 text-center", className)}>
-      <span className="text-[10px] font-medium text-[#6A9B72]">
+    <div className={cn("rounded-lg bg-primary-light border border-primary p-1.5 text-center", className)}>
+      <span className="text-label font-medium text-primary-dark">
         {messagePrefix} {label}
       </span>
     </div>

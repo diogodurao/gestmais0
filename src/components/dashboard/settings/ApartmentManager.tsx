@@ -4,10 +4,16 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { Home, Plus, Trash2, UserX, AlertCircle } from "lucide-react"
-import { createApartment, deleteApartment } from "./actions"
-import { unclaimApartmentAction } from "@/components/dashboard/residents/actions"
+import { Input } from "@/components/ui/Input"
+import { FormField } from "@/components/ui/Form-Field"
+import { Badge } from "@/components/ui/Badge"
+import { Modal } from "@/components/ui/Modal"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
+import { IconButton } from "@/components/ui/Icon-Button"
+import { LayoutGrid, Plus, Trash2, UserX, AlertCircle, Check } from "lucide-react"
+import { createApartment, deleteApartment } from "@/lib/actions/building"
+import { unclaimApartmentAction } from "@/lib/actions/residents"
+import { isUnitsComplete } from "@/lib/validations"
 
 export type Apartment = {
     id: number
@@ -28,11 +34,12 @@ interface ApartmentManagerProps {
     buildingComplete?: boolean
 }
 
-export function ApartmentManager({ buildingId, apartments, totalApartments, buildingComplete }: ApartmentManagerProps) {
+export function ApartmentManager({ buildingId, apartments, totalApartments }: ApartmentManagerProps) {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
 
+    const [showAddModal, setShowAddModal] = useState(false)
     const [newUnit, setNewUnit] = useState("")
     const [newPermillage, setNewPermillage] = useState("")
 
@@ -41,6 +48,9 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
 
     const totalPermillage = apartments.reduce((sum, apt) => sum + apt.permillage, 0)
     const isAtLimit = totalApartments !== null && apartments.length >= totalApartments
+    // Transform to expected format for isUnitsComplete
+    const apartmentsForValidation = apartments.map(apt => ({ apartment: { permillage: apt.permillage } }))
+    const unitsComplete = isUnitsComplete(totalApartments, apartmentsForValidation)
 
     const handleAddApartment = async () => {
         if (!newUnit.trim() || !newPermillage.trim()) {
@@ -66,11 +76,12 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
             if (result.success) {
                 setNewUnit("")
                 setNewPermillage("")
+                setShowAddModal(false)
                 router.refresh()
             } else {
                 setError(result.error || "Ocorreu um erro inesperado")
             }
-        } catch (err) {
+        } catch {
             setError("Ocorreu um erro inesperado")
         } finally {
             setIsLoading(false)
@@ -111,132 +122,171 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
         <>
             <Card>
                 <CardHeader>
-                    <CardTitle>
-                        <Home className="w-4 h-4" />
-                        Inventário de Frações
-                    </CardTitle>
-                    <span className="text-label text-gray-400 font-mono">
-                        {totalPermillage}/1000 ‰
-                    </span>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-1.5">
+                                <LayoutGrid className="w-4 h-4" />
+                                Frações
+                            </CardTitle>
+                            <span className="text-label text-gray-500 font-mono">
+                                {apartments.length}/{totalApartments || "?"}
+                            </span>
+                            {unitsComplete ? (
+                                <span className="flex items-center gap-1 text-label text-success font-medium">
+                                    <Check className="w-3 h-3" /> Completo
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-1 text-label text-warning font-medium">
+                                    <AlertCircle className="w-3 h-3" /> Incompleto
+                                </span>
+                            )}
+                        </div>
+                        {!isAtLimit && (
+                            <Button size="sm" onClick={() => setShowAddModal(true)}>
+                                <Plus className="h-3 w-3 mr-1" /> Adicionar
+                            </Button>
+                        )}
+                    </div>
                 </CardHeader>
+
                 <CardContent className="p-0">
-                    {/* Table Header */}
-                    <div className="grid grid-cols-12 bg-gray-100 border-b border-gray-200 text-label font-bold text-gray-500 uppercase">
-                        <div className="col-span-3 p-3">Fração</div>
-                        <div className="col-span-2 p-3 text-right">Permilagem</div>
-                        <div className="col-span-5 p-3">Residente</div>
-                        <div className="col-span-2 p-3">Ações</div>
+                    {/* Permillage summary */}
+                    <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                        <span className="text-label text-gray-500">Permilagem Total</span>
+                        <span className={`text-label font-mono font-medium ${Math.abs(totalPermillage - 1000) < 0.01 ? 'text-success' : 'text-warning'}`}>
+                            {totalPermillage.toFixed(2)}/1000 ‰
+                        </span>
                     </div>
 
-                    {/* Apartment Rows */}
-                    <div className="max-h-[400px] overflow-y-auto">
+                    {/* Apartments list */}
+                    <div className="divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
                         {apartments.map((apt) => (
                             <div
                                 key={apt.id}
-                                className="grid grid-cols-12 border-b border-gray-100 items-center hover:bg-gray-50"
+                                className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
                             >
-                                <div className="col-span-3 p-3 text-body font-mono font-bold uppercase">
-                                    {apt.unit}
-                                </div>
-                                <div className="col-span-2 p-3 text-body font-mono text-right">
-                                    {apt.permillage} ‰
-                                </div>
-                                <div className="col-span-5 p-3">
-                                    {apt.resident ? (
-                                        <span className="text-body text-gray-700">{apt.resident.name}</span>
-                                    ) : (
-                                        <span className="text-label text-gray-400 italic">
-                                            Sem residente
+                                <div className="flex items-center gap-2">
+                                    <div className="w-10 h-10 flex items-center justify-center rounded bg-gray-100 border border-gray-200">
+                                        <span className="text-body font-mono font-bold text-gray-700">
+                                            {apt.unit}
                                         </span>
-                                    )}
+                                    </div>
+                                    <div>
+                                        <p className="text-body font-medium text-gray-700">
+                                            {apt.resident?.name || (
+                                                <span className="text-gray-400 italic">Sem residente</span>
+                                            )}
+                                        </p>
+                                        <p className="text-label text-gray-500 font-mono">
+                                            {apt.permillage.toFixed(2)} ‰
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="col-span-2 p-3 flex gap-1">
-                                    {apt.resident && (
-                                        <button
-                                            onClick={() => setDisconnectTarget(apt)}
-                                            className="p-1 text-gray-400 hover:text-warning transition-colors"
-                                            title="Desassociar Residente"
-                                        >
-                                            <UserX className="w-4 h-4" />
-                                        </button>
+                                <div className="flex items-center gap-1">
+                                    {apt.resident ? (
+                                        <Badge variant="success">Ocupado</Badge>
+                                    ) : (
+                                        <Badge variant="warning">Vago</Badge>
                                     )}
-                                    <button
+                                    {apt.resident && (
+                                        <IconButton
+                                            size="sm"
+                                            variant="ghost"
+                                            icon={<UserX className="h-3.5 w-3.5" />}
+                                            label="Desassociar"
+                                            onClick={() => setDisconnectTarget(apt)}
+                                        />
+                                    )}
+                                    <IconButton
+                                        size="sm"
+                                        variant="ghost"
+                                        icon={<Trash2 className="h-3.5 w-3.5" />}
+                                        label="Eliminar"
                                         onClick={() => setDeleteTarget(apt)}
-                                        className="p-1 text-gray-400 hover:text-error transition-colors"
-                                        title="Eliminar Fração"
                                         data-testid={`delete-unit-button-${apt.id}`}
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    />
                                 </div>
                             </div>
                         ))}
 
                         {apartments.length === 0 && (
-                            <div className="p-8 text-center text-body text-gray-400 italic">
-                                Nenhuma fração definida.
+                            <div className="p-8 text-center">
+                                <p className="text-body text-gray-400 italic">
+                                    Nenhuma fração definida.
+                                </p>
+                                <p className="text-label text-gray-400 mt-1">
+                                    Clique em "Adicionar" para criar a primeira fração.
+                                </p>
                             </div>
                         )}
                     </div>
 
-                    {/* Add New Apartment */}
-                    {!isAtLimit && (
-                        <div className="grid grid-cols-12 border-t border-gray-200 items-center bg-gray-50 p-2">
-                            <div className="col-span-3 px-1">
-                                <input
-                                    type="text"
-                                    value={newUnit}
-                                    onChange={(e) => setNewUnit(e.target.value)}
-                                    placeholder="Nova Fração"
-                                    className="w-full px-2 py-1.5 text-body border border-gray-200 focus:outline-none focus:border-gray-400"
-                                />
-                            </div>
-                            <div className="col-span-2 px-1">
-                                <input
-                                    type="number"
-                                    value={newPermillage}
-                                    onChange={(e) => setNewPermillage(e.target.value)}
-                                    placeholder="‰"
-                                    className="w-full px-2 py-1.5 text-body font-mono border border-gray-200 focus:outline-none focus:border-gray-400"
-                                />
-                            </div>
-                            <div className="col-span-5"></div>
-                            <div className="col-span-2 px-1">
-                                <Button
-                                    size="xs"
-                                    fullWidth
-                                    onClick={handleAddApartment}
-                                    disabled={isLoading}
-                                >
-                                    <Plus className="w-3 h-3" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Limit Warning */}
+                    {/* Limit warning */}
                     {isAtLimit && (
                         <div className="flex items-center gap-2 p-3 bg-warning-light border-t border-gray-200 text-warning">
                             <AlertCircle className="w-4 h-4" />
-                            <span className="text-label font-bold uppercase">
-                                Limite de frações atingido
+                            <span className="text-label font-medium">
+                                Limite de frações atingido ({totalApartments})
                             </span>
-                        </div>
-                    )}
-
-                    {error && (
-                        <div className="p-3 border-t border-gray-100">
-                            <p className="text-label text-error font-bold">{error}</p>
                         </div>
                     )}
                 </CardContent>
             </Card>
 
+            {/* Add Modal */}
+            <Modal
+                open={showAddModal}
+                onClose={() => {
+                    setShowAddModal(false)
+                    setNewUnit("")
+                    setNewPermillage("")
+                    setError("")
+                }}
+                title="Nova Fração"
+                description="Adicione uma nova fração ao edifício."
+                footer={
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setShowAddModal(false)}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleAddApartment} loading={isLoading}>
+                            Adicionar
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                        <FormField label="Fração" required>
+                            <Input
+                                value={newUnit}
+                                onChange={(e) => setNewUnit(e.target.value)}
+                                placeholder="Ex: 1A"
+                                className="font-mono uppercase"
+                            />
+                        </FormField>
+                        <FormField label="Permilagem (‰)" required>
+                            <Input
+                                type="number"
+                                value={newPermillage}
+                                onChange={(e) => setNewPermillage(e.target.value)}
+                                placeholder="166.67"
+                                step="0.01"
+                                className="font-mono"
+                            />
+                        </FormField>
+                    </div>
+                    {error && (
+                        <p className="text-label text-error font-medium">{error}</p>
+                    )}
+                </div>
+            </Modal>
+
             {/* Delete Confirmation */}
             <ConfirmModal
                 isOpen={!!deleteTarget}
                 title="Eliminar Fração"
-                message="Tem a certeza que deseja eliminar esta fração? Esta ação é irreversível."
+                message={`Tem a certeza que deseja eliminar a fração ${deleteTarget?.unit}? Esta ação é irreversível.`}
                 onConfirm={handleDelete}
                 onCancel={() => setDeleteTarget(null)}
                 variant="danger"
@@ -248,7 +298,7 @@ export function ApartmentManager({ buildingId, apartments, totalApartments, buil
                 title="Desassociar Residente"
                 message={
                     disconnectTarget?.resident
-                        ? `Tem a certeza que deseja desassociar ${disconnectTarget.resident.name} desta fração?`
+                        ? `Tem a certeza que deseja desassociar ${disconnectTarget.resident.name} da fração ${disconnectTarget.unit}?`
                         : ""
                 }
                 onConfirm={handleDisconnect}

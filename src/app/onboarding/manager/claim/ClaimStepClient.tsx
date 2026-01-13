@@ -55,8 +55,7 @@ export function ClaimStepClient({
 
             <div className="pt-6 border-t border-slate-100 flex flex-col items-center gap-4">
                 <Button
-                    size="lg"
-                    fullWidth
+                    className=" w-full"
                     onClick={handleFinalize}
                     disabled={!canFinalize || isLoading}
                 >

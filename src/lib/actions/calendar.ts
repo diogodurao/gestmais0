@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { requireSession, requireBuildingAccess } from "@/lib/session"
+import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { calendarService, CreateEventInput, UpdateEventInput } from "@/services/calendar.service"
 import { createCalendarEventSchema, updateCalendarEventSchema } from "@/lib/zod-schemas"
 import { ActionResult } from "@/lib/types"

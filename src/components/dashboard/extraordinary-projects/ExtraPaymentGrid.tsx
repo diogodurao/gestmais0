@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils"
 import { getMonthName, formatCurrency } from "@/lib/format"
 import {
     updateExtraordinaryPayment,
-} from "./actions"
+    type ApartmentPaymentData
+} from "@/lib/actions/extraordinary-projects"
 import { useToast } from "@/components/ui/Toast"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 
@@ -22,7 +23,6 @@ import {
     type PaymentStatus,
     type ExtraordinaryProjectSummary
 } from "@/lib/types"
-import { type ApartmentPaymentData } from "./actions"
 
 interface ExtraPaymentGridProps {
     project: ExtraordinaryProjectSummary

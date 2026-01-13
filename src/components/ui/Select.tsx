@@ -10,8 +10,8 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "siz
 }
 
 const sizeStyles: Record<SelectSize, string> = {
-  sm: "h-7 pl-1.5 pr-6 text-label",
-  md: "h-8 pl-1.5 pr-6 text-body",
+  sm: "h-7 pl-1.5 pr-6 text-[10px]",
+  md: "h-8 pl-1.5 pr-6 text-[11px]",
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -20,10 +20,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <select
         ref={ref}
         className={cn(
-          "w-full appearance-none rounded border bg-white text-gray-800 transition-colors",
-          "focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary",
-          "disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400",
-          error ? "border-error" : "border-gray-200",
+          "w-full appearance-none rounded border bg-white text-[#343A40] transition-colors",
+          "focus:outline-none focus:ring-1 focus:ring-[#8FB996] focus:border-[#8FB996]",
+          "disabled:cursor-not-allowed disabled:bg-[#F8F9FA] disabled:text-[#ADB5BD]",
+          error ? "border-[#D4848C]" : "border-[#E9ECEF]",
           sizeStyles[size],
           className
         )}
@@ -31,7 +31,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       >
         {children}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+      <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#ADB5BD]" />
     </div>
   )
 )

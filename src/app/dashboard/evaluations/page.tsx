@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
 import {
     getEvaluationStatus,
@@ -6,7 +6,7 @@ import {
     getHistoricalAverages,
     getMonthEvaluations,
     getSubmissionStats,
-} from "@/components/dashboard/evaluations/actions"
+} from "@/lib/actions/evaluations"
 import { ROUTES } from "@/lib/routes"
 import { EvaluationPage } from "@/components/dashboard/evaluations/EvaluationPage"
 

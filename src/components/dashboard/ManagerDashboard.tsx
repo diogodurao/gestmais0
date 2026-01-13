@@ -1,4 +1,4 @@
-import { getOrCreateManagerBuilding, getBuildingResidents, getUnclaimedApartments, getBuildingApartments } from "@/components/dashboard/settings/actions";
+import { getOrCreateManagerBuilding, getBuildingResidents, getUnclaimedApartments, getBuildingApartments } from "@/lib/actions/building";
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations";
 import { features, can } from "@/lib/permissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -10,7 +10,7 @@ import { InviteCodePanel } from "@/components/dashboard/overview/InviteCodePanel
 import { SystemStatusPanel } from "@/components/dashboard/overview/SystemStatusPanel";
 import { BuildingMetricsPanel } from "@/components/dashboard/overview/BuildingMetricsPanel";
 import { DashboardGrid } from "@/components/layout/DashboardGrid";
-import { getEvaluationStatus } from "@/components/dashboard/evaluations/actions";
+import { getEvaluationStatus } from "@/lib/actions/evaluations";
 import { EvaluationWidget } from "@/components/dashboard/evaluations/EvaluationWidget";
 import { Lock } from "lucide-react";
 import { getNotifications } from "@/lib/actions/notification";
@@ -146,7 +146,7 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex flex-col items-center justify-center p-12 bg-gray-50 tech-border border-dashed text-center h-[300px]">
+                            <div className="flex flex-col items-center justify-center p-12 bg-gray-50 tech-border border-dashed text-center h-75">
                                 <div className="p-4 bg-gray-200 rounded-full mb-4">
                                     <Lock className="w-6 h-6 text-gray-500" />
                                 </div>

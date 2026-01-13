@@ -10,8 +10,7 @@ import { DocumentUploadModal } from "./DocumentUploadModal"
 import { DocumentPreviewModal } from "./DocumentPreviewModal"
 import { DocumentVersions } from "./DocumentVersions"
 import { Document, DocumentCategory } from "@/lib/types"
-import { DOCUMENT_CATEGORY_CONFIG as CATEGORY_CONFIG, DOCUMENT_CATEGORY_OPTIONS as CATEGORY_OPTIONS } from "@/lib/constant/"
-
+import { DOCUMENT_CATEGORY_CONFIG as CATEGORY_CONFIG, DOCUMENT_CATEGORY_OPTIONS as CATEGORY_OPTIONS } from "@/lib/constants/ui"
 interface Props {
     buildingId: string
     documents: Document[]

@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getOrCreateManagerBuilding } from "@/components/dashboard/settings/actions"
+import { getOrCreateManagerBuilding } from "@/lib/actions/building"
 import { isProfileComplete } from "@/lib/validations"
 import { BuildingStepClient } from "./BuildingStepClient"
 

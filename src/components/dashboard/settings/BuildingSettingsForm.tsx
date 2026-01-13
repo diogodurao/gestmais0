@@ -2,11 +2,15 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { updateBuilding } from "./actions"
+import { updateBuilding } from "@/lib/actions/building"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
+import { FormField } from "@/components/ui/Form-Field"
+import { Divider } from "@/components/ui/Divider"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
-import { Card, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Building2 } from "lucide-react"
+import { Building2, Edit, Save, Check, AlertCircle } from "lucide-react"
+import { isBuildingComplete } from "@/lib/validations"
 
 type Building = {
     id: string
@@ -25,6 +29,7 @@ type Building = {
 export function BuildingSettingsForm({ building }: { building: Building }) {
     const router = useRouter()
     const [error, setError] = useState("")
+    const [isEditing, setIsEditing] = useState(false)
     const [formData, setFormData] = useState({
         nif: building.nif,
         iban: building.iban || "",
@@ -37,6 +42,13 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
     const [monthlyQuotaStr, setMonthlyQuotaStr] = useState(
         building.monthlyQuota ? (building.monthlyQuota / 100).toFixed(2) : ""
     )
+
+    const buildingComplete = isBuildingComplete({
+        ...building,
+        ...formData,
+        monthlyQuota: parseFloat(monthlyQuotaStr) * 100 || 0,
+        totalApartments: parseInt(formData.totalApartments) || 0,
+    })
 
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }))
@@ -59,145 +71,161 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         })
     }, {
         successMessage: "Alterações guardadas com sucesso",
-        onSuccess: () => router.refresh(),
+        onSuccess: () => {
+            setIsEditing(false)
+            router.refresh()
+        },
         onError: (msg) => setError(msg)
     })
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault()
         setError("")
-        await saveSettings()
+        await saveSettings(undefined)
+    }
+
+    const handleCancel = () => {
+        setFormData({
+            nif: building.nif,
+            iban: building.iban || "",
+            city: building.city || "",
+            street: building.street || "",
+            number: building.number || "",
+            quotaMode: building.quotaMode || "global",
+            totalApartments: building.totalApartments?.toString() || "",
+        })
+        setMonthlyQuotaStr(
+            building.monthlyQuota ? (building.monthlyQuota / 100).toFixed(2) : ""
+        )
+        setIsEditing(false)
+        setError("")
     }
 
     return (
-        <div className="space-y-4">
-            <Card className="mt-8">
-                <CardHeader>
-                    <CardTitle>
-                        <Building2 className="w-4 h-4" />
-                        Parâmetros do Edifício
-                    </CardTitle>
-                    <button type="button" className="text-label text-info hover:underline">
-                        Modo Edição
-                    </button>
-                </CardHeader>
-
-                <form onSubmit={handleSubmit} className="p-0">
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
-                        <div className="label-col border-none">Código do Edifício</div>
-                        <div className="value-col border-none bg-gray-50 text-gray-500 px-3 py-1.5 font-mono text-body uppercase">
-                            {building.code}
-                        </div>
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-1.5">
+                            <Building2 className="w-4 h-4" />
+                            Edifício
+                        </CardTitle>
+                        {buildingComplete ? (
+                            <span className="flex items-center gap-1 text-label text-success font-medium">
+                                <Check className="w-3 h-3" /> Completo
+                            </span>
+                        ) : (
+                            <span className="flex items-center gap-1 text-label text-warning font-medium">
+                                <AlertCircle className="w-3 h-3" /> Incompleto
+                            </span>
+                        )}
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
-                        <div className="label-col border-none">Rua / Avenida</div>
-                        <div className="value-col border-none">
-                            <input
-                                type="text"
-                                value={formData.street}
-                                onChange={e => handleChange("street", e.target.value)}
-                                className="input-cell h-8"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
-                        <div className="label-col border-none">Nº / Cidade</div>
-                        <div className="value-col border-none grid grid-cols-2">
-                            <input
-                                type="text"
-                                value={formData.number}
-                                onChange={e => handleChange("number", e.target.value)}
-                                className="input-cell h-8 border-r border-gray-100"
-                                placeholder="Nº"
-                            />
-                            <input
-                                type="text"
-                                value={formData.city}
-                                onChange={e => handleChange("city", e.target.value)}
-                                className="input-cell h-8"
-                                placeholder="CIDADE"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
-                        <div className="label-col border-none">NIF do Edifício</div>
-                        <div className="value-col border-none">
-                            <input
-                                type="text"
-                                value={formData.nif}
-                                onChange={e => handleChange("nif", e.target.value)}
-                                className="input-cell h-8 font-mono"
-                                maxLength={9}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
-                        <div className="label-col border-none">IBAN do Edifício</div>
-                        <div className="value-col border-none">
-                            <input
-                                type="text"
-                                value={formData.iban}
-                                onChange={e => handleChange("iban", e.target.value)}
-                                className="input-cell h-8 font-mono uppercase"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 text-body font-bold text-gray-500 uppercase">
-                        Configuração Financeira
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] border-b border-gray-100">
-                        <div className="label-col border-none">Modo de Cálculo</div>
-                        <div className="value-col border-none p-2 flex flex-col sm:flex-row gap-4 bg-white">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="quota"
-                                    checked={formData.quotaMode === "global"}
-                                    onChange={() => handleChange("quotaMode", "global")}
-                                    className="w-4 h-4 accent-blue-600"
-                                />
-                                <span className="text-body">Valor Fixo Global</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="quota"
-                                    checked={formData.quotaMode === "permillage"}
-                                    onChange={() => handleChange("quotaMode", "permillage")}
-                                    className="w-4 h-4 accent-blue-600"
-                                />
-                                <span className="text-body">Baseado em Permilagem</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-[140px_1fr]">
-                        <div className="label-col border-none">Valor Base (€)</div>
-                        <div className="value-col border-none relative">
-                            <input
-                                type="number"
-                                value={monthlyQuotaStr}
-                                onChange={e => setMonthlyQuotaStr(e.target.value)}
-                                className="input-cell h-8 font-mono font-bold text-gray-700"
-                                placeholder="0.00"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="p-3 flex justify-end border-t border-gray-100">
-                        <Button type="submit" size="xs" isLoading={isPending} variant="primary">
-                            Guardar Alterações
+                    {!isEditing && (
+                        <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                            <Edit className="h-3 w-3 mr-1" /> Editar
                         </Button>
+                    )}
+                </div>
+            </CardHeader>
+
+            <CardContent>
+                <form onSubmit={handleSubmit}>
+                    <div className="space-y-1.5">
+                        {/* Building Code (read-only) */}
+                        <FormField label="Código do Edifício">
+                            <Input
+                                value={building.code}
+                                disabled
+                                className="bg-gray-50 font-mono uppercase"
+                            />
+                        </FormField>
+
+                        {/* Address */}
+                        <FormField label="Morada" required>
+                            <Input
+                                value={formData.street}
+                                onChange={(e) => handleChange("street", e.target.value)}
+                                disabled={!isEditing}
+                            />
+                        </FormField>
+
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <FormField label="Código Postal">
+                                <Input
+                                    value={formData.number}
+                                    onChange={(e) => handleChange("number", e.target.value)}
+                                    disabled={!isEditing}
+                                />
+                            </FormField>
+                            <FormField label="Cidade">
+                                <Input
+                                    value={formData.city}
+                                    onChange={(e) => handleChange("city", e.target.value)}
+                                    disabled={!isEditing}
+                                />
+                            </FormField>
+                        </div>
+
+                        <FormField label="NIF do Condomínio">
+                            <Input
+                                value={formData.nif}
+                                onChange={(e) => handleChange("nif", e.target.value)}
+                                disabled={!isEditing}
+                                maxLength={9}
+                                className="font-mono"
+                            />
+                        </FormField>
+
+                        <Divider className="my-1.5" />
+
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <FormField label="Quota Mensal (€)">
+                                <Input
+                                    type="number"
+                                    value={monthlyQuotaStr}
+                                    onChange={(e) => setMonthlyQuotaStr(e.target.value)}
+                                    disabled={!isEditing}
+                                    placeholder="0.00"
+                                    className="font-mono"
+                                />
+                            </FormField>
+                            <FormField label="Total de Frações">
+                                <Input
+                                    type="number"
+                                    value={formData.totalApartments}
+                                    onChange={(e) => handleChange("totalApartments", e.target.value)}
+                                    disabled={!isEditing}
+                                    min={1}
+                                />
+                            </FormField>
+                        </div>
                     </div>
+
+                    {error && (
+                        <p className="mt-1.5 text-label text-error font-medium">{error}</p>
+                    )}
+
+                    {isEditing && (
+                        <div className="flex gap-1.5 mt-1.5">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={handleCancel}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="submit"
+                                className="flex-1"
+                                loading={isPending}
+                            >
+                                <Save className="h-3 w-3 mr-1" /> Guardar
+                            </Button>
+                        </div>
+                    )}
                 </form>
-            </Card>
-            {error && <p className="text-label text-error font-bold uppercase text-right">{error}</p>}
-        </div>
+            </CardContent>
+        </Card>
     )
 }

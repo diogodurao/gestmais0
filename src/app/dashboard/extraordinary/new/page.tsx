@@ -5,8 +5,8 @@
  */
 
 import { ExtraProjectCreate } from "@/components/dashboard/extraordinary-projects/ExtraProjectCreate"
-import { requireSession } from "@/lib/session"
-import { getBuildingApartments } from "@/components/dashboard/settings/actions"
+import { requireSession } from "@/lib/auth-helpers"
+import { getBuildingApartments } from "@/lib/actions/building"
 import { redirect } from "next/navigation"
 
 export const metadata = {

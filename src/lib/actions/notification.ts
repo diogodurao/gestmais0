@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { notificationService, CreateNotificationInput, CreateBulkNotificationInput } from "@/services/notification.service"
 import { sendPushNotification } from "@/lib/actions/push-notifications"
 

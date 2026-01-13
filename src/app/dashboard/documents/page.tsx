@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
 import { getDocuments } from "@/lib/actions/documents"
 import { ROUTES } from "@/lib/routes"

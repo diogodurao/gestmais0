@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
-import { createDiscussion, updateDiscussion } from "./actions"
+import { createDiscussion, updateDiscussion } from "@/lib/actions/discussions"
 import { Discussion } from "@/lib/types"
 import { useToast } from "@/components/ui/Toast"
 

@@ -11,7 +11,7 @@ import { VoteForm } from "./VoteForm"
 import { PollResults } from "./PollResults"
 import { Poll, PollVote, PollResults as PollResultsType } from "@/lib/types"
 import { POLL_STATUS_CONFIG, POLL_TYPE_CONFIG, WEIGHT_MODE_CONFIG } from "@/lib/constants/ui"
-import { closePoll, deletePoll } from "./actions"
+import { closePoll, deletePoll } from "@/lib/actions/polls"
 import { useToast } from "@/components/ui/Toast"
 import { formatDistanceToNow } from "@/lib/format"
 

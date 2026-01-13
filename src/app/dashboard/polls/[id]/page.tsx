@@ -1,6 +1,6 @@
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { notFound } from "next/navigation"
-import { getPoll, getPollVotes, getPollResults, getUserVote } from "@/components/dashboard/polls/actions"
+import { getPoll, getPollVotes, getPollResults, getUserVote } from "@/lib/actions/polls"
 import { PollDetail } from "@/components/dashboard/polls/PollDetail"
 
 export const dynamic = 'force-dynamic'

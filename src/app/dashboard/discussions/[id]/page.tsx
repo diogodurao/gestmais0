@@ -1,6 +1,6 @@
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { notFound } from "next/navigation"
-import { getDiscussion, getDiscussionComments } from "@/components/dashboard/discussions/actions"
+import { getDiscussion, getDiscussionComments } from "@/lib/actions/discussions"
 import { DiscussionDetail } from "@/components/dashboard/discussions/DiscussionDetail"
 
 export const dynamic = 'force-dynamic'

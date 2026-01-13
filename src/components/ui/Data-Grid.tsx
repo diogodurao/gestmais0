@@ -1,4 +1,4 @@
-import { memo, type ReactNode } from "react"
+import { type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
 interface DataGridProps {
@@ -19,7 +19,7 @@ const gapStyles = {
   md: "gap-1.5",
 }
 
-function DataGridComponent({ columns = 3, gap = "md", children, className }: DataGridProps) {
+export function DataGrid({ columns = 3, gap = "md", children, className }: DataGridProps) {
   return (
     <div className={cn("grid", columnStyles[columns], gapStyles[gap], className)}>
       {children}
@@ -27,21 +27,17 @@ function DataGridComponent({ columns = 3, gap = "md", children, className }: Dat
   )
 }
 
-export const DataGrid = memo(DataGridComponent)
-
 interface DataGridItemProps {
   label: string
   value: ReactNode
   className?: string
 }
 
-function DataGridItemComponent({ label, value, className }: DataGridItemProps) {
+export function DataGridItem({ label, value, className }: DataGridItemProps) {
   return (
-    <div className={cn("rounded-lg border border-gray-200 bg-white p-1.5", className)}>
-      <dt className="text-body font-medium text-gray-500">{label}</dt>
-      <dd className="mt-1 text-heading font-medium text-gray-900">{value}</dd>
+    <div className={cn("rounded-md border border-gray-200 bg-white p-1.5", className)}>
+      <dt className="text-[11px] font-medium text-gray-500">{label}</dt>
+      <dd className="mt-1 text-[14px] font-medium text-gray-900">{value}</dd>
     </div>
   )
 }
-
-export const DataGridItem = memo(DataGridItemComponent)

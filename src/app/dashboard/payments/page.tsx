@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getPaymentMap } from "@/components/dashboard/payments-quotas/actions"
+import { getPaymentMap } from "@/lib/actions/payments-quotas"
 import { PaymentGrid } from "@/components/dashboard/payments-quotas/PaymentGrid"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
-import { getOrCreateManagerBuilding, getBuilding } from "@/components/dashboard/settings/actions"
+import { getOrCreateManagerBuilding, getBuilding } from "@/lib/actions/building"
 import { isProfileComplete, isBuildingComplete } from "@/lib/validations"
 
 export const dynamic = 'force-dynamic'
@@ -34,7 +34,7 @@ export default async function PaymentsPage() {
     const { gridData, monthlyQuota } = await getPaymentMap(buildingId, currentYear)
 
     return (
-        <div className="max-w-[1400px] mx-auto h-full">
+        <div className="max-w-350 mx-auto h-full">
             <ErrorBoundary fallback={
                 <div className="p-8 text-center">
                     <p className="text-rose-600">Erro ao carregar grelha de pagamentos</p>

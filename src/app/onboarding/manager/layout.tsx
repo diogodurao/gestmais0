@@ -52,7 +52,7 @@ export default function ManagerOnboardingLayout({
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-2">
+                    <div className="text-label font-mono text-slate-400 uppercase tracking-widest mb-2">
                         INICIALIZAÇÃO DO SISTEMA
                     </div>
                     <h1 className="text-2xl font-bold text-slate-800 uppercase tracking-wide">
@@ -82,7 +82,7 @@ export default function ManagerOnboardingLayout({
                                     {isComplete ? (
                                         <Check className="w-4 h-4" />
                                     ) : (
-                                        <span className={`w-4 h-4 flex items-center justify-center text-[10px] font-bold border rounded-full ${isCurrent ? 'border-white' : 'border-current'}`}>
+                                        <span className={`w-4 h-4 flex items-center justify-center text-label font-bold border rounded-full ${isCurrent ? 'border-white' : 'border-current'}`}>
                                             {step.number}
                                         </span>
                                     )}

@@ -1,19 +1,19 @@
 import { forwardRef, type HTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 
-type CardVariant = "default" | "neutral" | "success" | "warning" | "info" | "danger"
+type CardVariant = "default" | "interactive" | "highlighted" | "success" | "warning" | "error"
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: CardVariant
 }
 
 const variantStyles: Record<CardVariant, string> = {
-  default: "border-gray-200",
-  neutral: "border-gray-200 bg-white",
-  success: "border-gray-200 bg-success-light",
-  warning: "border-gray-200 bg-warning-light",
-  info: "border-gray-200 bg-info-light",
-  danger: "border-gray-200 bg-error-light",
+  default: "border-[#E9ECEF] bg-white",
+  interactive: "border-[#E9ECEF] bg-white transition-colors hover:bg-[#F8F9FA] hover:border-[#DEE2E6] cursor-pointer",
+  highlighted: "border-[#D4E5D7] bg-[#F8FAF8]",
+  success: "border-[#D4E5D7] bg-[#F8FAF8]",
+  warning: "border-[#F0E4C8] bg-[#FDFBF6]",
+  error: "border-[#EFCDD1] bg-[#FDF8F8]",
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -21,7 +21,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border bg-white",
+        "rounded-lg border",
         variantStyles[variant],
         className
       )}
@@ -35,7 +35,7 @@ export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("border-b border-gray-200 px-3 py-2", className)}
+      className={cn("border-b border-gray-200 px-1.5 py-1.5", className)}
       {...props}
     />
   )
@@ -46,7 +46,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadi
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("text-body font-medium leading-tight text-gray-800", className)}
+      className={cn("text-body font-medium text-gray-800", className)}
       {...props}
     />
   )
@@ -57,7 +57,7 @@ export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<H
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn("mt-0.5 text-label font-medium leading-tight text-gray-500", className)}
+      className={cn("mt-0.5 text-label text-[#8E9AAF]", className)}
       {...props}
     />
   )
@@ -66,7 +66,7 @@ CardDescription.displayName = "CardDescription"
 
 export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("p-3", className)} {...props} />
+    <div ref={ref} className={cn("p-1.5", className)} {...props} />
   )
 )
 CardContent.displayName = "CardContent"
@@ -75,32 +75,30 @@ export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("border-t border-gray-200 px-3 py-2", className)}
+      className={cn("border-t border-gray-200 px-1.5 py-1.5", className)}
       {...props}
     />
   )
 )
 CardFooter.displayName = "CardFooter"
 
-interface StatCardProps {
-  label: string
-  value: string
-  subValue?: string
-  variant?: CardVariant
+// Clickable Card (shorthand for interactive)
+interface ClickableCardProps extends CardProps {
+  onClick?: () => void
 }
 
-export function StatCard({ label, value, subValue, variant = "neutral" }: StatCardProps) {
-  return (
-    <Card variant={variant}>
-      <CardContent>
-        <div className="flex flex-col gap-1">
-          <span className="text-label font-medium leading-tight text-gray-500">{label}</span>
-          <span className="text-heading font-semibold leading-tight text-gray-900">{value}</span>
-          {subValue && (
-            <span className="text-label font-medium leading-tight text-gray-600">{subValue}</span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+export const ClickableCard = forwardRef<HTMLDivElement, ClickableCardProps>(
+  ({ className, onClick, ...props }, ref) => (
+    <Card
+      ref={ref}
+      variant="interactive"
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onClick?.()}
+      className={className}
+      {...props}
+    />
   )
-}
+)
+ClickableCard.displayName = "ClickableCard"

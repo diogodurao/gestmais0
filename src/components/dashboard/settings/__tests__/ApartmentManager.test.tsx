@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { ApartmentManager } from '../ApartmentManager'
-import * as buildingActions from '@/components/dashboard/settings/actions'
+import * as buildingActions from '@/lib/actions/building'
 
 // Mock dependencies
 vi.mock('@/app/actions/building', () => ({

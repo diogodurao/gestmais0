@@ -1,6 +1,6 @@
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
-import { getCalendarEvents } from "@/components/dashboard/calendar/actions"
+import { getCalendarEvents } from "@/lib/actions/calendar"
 import { CalendarView } from "@/components/dashboard/calendar/CalendarView"
 import { ROUTES } from "@/lib/routes"
 

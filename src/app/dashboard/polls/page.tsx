@@ -1,6 +1,6 @@
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
-import { getPolls, getUserVote } from "@/components/dashboard/polls/actions"
+import { getPolls, getUserVote } from "@/lib/actions/polls"
 import { ROUTES } from "@/lib/routes"
 import { PollsList } from "@/components/dashboard/polls/PollsList"
 

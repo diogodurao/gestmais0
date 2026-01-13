@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/Textarea"
 import { Select } from "@/components/ui/Select"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
 import { DocumentCategory } from "@/lib/types"
-import { DOCUMENT_CATEGORY_OPTIONS as CATEGORY_OPTIONS } from "@/lib/constants"
+import { DOCUMENT_CATEGORY_OPTIONS as CATEGORY_OPTIONS } from "@/lib/constants/ui"
 import { formatFileSize } from "@/lib/utils"
 import { useToast } from "@/components/ui/Toast"
 import { cn } from "@/lib/utils"
@@ -186,7 +186,7 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
 
     return (
         <Modal
-            isOpen={isOpen}
+            open={isOpen}
             onClose={handleClose}
             title={isNewVersion ? "Nova Versão" : "Carregar Documentos"}
         >
@@ -227,7 +227,7 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
                     <div className="space-y-2">
                         {selectedFiles.map((sf, index) => (
                             <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
-                                <File className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                <File className="w-5 h-5 text-gray-400 shrink-0" />
                                 <div className="flex-1 min-w-0">
                                     <FormField>
                                         <FormControl>
@@ -302,7 +302,7 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
                     </Button>
                     <Button
                         onClick={handleSubmit}
-                        isLoading={isUploading}
+                        loading={isUploading}
                         disabled={selectedFiles.length === 0}
                         className="flex-1"
                     >

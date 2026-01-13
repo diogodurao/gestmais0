@@ -11,9 +11,10 @@ import { FormField } from "../components/ui/form-field"
 import { Textarea } from "../components/ui/textarea"
 import { Select } from "../components/ui/select"
 import { Divider } from "../components/ui/divider"
+import { Toggle } from "../components/ui/toggle"
+import { TabButton } from "../components/ui/tab-button"
 import { Modal } from "../components/ui/modal"
 import { ToastProvider, useToast } from "../components/ui/toast"
-import { cn } from "@/lib/utils"
 import {
   User, Building, CreditCard, Bell, Shield, Key,
   Mail, Phone, MapPin, Save, Edit, Plus, Trash2,
@@ -93,34 +94,6 @@ const mockSubscription: Subscription = {
 // Settings Tab
 type SettingsTab = "profile" | "building" | "apartments" | "subscription" | "notifications"
 
-// Tab Button
-function TabButton({
-  icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: React.ReactNode
-  label: string
-  active: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-1.5 px-1.5 py-1 rounded text-[11px] font-medium transition-colors w-full text-left",
-        active
-          ? "bg-[#E8F0EA] text-[#6A9B72]"
-          : "text-[#6C757D] hover:bg-[#F8F9FA]"
-      )}
-    >
-      {icon}
-      {label}
-    </button>
-  )
-}
-
 // Profile Settings
 function ProfileSettings() {
   const { addToast } = useToast()
@@ -152,8 +125,8 @@ function ProfileSettings() {
         <div className="flex items-center gap-1.5 mb-1.5">
           <Avatar size="lg" fallback={profile.name.charAt(0)} alt={profile.name} />
           <div>
-            <p className="text-[12px] font-medium text-[#495057]">{profile.name}</p>
-            <p className="text-[10px] text-[#8E9AAF]">Administrador</p>
+            <p className="text-base font-medium text-gray-700">{profile.name}</p>
+            <p className="text-label text-gray-500">Administrador</p>
           </div>
         </div>
 
@@ -334,18 +307,18 @@ function ApartmentsManager() {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="divide-y divide-[#F1F3F5]">
+        <div className="divide-y divide-gray-100">
           {apartments.map((apt) => (
-            <div key={apt.id} className="flex items-center justify-between p-1.5 hover:bg-[#F8F9FA] transition-colors">
+            <div key={apt.id} className="flex items-center justify-between p-1.5 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-1.5">
-                <div className="w-8 h-8 flex items-center justify-center rounded bg-[#F8F9FA] border border-[#E9ECEF] text-[11px] font-medium text-[#495057]">
+                <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-50 border border-gray-200 text-body font-medium text-gray-700">
                   {apt.unit}
                 </div>
                 <div>
-                  <p className="text-[11px] font-medium text-[#495057]">
-                    {apt.residentName || <span className="text-[#ADB5BD] italic">Sem residente</span>}
+                  <p className="text-body font-medium text-gray-700">
+                    {apt.residentName || <span className="text-gray-400 italic">Sem residente</span>}
                   </p>
-                  <p className="text-[9px] text-[#8E9AAF]">
+                  <p className="text-xs text-gray-500">
                     {apt.typology} • {apt.floor}º andar • {apt.permillage.toFixed(2)}‰
                   </p>
                 </div>
@@ -364,7 +337,7 @@ function ApartmentsManager() {
         </div>
       </CardContent>
       <CardFooter>
-        <p className="text-[9px] text-[#8E9AAF]">
+        <p className="text-xs text-gray-500">
           Total permilagem: {apartments.reduce((sum, a) => sum + a.permillage, 0).toFixed(2)}‰
         </p>
       </CardFooter>
@@ -428,31 +401,31 @@ function SubscriptionSettings() {
         <CardTitle>Subscrição</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between p-1.5 rounded-lg bg-gradient-to-r from-[#E8F0EA] to-[#F8F9FA] border border-[#D4E5D7] mb-1.5">
+        <div className="flex items-center justify-between p-1.5 rounded-lg bg-linear-to-r from-primary-light to-gray-50 border border-primary mb-1.5">
           <div className="flex items-center gap-1.5">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#8FB996]">
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-primary">
               <Crown className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="text-[12px] font-medium text-[#495057]">Plano Premium</p>
-              <p className="text-[10px] text-[#6A9B72]">Todas as funcionalidades desbloqueadas</p>
+              <p className="text-base font-medium text-gray-700">Plano Premium</p>
+              <p className="text-label text-primary-dark">Todas as funcionalidades desbloqueadas</p>
             </div>
           </div>
           <Badge variant="success">Ativo</Badge>
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between py-1 border-b border-[#F1F3F5]">
-            <span className="text-[10px] text-[#8E9AAF]">Próxima faturação</span>
-            <span className="text-[10px] font-medium text-[#495057]">15 Fev 2025</span>
+          <div className="flex items-center justify-between py-1 border-b border-gray-100">
+            <span className="text-label text-gray-500">Próxima faturação</span>
+            <span className="text-label font-medium text-gray-700">15 Fev 2025</span>
           </div>
-          <div className="flex items-center justify-between py-1 border-b border-[#F1F3F5]">
-            <span className="text-[10px] text-[#8E9AAF]">Valor mensal</span>
-            <span className="text-[10px] font-medium text-[#495057]">{formatCurrency(subscription.price || 0)}</span>
+          <div className="flex items-center justify-between py-1 border-b border-gray-100">
+            <span className="text-label text-gray-500">Valor mensal</span>
+            <span className="text-label font-medium text-gray-700">{formatCurrency(subscription.price || 0)}</span>
           </div>
           <div className="flex items-center justify-between py-1">
-            <span className="text-[10px] text-[#8E9AAF]">Método de pagamento</span>
-            <span className="text-[10px] font-medium text-[#495057]">•••• 4242</span>
+            <span className="text-label text-gray-500">Método de pagamento</span>
+            <span className="text-label font-medium text-gray-700">•••• 4242</span>
           </div>
         </div>
 
@@ -496,58 +469,38 @@ function NotificationSettings() {
       </CardHeader>
       <CardContent>
         <div className="space-y-1.5">
-          <p className="text-[9px] font-medium text-[#8E9AAF] uppercase tracking-wide">Notificações por Email</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Notificações por Email</p>
 
           {[
             { key: "emailPayments", label: "Pagamentos", desc: "Receber alertas sobre pagamentos recebidos e em falta" },
             { key: "emailOccurrences", label: "Ocorrências", desc: "Notificações sobre novas ocorrências e atualizações" },
             { key: "emailPolls", label: "Votações", desc: "Alertas sobre novas votações e resultados" },
           ].map((item) => (
-            <div key={item.key} className="flex items-center justify-between py-1 border-b border-[#F1F3F5]">
+            <div key={item.key} className="flex items-center justify-between py-1 border-b border-gray-100">
               <div>
-                <p className="text-[11px] font-medium text-[#495057]">{item.label}</p>
-                <p className="text-[9px] text-[#8E9AAF]">{item.desc}</p>
+                <p className="text-body font-medium text-gray-700">{item.label}</p>
+                <p className="text-xs text-gray-500">{item.desc}</p>
               </div>
-              <button
-                onClick={() => setSettings(s => ({ ...s, [item.key]: !s[item.key as keyof typeof s] }))}
-                className={cn(
-                  "w-8 h-4 rounded-full transition-colors relative",
-                  settings[item.key as keyof typeof settings] ? "bg-[#8FB996]" : "bg-[#DEE2E6]"
-                )}
-              >
-                <span
-                  className={cn(
-                    "absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform shadow-sm",
-                    settings[item.key as keyof typeof settings] ? "translate-x-4" : "translate-x-0.5"
-                  )}
-                />
-              </button>
+              <Toggle
+                checked={settings[item.key as keyof typeof settings]}
+                onChange={() => setSettings(s => ({ ...s, [item.key]: !s[item.key as keyof typeof s] }))}
+              />
             </div>
           ))}
 
           <Divider className="my-1.5" />
 
-          <p className="text-[9px] font-medium text-[#8E9AAF] uppercase tracking-wide">Notificações Push</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Notificações Push</p>
 
           <div className="flex items-center justify-between py-1">
             <div>
-              <p className="text-[11px] font-medium text-[#495057]">Ativar notificações push</p>
-              <p className="text-[9px] text-[#8E9AAF]">Receber notificações no browser</p>
+              <p className="text-body font-medium text-gray-700">Ativar notificações push</p>
+              <p className="text-xs text-gray-500">Receber notificações no browser</p>
             </div>
-            <button
-              onClick={() => setSettings(s => ({ ...s, pushEnabled: !s.pushEnabled }))}
-              className={cn(
-                "w-8 h-4 rounded-full transition-colors relative",
-                settings.pushEnabled ? "bg-[#8FB996]" : "bg-[#DEE2E6]"
-              )}
-            >
-              <span
-                className={cn(
-                  "absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform shadow-sm",
-                  settings.pushEnabled ? "translate-x-4" : "translate-x-0.5"
-                )}
-              />
-            </button>
+            <Toggle
+              checked={settings.pushEnabled}
+              onChange={() => setSettings(s => ({ ...s, pushEnabled: !s.pushEnabled }))}
+            />
           </div>
         </div>
       </CardContent>
@@ -576,8 +529,8 @@ function SettingsContent() {
     <div className="flex-1 overflow-y-auto p-1.5">
       {/* Header */}
       <div className="mb-1.5">
-        <h1 className="text-[14px] font-semibold text-[#343A40]">Definições</h1>
-        <p className="text-[10px] text-[#8E9AAF]">Configurações da conta e do condomínio</p>
+        <h1 className="text-heading font-semibold text-gray-800">Definições</h1>
+        <p className="text-label text-gray-500">Configurações da conta e do condomínio</p>
       </div>
 
       <div className="grid gap-1.5 lg:grid-cols-4">

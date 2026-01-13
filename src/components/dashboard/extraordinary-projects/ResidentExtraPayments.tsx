@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Layers, TrendingDown, TrendingUp } from "lucide-react"
-import { getResidentExtraordinaryPayments, type ResidentProjectPayment } from "./actions"
+import { getResidentExtraordinaryPayments, type ResidentProjectPayment } from "@/lib/actions/extraordinary-projects"
 import { formatCurrency } from "@/lib/format"
 import { useToast } from "@/components/ui/Toast"
 import { Skeleton } from "@/components/ui/Skeleton"

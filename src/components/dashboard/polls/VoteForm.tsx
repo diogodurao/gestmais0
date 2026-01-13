@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/Button"
-import { castVote } from "./actions"
+import { castVote } from "@/lib/actions/polls"
 import { Poll, PollVote } from "@/lib/types"
 import { YES_NO_OPTIONS } from "@/lib/constants/"
 import { useToast } from "@/components/ui/Toast"

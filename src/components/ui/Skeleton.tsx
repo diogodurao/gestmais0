@@ -8,7 +8,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-sm bg-gray-200",
+        "animate-pulse rounded bg-gray-200",
         className
       )}
     />
@@ -33,7 +33,7 @@ export function SkeletonText({ lines = 3, className }: { lines?: number; classNa
 
 export function SkeletonCard({ className }: SkeletonProps) {
   return (
-    <div className={cn("rounded-lg border border-gray-200 bg-white p-1.5", className)}>
+    <div className={cn("rounded-md border border-gray-200 bg-white p-1.5", className)}>
       <div className="flex items-center gap-1.5">
         <Skeleton className="h-10 w-10 rounded-full" />
         <div className="flex-1 space-y-1.5">
@@ -52,7 +52,7 @@ export function SkeletonCard({ className }: SkeletonProps) {
 
 export function SkeletonTable({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="rounded-lg border border-gray-200 overflow-hidden">
+    <div className="rounded-md border border-gray-200 overflow-hidden">
       <div className="border-b border-gray-200 bg-gray-50 px-1.5 py-1">
         <div className="flex gap-1.5">
           <Skeleton className="h-3 w-24" />
@@ -75,20 +75,6 @@ export function SkeletonTable({ rows = 5 }: { rows?: number }) {
           </div>
         </div>
       ))}
-    </div>
-  )
-}
-
-export function SkeletonCompactCard({ className }: SkeletonProps) {
-  return (
-    <div className={cn("rounded-lg border border-gray-200 bg-white p-4", className)}>
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className="h-4 w-16" />
-        </div>
-        <Skeleton className="h-8 w-8 rounded-sm" />
-      </div>
     </div>
   )
 }

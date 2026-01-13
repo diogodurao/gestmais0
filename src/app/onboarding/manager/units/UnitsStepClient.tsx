@@ -49,8 +49,7 @@ export function UnitsStepClient({
                 )}
 
                 <Button
-                    size="lg"
-                    fullWidth
+                    className="full-w"
                     onClick={handleContinue}
                     disabled={!canContinue}
                 >

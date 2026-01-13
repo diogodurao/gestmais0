@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { createExtraordinaryProject } from "./actions"
+import { createExtraordinaryProject } from "@/lib/actions/extraordinary-projects"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 import { useToast } from "@/components/ui/Toast"
 import { useExtraProjectForm, ExtraProjectSchema } from "./hooks/useExtraProjectForm"

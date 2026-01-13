@@ -160,7 +160,7 @@ export function ResidentOnboardingFlow({
             <div className="max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-2">
+                    <div className="text-label font-mono text-gray-400 uppercase tracking-widest mb-2">
                         NOVO PORTAL DE RESIDENTE
                     </div>
                     <h1 className="text-2xl font-bold text-gray-800 uppercase tracking-wide">
@@ -178,7 +178,7 @@ export function ResidentOnboardingFlow({
                         return (
                             <div key={step.number} className="flex items-center">
                                 <div
-                                    className={`flex items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase ${currentStep === step.number
+                                    className={`flex items-center gap-2 px-3 py-2 text-label font-bold uppercase ${currentStep === step.number
                                         ? "bg-info text-white"
                                         : step.isComplete
                                             ? "bg-emerald-100 text-emerald-700"
@@ -294,7 +294,7 @@ export function ResidentOnboardingFlow({
                                 </div>
 
                                 <div className="relative">
-                                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
+                                    <label className="block text-label font-bold text-gray-500 uppercase mb-1">
                                         Número IBAN
                                     </label>
                                     <input

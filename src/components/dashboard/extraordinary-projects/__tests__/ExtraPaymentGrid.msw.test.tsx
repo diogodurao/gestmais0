@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { ExtraPaymentGrid } from "../ExtraPaymentGrid"
 import { type ExtraordinaryProjectSummary } from "@/lib/types"
-import { type ApartmentPaymentData } from "../actions"
+import { type ApartmentPaymentData } from "@/lib/actions/extraordinary-projects"
 
 /**
  * IMPROVED TEST: Uses MSW instead of mocking hooks

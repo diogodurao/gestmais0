@@ -3,10 +3,10 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getPaymentMap } from "@/components/dashboard/payments-quotas/actions"
+import { getPaymentMap } from "@/lib/actions/payments-quotas"
 import { PaymentGrid } from "@/components/dashboard/payments-quotas/PaymentGrid"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
-import { getResidentApartment } from "@/components/dashboard/settings/actions"
+import { getResidentApartment } from "@/lib/actions/building"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
 
 export const dynamic = 'force-dynamic'
@@ -34,7 +34,7 @@ export default async function MyPaymentsPage() {
     const { gridData, monthlyQuota } = await getPaymentMap(session.user.buildingId, year)
 
     return (
-        <div className="max-w-[1400px] mx-auto">
+        <div className="max-w-350 mx-auto">
             <ErrorBoundary fallback={
                 <div className="p-8 text-center">
                     <p className="text-rose-600">Erro ao carregar os seus pagamentos</p>

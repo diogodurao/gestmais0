@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useCallback, memo, type ReactNode } from "react"
+import { useEffect, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
 
@@ -21,12 +21,11 @@ const sideStyles: Record<SheetSide, string> = {
   right: "right-0 border-l",
 }
 
-const SheetComponent = ({ open, onClose, side = "right", title, description, children, footer }: SheetProps) => {
-  const handleEscape = useCallback((e: KeyboardEvent) => {
-    if (e.key === "Escape") onClose()
-  }, [onClose])
-
+export function Sheet({ open, onClose, side = "right", title, description, children, footer }: SheetProps) {
   useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+    }
     if (open) {
       document.addEventListener("keydown", handleEscape)
       document.body.style.overflow = "hidden"
@@ -35,14 +34,14 @@ const SheetComponent = ({ open, onClose, side = "right", title, description, chi
       document.removeEventListener("keydown", handleEscape)
       document.body.style.overflow = ""
     }
-  }, [open, handleEscape])
+  }, [open, onClose])
 
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50">
       <div
-        className="fixed inset-0 bg-gray-900/20"
+        className="fixed inset-0 bg-black/20"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -59,10 +58,10 @@ const SheetComponent = ({ open, onClose, side = "right", title, description, chi
             <div className="flex items-start justify-between">
               <div>
                 {title && (
-                  <h2 className="text-heading font-medium text-gray-900">{title}</h2>
+                  <h2 className="text-[14px] font-medium text-gray-900">{title}</h2>
                 )}
                 {description && (
-                  <p className="mt-1 text-body text-gray-500">{description}</p>
+                  <p className="mt-1 text-[11px] text-gray-500">{description}</p>
                 )}
               </div>
               <button
@@ -82,5 +81,3 @@ const SheetComponent = ({ open, onClose, side = "right", title, description, chi
     </div>
   )
 }
-
-export const Sheet = memo(SheetComponent)

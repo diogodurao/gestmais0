@@ -125,7 +125,7 @@ export function DocumentCard({
                                         className="fixed inset-0 z-40"
                                         onClick={() => setMenuOpen(false)}
                                     />
-                                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 min-w-[160px]">
+                                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 min-w-40">
                                         <button
                                             onClick={() => {
                                                 onNewVersion(document)

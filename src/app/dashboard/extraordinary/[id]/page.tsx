@@ -6,8 +6,8 @@
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
 import { ExtraProjectDetail } from "@/components/dashboard/extraordinary-projects/ExtraProjectDetail"
-import { requireSession } from "@/lib/session"
-import { getExtraordinaryProjectDetail } from "@/components/dashboard/extraordinary-projects/actions"
+import { requireSession } from "@/lib/auth-helpers"
+import { getExtraordinaryProjectDetail } from "@/lib/actions/extraordinary-projects"
 
 export const metadata = {
     title: "Projeto Extraordinário | GestMais",

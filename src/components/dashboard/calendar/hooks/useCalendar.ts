@@ -1,5 +1,5 @@
 import { useState, useTransition, useMemo } from "react"
-import { getCalendarEvents } from "../actions"
+import { getCalendarEvents } from "@/lib/actions/calendar"
 import { CalendarEvent } from "@/lib/types"
 
 export function useCalendar(

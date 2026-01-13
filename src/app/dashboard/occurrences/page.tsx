@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
 import { getOccurrences } from "@/components/dashboard/occurrences/actions"
 import { ROUTES } from "@/lib/routes"

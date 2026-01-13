@@ -4,238 +4,105 @@ import { useState, createContext, useContext, useCallback, type ReactNode } from
 import { cn } from "@/lib/utils"
 import { X, CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react"
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
 type ToastVariant = "info" | "success" | "warning" | "error"
 
 interface Toast {
-    id: string
-    variant: ToastVariant
-    title: string
-    description?: string
-    action?: {
-        label: string
-        onClick: () => void
-    }
-    duration?: number
-    persistent?: boolean
-}
-
-interface ToastOptions {
-    title: string
-    description?: string
-    variant?: "info" | "success" | "warning" | "error" | "destructive"
-    action?: {
-        label: string
-        onClick: () => void
-    }
-    duration?: number
-    persistent?: boolean
+  id: string
+  variant: ToastVariant
+  title: string
+  description?: string
 }
 
 interface ToastContextValue {
-    toasts: Toast[]
-    toast: (options: ToastOptions) => string
-    addToast: (toast: Omit<Toast, "id">) => string
-    removeToast: (id: string) => void
-    updateToast: (id: string, updates: Partial<Toast>) => void
-    dismissAll: () => void
+  toasts: Toast[]
+  addToast: (toast: Omit<Toast, "id">) => void
+  removeToast: (id: string) => void
 }
-
-// ============================================================================
-// CONTEXT
-// ============================================================================
 
 const ToastContext = createContext<ToastContextValue | null>(null)
 
-// ============================================================================
-// PROVIDER
-// ============================================================================
+export function useToast() {
+  const context = useContext(ToastContext)
+  if (!context) {
+    throw new Error("useToast must be used within ToastProvider")
+  }
+  return context
+}
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-    const [toasts, setToasts] = useState<Toast[]>([])
+  const [toasts, setToasts] = useState<Toast[]>([])
 
-    const removeToast = useCallback((id: string) => {
-        setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, [])
+  const addToast = useCallback((toast: Omit<Toast, "id">) => {
+    const id = Math.random().toString(36).substring(2)
+    setToasts((prev) => [...prev, { ...toast, id }])
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, 4000)
+  }, [])
 
-    const addToast = useCallback((toast: Omit<Toast, "id">): string => {
-        // ✅ Modern pattern - crypto.randomUUID() for guaranteed unique, stable IDs
-        // Generated once when toast is created, stored in state
-        const id = crypto.randomUUID()
-        const newToast = { ...toast, id }
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id))
+  }, [])
 
-        setToasts((prev) => [...prev, newToast])
-
-        if (!toast.persistent) {
-            const duration = toast.duration ?? 4000
-            setTimeout(() => {
-                removeToast(id)
-            }, duration)
-        }
-
-        return id
-    }, [removeToast])
-
-    const updateToast = useCallback((id: string, updates: Partial<Toast>) => {
-        setToasts((prev) =>
-            prev.map((toast) =>
-                toast.id === id ? { ...toast, ...updates } : toast
-            )
-        )
-    }, [])
-
-    const dismissAll = useCallback(() => {
-        setToasts([])
-    }, [])
-
-    // Helper function that matches the expected API
-    const toast = useCallback((options: ToastOptions): string => {
-        // Map 'destructive' to 'error' for backward compatibility
-        const variant = options.variant === "destructive" ? "error" : (options.variant ?? "info")
-
-        return addToast({
-            title: options.title,
-            description: options.description,
-            variant,
-            action: options.action,
-            duration: options.duration,
-            persistent: options.persistent,
-        })
-    }, [addToast])
-
-    return (
-        <ToastContext.Provider
-            value={{ toasts, toast, addToast, removeToast, updateToast, dismissAll }}
-        >
-            {children}
-            <ToastContainer />
-        </ToastContext.Provider>
-    )
+  return (
+    <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
+      {children}
+      <ToastContainer />
+    </ToastContext.Provider>
+  )
 }
-
-// ============================================================================
-// HOOK
-// ============================================================================
-
-export function useToast() {
-    const context = useContext(ToastContext)
-    if (!context) {
-        throw new Error("useToast must be used within ToastProvider")
-    }
-    return context
-}
-
-// ============================================================================
-// CONTAINER - Displays all toasts
-// ============================================================================
 
 function ToastContainer() {
-    const { toasts, removeToast } = useToast()
+  const { toasts, removeToast } = useToast()
 
-    return (
-        <div className="fixed bottom-4 right-4 gap-2">
-            {toasts.map((toast) => (
-                <ToastItem
-                    key={toast.id}
-                    toast={toast}
-                    onDismiss={() => removeToast(toast.id)}
-                />
-            ))}
-        </div>
-    )
+  return (
+    <div className="fixed bottom-1.5 right-1.5 z-50 flex flex-col gap-1.5">
+      {toasts.map((toast) => (
+        <ToastItem key={toast.id} toast={toast} onDismiss={() => removeToast(toast.id)} />
+      ))}
+    </div>
+  )
 }
 
-// ============================================================================
-// STYLES - ALIGNED WITH DESIGN SYSTEM
-// ============================================================================
-
-const variantStyles = {
-    success: {
-        borderColor: "border-success",
-        iconColor: "text-success",
-    },
-    warning: {
-        borderColor: "border-warning",
-        iconColor: "text-warning",
-    },
-    error: {
-        borderColor: "border-error",
-        iconColor: "text-error",
-    },
-    info: {
-        borderColor: "border-info",
-        iconColor: "text-info",
-    },
+const variantStyles: Record<ToastVariant, { bg: string; icon: string }> = {
+  info: { bg: "bg-white", icon: "text-blue-500" },
+  success: { bg: "bg-white", icon: "text-emerald-500" },
+  warning: { bg: "bg-white", icon: "text-amber-500" },
+  error: { bg: "bg-white", icon: "text-red-500" },
 }
 
 const icons: Record<ToastVariant, typeof Info> = {
-    info: Info,
-    success: CheckCircle,
-    warning: AlertTriangle,
-    error: XCircle,
+  info: Info,
+  success: CheckCircle,
+  warning: AlertTriangle,
+  error: XCircle,
 }
 
-// ============================================================================
-// ITEM COMPONENT - Individual toast
-// ============================================================================
+function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
+  const Icon = icons[toast.variant]
+  const styles = variantStyles[toast.variant]
 
-function ToastItem({
-    toast,
-    onDismiss,
-}: {
-    toast: Toast
-    onDismiss: () => void
-}) {
-    const Icon = icons[toast.variant]
-    const styles = variantStyles[toast.variant]
-
-    return (
-        <div
-            className={cn("gap-3 p-3 border-l-4",
-                styles.borderColor,
-                "transition-all duration-fast"
-            )}
-        >
-            <Icon className={cn("h-5 w-5 flex-shrink-0 mt-0.5", styles.iconColor)} />
-
-            <div className="flex-1 min-w-0">
-                <p className={cn("text-subtitle font-semibold leading-tight", styles.iconColor)}>
-                    {toast.title}
-                </p>
-
-                {toast.description && (
-                    <p className="mt-1 text-body leading-normal text-gray-600">
-                        {toast.description}
-                    </p>
-                )}
-
-                {toast.action && (
-                    <button
-                        onClick={() => {
-                            toast.action?.onClick()
-                            onDismiss()
-                        }}
-                        className={cn(
-                            "mt-2 text-body font-medium underline",
-                            "hover:opacity-80 transition-opacity",
-                            styles.iconColor
-                        )}
-                    >
-                        {toast.action.label}
-                    </button>
-                )}
-            </div>
-
-            <button
-                onClick={onDismiss}
-                className="flex-shrink-0 rounded p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label="Dismiss"
-            >
-                <X className="h-5 w-5" />
-            </button>
-        </div>
-    )
+  return (
+    <div
+      className={cn(
+        "flex items-start gap-1.5 rounded-md border border-gray-200 p-1.5 shadow-md",
+        styles.bg
+      )}
+      style={{ minWidth: 240, maxWidth: 320 }}
+    >
+      <Icon className={cn("h-4 w-4 flex-shrink-0 mt-0.5", styles.icon)} />
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-medium text-gray-900">{toast.title}</p>
+        {toast.description && (
+          <p className="mt-0.5 text-[11px] text-gray-500">{toast.description}</p>
+        )}
+      </div>
+      <button
+        onClick={onDismiss}
+        className="flex-shrink-0 rounded p-0.5 text-gray-400 hover:text-gray-600"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  )
 }

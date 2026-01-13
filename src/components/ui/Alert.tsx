@@ -13,20 +13,20 @@ interface AlertProps extends HTMLAttributes<HTMLDivElement> {
 
 const variantStyles: Record<AlertVariant, { container: string; icon: string }> = {
   info: {
-    container: "border-gray-300 bg-gray-50 text-gray-700",
-    icon: "text-gray-500",
+    container: "border-[#DEE2E6] bg-[#F8F9FA] text-[#495057]",
+    icon: "text-[#8E9AAF]",
   },
   success: {
-    container: "border-primary bg-primary-light text-gray-700",
-    icon: "text-primary",
+    container: "border-[#D4E5D7] bg-[#E8F0EA] text-[#495057]",
+    icon: "text-[#8FB996]",
   },
   warning: {
-    container: "border-warning bg-warning-light text-gray-700",
-    icon: "text-warning",
+    container: "border-[#F0E4C8] bg-[#FBF6EC] text-[#495057]",
+    icon: "text-[#E5C07B]",
   },
   error: {
-    container: "border-error bg-error-light text-gray-700",
-    icon: "text-error",
+    container: "border-[#EFCDD1] bg-[#F9ECEE] text-[#495057]",
+    icon: "text-[#D4848C]",
   },
 }
 
@@ -53,7 +53,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
         )}
         {...props}
       >
-        <Icon className={cn("h-3.5 w-3.5 flex-shrink-0 mt-0.5", styles.icon)} />
+        <Icon className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", styles.icon)} />
         <div className="flex-1 min-w-0">
           {title && (
             <p className="text-body font-medium">{title}</p>
@@ -63,7 +63,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
         {dismissible && (
           <button
             onClick={onDismiss}
-            className="flex-shrink-0 rounded p-0.5 opacity-70 hover:opacity-100"
+            className="shrink-0 rounded p-0.5 opacity-70 hover:opacity-100"
           >
             <X className="h-3.5 w-3.5" />
           </button>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Modal } from "@/components/ui/Modal"
 import { Button } from "@/components/ui/Button"
-import { updateExtraordinaryProject } from "./actions"
+import { updateExtraordinaryProject } from "@/lib/actions/extraordinary-projects"
 import { useRouter } from "next/navigation"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 import { formatCurrency } from "@/lib/format"

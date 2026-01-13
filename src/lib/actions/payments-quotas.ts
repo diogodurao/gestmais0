@@ -14,7 +14,7 @@ import { ROUTES } from "@/lib/routes"
  * 
  * NOT RELATED TO STRIPE.
  */
-import { requireBuildingAccess, requireApartmentAccess, requireSession } from "@/lib/session"
+import { requireBuildingAccess, requireApartmentAccess, requireSession } from "@/lib/auth-helpers"
 import { updatePaymentStatusSchema, bulkUpdatePaymentsSchema } from "@/lib/zod-schemas"
 
 export type { PaymentStatus, PaymentData }

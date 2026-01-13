@@ -16,7 +16,7 @@ import {
     addDiscussionComment,
     updateDiscussionComment,
     deleteDiscussionComment
-} from "./actions"
+} from "@/lib/actions/discussions"
 import { useToast } from "@/components/ui/Toast"
 import { formatDistanceToNow } from "@/lib/format"
 

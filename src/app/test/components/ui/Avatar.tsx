@@ -48,7 +48,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {src ? (
           <img src={src} alt={alt} className="h-full w-full object-cover" />
         ) : (
-          <span className="font-medium text-[#6A9B72]">{initials}</span>
+          <span className="font-medium text-primary-dark">{initials}</span>
         )}
         {status && (
           <span
@@ -89,7 +89,7 @@ export const AvatarGroup = forwardRef<HTMLDivElement, AvatarGroupProps>(
         {remainingCount > 0 && (
           <div
             className={cn(
-              "flex items-center justify-center rounded-full bg-[#F1F3F5] text-[#6C757D] font-medium ring-2 ring-white",
+              "flex items-center justify-center rounded-full bg-gray text-gray font-medium ring-2 ring-white",
               sizeStyles[size]
             )}
           >
@@ -121,7 +121,7 @@ export const AvatarWithName = forwardRef<HTMLDivElement, AvatarWithNameProps>(
       <div ref={ref} className={cn("flex items-center gap-1.5", className)}>
         <Avatar size={size} {...avatarProps} />
         <div className="min-w-0 flex-1">
-          <p className={cn("font-medium text-[#495057] truncate", textSizes[size].name)}>
+          <p className={cn("font-medium text-gray truncate", textSizes[size].name)}>
             {name}
           </p>
           {description && (

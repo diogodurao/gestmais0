@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { requireSession, requireBuildingAccess } from "@/lib/session"
+import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { pollService, CreatePollInput, CastVoteInput } from "@/services/poll.service"
 import { createPollSchema, castVoteSchema } from "@/lib/zod-schemas"
 import { ActionResult, PollResults } from "@/lib/types"

@@ -2,7 +2,7 @@ import { render, screen, fireEvent, cleanup } from "@testing-library/react"
 import { describe, it, expect, vi, afterEach } from "vitest"
 import { ExtraPaymentGrid } from "../ExtraPaymentGrid"
 import { type ExtraordinaryProjectSummary } from "@/lib/types"
-import { type ApartmentPaymentData } from "../actions"
+import { type ApartmentPaymentData } from "@/lib/actions/extraordinary-projects"
 
 // Mock hooks and components
 vi.mock("@/components/ui/Badge", () => ({

@@ -9,9 +9,9 @@
 
 import { Suspense } from "react"
 import { ExtraProjectsList } from "@/components/dashboard/extraordinary-projects/ExtraProjectsList"
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
-import { getResidentApartment, getBuildingApartments } from "@/components/dashboard/settings/actions"
+import { getResidentApartment, getBuildingApartments } from "@/lib/actions/building"
 import { ROUTES } from "@/lib/routes"
 
 export const metadata = {

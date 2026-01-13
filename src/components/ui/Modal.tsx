@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useCallback, memo, type ReactNode } from "react"
+import { useEffect, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
 
@@ -20,12 +20,11 @@ const sizeStyles = {
   lg: "max-w-lg",
 }
 
-const ModalComponent = ({ open, onClose, title, description, children, footer, size = "md" }: ModalProps) => {
-  const handleEscape = useCallback((e: KeyboardEvent) => {
-    if (e.key === "Escape") onClose()
-  }, [onClose])
-
+export function Modal({ open, onClose, title, description, children, footer, size = "md" }: ModalProps) {
   useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+    }
     if (open) {
       document.addEventListener("keydown", handleEscape)
       document.body.style.overflow = "hidden"
@@ -34,14 +33,14 @@ const ModalComponent = ({ open, onClose, title, description, children, footer, s
       document.removeEventListener("keydown", handleEscape)
       document.body.style.overflow = ""
     }
-  }, [open, handleEscape])
+  }, [open, onClose])
 
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-1.5">
       <div
-        className="fixed inset-0 bg-gray-900/20"
+        className="fixed inset-0 bg-black/20"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -50,7 +49,7 @@ const ModalComponent = ({ open, onClose, title, description, children, footer, s
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}
         className={cn(
-          "relative w-full rounded-lg border border-gray-200 bg-white shadow-md",
+          "relative w-full rounded-md border border-gray-200 bg-white shadow-lg",
           sizeStyles[size]
         )}
       >
@@ -59,17 +58,17 @@ const ModalComponent = ({ open, onClose, title, description, children, footer, s
             <div className="flex items-start justify-between">
               <div>
                 {title && (
-                  <h2 id="modal-title" className="text-heading font-semibold leading-tight text-gray-900">
+                  <h2 id="modal-title" className="text-[14px] font-medium text-gray-900">
                     {title}
                   </h2>
                 )}
                 {description && (
-                  <p className="mt-1 text-body leading-normal text-gray-500">{description}</p>
+                  <p className="mt-1 text-[11px] text-gray-500">{description}</p>
                 )}
               </div>
               <button
                 onClick={onClose}
-                className="rounded-sm p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -84,5 +83,3 @@ const ModalComponent = ({ open, onClose, title, description, children, footer, s
     </div>
   )
 }
-
-export const Modal = memo(ModalComponent)

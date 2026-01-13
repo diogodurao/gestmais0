@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
-import { loginAction } from "./actions"
+import { loginAction } from "@/lib/actions/auth"
 
 export function LoginForm() {
     const router = useRouter()

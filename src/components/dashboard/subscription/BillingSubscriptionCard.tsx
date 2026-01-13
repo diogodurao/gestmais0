@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card"
 import { CreditCard, Lock } from "lucide-react"
 import { SubscribeButton, SyncSubscriptionButton } from "@/components/dashboard/subscription/SubscribeButton"
 import { type SubscriptionStatus } from "@/lib/types"
-import { DEFAULT_SUBSCRIPTION_PRICE_PER_UNIT } from "@/lib/constants"
+import { DEFAULT_SUBSCRIPTION_PRICE_PER_UNIT } from "@/lib/constants/project"
 
 interface BillingSubscriptionCardProps {
     subscriptionStatus: string | null

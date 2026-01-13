@@ -52,7 +52,7 @@ export function FinancialStepClient({
             </div>
 
             <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                <label className="block text-label font-bold text-slate-500 uppercase mb-1">
                     Número IBAN (opcional)
                 </label>
                 <input
@@ -76,7 +76,7 @@ export function FinancialStepClient({
             )}
 
             <Button
-                fullWidth
+                className="w-full"
                 onClick={handleCompleteSetup}
                 disabled={isLoading}
             >

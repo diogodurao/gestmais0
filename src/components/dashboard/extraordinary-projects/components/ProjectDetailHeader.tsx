@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { MoreVertical, Edit, RefreshCw, Archive, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { archiveExtraordinaryProject } from "../actions"
+import { archiveExtraordinaryProject } from "@/lib/actions/extraordinary-projects"
 import { useToast } from "@/components/ui/Toast"
 
 type Project = {

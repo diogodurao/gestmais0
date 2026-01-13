@@ -1,8 +1,8 @@
-import { getResidentApartment, getUnclaimedApartments } from "@/components/dashboard/settings/actions";
+import { getResidentApartment, getUnclaimedApartments } from "@/lib/actions/building";
 import { ResidentOnboardingFlow } from "@/components/dashboard/onboarding/ResidentOnboardingFlow";
 import { PaymentStatusCard } from "@/components/dashboard/payments-quotas/PaymentStatusCard";
 import { BuildingMetricsPanel } from "@/components/dashboard/overview/BuildingMetricsPanel";
-import { getEvaluationStatus } from "@/components/dashboard/evaluations/actions";
+import { getEvaluationStatus } from "@/lib/actions/evaluations";
 import { EvaluationWidget } from "@/components/dashboard/evaluations/EvaluationWidget";
 import { getNotifications } from "@/lib/actions/notification";
 import { NotificationCard } from "@/components/dashboard/notifications/NotificationCard";
@@ -53,7 +53,7 @@ export async function ResidentDashboard({ session }: ResidentDashboardProps) {
         }
 
         // If HAS everything, load details
-        const { getResidentBuildingDetails } = await import("@/app/actions/building");
+        const { getResidentBuildingDetails } = await import("@/lib/actions/building");
         residentBuildingInfo = await getResidentBuildingDetails(session.user.buildingId!);
     } catch (error) {
         console.error("Failed check resident status", error);

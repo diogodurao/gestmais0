@@ -36,7 +36,7 @@ export function MobilePaymentCard({
   return (
     <div className={cn(
       "rounded-lg border bg-white overflow-hidden",
-      hasDebt ? "border-[#EFCDD1]" : "border-[#E9ECEF]"
+      hasDebt ? "border-error" : "border-gray-200"
     )}>
       {/* Header - Always visible */}
       <div
@@ -47,10 +47,10 @@ export function MobilePaymentCard({
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             {/* Unit badge */}
             <div className={cn(
-              "shrink-0 w-8 h-8 flex items-center justify-center font-medium text-[11px] rounded border",
+              "shrink-0 w-8 h-8 flex items-center justify-center font-medium text-body rounded border",
               hasDebt
-                ? "bg-[#F9ECEE] text-[#B86B73] border-[#EFCDD1]"
-                : "bg-[#E8F0EA] text-[#6A9B72] border-[#D4E5D7]"
+                ? "bg-error-light text-error border-error"
+                : "bg-primary-light text-primary-dark border-primary"
             )}>
               {apartment.unit}
             </div>
@@ -58,14 +58,14 @@ export function MobilePaymentCard({
             {/* Resident info */}
             <div className="min-w-0 flex-1">
               {apartment.residentName ? (
-                <span className="text-[11px] font-medium text-[#495057] truncate block flex items-center gap-1">
-                  <User className="w-3 h-3 text-[#8E9AAF] shrink-0" />
+                <span className="text-body font-medium text-gray-700 truncate block items-center gap-1">
+                  <User className="w-3 h-3 text-gray-500 shrink-0" />
                   {apartment.residentName}
                 </span>
               ) : (
-                <span className="text-[10px] text-[#8E9AAF] italic">Sem residente</span>
+                <span className="text-label text-gray-500 italic">Sem residente</span>
               )}
-              <div className="text-[9px] text-[#8E9AAF] mt-0.5">
+              <div className="text-xs text-gray-500 mt-0.5">
                 {formatCurrency(apartment.totalPaid)} de {formatCurrency(expectedTotal)}
               </div>
             </div>
@@ -74,10 +74,10 @@ export function MobilePaymentCard({
           {/* Status badge and chevron */}
           <div className="flex items-center gap-1.5">
             <div className={cn(
-              "px-1.5 py-0.5 rounded text-[9px] font-medium border",
+              "px-1.5 py-0.5 rounded text-xs font-medium border",
               hasDebt
-                ? "bg-[#F9ECEE] text-[#B86B73] border-[#EFCDD1]"
-                : "bg-[#E8F0EA] text-[#6A9B72] border-[#D4E5D7]"
+                ? "bg-error-light text-error border-error"
+                : "bg-primary-light text-primary-dark border-primary"
             )}>
               {hasDebt ? (
                 <span className="flex items-center gap-0.5">
@@ -89,9 +89,9 @@ export function MobilePaymentCard({
               )}
             </div>
             {isExpanded ? (
-              <ChevronUp className="w-3 h-3 text-[#8E9AAF]" />
+              <ChevronUp className="w-3 h-3 text-gray-500" />
             ) : (
-              <ChevronDown className="w-3 h-3 text-[#8E9AAF]" />
+              <ChevronDown className="w-3 h-3 text-gray-500" />
             )}
           </div>
         </div>
@@ -104,8 +104,8 @@ export function MobilePaymentCard({
 
       {/* Expanded content - Monthly payments grid */}
       {isExpanded && (
-        <div className="border-t border-[#F1F3F5] bg-[#F8F9FA] p-1.5">
-          <div className="text-[9px] font-medium text-[#8E9AAF] uppercase tracking-wide mb-1.5">
+        <div className="border-t border-gray-100 bg-gray-50 p-1.5">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
             Quotas Mensais
           </div>
 
@@ -127,19 +127,19 @@ export function MobilePaymentCard({
                   disabled={!isInteractive}
                   className={cn(
                     "p-1.5 text-center transition-all border rounded",
-                    status === "paid" && "bg-[#E8F0EA] border-[#D4E5D7]",
-                    status === "late" && "bg-[#F9ECEE] border-[#EFCDD1]",
-                    status === "pending" && "bg-white border-[#E9ECEF]",
+                    status === "paid" && "bg-primary-light border-primary",
+                    status === "late" && "bg-error-light border-error",
+                    status === "pending" && "bg-white border-gray-200",
                     isInteractive && "cursor-pointer active:scale-95",
                     !isInteractive && "cursor-default"
                   )}
                 >
-                  <div className="text-[8px] font-medium text-[#8E9AAF]">{monthName}</div>
+                  <div className="text-micro font-medium text-gray-500">{monthName}</div>
                   <div className={cn(
-                    "text-[10px] font-bold mt-0.5",
-                    status === "paid" && "text-[#6A9B72]",
-                    status === "late" && "text-[#B86B73]",
-                    status === "pending" && "text-[#8E9AAF]"
+                    "text-label font-bold mt-0.5",
+                    status === "paid" && "text-primary-dark",
+                    status === "late" && "text-error",
+                    status === "pending" && "text-gray-500"
                   )}>
                     {status === "paid" ? "✓" : status === "late" ? "!" : "—"}
                   </div>
@@ -149,21 +149,21 @@ export function MobilePaymentCard({
           </div>
 
           {/* Legend */}
-          <div className="flex items-center justify-center gap-2 mt-1.5 pt-1.5 border-t border-[#E9ECEF]">
-            <span className="flex items-center gap-0.5 text-[8px] text-[#8E9AAF]">
-              <span className="w-2 h-2 bg-[#8FB996] rounded-sm" /> Pago
+          <div className="flex items-center justify-center gap-2 mt-1.5 pt-1.5 border-t border-gray-200">
+            <span className="flex items-center gap-0.5 text-micro text-gray-500">
+              <span className="w-2 h-2 bg-primary rounded-sm" /> Pago
             </span>
-            <span className="flex items-center gap-0.5 text-[8px] text-[#8E9AAF]">
-              <span className="w-2 h-2 bg-[#DEE2E6] rounded-sm" /> Pendente
+            <span className="flex items-center gap-0.5 text-micro text-gray-500">
+              <span className="w-2 h-2 bg-gray-300 rounded-sm" /> Pendente
             </span>
-            <span className="flex items-center gap-0.5 text-[8px] text-[#8E9AAF]">
-              <span className="w-2 h-2 bg-[#D4848C] rounded-sm" /> Dívida
+            <span className="flex items-center gap-0.5 text-micro text-gray-500">
+              <span className="w-2 h-2 bg-error rounded-sm" /> Dívida
             </span>
           </div>
 
           {/* Edit mode hint */}
           {activeTool && (
-            <div className="mt-1.5 text-center text-[9px] text-[#8FB996] animate-pulse">
+            <div className="mt-1.5 text-center text-xs text-primary animate-pulse">
               Toque num mês para alterar
             </div>
           )}

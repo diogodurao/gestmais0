@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { requireSession, requireBuildingAccess } from "@/lib/session"
+import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { documentService } from "@/services/document.service"
 import { ActionResult, DocumentCategory, Document } from "@/lib/types"
 

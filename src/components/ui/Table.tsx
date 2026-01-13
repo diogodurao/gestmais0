@@ -1,64 +1,57 @@
-import { forwardRef, memo, type HTMLAttributes, type ThHTMLAttributes, type TdHTMLAttributes } from "react"
+import { forwardRef, type HTMLAttributes, type ThHTMLAttributes, type TdHTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 
-const TableComponent = forwardRef<HTMLTableElement, HTMLAttributes<HTMLTableElement>>(
+export const Table = forwardRef<HTMLTableElement, HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
     <div className="w-full overflow-x-auto">
       <table
         ref={ref}
-        className={cn("w-full border-collapse text-body", className)}
+        className={cn("w-full border-collapse text-[11px]", className)}
         {...props}
       />
     </div>
   )
 )
-TableComponent.displayName = "Table"
+Table.displayName = "Table"
 
-const TableHeaderComponent = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
+export const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
   ({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn("border-b border-gray-200 bg-gray-50", className)} {...props} />
+    <thead ref={ref} className={cn("border-b border-[#E9ECEF] bg-[#F8F9FA]", className)} {...props} />
   )
 )
-TableHeaderComponent.displayName = "TableHeader"
+TableHeader.displayName = "TableHeader"
 
-const TableBodyComponent = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
+export const TableBody = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
   ({ className, ...props }, ref) => (
-    <tbody ref={ref} className={cn("[&>tr:not(:last-child)]:border-b [&>tr:not(:last-child)]:border-gray-100", className)} {...props} />
+    <tbody ref={ref} className={cn("[&>tr:not(:last-child)]:border-b [&>tr:not(:last-child)]:border-[#F1F3F5]", className)} {...props} />
   )
 )
-TableBodyComponent.displayName = "TableBody"
+TableBody.displayName = "TableBody"
 
-const TableRowComponent = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTableRowElement>>(
+export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTableRowElement>>(
   ({ className, ...props }, ref) => (
-    <tr ref={ref} className={cn("transition-colors hover:bg-gray-50", className)} {...props} />
+    <tr ref={ref} className={cn("transition-colors hover:bg-[#F8F9FA]", className)} {...props} />
   )
 )
-TableRowComponent.displayName = "TableRow"
+TableRow.displayName = "TableRow"
 
-const TableHeadComponent = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLTableCellElement>>(
+export const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLTableCellElement>>(
   ({ className, ...props }, ref) => (
     <th
       ref={ref}
       className={cn(
-        "px-1.5 py-1 text-left text-label font-medium uppercase tracking-wide text-gray-500",
+        "px-1.5 py-1 text-left text-[9px] font-medium uppercase tracking-wide text-[#8E9AAF]",
         className
       )}
       {...props}
     />
   )
 )
-TableHeadComponent.displayName = "TableHead"
+TableHead.displayName = "TableHead"
 
-const TableCellComponent = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLTableCellElement>>(
+export const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLTableCellElement>>(
   ({ className, ...props }, ref) => (
-    <td ref={ref} className={cn("px-1.5 py-1 text-gray-700", className)} {...props} />
+    <td ref={ref} className={cn("px-1.5 py-1 text-[#495057]", className)} {...props} />
   )
 )
-TableCellComponent.displayName = "TableCell"
-
-export const Table = memo(TableComponent)
-export const TableHeader = memo(TableHeaderComponent)
-export const TableBody = memo(TableBodyComponent)
-export const TableRow = memo(TableRowComponent)
-export const TableHead = memo(TableHeadComponent)
-export const TableCell = memo(TableCellComponent)
+TableCell.displayName = "TableCell"

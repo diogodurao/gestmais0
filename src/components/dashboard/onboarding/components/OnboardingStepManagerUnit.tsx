@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Check } from "lucide-react"
-import { claimApartment } from "@/components/dashboard/settings/actions"
+import { claimApartment } from "@/lib/actions/building"
 
 export type Apartment = {
     id: number

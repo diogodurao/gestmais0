@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Trash2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { createApartment, deleteApartment } from "@/components/dashboard/settings/actions"
+import { createApartment, deleteApartment } from "@/lib/actions/building"
 
 export type Apartment = {
     id: number
@@ -91,7 +91,7 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
 
             {/* Unit List */}
             <div className="border border-gray-200">
-                <div className="grid grid-cols-12 bg-gray-100 border-b border-gray-200 text-[10px] font-bold text-gray-500 uppercase">
+                <div className="grid grid-cols-12 bg-gray-100 border-b border-gray-200 text-label font-bold text-gray-500 uppercase">
                     <div className="col-span-5 p-2">FRAÇÃO</div>
                     <div className="col-span-4 p-2">PERMILAGEM</div>
                     <div className="col-span-3 p-2"></div>
@@ -150,7 +150,6 @@ export function OnboardingStepUnits({ buildingId, apartments, totalApartments }:
                         </div>
                         <div className="col-span-3 p-2">
                             <Button
-                                size="xs"
                                 onClick={handleAddUnit}
                                 disabled={isLoading}
                             >

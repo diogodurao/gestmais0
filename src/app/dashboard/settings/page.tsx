@@ -1,25 +1,22 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getBuilding, getBuildingApartments, getResidentApartment, getUnclaimedApartments } from "@/components/dashboard/settings/actions"
+import { getBuilding, getBuildingApartments, getResidentApartment } from "@/lib/actions/building"
 import { BuildingSettingsForm } from "@/components/dashboard/settings/BuildingSettingsForm"
 import { ApartmentManager } from "@/components/dashboard/settings/ApartmentManager"
 import { ProfileSettings } from "@/components/dashboard/settings/ProfileSettings"
+import { NotificationSettings } from "@/components/dashboard/settings/NotificationSettings"
+import { SettingsLayout } from "@/components/dashboard/settings/SettingsLayout"
 import { BillingSubscriptionCard } from "@/components/dashboard/subscription/BillingSubscriptionCard"
-import { LayoutGrid, Building2 } from "lucide-react"
+import { Building2 } from "lucide-react"
 import { getApartmentDisplayName } from "@/lib/utils"
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
+import { ROUTES } from "@/lib/routes"
 
 export const dynamic = 'force-dynamic'
 
-import { ROUTES } from "@/lib/routes"
-
-export default async function SettingsPage({
-    searchParams
-}: {
-    searchParams: Promise<{ new?: string, tab?: string }>
-}) {
+export default async function SettingsPage() {
     const session = await auth.api.getSession({
         headers: await headers()
     })
@@ -68,13 +65,11 @@ export default async function SettingsPage({
     const managerActiveBuildingId = session.user.activeBuildingId ?? null
     let building = null
     let apartmentsData: Awaited<ReturnType<typeof getBuildingApartments>> = []
-    let unclaimedUnits: Awaited<ReturnType<typeof getUnclaimedApartments>> = []
 
     if (session.user.role === 'manager' && managerActiveBuildingId) {
         building = await getBuilding(managerActiveBuildingId)
         if (building) {
             apartmentsData = await getBuildingApartments(managerActiveBuildingId)
-            unclaimedUnits = await getUnclaimedApartments(managerActiveBuildingId)
         }
     }
 
@@ -84,58 +79,44 @@ export default async function SettingsPage({
         apartmentsData
     )
     const canSubscribe = profileComplete && buildingComplete && unitsComplete
+    const isManager = session.user.role === 'manager'
 
     return (
-        <div className="flex-1 overflow-y-auto bg-slate-100 p-3 sm:p-4 lg:p-6">
-            <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8 pb-20">
-
-                {/* Header bar within content for quick save simulation */}
-                <div className="flex items-center justify-between mb-2">
-                    <div>
-                        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-800">Definições</h1>
-                        <p className="text-[9px] sm:text-[10px] font-mono text-slate-500 uppercase">Parametros do sistema</p>
-                    </div>
+        <div className="flex-1 overflow-y-auto bg-white p-1.5">
+            <div className="max-w-5xl mx-auto">
+                {/* Header */}
+                <div className="mb-1.5">
+                    <h1 className="text-heading font-semibold text-gray-800">
+                        Definições
+                    </h1>
+                    <p className="text-label text-gray-500">
+                        Configurações da conta e do condomínio
+                    </p>
                 </div>
 
-                {/* Section 1: Profile */}
-                <div className="scroll-mt-6">
-                    <ProfileSettings user={userData} />
-                </div>
+                {/* Tabbed Layout */}
+                <SettingsLayout isManager={isManager}>
+                    {{
+                        profile: <ProfileSettings user={userData} />,
 
-                {/* Section 2: Building (Manager Only) */}
-                {session.user.role === 'manager' && building && (
-                    <>
-                        <div className="scroll-mt-6">
+                        building: building ? (
                             <BuildingSettingsForm building={building} />
-                        </div>
+                        ) : null,
 
-                        <div className="scroll-mt-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        <LayoutGrid className="w-4 h-4" />
-                                        Frações
-                                    </CardTitle>
-                                    <span className="text-[10px] font-mono text-slate-400">{apartmentsData.length} / {building.totalApartments || 0}</span>
-                                </CardHeader>
-                                <div className="p-0">
-                                    <ApartmentManager
-                                        apartments={apartmentsData.map(a => ({
-                                            id: a.apartment.id,
-                                            unit: a.apartment.unit,
-                                            permillage: a.apartment.permillage || 0,
-                                            resident: a.resident ? { id: a.resident.id, name: a.resident.name } : null
-                                        }))}
-                                        buildingId={building.id}
-                                        buildingComplete={buildingComplete}
-                                        totalApartments={building.totalApartments}
-                                    />
-                                </div>
-                            </Card>
-                        </div>
+                        apartments: building ? (
+                            <ApartmentManager
+                                apartments={apartmentsData.map(a => ({
+                                    id: a.apartment.id,
+                                    unit: a.apartment.unit,
+                                    permillage: a.apartment.permillage || 0,
+                                    resident: a.resident ? { id: a.resident.id, name: a.resident.name } : null
+                                }))}
+                                buildingId={building.id}
+                                totalApartments={building.totalApartments}
+                            />
+                        ) : null,
 
-                        {/* Section 3: Billing (Integrated) */}
-                        <div id="billing" className="scroll-mt-6">
+                        subscription: building ? (
                             <BillingSubscriptionCard
                                 subscriptionStatus={building.subscriptionStatus}
                                 buildingId={building.id}
@@ -144,22 +125,29 @@ export default async function SettingsPage({
                                 profileComplete={profileComplete}
                                 buildingComplete={buildingComplete}
                             />
-                        </div>
-                    </>
-                )}
+                        ) : null,
 
-                {session.user.role !== 'manager' && !userApartment && (
-                    <Card>
+                        notifications: <NotificationSettings />,
+                    }}
+                </SettingsLayout>
+
+                {/* Resident without apartment card */}
+                {!isManager && !userApartment && (
+                    <Card className="mt-6">
                         <CardHeader>
-                            <CardTitle>
+                            <CardTitle className="flex items-center gap-1.5">
                                 <Building2 className="w-4 h-4" />
                                 Entrar na sua fração
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-xs text-slate-500 mb-4 uppercase tracking-tight">You are currently not associated with a specific unit.</p>
-                            <div className="p-4 tech-border border-dashed bg-slate-50 text-center">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">[ CONTACT_MANAGER_FOR_INVITE_CODE ]</span>
+                            <p className="text-label text-gray-500 mb-4">
+                                Ainda não está associado a uma fração.
+                            </p>
+                            <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 text-center">
+                                <span className="text-label font-medium text-gray-400">
+                                    Contacte o administrador para obter um código de convite
+                                </span>
                             </div>
                         </CardContent>
                     </Card>
@@ -168,4 +156,3 @@ export default async function SettingsPage({
         </div>
     )
 }
-

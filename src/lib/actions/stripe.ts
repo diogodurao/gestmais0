@@ -1,6 +1,6 @@
 "use server"
 
-import { requireSession } from "@/lib/session"
+import { requireSession } from "@/lib/auth-helpers"
 import { stripeService } from "@/services/stripe.service"
 
 export async function syncSubscriptionStatus(buildingId: string) {

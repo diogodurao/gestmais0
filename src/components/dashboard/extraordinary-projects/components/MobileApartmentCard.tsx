@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatCurrency, getMonthName } from "@/lib/format"
 import { Badge } from "@/components/ui/Badge"
-import { type ApartmentPaymentData } from "../actions"
+import { type ApartmentPaymentData } from "@/lib/actions/extraordinary-projects"
 import { type ExtraordinaryToolMode, type PaymentStatus } from "@/lib/types"
 import { GENERAL_STATUS_CONFIG } from "@/lib/constants/ui"
 

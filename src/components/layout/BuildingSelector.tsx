@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Building2, ChevronDown, Plus, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { switchActiveBuilding, createNewBuilding } from "@/components/dashboard/settings/actions"
+import { switchActiveBuilding, createNewBuilding } from "@/lib/actions/building"
 import { ManagedBuilding } from "@/lib/types"
 import {
     Dropdown,
@@ -59,7 +59,7 @@ export function BuildingSelector({
                 disabled={isPending}
             >
                 <Building2 className="w-4 h-4 text-gray-500" />
-                <span className="truncate max-w-[150px]">
+                <span className="truncate max-w">
                     {activeBuilding?.building.name || "Selecionar Edifício"}
                 </span>
                 <ChevronDown className="w-3 h-3 text-gray-400" />

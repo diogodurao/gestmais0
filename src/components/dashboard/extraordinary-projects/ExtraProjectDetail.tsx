@@ -7,7 +7,7 @@ import {
     archiveExtraordinaryProject,
     deleteExtraordinaryProject,
     type ProjectDetail,
-} from "./actions"
+} from "@/lib/actions/extraordinary-projects"
 import { ExtraPaymentGrid } from "@/components/dashboard/extraordinary-projects/ExtraPaymentGrid"
 import dynamic from "next/dynamic"
 

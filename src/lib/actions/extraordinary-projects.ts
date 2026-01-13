@@ -7,7 +7,7 @@
  * and their associated payment records.
  */
 
-import { requireSession, requireBuildingAccess, requireProjectAccess, requireResidentSession } from "@/lib/session"
+import { requireSession, requireBuildingAccess, requireProjectAccess, requireResidentSession } from "@/lib/auth-helpers"
 import { extraordinaryService } from "@/services/extraordinary.service"
 import {
     CreateProjectInput,
