@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { Layers, Plus, ChevronRight, FileText } from "lucide-react"
+import { StatCard } from "@/components/ui/Stat-Card"
+import { Plus, ChevronRight, FileText, Layers, DollarSign, TrendingUp, Calendar } from "lucide-react"
 import { getExtraordinaryProjects } from "@/lib/actions/extraordinary-projects"
 import { type ExtraordinaryProjectSummary } from "@/lib/types"
-import { formatCurrency } from "@/lib/format"
+import { formatCurrency, getMonthName } from "@/lib/format"
 import dynamic from "next/dynamic"
 
 // Dynamic Imports
@@ -40,7 +41,7 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
     const [projects, setProjects] = useState<ExtraordinaryProjectSummary[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [showCreate, setShowCreate] = useState(false)
-    const { toast } = useToast()
+    const { addToast } = useToast()
 
     const fetchProjects = async () => {
         try {
@@ -50,8 +51,8 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                 setProjects(result.data)
             }
         } catch (error) {
-            toast({
-                variant: "destructive",
+            addToast({
+                variant: "error",
                 title: "Erro",
                 description: "Falha ao carregar lista de projetos."
             })
@@ -67,7 +68,7 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
     const handleCreateSuccess = () => {
         setShowCreate(false)
         fetchProjects()
-        router.refresh() // Keep this to update server components if needed
+        router.refresh()
     }
 
     if (showCreate && isManager) {
@@ -81,24 +82,60 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
         )
     }
 
+    // Calculate totals for stats
+    const totalBudget = projects.reduce((sum, p) => sum + p.totalBudget, 0)
+    const activeCount = projects.filter(p => p.status === "active").length
+
+    // Format currency short
+    const formatCurrencyShort = (cents: number) => `€${(cents / 100).toFixed(0)}`
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>
-                    <Layers className="w-4 h-4" />
-                    Quotas Extraordinárias
-                </CardTitle>
+        <div className="flex-1 overflow-y-auto p-1.5">
+            {/* Header */}
+            <div className="mb-1.5 flex items-center justify-between">
+                <div>
+                    <h1 className="text-heading font-semibold text-gray-800">Quotas Extraordinárias</h1>
+                    <p className="text-label text-gray-500">Gestão de projetos e obras especiais</p>
+                </div>
                 {isManager && (
-                    <Button
-                        size="xs"
-                        onClick={() => setShowCreate(true)}
-                    >
-                        <Plus className="w-3 h-3 mr-1" />
-                        NOVO PROJETO
+                    <Button size="sm" onClick={() => setShowCreate(true)}>
+                        <Plus className="h-3 w-3" />
+                        <span className="hidden sm:inline ml-1">Novo Projeto</span>
                     </Button>
                 )}
-            </CardHeader>
-            <CardContent className="p-0">
+            </div>
+
+            {/* Stats */}
+            <div className="mb-1.5 grid grid-cols-2 gap-1.5 lg:grid-cols-4">
+                <StatCard
+                    label="Total Projetos"
+                    value={projects.length.toString()}
+                    icon={<Layers className="h-4 w-4" />}
+                />
+                <StatCard
+                    label="Orçamento Total"
+                    value={formatCurrencyShort(totalBudget)}
+                    icon={<DollarSign className="h-4 w-4" />}
+                />
+                <StatCard
+                    label="Cobrado"
+                    value="€0"
+                    change={{ value: "0%", positive: true }}
+                    icon={<TrendingUp className="h-4 w-4" />}
+                />
+                <StatCard
+                    label="Em Curso"
+                    value={activeCount.toString()}
+                    icon={<Calendar className="h-4 w-4" />}
+                />
+            </div>
+
+            {/* Projects Card */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Projetos Ativos</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
                 {isLoading ? (
                     <div className="p-4 space-y-4">
                         {[1, 2, 3].map((i) => (
@@ -113,11 +150,11 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                     </div>
                 ) : projects.length === 0 ? (
                     <div className="p-8 text-center">
-                        <FileText className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                        <h3 className="text-body font-bold text-gray-600 uppercase mb-2">
+                        <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-body font-medium text-gray-700 mb-2">
                             Sem projetos extraordinários
                         </h3>
-                        <p className="text-body text-gray-400 max-w-xs mx-auto mb-4">
+                        <p className="text-label text-gray-500 max-w-xs mx-auto mb-4">
                             {isManager
                                 ? "Crie o primeiro projeto para começar a gerir quotas extraordinárias para obras ou fundos de reserva."
                                 : "Não existem projetos extraordinários ativos ou passados neste condomínio."}
@@ -128,8 +165,7 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                                 onClick={() => setShowCreate(true)}
                             >
                                 <Plus className="w-3 h-3 mr-1" />
-                                <span className="hidden sm:inline">Criar Primeiro Projeto</span>
-                                <span className="sm:hidden">Criar</span>
+                                Criar Projeto
                             </Button>
                         )}
                     </div>
@@ -139,32 +175,33 @@ export function ExtraProjectsList({ buildingId, apartments = [], readOnly = fals
                             <Link
                                 key={project.id}
                                 href={`/dashboard/extraordinary/${project.id}`}
-                                className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors group"
+                                className="flex items-center justify-between p-1.5 hover:bg-gray-50 transition-colors cursor-pointer group"
                             >
-                                <div className="min-w-0">
-                                    <h3 className="text-body font-bold text-gray-700 uppercase truncate">
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="text-body font-medium text-gray-700 truncate">
                                         {project.name}
                                     </h3>
-                                    <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-body text-gray-400 font-mono">
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-label text-gray-500 font-mono">
                                             {formatCurrency(project.totalBudget)}
                                         </span>
-                                        <span className="text-micro text-gray-300">•</span>
-                                        <span className="text-body text-gray-400">
+                                        <span className="text-label text-gray-300">•</span>
+                                        <span className="text-label text-gray-500">
                                             {project.numInstallments} prestações
                                         </span>
-                                        <span className="text-micro text-gray-300">•</span>
-                                        <span className="text-body text-gray-400">
-                                            {project.startMonth}/{project.startYear}
+                                        <span className="text-label text-gray-300">•</span>
+                                        <span className="text-label text-gray-500">
+                                            {getMonthName(project.startMonth, true)}/{project.startYear}
                                         </span>
                                     </div>
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" />
                             </Link>
                         ))}
                     </div>
                 )}
             </CardContent>
-        </Card>
+            </Card>
+        </div>
     )
 }

@@ -1,5 +1,7 @@
-import { BarChart3 } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/Card"
+import { Users, Building2 } from "lucide-react"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card"
+import { Badge } from "@/components/ui/Badge"
+import { InfoRow } from "@/components/ui/Info-Row"
 
 interface BuildingMetricsPanelProps {
     isManager: boolean
@@ -16,44 +18,78 @@ export function BuildingMetricsPanel({
     residentBuildingInfo,
     totalApartments
 }: BuildingMetricsPanelProps) {
-
     // Calculate real occupancy
     const totalUnits = totalApartments || (residents?.length || 0) + (unclaimedUnits?.length || 0) || 1
     const residentCount = residents?.length || 0
     const occupancyRate = totalUnits > 0 ? Math.round((residentCount / totalUnits) * 100) : 0
 
+    if (isManager) {
+        return (
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
+                                <Users className="w-4 h-4 text-[#6A9B72]" />
+                            </div>
+                            <div>
+                                <CardTitle>Métricas</CardTitle>
+                                <CardDescription>{totalUnits} frações totais</CardDescription>
+                            </div>
+                        </div>
+                        <Badge>{occupancyRate}% ocupação</Badge>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="rounded-lg bg-[#E8F0EA] p-2 text-center">
+                            <p className="text-[18px] font-bold text-[#6A9B72]">{residentCount}</p>
+                            <p className="text-[9px] font-medium text-[#6A9B72] uppercase">Residentes</p>
+                        </div>
+                        <div className="rounded-lg bg-[#FBF6EC] p-2 text-center">
+                            <p className="text-[18px] font-bold text-[#B8963E]">{unclaimedUnits?.length || 0}</p>
+                            <p className="text-[9px] font-medium text-[#B8963E] uppercase">Não atribuídos</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    // Resident view
     return (
-        <Card className="h-full border border-gray-300">
+        <Card>
             <CardHeader>
-                <CardTitle>
-                    <BarChart3 className="w-4 h-4" />
-                    {isManager ? 'Métricas do Condomínio' : 'Informações do Condomínio'}
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-                <div className="p-4 h-32 flex flex-col justify-center">
-                    {isManager ? (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="text-center border-r border-gray-100">
-                                <div className="text-2xl font-semibold text-gray-700">{residents?.length || 0}</div>
-                                <div className="text-label text-gray-400 uppercase font-semibold mt-1">Residentes</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-2xl font-semibold text-warning">{unclaimedUnits?.length || 0}</div>
-                                <div className="text-label text-warning uppercase font-semibold mt-1">não atribuídos</div>
-                            </div>
-                        </div>
-                    ) : residentBuildingInfo ? (
-                        <div className="space-y-1">
-                            <p className="text-body font-semibold text-gray-800 truncate uppercase">{residentBuildingInfo.building.name}</p>
-                            <p className="text-label font-medium text-gray-500 uppercase">Gestor: {residentBuildingInfo.manager.name}</p>
-                        </div>
-                    ) : null}
+                <div className="flex items-center gap-1.5">
+                    <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
+                        <Building2 className="w-4 h-4 text-[#6A9B72]" />
+                    </div>
+                    <div>
+                        <CardTitle>O Meu Condomínio</CardTitle>
+                        <CardDescription>Informações do edifício</CardDescription>
+                    </div>
                 </div>
+            </CardHeader>
+            <CardContent>
+                {residentBuildingInfo ? (
+                    <div className="rounded-lg bg-[#F8F9FA] border border-[#E9ECEF] p-1.5 space-y-1">
+                        <InfoRow
+                            label="Edifício"
+                            value={<span className="font-medium text-[#343A40]">{residentBuildingInfo.building.name}</span>}
+                        />
+                        <InfoRow
+                            label="Gestor"
+                            value={<span className="text-[#495057]">{residentBuildingInfo.manager.name}</span>}
+                        />
+                    </div>
+                ) : (
+                    <div className="rounded-lg bg-[#F8F9FA] border-2 border-dashed border-[#E9ECEF] p-4 text-center">
+                        <p className="text-[10px] font-medium text-[#8E9AAF] uppercase">
+                            A carregar...
+                        </p>
+                    </div>
+                )}
             </CardContent>
-            <CardFooter className="text-center justify-center">
-                {isManager ? `${occupancyRate}% Ocupação` : "Metadados do Condomínio Carregados"}
-            </CardFooter>
         </Card>
     )
 }

@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
-import { List, ListItem } from "../ui/list"
-import { Avatar } from "../ui/avatar"
-import { Badge } from "../ui/badge"
-import { Sheet } from "../ui/sheet"
-import { Button } from "../ui/button"
-import { InfoRow } from "../ui/info-row"
-import { Dropdown, DropdownItem, DropdownDivider } from "../ui/dropdown"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/Card"
+import { List, ListItem } from "../ui/List"
+import { Avatar } from "../ui/Avatar"
+import { Badge } from "../ui/Badge"
+import { Sheet } from "../ui/Sheet"
+import { Button } from "../ui/Button"
+import { InfoRow } from "../ui/Info-Row"
+import { Dropdown, DropdownItem, DropdownDivider } from "../ui/Dropdown"
 import { Users, MoreVertical, Eye, Mail, Phone, UserCog, UserMinus } from "lucide-react"
 
 // Types

@@ -1,8 +1,8 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
-import { Button } from "../ui/button"
-import { Badge } from "../ui/badge"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/Card"
+import { Button } from "../ui/Button"
+import { Badge } from "../ui/Badge"
 import { Building2, Copy, RefreshCw, Clock } from "lucide-react"
 
 // Types

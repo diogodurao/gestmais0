@@ -1,40 +1,77 @@
-import { Activity } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
-import type { SessionUser } from "@/lib/types"
+import { CheckCircle2, CreditCard, FileText, Bell } from "lucide-react"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card"
+import { List, ListItem } from "@/components/ui/List"
+import { StatusIndicator } from "@/components/ui/Status-indicator"
+import { InfoRow } from "@/components/ui/Info-Row"
+import { Badge } from "@/components/ui/Badge"
 import { PushNotificationToggle } from "@/components/dashboard/notifications/PushNotificationToggle"
 
 interface SystemStatusPanelProps {
-    sessionUser: SessionUser
+    subscriptionStatus?: string | null
 }
 
-export function SystemStatusPanel({ sessionUser }: SystemStatusPanelProps) {
+export function SystemStatusPanel({ subscriptionStatus }: SystemStatusPanelProps) {
+    const status = subscriptionStatus || "active"
+    const subscriptionConfig: Record<string, { label: string; variant: "success" | "warning" | "error" }> = {
+        active: { label: "Ativa", variant: "success" },
+        expiring: { label: "Expira em breve", variant: "warning" },
+        expired: { label: "Expirada", variant: "error" },
+        trialing: { label: "Período de teste", variant: "warning" },
+        canceled: { label: "Cancelada", variant: "error" },
+        past_due: { label: "Pagamento em atraso", variant: "warning" },
+    }
+
+    const subConfig = subscriptionConfig[status] || subscriptionConfig.active
+
     return (
-        <Card className="h-full border border-gray-300 shadow-md">
+        <Card>
             <CardHeader>
-                <CardTitle>
-                    <Activity className="w-4 h-4" />
-                    Estado do Sistema
-                </CardTitle>
+                <div className="flex items-center gap-1.5">
+                    <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-[#6A9B72]" />
+                    </div>
+                    <div>
+                        <CardTitle>Estado do Sistema</CardTitle>
+                        <CardDescription>Monitorização de serviços</CardDescription>
+                    </div>
+                </div>
             </CardHeader>
-            <CardContent className="p-0">
-                <div className="p-4 space-y-3">
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                        <span className="text-body text-gray-500 font-bold uppercase">Função</span>
-                        <span className="status-badge status-active">{sessionUser.role}</span>
-                    </div>
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                        <span className="text-body text-gray-500 font-bold uppercase">Conta</span>
-                        <div className="flex items-center gap-1 text-body font-mono text-gray-700">
-                            {sessionUser.email.split('@')[0]}...
-                        </div>
-                    </div>
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                        <span className="text-body text-gray-500 font-bold uppercase">Sincronização</span>
-                        <div className="flex items-center gap-1 text-label font-bold text-emerald-600 uppercase">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                            Ativa
-                        </div>
-                    </div>
+            <CardContent>
+                <List variant="divided">
+                    <ListItem
+                        title="Pagamentos"
+                        description="Processamento"
+                        leading={<CreditCard className="w-4 h-4 text-[#8E9AAF]" />}
+                        trailing={<StatusIndicator status="ok" showDot />}
+                    />
+                    <ListItem
+                        title="Documentos"
+                        description="Armazenamento"
+                        leading={<FileText className="w-4 h-4 text-[#8E9AAF]" />}
+                        trailing={<StatusIndicator status="ok" showDot />}
+                    />
+                    <ListItem
+                        title="Notificações"
+                        description="Envio de alertas"
+                        leading={<Bell className="w-4 h-4 text-[#8E9AAF]" />}
+                        trailing={<StatusIndicator status="ok" showDot />}
+                    />
+                </List>
+
+                {/* Subscription Status */}
+                <div className="mt-2 p-1.5 rounded-lg bg-[#F8F9FA] border border-[#E9ECEF]">
+                    <InfoRow
+                        label="Subscrição"
+                        value={
+                            <Badge variant={subConfig.variant}>
+                                {subConfig.label}
+                            </Badge>
+                        }
+                    />
+                </div>
+
+                {/* Push Notifications Toggle */}
+                <div className="mt-2">
                     <PushNotificationToggle />
                 </div>
             </CardContent>

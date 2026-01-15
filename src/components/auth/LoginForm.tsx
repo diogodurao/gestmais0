@@ -1,25 +1,47 @@
 "use client"
 
-import { useActionState, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
-import { loginAction } from "@/lib/actions/auth"
+import { authClient } from "@/lib/auth-client"
 
 export function LoginForm() {
     const router = useRouter()
-    const [state, formAction, isPending] = useActionState(loginAction, null)
+    const [isPending, startTransition] = useTransition()
+    const [error, setError] = useState<string | null>(null)
 
-    // Redirect on success
-    useEffect(() => {
-        if (state?.success) {
-            router.push("/dashboard")
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        setError(null)
+
+        const formData = new FormData(e.currentTarget)
+        const email = formData.get("email") as string
+        const password = formData.get("password") as string
+
+        if (!email || !password) {
+            setError("Email e palavra-passe são obrigatórios")
+            return
         }
-    }, [state?.success, router])
+
+        startTransition(async () => {
+            const result = await authClient.signIn.email({
+                email,
+                password,
+            })
+
+            if (result.error) {
+                setError(result.error.message || "Credenciais inválidas")
+                return
+            }
+
+            router.push("/dashboard")
+        })
+    }
 
     return (
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
             <FormField required>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
@@ -54,7 +76,7 @@ export function LoginForm() {
                 <FormError />
             </FormField>
 
-            {state?.error && <p className="text-label text-error">{state.error}</p>}
+            {error && <p className="text-label text-error">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={isPending}>
                 {isPending ? "A entrar..." : "Entrar"}

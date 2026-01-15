@@ -1,10 +1,10 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
-import { List, ListItem } from "../ui/list"
-import { StatusIndicator } from "../ui/status-indicator"
-import { InfoRow } from "../ui/info-row"
-import { Badge } from "../ui/badge"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/Card"
+import { List, ListItem } from "../ui/List"
+import { StatusIndicator } from "../ui/Status-Indicator"
+import { InfoRow } from "../ui/Info-Row"
+import { Badge } from "../ui/Badge"
 import { CheckCircle2, CreditCard, FileText, Bell } from "lucide-react"
 
 // Types

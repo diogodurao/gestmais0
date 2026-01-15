@@ -1,6 +1,7 @@
 "use client"
 
 import { formatCurrency } from "@/lib/format"
+import { Card, CardContent } from "@/components/ui/Card"
 import { Progress } from "@/components/ui/Progress"
 
 interface BudgetProgressProps {
@@ -11,38 +12,18 @@ interface BudgetProgressProps {
 
 export function BudgetProgress({ totalCollected, totalBudget, progressPercent }: BudgetProgressProps) {
     return (
-        <div className="tech-border bg-white p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-2 sm:mb-3">
-                <h3 className="text-label sm:text-body font-bold text-gray-500 uppercase tracking-tight">
-                    Execução Orçamental
-                </h3>
-                <span className="text-content font-bold text-gray-900 font-mono">
-                    {progressPercent}%
-                </span>
-            </div>
-
-            <Progress
-                value={totalCollected}
-                max={totalBudget}
-                variant="auto"
-                size="md"
-            />
-
-            <div className="flex items-center justify-between mt-2 sm:mt-3 text-micro sm:text-label">
-                <div>
-                    <span className="text-gray-400 uppercase font-bold tracking-tighter">Angariado</span>
-                    <span className="text-emerald-700 font-bold font-mono text-body sm:text-content ml-1 sm:ml-2">
-                        {formatCurrency(totalCollected)}
-                    </span>
+        <Card className="mb-1.5">
+            <CardContent>
+                <div className="flex items-center justify-between mb-1">
+                    <span className="text-label font-medium text-gray-500">Progresso do Orçamento</span>
+                    <span className="text-body font-semibold text-gray-800">{progressPercent}%</span>
                 </div>
-                <div className="text-right">
-                    <span className="text-gray-400 uppercase font-bold tracking-tighter hidden sm:inline">Orçamento Total </span>
-                    <span className="text-gray-400 uppercase font-bold tracking-tighter sm:hidden">Orçamento</span>
-                    <span className="text-gray-900 font-bold font-mono text-body sm:text-content ml-1 sm:ml-2">
-                        {formatCurrency(totalBudget)}
-                    </span>
+                <Progress value={progressPercent} className="mb-1" />
+                <div className="flex justify-between text-xs text-gray-500">
+                    <span>Cobrado: <span className="font-medium text-primary-dark">{formatCurrency(totalCollected)}</span></span>
+                    <span>Total: <span className="font-medium text-gray-700">{formatCurrency(totalBudget)}</span></span>
                 </div>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     )
 }

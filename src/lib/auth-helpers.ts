@@ -55,8 +55,10 @@ export async function requireResidentSession() {
     const session = await requireSession()
     const sessionUser = session.user as unknown as SessionUser
 
+    console.log("[DEBUG] requireResidentSession - user role:", sessionUser.role, "full user:", JSON.stringify(sessionUser))
+
     if (!isResident(sessionUser)) {
-        throw new Error("Unauthorized: Resident role required")
+        throw new Error(`Unauthorized: Resident role required. Got role: ${sessionUser.role}`)
     }
 
     return session

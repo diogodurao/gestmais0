@@ -1,6 +1,7 @@
 import { getResidentApartment, getUnclaimedApartments } from "@/lib/actions/building";
 import { ResidentOnboardingFlow } from "@/components/dashboard/onboarding/ResidentOnboardingFlow";
 import { PaymentStatusCard } from "@/components/dashboard/payments-quotas/PaymentStatusCard";
+import { MyUnitPanel } from "@/components/dashboard/overview/MyUnitPanel";
 import { BuildingMetricsPanel } from "@/components/dashboard/overview/BuildingMetricsPanel";
 import { getEvaluationStatus } from "@/lib/actions/evaluations";
 import { EvaluationWidget } from "@/components/dashboard/evaluations/EvaluationWidget";
@@ -13,7 +14,6 @@ interface ResidentDashboardProps {
 }
 
 export async function ResidentDashboard({ session }: ResidentDashboardProps) {
-    const sessionUser = session.user;
     const notifications = await getNotifications(5);
 
     let residentBuildingInfo = null;
@@ -60,21 +60,33 @@ export async function ResidentDashboard({ session }: ResidentDashboardProps) {
     }
 
     return (
-        <div className="space-y-4 max-w-4xl">
-            {evaluationStatus && <EvaluationWidget status={evaluationStatus} />}
+        <div className="space-y-1.5">
+            {/* Stats row */}
+            <div className="grid grid-cols-1 gap-1.5 lg:grid-cols-2">
+                <PaymentStatusCard userId={session.user.id} />
+                {evaluationStatus && <EvaluationWidget status={evaluationStatus} />}
+            </div>
 
-            {/* Full-width payment status - their main concern */}
-            <PaymentStatusCard userId={session.user.id} />
+            {/* Main Content Grid - 3 columns */}
+            <div className="grid gap-1.5 lg:grid-cols-3">
+                {/* Left Column - Notifications (col-span-2) */}
+                <div className="lg:col-span-2 space-y-1.5">
+                    <NotificationCard notifications={notifications} />
+                </div>
 
-            {/* Two-column layout for secondary info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <BuildingMetricsPanel
-                    isManager={false}
-                    residents={[]}
-                    unclaimedUnits={[]}
-                    residentBuildingInfo={residentBuildingInfo}
-                />
-                <NotificationCard notifications={notifications} />
+                {/* Right Column - Panels */}
+                <div className="space-y-1.5">
+                    <MyUnitPanel
+                        apartment={residentApartment}
+                        buildingInfo={residentBuildingInfo}
+                    />
+                    <BuildingMetricsPanel
+                        isManager={false}
+                        residents={[]}
+                        unclaimedUnits={[]}
+                        residentBuildingInfo={residentBuildingInfo}
+                    />
+                </div>
             </div>
         </div>
     );

@@ -1,8 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Users, Search } from "lucide-react"
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/Card"
+import { Users } from "lucide-react"
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/Card"
+import { List, ListItem } from "@/components/ui/List"
+import { Avatar } from "@/components/ui/Avatar"
+import { Badge } from "@/components/ui/Badge"
 import { ResidentActionsMenu } from "./ResidentActionsMenu"
 
 type Resident = {
@@ -29,77 +32,67 @@ export function ResidentsList({
         r.user.email.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
+    const activeCount = filteredResidents.filter(r => r.apartment).length
+
     return (
-        <Card className="rounded-none border-gray-200 shadow-none">
-            <CardHeader className="py-3 border-b border-gray-100 flex flex-row items-center justify-between">
-                <CardTitle className="text-label font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                    <Users className="h-3.5 w-3.5" />
-                    Registo de Residentes
-                </CardTitle>
-                <div className="relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
-                    <input
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="PROCURAR..."
-                        className="bg-gray-50 border border-gray-200 text-micro pl-7 pr-2 py-1 rounded-none focus:outline-none focus:border-gray-300 w-32 uppercase"
-                    />
-                </div>
-            </CardHeader>
-            <CardContent className="p-0">
-                <div className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center justify-between">
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold font-mono text-gray-900">{residents.length}</span>
-                        <span className="text-micro font-bold text-gray-400 uppercase tracking-widest">
-                            TOTAL
-                        </span>
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
+                            <Users className="w-4 h-4 text-[#6A9B72]" />
+                        </div>
+                        <div>
+                            <CardTitle>Residentes</CardTitle>
+                            <CardDescription>{residents.length} registados</CardDescription>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Badge>{activeCount} ativos</Badge>
+                        <input
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            placeholder="Procurar..."
+                            className="bg-[#F8F9FA] border border-[#E9ECEF] text-[10px] px-2 py-1 rounded focus:outline-none focus:border-[#DEE2E6] w-24"
+                        />
                     </div>
                 </div>
-
-                <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
+            </CardHeader>
+            <CardContent>
+                <List variant="card" className="max-h-[400px] overflow-y-auto">
                     {filteredResidents.length === 0 && (
-                        <div className="p-8 text-center text-gray-400 font-mono text-label uppercase italic">
-                            [ SEM RESULTADOS ]
+                        <div className="p-4 text-center text-[10px] text-[#8E9AAF]">
+                            Sem resultados
                         </div>
                     )}
 
                     {filteredResidents.map((r) => (
-                        <div key={r.user.id} className="p-3 hover:bg-gray-50 transition-colors flex items-center justify-between group">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-8 h-8 shrink-0 bg-gray-100 text-gray-600 flex items-center justify-center text-body font-bold rounded-none border border-gray-200 uppercase">
-                                    {r.user.name.charAt(0)}
-                                </div>
-                                <div className="truncate">
-                                    <p className="text-body font-bold text-gray-800 uppercase tracking-tight truncate">
-                                        {r.user.name}
-                                    </p>
-                                    <p className="text-micro font-mono text-gray-400 truncate uppercase">
-                                        {r.user.email}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-4">
-                                <div className="text-right">
-                                    {r.apartment ? (
-                                        <span className="font-mono text-label font-bold text-info bg-info-light px-2 py-0.5 border border-gray-200 uppercase">
-                                            {r.apartment.unit}
-                                        </span>
-                                    ) : (
-                                        <span className="text-micro font-bold text-warning bg-warning-light px-2 py-0.5 border border-gray-200 uppercase">
-                                            NÃO ASSOCIADO
-                                        </span>
-                                    )}
-                                </div>
-                                <ResidentActionsMenu
-                                    resident={r}
-                                    buildingId={buildingId}
-                                    unclaimedApartments={unclaimedUnits}
+                        <ListItem
+                            key={r.user.id}
+                            title={r.user.name}
+                            description={r.apartment?.unit || r.user.email}
+                            leading={
+                                <Avatar
+                                    fallback={r.user.name.charAt(0)}
+                                    status={r.apartment ? "online" : "offline"}
+                                    size="sm"
                                 />
-                            </div>
-                        </div>
+                            }
+                            trailing={
+                                <div className="flex items-center gap-1">
+                                    <Badge size="sm" variant={r.apartment ? "success" : "warning"}>
+                                        {r.apartment ? "Ativo" : "Pendente"}
+                                    </Badge>
+                                    <ResidentActionsMenu
+                                        resident={r}
+                                        buildingId={buildingId}
+                                        unclaimedApartments={unclaimedUnits}
+                                    />
+                                </div>
+                            }
+                        />
                     ))}
-                </div>
+                </List>
             </CardContent>
         </Card>
     )

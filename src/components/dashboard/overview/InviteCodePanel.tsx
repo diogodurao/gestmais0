@@ -1,5 +1,8 @@
-import { Key, Lock } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/Card"
+"use client"
+
+import { Building2, Copy, Lock } from "lucide-react"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card"
+import { Button } from "@/components/ui/Button"
 import { can } from "@/lib/permissions"
 import type { SessionUser } from "@/lib/types"
 
@@ -18,45 +21,92 @@ export function InviteCodePanel({
     buildingCode,
     residentApartment
 }: InviteCodePanelProps) {
-    return (
-        <Card className="h-full border border-gray-300 shadow-md">
-            <CardHeader>
-                <CardTitle>
-                    <Key className="w-4 h-4" />
-                    {isManager ? 'Código do Condomínio' : 'Acesso Residente'}
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-                <div className="p-6 flex flex-col items-center justify-center bg-info-light/30 h-32">
-                    {isManager ? (
-                        can.viewInviteCode(sessionUser, buildingInfo) ? (
-                            <>
-                                <div className="text-3xl font-mono font-bold text-info tracking-widest mb-2 select-all uppercase">
-                                    {buildingCode}
-                                </div>
-                                <div className="text-label uppercase font-bold text-info/70">
-                                    Codigo Ativo
-                                </div>
-                            </>
-                        ) : (
-                            <div className="text-center">
-                                <Lock className="w-6 h-6 text-gray-300 mx-auto mb-2" />
-                                <span className="text-label uppercase font-bold text-gray-400">Subscrição necessária</span>
-                            </div>
-                        )
-                    ) : residentApartment ? (
+    const handleCopy = () => {
+        navigator.clipboard.writeText(buildingCode)
+    }
+
+    if (isManager) {
+        const canView = can.viewInviteCode(sessionUser, buildingInfo)
+
+        return (
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
+                            <Building2 className="w-4 h-4 text-[#6A9B72]" />
+                        </div>
+                        <div className="flex-1">
+                            <CardTitle>Código de Convite</CardTitle>
+                            <CardDescription>{buildingInfo?.name || "Condomínio"}</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {canView ? (
                         <>
-                            <div className="text-3xl font-mono font-bold text-gray-800 tracking-tight mb-1">
-                                {residentApartment.unit}
+                            {/* Code Display */}
+                            <div className="rounded-lg bg-[#F8F9FA] border-2 border-dashed border-[#E9ECEF] p-2 text-center">
+                                <p className="text-[9px] font-medium text-[#8E9AAF] uppercase tracking-wide mb-1">
+                                    Partilhe este código
+                                </p>
+                                <p className="text-[20px] font-bold font-mono text-[#343A40] tracking-[0.3em]">
+                                    {buildingCode}
+                                </p>
                             </div>
-                            <div className="text-label uppercase font-bold text-gray-400">Frações Atribuídas</div>
+
+                            {/* Actions */}
+                            <div className="flex gap-1.5 mt-2">
+                                <Button variant="outline" className="flex-1" onClick={handleCopy}>
+                                    <Copy className="w-3 h-3 mr-1" />
+                                    Copiar
+                                </Button>
+                            </div>
                         </>
-                    ) : null}
+                    ) : (
+                        <div className="rounded-lg bg-[#F8F9FA] border-2 border-dashed border-[#E9ECEF] p-4 text-center">
+                            <Lock className="w-6 h-6 text-[#ADB5BD] mx-auto mb-2" />
+                            <p className="text-[10px] font-medium text-[#8E9AAF] uppercase">
+                                Subscrição necessária
+                            </p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        )
+    }
+
+    // Resident view
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex items-center gap-1.5">
+                    <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
+                        <Building2 className="w-4 h-4 text-[#6A9B72]" />
+                    </div>
+                    <div>
+                        <CardTitle>A Minha Fração</CardTitle>
+                        <CardDescription>Sessão de residente ativa</CardDescription>
+                    </div>
                 </div>
+            </CardHeader>
+            <CardContent>
+                {residentApartment ? (
+                    <div className="rounded-lg bg-[#F8F9FA] border border-[#E9ECEF] p-2 text-center">
+                        <p className="text-[20px] font-bold font-mono text-[#343A40]">
+                            {residentApartment.unit}
+                        </p>
+                        <p className="text-[9px] font-medium text-[#8E9AAF] uppercase mt-1">
+                            Fração Atribuída
+                        </p>
+                    </div>
+                ) : (
+                    <div className="rounded-lg bg-[#F8F9FA] border-2 border-dashed border-[#E9ECEF] p-4 text-center">
+                        <p className="text-[10px] font-medium text-[#8E9AAF] uppercase">
+                            Sem fração atribuída
+                        </p>
+                    </div>
+                )}
             </CardContent>
-            <CardFooter className="justify-center border-t border-gray-300">
-                {isManager ? "Partilha o código com os residentes" : "Sessão de residente ativa"}
-            </CardFooter>
         </Card>
     )
 }

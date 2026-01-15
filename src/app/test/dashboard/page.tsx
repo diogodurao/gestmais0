@@ -1,8 +1,8 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/card"
-import { Button } from "../components/ui/button"
-import { Badge } from "../components/ui/badge"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card"
+import { Button } from "../components/ui/Button"
+import { Badge } from "../components/ui/Badge"
 import { Users, Building2, ChevronRight } from "lucide-react"
 
 export default function DashboardSwitcherPage() {

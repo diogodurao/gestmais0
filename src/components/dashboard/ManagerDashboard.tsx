@@ -9,7 +9,6 @@ import { PaymentStatusCard } from "@/components/dashboard/payments-quotas/Paymen
 import { InviteCodePanel } from "@/components/dashboard/overview/InviteCodePanel";
 import { SystemStatusPanel } from "@/components/dashboard/overview/SystemStatusPanel";
 import { BuildingMetricsPanel } from "@/components/dashboard/overview/BuildingMetricsPanel";
-import { DashboardGrid } from "@/components/layout/DashboardGrid";
 import { getEvaluationStatus } from "@/lib/actions/evaluations";
 import { EvaluationWidget } from "@/components/dashboard/evaluations/EvaluationWidget";
 import { Lock } from "lucide-react";
@@ -87,79 +86,78 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-1.5">
             {/* Subscription Sync Handler */}
             {buildingInfo && (
                 <SubscriptionSyncWrapper buildingId={buildingInfo.id} />
             )}
 
             {/* Stats row */}
-            <DashboardGrid variant="wide">
+            <div className="grid grid-cols-2 gap-1.5 lg:grid-cols-3">
                 <PaymentStatusCard key="personal-status" userId={session.user.id} />
                 {buildingInfo && (
-                    <>
-                        <PaymentStatusCard key="building-status" buildingId={buildingInfo.id} />
-                        {evaluationStatus && <EvaluationWidget status={evaluationStatus} />}
-                    </>
+                    <PaymentStatusCard key="building-status" buildingId={buildingInfo.id} />
                 )}
-            </DashboardGrid>
+                {evaluationStatus && <EvaluationWidget status={evaluationStatus} />}
+            </div>
 
-            {/* Info panels */}
-            <DashboardGrid>
-                <InviteCodePanel
-                    isManager={true}
-                    sessionUser={sessionUser}
-                    buildingInfo={buildingInfo}
-                    buildingCode={buildingCode}
-                    residentApartment={null}
-                />
-                <SystemStatusPanel sessionUser={sessionUser} />
-                <BuildingMetricsPanel
-                    isManager={true}
-                    residents={residents}
-                    unclaimedUnits={unclaimedUnits}
-                    residentBuildingInfo={null}
-                    totalApartments={buildingInfo?.totalApartments ?? undefined}
-                />
-                <NotificationCard notifications={notifications} />
-            </DashboardGrid>
-
-            {/* Main content */}
-            <DashboardGrid>
-                {/* Residents Registry - Protected by Subscription */}
-                {can.manageResidents(sessionUser, buildingInfo) && (
-                    <div className="lg:col-span-2">
+            {/* Main Content Grid - 3 columns */}
+            <div className="grid gap-1.5 lg:grid-cols-3">
+                {/* Left Column - Residents (col-span-2) */}
+                <div className="lg:col-span-2 space-y-1.5">
+                    {can.manageResidents(sessionUser, buildingInfo) && (
                         <ResidentsList
                             residents={residents}
                             buildingId={buildingInfo?.id || ""}
                             unclaimedUnits={unclaimedUnits}
                         />
-                    </div>
-                )}
+                    )}
 
-                {features.isResidentManagementLocked(sessionUser, buildingInfo) && (
-                    <Card className="col-span-full">
-                        <CardHeader>
-                            <CardTitle>
-                                <Lock className="w-4 h-4" />
-                                Gestão de residentes bloqueada
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-col items-center justify-center p-12 bg-gray-50 tech-border border-dashed text-center h-75">
-                                <div className="p-4 bg-gray-200 rounded-full mb-4">
-                                    <Lock className="w-6 h-6 text-gray-500" />
+                    {features.isResidentManagementLocked(sessionUser, buildingInfo) && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>
+                                    <Lock className="w-4 h-4" />
+                                    Gestão de residentes bloqueada
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex flex-col items-center justify-center p-6 bg-[#F8F9FA] border-2 border-dashed border-[#E9ECEF] rounded-lg text-center">
+                                    <div className="p-3 bg-[#E9ECEF] rounded-full mb-3">
+                                        <Lock className="w-5 h-5 text-[#8E9AAF]" />
+                                    </div>
+                                    <h3 className="font-medium text-[#495057] text-[11px] uppercase mb-1">Subscrição necessária</h3>
+                                    <p className="text-[10px] text-[#8E9AAF] mb-4">Subscreva para gerir residentes e registos financeiros.</p>
+                                    <a href="/dashboard/settings?tab=payments" className="px-4 py-1.5 bg-[#343A40] text-white text-[10px] font-medium rounded hover:bg-[#495057] transition-colors">
+                                        Subscrever
+                                    </a>
                                 </div>
-                                <h3 className="font-bold text-gray-900 uppercase text-sm mb-1">Subscrição necessária</h3>
-                                <p className="text-xs text-gray-500 mb-6 uppercase tracking-tight">Subscreva para gerir residentes e registos financeiros.</p>
-                                <a href="/dashboard/settings?tab=payments" className="px-6 py-2 bg-gray-900 text-white text-xs font-bold uppercase rounded-sm hover:bg-gray-800 transition-colors">
-                                    Subscrever
-                                </a>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-            </DashboardGrid>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    <NotificationCard notifications={notifications} />
+                </div>
+
+                {/* Right Column - Panels */}
+                <div className="space-y-1.5">
+                    <InviteCodePanel
+                        isManager={true}
+                        sessionUser={sessionUser}
+                        buildingInfo={buildingInfo}
+                        buildingCode={buildingCode}
+                        residentApartment={null}
+                    />
+                    <SystemStatusPanel subscriptionStatus={buildingInfo?.subscriptionStatus} />
+                    <BuildingMetricsPanel
+                        isManager={true}
+                        residents={residents}
+                        unclaimedUnits={unclaimedUnits}
+                        residentBuildingInfo={null}
+                        totalApartments={buildingInfo?.totalApartments ?? undefined}
+                    />
+                </div>
+            </div>
         </div>
     );
 }

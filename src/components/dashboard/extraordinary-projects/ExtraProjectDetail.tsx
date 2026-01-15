@@ -13,41 +13,37 @@ import dynamic from "next/dynamic"
 
 // Dynamic Imports
 const EditProjectModal = dynamic(
-    () => import("@/features/dashboard/extraordinary-projects/EditProjectModal").then(mod => mod.EditProjectModal),
+    () => import("@/components/dashboard/extraordinary-projects/EditProjectModal").then(mod => mod.EditProjectModal),
     { ssr: false }
 )
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
-import { useAsyncAction } from "@/hooks/useAsyncAction" // Keep this for mutations
+import { useAsyncAction } from "@/hooks/useAsyncAction"
 
 // Sub-components
 import { ProjectDetailHeader } from "./components/ProjectDetailHeader"
 import { ProjectDetailStats } from "./components/ProjectDetailStats"
 
 interface ExtraProjectDetailProps {
-    initialProject: ProjectDetail // Data passed from server
+    initialProject: ProjectDetail
     readOnly?: boolean
 }
 
 export function ExtraProjectDetail({ initialProject, readOnly = false }: ExtraProjectDetailProps) {
     const router = useRouter()
-    
-    // We use the prop as the source of truth. 
-    // When router.refresh() runs, this prop will update with new server data.
     const project = initialProject
 
-    const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-    // Mutation actions (Archive/Delete) still use useAsyncAction
+    // Mutation actions
     const { execute: archiveAction } = useAsyncAction(archiveExtraordinaryProject, {
         onSuccess: () => router.push(ROUTES.DASHBOARD.EXTRAORDINARY),
         errorMessage: "Erro ao arquivar projeto"
     })
 
-    const { execute: deleteAction, isPending: isDeleting } = useAsyncAction(deleteExtraordinaryProject, {
+    const { execute: deleteAction } = useAsyncAction(deleteExtraordinaryProject, {
         onSuccess: () => router.push(ROUTES.DASHBOARD.EXTRAORDINARY),
         successMessage: "Projeto eliminado com sucesso",
         errorMessage: "Erro ao eliminar projeto"
@@ -63,14 +59,22 @@ export function ExtraProjectDetail({ initialProject, readOnly = false }: ExtraPr
         setShowDeleteConfirm(false)
     }
 
-    // This replaces "loadProject". 
-    // It tells Next.js to re-run the server component (page.tsx) and send us fresh props.
     const handleRefresh = () => {
         router.refresh()
     }
 
+    const handleBack = () => {
+        router.push(ROUTES.DASHBOARD.EXTRAORDINARY)
+    }
+
+    // Calculate stats for the new ProjectDetailStats interface
+    const totalCollected = project.payments.reduce((sum, p) => sum + p.totalPaid, 0)
+    const progressPercent = project.totalBudget > 0
+        ? Math.round((totalCollected / project.totalBudget) * 100)
+        : 0
+
     return (
-        <div className="space-y-3 sm:space-y-4">
+        <div className="flex-1 overflow-y-auto p-1.5">
             {/* Edit Modal */}
             {isEditing && (
                 <EditProjectModal
@@ -79,7 +83,7 @@ export function ExtraProjectDetail({ initialProject, readOnly = false }: ExtraPr
                     onClose={() => setIsEditing(false)}
                     onSave={() => {
                         setIsEditing(false)
-                        handleRefresh() // Refresh data after edit
+                        handleRefresh()
                     }}
                 />
             )}
@@ -105,16 +109,20 @@ export function ExtraProjectDetail({ initialProject, readOnly = false }: ExtraPr
             <ProjectDetailHeader
                 project={project}
                 readOnly={readOnly}
-                isMenuOpen={isMenuOpen}
-                setIsMenuOpen={setIsMenuOpen}
                 setIsEditing={setIsEditing}
                 setShowArchiveConfirm={setShowArchiveConfirm}
                 setShowDeleteConfirm={setShowDeleteConfirm}
-                isDeleting={isDeleting}
                 loadProject={handleRefresh}
+                onBack={handleBack}
             />
 
-            <ProjectDetailStats stats={project.stats} />
+            <ProjectDetailStats
+                totalBudget={project.totalBudget}
+                totalPaid={totalCollected}
+                progressPercent={progressPercent}
+                numInstallments={project.numInstallments}
+                apartmentsTotal={project.payments.length}
+            />
 
             {/* Payment Grid */}
             <ErrorBoundary>
@@ -129,7 +137,6 @@ export function ExtraProjectDetail({ initialProject, readOnly = false }: ExtraPr
                         status: project.status,
                     }}
                     payments={project.payments}
-                    onRefresh={handleRefresh} // Pass refresh handler
                     readOnly={readOnly}
                 />
             </ErrorBoundary>

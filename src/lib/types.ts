@@ -42,7 +42,7 @@ export interface PaymentStats {
 /**
  * Tool modes for the extraordinary payment grid
  */
-export type ExtraordinaryToolMode = "markPaid" | "markPending" | "toggle" | null
+export type ExtraordinaryToolMode = "markPaid" | "markPending" | "markLate" | null
 
 /**
  * Summary of an extraordinary project

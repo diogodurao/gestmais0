@@ -73,10 +73,10 @@ export function EditProjectModal({ isOpen, onClose, onSave, project }: EditProje
 
     return (
         <Modal
-            isOpen={isOpen}
+            open={isOpen}
             onClose={onClose}
             title="Editar Projeto"
-            className="max-w-md"
+            size="md"
         >
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>

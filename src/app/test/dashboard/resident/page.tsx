@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "../../components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card"
-import { Badge } from "../../components/ui/badge"
-import { Avatar } from "../../components/ui/avatar"
-import { StatCard } from "../../components/ui/stat-card"
-import { Alert } from "../../components/ui/alert"
-import { ToastProvider, useToast } from "../../components/ui/toast"
+import { Button } from "../../components/ui/Button"
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/Card"
+import { Badge } from "../../components/ui/Badge"
+import { Avatar } from "../../components/ui/Avatar"
+import { StatCard } from "../../components/ui/Stat-Card"
+import { Alert } from "../../components/ui/Alert"
+import { ToastProvider, useToast } from "../../components/ui/Toast"
 import { cn } from "@/lib/utils"
 
 // Import Panels (composed components)

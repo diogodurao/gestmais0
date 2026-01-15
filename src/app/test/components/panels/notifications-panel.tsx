@@ -1,8 +1,8 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
-import { List, ListItem } from "../ui/list"
-import { Badge } from "../ui/badge"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/Card"
+import { List, ListItem } from "../ui/List"
+import { Badge } from "../ui/Badge"
 import { Bell, AlertCircle, FileText } from "lucide-react"
 
 // Types

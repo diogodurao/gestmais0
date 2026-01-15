@@ -1,11 +1,25 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { createExtraordinaryProject } from "@/lib/actions/extraordinary-projects"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
-import { useToast } from "@/components/ui/Toast"
-import { useExtraProjectForm, ExtraProjectSchema } from "./hooks/useExtraProjectForm"
 import { ExtraProjectForm } from "./ExtraProjectForm"
+
+// Schema
+export const extraProjectSchema = z.object({
+    name: z.string().min(1, "O nome do projeto é obrigatório"),
+    description: z.string(),
+    budget: z.coerce.number().min(0.01, "O orçamento deve ser maior que 0"),
+    installments: z.coerce.number().int().min(1, "Mínimo 1 prestação").max(60, "Máximo 60 prestações"),
+    startMonth: z.coerce.number().min(1).max(12),
+    startYear: z.coerce.number().min(2024),
+})
+
+export type ExtraProjectSchema = z.infer<typeof extraProjectSchema>
 
 type Apartment = {
     id: number
@@ -22,18 +36,36 @@ interface ExtraProjectCreateProps {
 
 export function ExtraProjectCreate({ buildingId, apartments, onCancel, onSuccess }: ExtraProjectCreateProps) {
     const router = useRouter()
-    const { toast } = useToast()
 
-    const {
-        form,
-        showPreview,
-        selectedFile,
-        budgetCents,
-        installmentCount,
-        currentYear,
-        handleFileChange,
-        setShowPreview
-    } = useExtraProjectForm()
+    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().getMonth() + 1
+
+    const [showPreview, setShowPreview] = useState(false)
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+    const form = useForm<ExtraProjectSchema>({
+        resolver: zodResolver(extraProjectSchema) as any,
+        defaultValues: {
+            name: "",
+            description: "",
+            budget: 0,
+            installments: 1,
+            startMonth: currentMonth,
+            startYear: currentYear
+        }
+    })
+
+    const budget = form.watch("budget")
+    const installments = form.watch("installments")
+    const budgetCents = Math.round((Number(budget) || 0) * 100)
+    const installmentCount = installments || 1
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file && file.type === "application/pdf") {
+            setSelectedFile(file)
+        }
+    }
 
     const handleCancel = () => {
         if (onCancel) {
@@ -95,12 +127,7 @@ export function ExtraProjectCreate({ buildingId, apartments, onCancel, onSuccess
                 router.refresh()
                 handleCancel()
             }
-        },
-        onError: (msg) => toast({
-            variant: "destructive",
-            title: "Erro",
-            description: msg
-        })
+        }
     })
 
     const onSubmit = (data: ExtraProjectSchema) => {

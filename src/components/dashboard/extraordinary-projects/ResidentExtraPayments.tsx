@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
+import { Badge } from "@/components/ui/Badge"
 import { Layers, TrendingDown, TrendingUp } from "lucide-react"
 import { getResidentExtraordinaryPayments, type ResidentProjectPayment } from "@/lib/actions/extraordinary-projects"
 import { formatCurrency } from "@/lib/format"
@@ -11,7 +12,7 @@ import { Skeleton } from "@/components/ui/Skeleton"
 export function ResidentExtraPayments() {
     const [payments, setPayments] = useState<ResidentProjectPayment[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const { toast } = useToast()
+    const { addToast } = useToast()
 
     useEffect(() => {
         let isMounted = true
@@ -19,15 +20,14 @@ export function ResidentExtraPayments() {
 
         const loadPayments = async () => {
             try {
-                // The action infers the resident's apartment from the session
                 const result = await getResidentExtraordinaryPayments()
                 if (isMounted && result.success && result.data) {
                     setPayments(result.data)
                 }
             } catch (error) {
                 if (!controller.signal.aborted) {
-                    toast({
-                        variant: "destructive",
+                    addToast({
+                        variant: "error",
                         title: "Erro",
                         description: "Não foi possível carregar os dados. Por favor tente novamente."
                     })
@@ -43,9 +43,8 @@ export function ResidentExtraPayments() {
             isMounted = false
             controller.abort()
         }
-    }, []) // Dependency array empty as we don't depend on props for the fetch anymore
+    }, [])
 
-    // balance corresponds to the pending amount
     const totalDebt = payments.reduce((sum, p) => sum + p.balance, 0)
     const totalPaid = payments.reduce((sum, p) => sum + p.totalPaid, 0)
 
@@ -59,22 +58,22 @@ export function ResidentExtraPayments() {
             </CardHeader>
             <CardContent className="p-0">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 border-b border-gray-100">
-                    <div className="p-4 border-r border-gray-100 text-center">
-                        <div className="flex items-center justify-center gap-1 text-error mb-1">
+                <div className="grid grid-cols-2 border-b border-[#E9ECEF]">
+                    <div className="p-1.5 border-r border-[#E9ECEF] text-center">
+                        <div className="flex items-center justify-center gap-1 text-error mb-0.5">
                             <TrendingDown className="w-3 h-3" />
-                            <span className="text-label font-bold uppercase">Total em Dívida</span>
+                            <span className="text-label font-medium uppercase">Total em Dívida</span>
                         </div>
-                        <div className="text-xl font-bold font-mono text-error">
+                        <div className="text-body font-bold font-mono text-error">
                             {formatCurrency(totalDebt)}
                         </div>
                     </div>
-                    <div className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-1 text-emerald-500 mb-1">
+                    <div className="p-1.5 text-center">
+                        <div className="flex items-center justify-center gap-1 text-primary-dark mb-0.5">
                             <TrendingUp className="w-3 h-3" />
-                            <span className="text-label font-bold uppercase">Total Pago</span>
+                            <span className="text-label font-medium uppercase">Total Pago</span>
                         </div>
-                        <div className="text-xl font-bold font-mono text-emerald-600">
+                        <div className="text-body font-bold font-mono text-primary-dark">
                             {formatCurrency(totalPaid)}
                         </div>
                     </div>
@@ -82,14 +81,14 @@ export function ResidentExtraPayments() {
 
                 {/* Project List */}
                 {isLoading ? (
-                    <div className="p-4 space-y-4">
+                    <div className="p-1.5 space-y-1.5">
                         {[1, 2].map((i) => (
-                            <div key={i} className="space-y-3">
+                            <div key={i} className="space-y-1">
                                 <div className="flex justify-between">
                                     <Skeleton className="h-4 w-32" />
                                     <Skeleton className="h-4 w-20" />
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-1">
                                     <Skeleton className="h-5 w-16" />
                                     <Skeleton className="h-5 w-16" />
                                     <Skeleton className="h-5 w-16" />
@@ -98,21 +97,20 @@ export function ResidentExtraPayments() {
                         ))}
                     </div>
                 ) : payments.length === 0 ? (
-                    <div className="p-8 text-center">
+                    <div className="p-4 text-center">
                         <p className="text-body text-gray-400">
                             Não existem projetos extraordinários ativos ou passados neste condomínio.
                         </p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-[#F1F3F5]">
                         {payments.map((payment, idx) => (
-                            <div key={idx} className="p-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-content font-bold text-gray-700 uppercase">
+                            <div key={idx} className="p-1.5">
+                                <div className="flex items-center justify-between mb-1">
+                                    <h3 className="text-body font-medium text-gray-700">
                                         {payment.projectName}
                                     </h3>
-                                    <span className={`text-body font-bold font-mono ${payment.balance > 0 ? "text-error" : "text-emerald-600"
-                                        }`}>
+                                    <span className={`text-label font-bold font-mono ${payment.balance > 0 ? "text-error" : "text-primary-dark"}`}>
                                         {payment.balance > 0
                                             ? `-${formatCurrency(payment.balance)}`
                                             : "Liquidado"}
@@ -121,17 +119,19 @@ export function ResidentExtraPayments() {
 
                                 <div className="flex gap-1 flex-wrap">
                                     {payment.installments.map((inst, instIdx) => (
-                                        <span
+                                        <Badge
                                             key={instIdx}
-                                            className={`status-badge ${inst.status === "paid"
-                                                ? "status-active"
-                                                : inst.status === "late"
-                                                    ? "status-alert"
-                                                    : "status-neutral"
-                                                }`}
+                                            variant={
+                                                inst.status === "paid"
+                                                    ? "success"
+                                                    : inst.status === "late"
+                                                        ? "error"
+                                                        : "default"
+                                            }
+                                            size="sm"
                                         >
                                             {inst.month}/{inst.year}
-                                        </span>
+                                        </Badge>
                                     ))}
                                 </div>
                             </div>

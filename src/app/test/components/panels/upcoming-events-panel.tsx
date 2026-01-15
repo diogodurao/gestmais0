@@ -1,7 +1,7 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
-import { Badge } from "../ui/badge"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/Card"
+import { Badge } from "../ui/Badge"
 import { Calendar } from "lucide-react"
 
 // Types
@@ -36,9 +36,8 @@ export function UpcomingEventsPanel({ events, onEventClick }: UpcomingEventsPane
           {events.map((event) => (
             <div
               key={event.id}
-              className={`flex items-center justify-between p-1.5 rounded-lg bg-[#F8F9FA] border border-[#E9ECEF] ${
-                onEventClick ? "cursor-pointer hover:border-[#DEE2E6] transition-colors" : ""
-              }`}
+              className={`flex items-center justify-between p-1.5 rounded-lg bg-[#F8F9FA] border border-[#E9ECEF] ${onEventClick ? "cursor-pointer hover:border-[#DEE2E6] transition-colors" : ""
+                }`}
               onClick={onEventClick ? () => onEventClick(event) : undefined}
             >
               <div>

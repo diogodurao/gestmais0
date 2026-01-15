@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useRef, useEffect, type ReactNode, type ButtonHTMLAttributes } from "react"
+import { createContext, useContext, useState, useRef, useEffect, cloneElement, isValidElement, type ReactNode, type ButtonHTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 
 // Context for compound component pattern
@@ -50,15 +50,25 @@ export function Dropdown({ children }: DropdownProps) {
 // DropdownTrigger component
 interface DropdownTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
+  asChild?: boolean
 }
 
-export function DropdownTrigger({ children, className, disabled, ...props }: DropdownTriggerProps) {
+export function DropdownTrigger({ children, className, disabled, asChild, ...props }: DropdownTriggerProps) {
   const { open, setOpen } = useDropdown()
+
+  const handleClick = () => !disabled && setOpen(!open)
+
+  // If asChild, clone the child element and merge click handler
+  if (asChild && isValidElement(children)) {
+    return cloneElement(children as React.ReactElement<{ onClick?: () => void }>, {
+      onClick: handleClick,
+    })
+  }
 
   return (
     <button
       type="button"
-      onClick={() => !disabled && setOpen(!open)}
+      onClick={handleClick}
       disabled={disabled}
       className={className}
       {...props}

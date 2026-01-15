@@ -1,15 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "../../components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card"
-import { Badge } from "../../components/ui/badge"
-import { Avatar } from "../../components/ui/avatar"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table"
-import { StatCard } from "../../components/ui/stat-card"
-import { Alert } from "../../components/ui/alert"
-import { ToastProvider, useToast } from "../../components/ui/toast"
-import { Progress } from "../../components/ui/progress"
+import { Button } from "../../components/ui/Button"
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/Card"
+import { Badge } from "../../components/ui/Badge"
+import { Avatar } from "../../components/ui/Avatar"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/Table"
+import { StatCard } from "../../components/ui/Stat-Card"
+import { Alert } from "../../components/ui/Alert"
+import { ToastProvider, useToast } from "../../components/ui/Toast"
+import { Progress } from "../../components/ui/Progress"
 import { cn } from "@/lib/utils"
 
 // Import Panels (composed components)
@@ -194,7 +194,7 @@ function ManagerDashboardContent() {
 
   return (
     <div className="flex-1 overflow-y-auto rounded-lg border border-[#E9ECEF] bg-white p-1.5">
-      <Alert variant="info" className="mb-1.5" dismissible onDismiss={() => {}}>
+      <Alert variant="info" className="mb-1.5" dismissible onDismiss={() => { }}>
         Próxima reunião de condomínio agendada para 15 de Janeiro às 19:00.
       </Alert>
 

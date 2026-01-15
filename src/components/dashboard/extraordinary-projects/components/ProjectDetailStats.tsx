@@ -1,40 +1,49 @@
 "use client"
 
-import { formatCurrency } from "@/lib/format"
-import { StatCard } from "@/components/ui/Card"
+import { DollarSign, TrendingUp, Calendar, Building } from "lucide-react"
+import { StatCard } from "@/components/ui/Stat-Card"
 
 interface ProjectDetailStatsProps {
-    stats: {
-        totalExpected: number
-        totalPaid: number
-        apartmentsCompleted: number
-        apartmentsTotal: number
-    }
+    totalBudget: number
+    totalPaid: number
+    progressPercent: number
+    numInstallments: number
+    apartmentsTotal: number
 }
 
-export function ProjectDetailStats({ stats }: ProjectDetailStatsProps) {
+function formatCurrencyShort(cents: number): string {
+    return `€${(cents / 100).toFixed(0)}`
+}
+
+export function ProjectDetailStats({
+    totalBudget,
+    totalPaid,
+    progressPercent,
+    numInstallments,
+    apartmentsTotal
+}: ProjectDetailStatsProps) {
     return (
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
+        <div className="mb-1.5 grid grid-cols-2 gap-1.5 lg:grid-cols-4">
             <StatCard
-                label="Total Esperado"
-                value={formatCurrency(stats.totalExpected)}
-                variant="neutral"
+                label="Orçamento"
+                value={formatCurrencyShort(totalBudget)}
+                icon={<DollarSign className="h-4 w-4" />}
             />
             <StatCard
-                label="Total Cobrado"
-                value={formatCurrency(stats.totalPaid)}
-                variant="success"
+                label="Cobrado"
+                value={formatCurrencyShort(totalPaid)}
+                change={{ value: `${progressPercent}%`, positive: true }}
+                icon={<TrendingUp className="h-4 w-4" />}
             />
             <StatCard
-                label="Em Dívida"
-                value={formatCurrency(stats.totalExpected - stats.totalPaid)}
-                variant={stats.totalExpected - stats.totalPaid > 0 ? "warning" : "neutral"}
+                label="Prestações"
+                value={numInstallments.toString()}
+                icon={<Calendar className="h-4 w-4" />}
             />
             <StatCard
-                label="Frações Liquidadas"
-                value={`${stats.apartmentsCompleted}/${stats.apartmentsTotal}`}
-                subValue={`${Math.round((stats.apartmentsCompleted / stats.apartmentsTotal) * 100)}%`}
-                variant="info"
+                label="Frações"
+                value={apartmentsTotal.toString()}
+                icon={<Building className="h-4 w-4" />}
             />
         </div>
     )

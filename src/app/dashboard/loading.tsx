@@ -1,139 +1,143 @@
 import { Skeleton } from "@/components/ui/Skeleton";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
-import { Key, Activity, BarChart3 } from "lucide-react";
-import { DashboardGrid } from "@/components/layout/DashboardGrid";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 
 export default function DashboardLoading() {
     return (
-        <div className="space-y-6">
-            {/* Payment Status Card Skeleton */}
-            <DashboardGrid>
-                <div className="lg:col-span-2">
-                    <Card className="h-full border-gray-200 shadow-sm">
-                        <CardHeader className="pb-2">
-                            <Skeleton className="h-4 w-32 mb-2" />
-                            <Skeleton className="h-8 w-64" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                <Skeleton className="h-4 w-full" />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <Skeleton className="h-24 w-full" />
-                                    <Skeleton className="h-24 w-full" />
+        <div className="space-y-1.5">
+            {/* Stats Row Skeleton */}
+            <div className="grid grid-cols-2 gap-1.5 lg:grid-cols-3">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-4 w-24" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-8 w-32" />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-4 w-24" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-8 w-32" />
+                    </CardContent>
+                </Card>
+                <Card className="hidden lg:block">
+                    <CardHeader>
+                        <Skeleton className="h-4 w-24" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-8 w-32" />
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Main Content Grid - 3 columns */}
+            <div className="grid gap-1.5 lg:grid-cols-3">
+                {/* Left Column (col-span-2) */}
+                <div className="lg:col-span-2 space-y-1.5">
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-1.5">
+                                <Skeleton className="h-8 w-8 rounded-lg" />
+                                <div>
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-16 mt-1" />
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="lg:col-span-1 hidden lg:block">
-                    <div className="h-full rounded-lg border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center p-6">
-                        <Skeleton className="h-4 w-32" />
-                    </div>
-                </div>
-            </DashboardGrid>
-
-            {/* Info Panels Skeleton */}
-            <DashboardGrid gap="none" className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                {/* 1. Invite Code / Welcome Panel */}
-                <div className="col-span-1 border-r border-gray-200 p-0">
-                    <CardHeader>
-                        <CardTitle>
-                            <Key className="w-4 h-4 text-gray-400" />
-                            <Skeleton className="h-3 w-24 inline-block ml-2" />
-                        </CardTitle>
-                    </CardHeader>
-                    <div className="p-6 flex flex-col items-center justify-center bg-gray-50 gap-2">
-                        <Skeleton className="h-8 w-32" />
-                        <Skeleton className="h-3 w-20" />
-                    </div>
-                </div>
-
-                {/* 2. System / Status Panel */}
-                <div className="col-span-1 border-r border-gray-200 p-0">
-                    <CardHeader>
-                        <CardTitle>
-                            <Activity className="w-4 h-4 text-gray-400" />
-                            <Skeleton className="h-3 w-24 inline-block ml-2" />
-                        </CardTitle>
-                    </CardHeader>
-                    <div className="p-4 space-y-3">
-                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                            <Skeleton className="h-3 w-8" />
-                            <Skeleton className="h-5 w-16 rounded-full" />
-                        </div>
-                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                            <Skeleton className="h-3 w-12" />
-                            <Skeleton className="h-3 w-24" />
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <Skeleton className="h-3 w-8" />
-                            <Skeleton className="h-3 w-12" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* 3. Metrics / Building Panel */}
-                <div className="col-span-1 p-0">
-                    <CardHeader>
-                        <CardTitle>
-                            <BarChart3 className="w-4 h-4 text-gray-400" />
-                            <Skeleton className="h-3 w-24 inline-block ml-2" />
-                        </CardTitle>
-                    </CardHeader>
-                    <div className="p-4 flex flex-col justify-center">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="text-center border-r border-gray-100 flex flex-col items-center gap-1">
-                                <Skeleton className="h-8 w-8" />
-                                <Skeleton className="h-2 w-12" />
-                            </div>
-                            <div className="text-center flex flex-col items-center gap-1">
-                                <Skeleton className="h-8 w-8" />
-                                <Skeleton className="h-2 w-12" />
-                            </div>
-                        </div>
-                    </div>
-                    <CardFooter className="justify-center">
-                        <Skeleton className="h-3 w-32" />
-                    </CardFooter>
-                </div>
-            </DashboardGrid>
-
-            {/* Residents List Skeleton */}
-            <DashboardGrid>
-                <div className="lg:col-span-2 space-y-4">
-                    <Skeleton className="h-4 w-32" />
-                    <Card>
-                        <CardContent className="p-0">
+                        </CardHeader>
+                        <CardContent>
                             {[1, 2, 3].map((i) => (
-                                <div key={i} className="p-4 border-b border-gray-100 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Skeleton className="h-8 w-8 rounded-full" />
-                                        <div className="space-y-1">
-                                            <Skeleton className="h-3 w-32" />
-                                            <Skeleton className="h-2 w-24" />
+                                <div key={i} className="py-1.5 flex items-center justify-between border-b border-[#F1F3F5] last:border-0">
+                                    <div className="flex items-center gap-1.5">
+                                        <Skeleton className="h-6 w-6 rounded-full" />
+                                        <div>
+                                            <Skeleton className="h-3 w-24" />
+                                            <Skeleton className="h-2 w-16 mt-0.5" />
                                         </div>
                                     </div>
-                                    <Skeleton className="h-4 w-12" />
+                                    <Skeleton className="h-4 w-12 rounded" />
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-1.5">
+                                <Skeleton className="h-8 w-8 rounded-lg" />
+                                <div>
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-20 mt-1" />
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {[1, 2].map((i) => (
+                                <div key={i} className="py-1.5 border-b border-[#F1F3F5] last:border-0">
+                                    <Skeleton className="h-3 w-full" />
+                                    <Skeleton className="h-2 w-24 mt-1" />
                                 </div>
                             ))}
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Quick Actions Skeleton */}
-                <div className="space-y-4">
-                    <Skeleton className="h-3 w-40" />
-                    <div className="grid grid-cols-1 gap-3">
-                        <div className="p-3 bg-white rounded-lg border border-gray-200 shadow-sm flex items-center gap-3">
-                            <Skeleton className="h-8 w-8 rounded-sm" />
-                            <div className="space-y-1">
-                                <Skeleton className="h-3 w-24" />
-                                <Skeleton className="h-2 w-32" />
+                {/* Right Column */}
+                <div className="space-y-1.5">
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-1.5">
+                                <Skeleton className="h-8 w-8 rounded-lg" />
+                                <div>
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-16 mt-1" />
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-16 w-full rounded-lg" />
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-1.5">
+                                <Skeleton className="h-8 w-8 rounded-lg" />
+                                <div>
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-20 mt-1" />
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1">
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-1.5">
+                                <Skeleton className="h-8 w-8 rounded-lg" />
+                                <div>
+                                    <Skeleton className="h-4 w-20" />
+                                    <Skeleton className="h-3 w-16 mt-1" />
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Skeleton className="h-12 w-full rounded-lg" />
+                                <Skeleton className="h-12 w-full rounded-lg" />
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
-            </DashboardGrid>
+            </div>
         </div>
     );
 }

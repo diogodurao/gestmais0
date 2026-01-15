@@ -1,19 +1,18 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { useDebouncedCallback } from "use-debounce"
+import { useState, useCallback, useOptimistic, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { getMonthName, formatCurrency } from "@/lib/format"
+import { getMonthName } from "@/lib/format"
 import {
     updateExtraordinaryPayment,
     type ApartmentPaymentData
 } from "@/lib/actions/extraordinary-projects"
 import { useToast } from "@/components/ui/Toast"
-import { useAsyncAction } from "@/hooks/useAsyncAction"
 
 // Sub-components
 import { BudgetProgress } from "./components/BudgetProgress"
-import { ExtraPaymentGridToolbar } from "./components/ExtraPaymentGridToolbar"
+import { ExtraPaymentGridToolbar, EditModeIndicator } from "./components/ExtraPaymentGridToolbar"
 import { MobileApartmentCard } from "./components/MobileApartmentCard"
 import { ApartmentRow } from "./components/ApartmentRow"
 
@@ -31,41 +30,58 @@ interface ExtraPaymentGridProps {
     readOnly?: boolean
 }
 
-export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = false }: ExtraPaymentGridProps) {
-    const { toast } = useToast()
+function formatCurrencyShort(cents: number): string {
+    return `€${(cents / 100).toFixed(0)}`
+}
+
+export function ExtraPaymentGrid({ project, payments, readOnly = false }: ExtraPaymentGridProps) {
+    const router = useRouter()
+    const { addToast } = useToast()
+    const [isPending, startTransition] = useTransition()
 
     const [toolMode, setToolMode] = useState<ExtraordinaryToolMode>(null)
     const [filterStatus, setFilterStatus] = useState<PaymentStatus | "all">("all")
-    const [localPayments, setLocalPayments] = useState(payments)
-    const [showMobileTools, setShowMobileTools] = useState(false)
 
-    const { execute: updatePayment } = useAsyncAction(updateExtraordinaryPayment, {
-        successMessage: "Pagamento atualizado com sucesso",
-        errorMessage: "Ocorreu um erro inesperado",
-        onError: () => setLocalPayments(payments) // Rollback on error
-    })
+    // Optimistic State
+    const [optimisticPayments, addOptimistic] = useOptimistic(
+        payments,
+        (state: ApartmentPaymentData[], action: { paymentId: number; status: PaymentStatus; paidAmount: number }) => {
+            return state.map((apt) => ({
+                ...apt,
+                installments: apt.installments.map((inst) =>
+                    inst.id === action.paymentId
+                        ? { ...inst, status: action.status, paidAmount: action.paidAmount }
+                        : inst
+                ),
+                totalPaid: apt.installments.reduce((sum, inst) => {
+                    if (inst.id === action.paymentId) return sum + action.paidAmount
+                    return sum + inst.paidAmount
+                }, 0),
+            }))
+        }
+    )
 
     // Calculate totals
-    const totalCollected = localPayments.reduce((sum, p) => sum + p.totalPaid, 0)
+    const totalCollected = optimisticPayments.reduce((sum, p) => sum + p.totalPaid, 0)
     const progressPercent = project.totalBudget > 0
         ? Math.round((totalCollected / project.totalBudget) * 100)
         : 0
 
     // Filter payments
     const filteredPayments = filterStatus === "all"
-        ? localPayments
-        : localPayments.filter((p) => {
+        ? optimisticPayments
+        : optimisticPayments.filter((p) => {
             if (filterStatus === "paid") return p.status === "complete"
             if (filterStatus === "pending") return p.status === "pending" || p.status === "partial"
             return true
         })
 
-    // Handle cell click logic - memoized to prevent debouncer recreation on unrelated renders
-    const handleCellClickLogic = useCallback(async (
+    // Cell click handler - optimistic updates with background sync (instant, no debounce)
+    const handleCellClick = useCallback((
         paymentId: number,
         currentStatus: PaymentStatus,
         expectedAmount: number
-    ): Promise<void> => {
+    ) => {
         if (!toolMode || readOnly) return
 
         let newStatus: PaymentStatus
@@ -77,89 +93,37 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
         } else if (toolMode === "markPending") {
             newStatus = "pending"
             newPaidAmount = 0
+        } else if (toolMode === "markLate") {
+            newStatus = "late"
+            newPaidAmount = 0
         } else {
-            if (currentStatus === "paid") {
-                newStatus = "pending"
-                newPaidAmount = 0
-            } else {
-                newStatus = "paid"
-                newPaidAmount = expectedAmount
-            }
+            return
         }
 
-        // Optimistic update
-        setLocalPayments((prev) =>
-            prev.map((apt) => ({
-                ...apt,
-                installments: apt.installments.map((inst) =>
-                    inst.id === paymentId
-                        ? { ...inst, status: newStatus, paidAmount: newPaidAmount }
-                        : inst
-                ),
-                totalPaid: apt.installments.reduce((sum, inst) => {
-                    if (inst.id === paymentId) return sum + newPaidAmount
-                    return sum + inst.paidAmount
-                }, 0),
-            }))
-        )
+        // Optimistic update - UI changes immediately
+        startTransition(async () => {
+            addOptimistic({ paymentId, status: newStatus, paidAmount: newPaidAmount })
 
-        await updatePayment({
-            paymentId,
-            status: newStatus,
-            paidAmount: newPaidAmount,
-        })
-    }, [toolMode, readOnly, updatePayment])
+            // Background sync - no blocking
+            const result = await updateExtraordinaryPayment({
+                paymentId,
+                status: newStatus,
+                paidAmount: newPaidAmount,
+            })
 
-    const handleCellClick = useDebouncedCallback(handleCellClickLogic, 300)
-
-    // Export handlers
-    const handleExportPDF = () => {
-        import("@/lib/document-export").then(({ exportExtraPaymentsToPDF }) => {
-            exportExtraPaymentsToPDF(project.name, "Edifício", project.totalBudget, localPayments)
-        })
-    }
-
-    const handleExportExcel = () => {
-        import("@/lib/document-export").then(({ exportToExcel }) => {
-            const columns = [
-                { header: "Fração", key: "unit" },
-                { header: "Residente", key: "resident" },
-                { header: "Permilagem", key: "permillage" },
-                { header: "Quota Total", key: "totalShare", format: "currency" as const },
-                ...Array.from({ length: project.numInstallments }, (_, i) => ({
-                    header: `P${i + 1}`,
-                    key: `inst_${i}`,
-                })),
-                { header: "Total Pago", key: "totalPaid", format: "currency" as const },
-                { header: "Em Dívida", key: "balance", format: "currency" as const },
-            ]
-
-            const data = localPayments.map((p) => {
-                const row: Record<string, unknown> = {
-                    unit: p.unit,
-                    resident: p.residentName || "",
-                    permillage: p.permillage,
-                    totalShare: p.totalShare,
-                    totalPaid: p.totalPaid,
-                    balance: p.balance,
-                }
-                p.installments.forEach((inst, i) => {
-                    row[`inst_${i}`] = inst.status === "paid" ? "Pago" : inst.status === "late" ? "Atraso" : "Pendente"
+            if (!result.success) {
+                addToast({
+                    title: "Erro",
+                    description: "Não foi possível atualizar o pagamento",
+                    variant: "error"
                 })
-                return row
-            })
-
-            exportToExcel({
-                filename: `extra-${project.name.toLowerCase().replace(/\s+/g, "-")}`,
-                title: project.name,
-                columns,
-                data,
-            })
+                router.refresh() // Revert optimistic state
+            }
         })
-    }
+    }, [toolMode, readOnly, startTransition, addOptimistic, addToast, router])
 
     return (
-        <div className="space-y-3 sm:space-y-4">
+        <div>
             <BudgetProgress
                 totalCollected={totalCollected}
                 totalBudget={project.totalBudget}
@@ -173,14 +137,97 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                 onToolModeChange={setToolMode}
                 filterMode={filterStatus}
                 onFilterModeChange={setFilterStatus}
-                showMobileTools={showMobileTools}
-                setShowMobileTools={setShowMobileTools}
-                handleExportPDF={handleExportPDF}
-                handleExportExcel={handleExportExcel}
             />
 
-            {/* Mobile Card View */}
-            <div className="sm:hidden space-y-2">
+            {/* Edit mode indicator */}
+            <EditModeIndicator activeTool={toolMode} isPending={isPending} className="mb-1.5" />
+
+            {/* Desktop Table */}
+            <div className="hidden sm:block overflow-x-auto rounded-lg border border-gray-200 bg-white">
+                <table className="w-full border-collapse text-label">
+                    <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                            <th className="sticky left-0 z-10 bg-gray-50 px-1.5 py-1 text-center text-xs font-medium uppercase tracking-wide text-gray-500 w-12">
+                                Fração
+                            </th>
+                            <th className="px-1.5 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500 w-28">
+                                Residente
+                            </th>
+                            <th className="px-1.5 py-1 text-right text-xs font-medium uppercase tracking-wide text-gray-500 w-14">
+                                ‰
+                            </th>
+                            <th className="px-1.5 py-1 text-right text-xs font-medium uppercase tracking-wide text-gray-500 w-20">
+                                Quota
+                            </th>
+                            {Array.from({ length: project.numInstallments }, (_, i) => {
+                                let month = project.startMonth + i
+                                let year = project.startYear
+                                while (month > 12) { month -= 12; year++ }
+                                return (
+                                    <th key={i} className="px-1.5 py-1 text-center text-xs font-medium uppercase tracking-wide text-gray-500 w-14">
+                                        <div>P{i + 1}</div>
+                                        <div className="text-micro font-normal text-gray-400">
+                                            {getMonthName(month, true)}/{String(year).slice(-2)}
+                                        </div>
+                                    </th>
+                                )
+                            })}
+                            <th className="px-1.5 py-1 text-right text-xs font-medium uppercase tracking-wide text-gray-500 w-20">
+                                Pago
+                            </th>
+                            <th className="px-1.5 py-1 text-right text-xs font-medium uppercase tracking-wide text-gray-500 w-20">
+                                Dívida
+                            </th>
+                            <th className="px-1.5 py-1 text-center text-xs font-medium uppercase tracking-wide text-gray-500 w-16">
+                                Estado
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredPayments.map((apartment, idx) => (
+                            <ApartmentRow
+                                key={apartment.apartmentId}
+                                apartment={apartment}
+                                toolMode={toolMode}
+                                onCellClick={handleCellClick}
+                                readOnly={readOnly}
+                                startMonth={project.startMonth}
+                                startYear={project.startYear}
+                                rowIndex={idx}
+                            />
+                        ))}
+                    </tbody>
+                    <tfoot>
+                        <tr className="bg-gray-50 font-medium">
+                            <td className="sticky left-0 z-10 bg-gray-50 px-1.5 py-1 text-center">TOTAL</td>
+                            <td className="px-1.5 py-1">{optimisticPayments.length} Frações</td>
+                            <td className="px-1.5 py-1 text-right font-mono">{optimisticPayments.reduce((sum, p) => sum + p.permillage, 0).toFixed(2)}</td>
+                            <td className="px-1.5 py-1 text-right font-mono">{formatCurrencyShort(project.totalBudget)}</td>
+                            {Array.from({ length: project.numInstallments }, (_, i) => {
+                                const paidCount = optimisticPayments.filter((p) => p.installments[i]?.status === "paid").length
+                                const total = optimisticPayments.length
+                                return (
+                                    <td key={i} className="px-1.5 py-1 text-center">
+                                        <span className={cn(
+                                            "text-xs font-medium",
+                                            paidCount === total ? "text-primary-dark" :
+                                                paidCount > 0 ? "text-warning" : "text-gray-400"
+                                        )}>
+                                            {paidCount}/{total}
+                                        </span>
+                                    </td>
+                                )
+                            })}
+                            <td className="px-1.5 py-1 text-right font-mono text-primary-dark">{formatCurrencyShort(totalCollected)}</td>
+                            <td className="px-1.5 py-1 text-right font-mono text-error">{formatCurrencyShort(project.totalBudget - totalCollected)}</td>
+                            <td className="px-1.5 py-1 text-center text-label">{progressPercent}%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden space-y-1.5">
                 {filteredPayments.map((apartment) => (
                     <MobileApartmentCard
                         key={apartment.apartmentId}
@@ -195,82 +242,26 @@ export function ExtraPaymentGrid({ project, payments, onRefresh, readOnly = fals
                     />
                 ))}
 
-                <div className="tech-border bg-gray-100 p-3">
-                    <div className="flex items-center justify-between text-label font-bold uppercase tracking-tight">
-                        <span className="text-gray-500">Unidades: {localPayments.length}</span>
-                        <span className="text-emerald-700">{formatCurrency(totalCollected)} Angariado</span>
+                {/* Summary */}
+                <div className="rounded-lg bg-gray-50 border border-gray-200 p-1.5">
+                    <div className="flex items-center justify-between text-label font-medium uppercase tracking-wide">
+                        <span className="text-gray-500">{filteredPayments.length} Frações</span>
+                        <span className="text-primary-dark">{formatCurrencyShort(totalCollected)} Cobrado</span>
                     </div>
                 </div>
             </div>
 
-            {/* Desktop Table View */}
-            <div className="hidden sm:block tech-border bg-white overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse whitespace-nowrap text-body">
-                        <thead>
-                            <tr>
-                                <th className="header-cell w-16 text-center sticky left-0 bg-gray-100 z-10">Fração</th>
-                                <th className="header-cell w-40">Residente</th>
-                                <th className="header-cell w-20 text-right">%</th>
-                                <th className="header-cell w-28 text-right">Quota Total</th>
-                                {Array.from({ length: project.numInstallments }, (_, i) => {
-                                    let month = project.startMonth + i
-                                    let year = project.startYear
-                                    while (month > 12) { month -= 12; year++ }
-                                    return (
-                                        <th key={i} className="header-cell w-20 text-center">
-                                            <div className="text-label">P{i + 1}</div>
-                                            <div className="text-micro text-gray-400 font-normal">
-                                                {getMonthName(month, true)}/{String(year).slice(-2)}
-                                            </div>
-                                        </th>
-                                    )
-                                })}
-                                <th className="header-cell w-28 text-right">Pago</th>
-                                <th className="header-cell w-28 text-right">Em Dívida</th>
-                                <th className="header-cell w-24 text-center">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredPayments.map((apartment) => (
-                                <ApartmentRow
-                                    key={apartment.apartmentId}
-                                    apartment={apartment}
-                                    toolMode={toolMode}
-                                    onCellClick={handleCellClick}
-                                    readOnly={readOnly}
-                                    startMonth={project.startMonth}
-                                    startYear={project.startYear}
-                                />
-                            ))}
-                        </tbody>
-                        <tfoot>
-                            <tr className="bg-gray-100 font-bold">
-                                <td className="data-cell sticky left-0 bg-gray-100 z-10">TOTAL</td>
-                                <td className="data-cell">{localPayments.length} Frações</td>
-                                <td className="data-cell text-right">{localPayments.reduce((sum, p) => sum + p.permillage, 0).toFixed(2)}%</td>
-                                <td className="data-cell text-right font-mono">{formatCurrency(project.totalBudget)}</td>
-                                {Array.from({ length: project.numInstallments }, (_, i) => {
-                                    const paidCount = localPayments.filter((p) => p.installments[i]?.status === "paid").length
-                                    const total = localPayments.length
-                                    return (
-                                        <td key={i} className="data-cell text-center text-label">
-                                            <span className={cn(
-                                                paidCount === total ? "text-emerald-600" :
-                                                    paidCount > 0 ? "text-warning" : "text-gray-400"
-                                            )}>
-                                                {paidCount}/{total}
-                                            </span>
-                                        </td>
-                                    )
-                                })}
-                                <td className="data-cell text-right font-mono text-emerald-700">{formatCurrency(totalCollected)}</td>
-                                <td className="data-cell text-right font-mono text-error">{formatCurrency(project.totalBudget - totalCollected)}</td>
-                                <td className="data-cell text-center"><span className="text-label">{progressPercent}%</span></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+            {/* Footer Legend */}
+            <div className="flex items-center justify-center gap-3 py-1.5 mt-1.5 border-t border-gray-200 bg-white rounded-b-lg">
+                <span className="flex items-center gap-1 text-label text-gray-500">
+                    <span className="w-2 h-2 bg-primary-dark rounded" /> Pago
+                </span>
+                <span className="flex items-center gap-1 text-label text-gray-500">
+                    <span className="w-2 h-2 bg-gray-400 rounded" /> Pendente
+                </span>
+                <span className="flex items-center gap-1 text-label text-gray-500">
+                    <span className="w-2 h-2 bg-error rounded" /> Em dívida
+                </span>
             </div>
         </div>
     )

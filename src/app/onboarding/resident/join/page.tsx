@@ -69,7 +69,7 @@ export default function JoinStepPage() {
             )}
 
             <Button
-                fullWidth
+                className="w-full"
                 onClick={handleJoinBuilding}
                 disabled={isLoading || !inviteCode.trim()}
             >

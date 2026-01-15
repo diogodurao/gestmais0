@@ -1,7 +1,7 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
-import { InfoRow } from "../ui/info-row"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/Card"
+import { InfoRow } from "../ui/Info-Row"
 import { Building2 } from "lucide-react"
 
 // Types

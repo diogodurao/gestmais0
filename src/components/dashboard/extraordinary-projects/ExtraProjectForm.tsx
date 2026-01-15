@@ -4,7 +4,7 @@ import { Plus, FileText, Upload, AlertTriangle } from "lucide-react"
 import { MONTH_OPTIONS } from "@/lib/constants/timing"
 import { formatCurrency } from "@/lib/format"
 import { QuotaPreviewTable } from "./QuotaPreviewTable"
-import { ExtraProjectSchema } from "./hooks/useExtraProjectForm"
+import { type ExtraProjectSchema } from "./ExtraProjectCreate"
 import { UseFormReturn } from "react-hook-form"
 
 type Apartment = {

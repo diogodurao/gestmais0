@@ -72,7 +72,7 @@ export function ClaimStepClient({
             )}
 
             <Button
-                fullWidth
+                className="w-full"
                 onClick={handleSelectApartment}
                 disabled={isLoading || !selectedAptId}
             >

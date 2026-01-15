@@ -2,11 +2,10 @@
 
 import { memo } from "react"
 import { cn } from "@/lib/utils"
-import { formatCurrency, getMonthName } from "@/lib/format"
+import { formatCurrency } from "@/lib/format"
 import { Badge } from "@/components/ui/Badge"
 import { type ApartmentPaymentData } from "@/lib/actions/extraordinary-projects"
 import { type ExtraordinaryToolMode, type PaymentStatus } from "@/lib/types"
-import { GENERAL_STATUS_CONFIG } from "@/lib/constants/ui"
 
 interface ApartmentRowProps {
     apartment: ApartmentPaymentData
@@ -15,6 +14,20 @@ interface ApartmentRowProps {
     readOnly: boolean
     startMonth: number
     startYear: number
+    rowIndex: number
+}
+
+// Map apartment status to Badge variant
+const statusVariantMap: Record<string, "success" | "warning" | "error"> = {
+    complete: "success",
+    partial: "warning",
+    pending: "error",
+}
+
+const statusLabelMap: Record<string, string> = {
+    complete: "Pago",
+    partial: "Parcial",
+    pending: "Pendente",
 }
 
 export const ApartmentRow = memo(function ApartmentRow({
@@ -22,63 +35,63 @@ export const ApartmentRow = memo(function ApartmentRow({
     toolMode,
     onCellClick,
     readOnly,
-    startMonth,
-    startYear
+    rowIndex
 }: ApartmentRowProps) {
+    const isInteractive = toolMode && !readOnly
+
     return (
-        <tr className="group hover:bg-gray-50/50">
-            <td className="data-cell text-center font-bold bg-gray-50 sticky left-0 z-10 group-hover:bg-gray-100">
+        <tr className={cn(
+            "border-b border-[#F1F3F5] transition-colors hover:bg-gray-50",
+            rowIndex % 2 === 1 && "bg-[#FAFBFC]"
+        )}>
+            <td className="sticky left-0 z-10 bg-inherit px-1.5 py-1 text-center font-medium text-gray-800">
                 {apartment.unit}
             </td>
-            <td className="data-cell">
-                {apartment.residentName || <span className="text-gray-400 italic">—</span>}
+            <td className="px-1.5 py-1 text-gray-700 truncate max-w-28">
+                {apartment.residentName || <span className="text-gray-400 italic">Sem residente</span>}
             </td>
-            <td className="data-cell text-right font-mono text-gray-500">{apartment.permillage.toFixed(2)}</td>
-            <td className="data-cell text-right font-mono font-bold">{formatCurrency(apartment.totalShare)}</td>
+            <td className="px-1.5 py-1 text-right font-mono text-gray-500">
+                {apartment.permillage.toFixed(2)}
+            </td>
+            <td className="px-1.5 py-1 text-right font-mono text-gray-700">
+                {formatCurrency(apartment.totalShare)}
+            </td>
 
-            {apartment.installments.map((inst, idx) => {
-                const isInteractive = toolMode && !readOnly;
-                const month = ((startMonth + idx - 1) % 12) + 1;
-                const year = startYear + Math.floor((startMonth + idx - 1) / 12);
-                const monthName = getMonthName(month, true);
-
-                return (
-                    <td
-                        key={inst.id}
-                        role={isInteractive ? "button" : undefined}
-                        tabIndex={isInteractive ? 0 : undefined}
-                        aria-label={`${isInteractive ? 'Marcar Pago' : ''} ${monthName}/${year} Estado: ${inst.status}`}
-                        onClick={isInteractive ? () => onCellClick(inst.id, inst.status, inst.expectedAmount) : undefined}
-                        onKeyDown={isInteractive ? (e) => (e.key === 'Enter' || e.key === ' ') && onCellClick(inst.id, inst.status, inst.expectedAmount) : undefined}
+            {apartment.installments.map((inst) => (
+                <td key={inst.id} className="p-0.5">
+                    <button
+                        type="button"
+                        disabled={!isInteractive}
+                        onClick={() => isInteractive && onCellClick(inst.id, inst.status, inst.expectedAmount)}
+                        onKeyDown={(e) => isInteractive && (e.key === 'Enter' || e.key === ' ') && onCellClick(inst.id, inst.status, inst.expectedAmount)}
                         className={cn(
-                            "data-cell text-center transition-colors",
-                            toolMode && !readOnly && "cursor-pointer",
-                            inst.status === "paid" && "status-active",
-                            inst.status === "late" && "status-alert font-bold",
-                            inst.status === "partial" && "status-pending",
+                            "w-full h-6 flex items-center justify-center rounded text-xs font-medium transition-all",
+                            inst.status === "paid" && "bg-primary-light text-primary-dark",
+                            inst.status === "late" && "bg-error-light text-error",
                             inst.status === "pending" && "text-gray-400",
-                            toolMode && !readOnly && inst.status === "pending" && "hover:bg-emerald-100",
-                            toolMode && !readOnly && inst.status === "paid" && "hover:bg-error-light",
-                            toolMode && !readOnly && inst.status === "late" && "hover:bg-emerald-100"
+                            inst.status === "partial" && "bg-warning-light text-warning",
+                            isInteractive && "cursor-crosshair hover:ring-1 hover:ring-primary",
+                            !isInteractive && "cursor-default"
                         )}
                     >
-                        {inst.status === "paid" && <span className="font-mono text-body">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
-                        {inst.status === "partial" && <span className="font-mono text-label">{formatCurrency(inst.paidAmount).replace("€", "").trim()}</span>}
-                        {inst.status === "late" && <span className="text-micro font-bold uppercase">EM ATRASO</span>}
-                        {inst.status === "pending" && "—"}
-                    </td>
-                )
-            })}
+                        {inst.status === "paid" ? "✓" : inst.status === "late" ? "!" : "—"}
+                    </button>
+                </td>
+            ))}
 
-            <td className="data-cell text-right font-mono text-emerald-700">{formatCurrency(apartment.totalPaid)}</td>
+            <td className="px-1.5 py-1 text-right font-mono font-medium text-primary-dark">
+                {formatCurrency(apartment.totalPaid)}
+            </td>
             <td className={cn(
-                "data-cell text-right font-mono font-bold",
-                apartment.balance > 0 ? "status-alert" : "text-gray-400"
+                "px-1.5 py-1 text-right font-mono font-medium",
+                apartment.balance > 0 ? "text-error" : "text-gray-400"
             )}>
                 {formatCurrency(apartment.balance)}
             </td>
-            <td className="data-cell text-center">
-                <Badge status={apartment.status} config={GENERAL_STATUS_CONFIG} className="text-micro px-1.5 sm:px-2" />
+            <td className="px-1.5 py-1 text-center">
+                <Badge variant={statusVariantMap[apartment.status] || "error"} size="sm">
+                    {statusLabelMap[apartment.status] || apartment.status}
+                </Badge>
             </td>
         </tr>
     )
