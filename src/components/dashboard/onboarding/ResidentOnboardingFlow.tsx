@@ -295,17 +295,18 @@ export function ResidentOnboardingFlow({
 
                                 <div className="relative">
                                     <label className="block text-label font-bold text-gray-500 uppercase mb-1">
-                                        Número IBAN
+                                        Número IBAN *
                                     </label>
                                     <input
                                         type="text"
                                         value={iban}
-                                        onChange={(e) => setIban(e.target.value.toUpperCase())}
-                                        placeholder="PT50 1234 4321 5678 9012 3456 7"
+                                        onChange={(e) => setIban(e.target.value.replace(/\s+/g, '').toUpperCase())}
+                                        placeholder="PT50123443215678901234567"
                                         className="w-full px-4 py-3 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400 uppercase pr-10"
+                                        maxLength={25}
                                     />
                                     {isValidIban(iban) && (
-                                        <Check className="absolute right-3 top-3 w-5 h-5 text-emerald-500" />
+                                        <Check className="absolute right-3 top-8 w-5 h-5 text-emerald-500" />
                                     )}
                                 </div>
 

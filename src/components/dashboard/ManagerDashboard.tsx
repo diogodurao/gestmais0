@@ -6,9 +6,8 @@ import { ManagerOnboardingFlow } from "@/components/dashboard/onboarding/Manager
 import { ResidentsList } from "@/components/dashboard/residents/ResidentsList";
 import { SubscriptionSyncWrapper } from "@/components/dashboard/subscription/SubscriptionSyncWrapper";
 import { PaymentStatusCard } from "@/components/dashboard/payments-quotas/PaymentStatusCard";
-import { InviteCodePanel } from "@/components/dashboard/overview/InviteCodePanel";
-import { SystemStatusPanel } from "@/components/dashboard/overview/SystemStatusPanel";
-import { BuildingMetricsPanel } from "@/components/dashboard/overview/BuildingMetricsPanel";
+import { MyUnitPanel } from "@/components/dashboard/overview/MyUnitPanel";
+import { BuildingStatusPanel } from "@/components/dashboard/overview/BuildingStatusPanel";
 import { getEvaluationStatus } from "@/lib/actions/evaluations";
 import { EvaluationWidget } from "@/components/dashboard/evaluations/EvaluationWidget";
 import { Lock } from "lucide-react";
@@ -31,6 +30,7 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
 
     let apartmentsData: Awaited<ReturnType<typeof getBuildingApartments>> = []; // Store for onboarding check
     let evaluationStatus = null;
+    let managerApartment: { unit: string; permillage?: number | null } | null = null;
 
     try {
         const building = await getOrCreateManagerBuilding();
@@ -81,6 +81,14 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
 
         residents = await getBuildingResidents(building.id);
         unclaimedUnits = await getUnclaimedApartments(building.id);
+
+        // Get manager's apartment for MyUnitPanel (reuse managerApt from above)
+        if (managerApt) {
+            managerApartment = {
+                unit: managerApt.apartment.unit,
+                permillage: managerApt.apartment.permillage
+            };
+        }
     } catch (e) {
         console.error("Failed to load building", e);
     }
@@ -93,7 +101,7 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
             )}
 
             {/* Stats row */}
-            <div className="grid grid-cols-2 gap-1.5 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-1.5 lg:grid-cols-3">
                 <PaymentStatusCard key="personal-status" userId={session.user.id} />
                 {buildingInfo && (
                     <PaymentStatusCard key="building-status" buildingId={buildingInfo.id} />
@@ -141,20 +149,24 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
 
                 {/* Right Column - Panels */}
                 <div className="space-y-1.5">
-                    <InviteCodePanel
-                        isManager={true}
+                    <MyUnitPanel
+                        apartment={managerApartment}
+                        buildingInfo={buildingInfo ? {
+                            building: {
+                                name: buildingInfo.name,
+                                street: buildingInfo.street,
+                                number: buildingInfo.number,
+                                city: buildingInfo.city,
+                                monthlyQuota: buildingInfo.monthlyQuota
+                            }
+                        } : null}
+                    />
+                    <BuildingStatusPanel
                         sessionUser={sessionUser}
                         buildingInfo={buildingInfo}
                         buildingCode={buildingCode}
-                        residentApartment={null}
-                    />
-                    <SystemStatusPanel subscriptionStatus={buildingInfo?.subscriptionStatus} />
-                    <BuildingMetricsPanel
-                        isManager={true}
                         residents={residents}
                         unclaimedUnits={unclaimedUnits}
-                        residentBuildingInfo={null}
-                        totalApartments={buildingInfo?.totalApartments ?? undefined}
                     />
                 </div>
             </div>

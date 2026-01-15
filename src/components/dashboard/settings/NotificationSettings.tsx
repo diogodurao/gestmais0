@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Toggle } from "@/components/ui/Toggle"
 import { Divider } from "@/components/ui/Divider"
-import { Save } from "lucide-react"
+import { Alert } from "@/components/ui/Alert"
+import { useToast } from "@/components/ui/Toast"
+import { Save, BellOff } from "lucide-react"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
 
 interface NotificationPreferences {
@@ -16,7 +18,8 @@ interface NotificationPreferences {
 }
 
 export function NotificationSettings() {
-    const { isSubscribed, loading: pushLoading, subscribeToPush } = usePushNotifications()
+    const { permission, isSubscribed, loading: pushLoading, error: pushError, subscribeToPush } = usePushNotifications()
+    const { addToast } = useToast()
     const [isSaving, setIsSaving] = useState(false)
 
     const [preferences, setPreferences] = useState<NotificationPreferences>({
@@ -26,17 +29,40 @@ export function NotificationSettings() {
         pushEnabled: isSubscribed,
     })
 
+    // Sync push toggle with actual subscription status
+    useEffect(() => {
+        setPreferences(prev => ({ ...prev, pushEnabled: isSubscribed }))
+    }, [isSubscribed])
+
     const handleToggle = (key: keyof NotificationPreferences) => {
-        if (key === 'pushEnabled' && !preferences.pushEnabled) {
-            subscribeToPush()
+        if (key === 'pushEnabled') {
+            if (!isSubscribed && permission !== 'denied') {
+                subscribeToPush()
+            }
+            return // Don't update local state for push - it syncs from isSubscribed
         }
         setPreferences(prev => ({ ...prev, [key]: !prev[key] }))
     }
 
     const handleSave = async () => {
         setIsSaving(true)
-        await new Promise(resolve => setTimeout(resolve, 500))
-        setIsSaving(false)
+        try {
+            // TODO: Implement server action to save email notification preferences
+            await new Promise(resolve => setTimeout(resolve, 500))
+            addToast({
+                variant: "success",
+                title: "Preferências guardadas",
+                description: "As suas preferências de notificação foram atualizadas."
+            })
+        } catch {
+            addToast({
+                variant: "error",
+                title: "Erro",
+                description: "Não foi possível guardar as preferências."
+            })
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     const emailSettings = [
@@ -57,18 +83,9 @@ export function NotificationSettings() {
                         Notificações por Email
                     </p>
 
-                    {emailSettings.map((item) => (
-                        <div key={item.key} className="flex items-center justify-between py-1 border-b border-gray-100">
-                            <div>
-                                <p className="text-body font-medium text-gray-700">{item.label}</p>
-                                <p className="text-xs text-gray-500">{item.desc}</p>
-                            </div>
-                            <Toggle
-                                checked={preferences[item.key]}
-                                onChange={() => handleToggle(item.key)}
-                            />
-                        </div>
-                    ))}
+                    <Alert variant="info">
+                        Notificações por email estarão disponíveis em breve.
+                    </Alert>
 
                     <Divider className="my-1.5" />
 
@@ -76,17 +93,41 @@ export function NotificationSettings() {
                         Notificações Push
                     </p>
 
-                    <div className="flex items-center justify-between py-1">
-                        <div>
-                            <p className="text-body font-medium text-gray-700">Ativar notificações push</p>
-                            <p className="text-xs text-gray-500">Receber notificações no browser</p>
+                    {pushError && (
+                        <Alert variant="error" className="mb-1.5">
+                            {pushError}
+                        </Alert>
+                    )}
+
+                    {permission === 'denied' ? (
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between py-1">
+                                <div>
+                                    <p className="text-body font-medium text-gray-700">Notificações push</p>
+                                    <p className="text-xs text-gray-500">Bloqueadas nas definições do browser</p>
+                                </div>
+                                <div className="flex items-center gap-1 text-xs font-medium text-[#B86B73]">
+                                    <BellOff className="w-3 h-3" />
+                                    Bloqueadas
+                                </div>
+                            </div>
+                            <Alert variant="info">
+                                Para reativar, clique no ícone de cadeado na barra de endereço do browser e permita notificações para este site.
+                            </Alert>
                         </div>
-                        <Toggle
-                            checked={preferences.pushEnabled || isSubscribed}
-                            onChange={() => handleToggle("pushEnabled")}
-                            disabled={pushLoading}
-                        />
-                    </div>
+                    ) : (
+                        <div className="flex items-center justify-between py-1">
+                            <div>
+                                <p className="text-body font-medium text-gray-700">Ativar notificações push</p>
+                                <p className="text-xs text-gray-500">Receber notificações no browser</p>
+                            </div>
+                            <Toggle
+                                checked={isSubscribed}
+                                onChange={() => handleToggle("pushEnabled")}
+                                disabled={pushLoading}
+                            />
+                        </div>
+                    )}
                 </div>
             </CardContent>
 

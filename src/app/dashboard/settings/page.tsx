@@ -82,77 +82,73 @@ export default async function SettingsPage() {
     const isManager = session.user.role === 'manager'
 
     return (
-        <div className="flex-1 overflow-y-auto bg-white p-1.5">
-            <div className="max-w-5xl mx-auto">
-                {/* Header */}
-                <div className="mb-1.5">
-                    <h1 className="text-heading font-semibold text-gray-800">
-                        Definições
-                    </h1>
-                    <p className="text-label text-gray-500">
-                        Configurações da conta e do condomínio
-                    </p>
-                </div>
-
-                {/* Tabbed Layout */}
-                <SettingsLayout isManager={isManager}>
-                    {{
-                        profile: <ProfileSettings user={userData} />,
-
-                        building: building ? (
-                            <BuildingSettingsForm building={building} />
-                        ) : null,
-
-                        apartments: building ? (
-                            <ApartmentManager
-                                apartments={apartmentsData.map(a => ({
-                                    id: a.apartment.id,
-                                    unit: a.apartment.unit,
-                                    permillage: a.apartment.permillage || 0,
-                                    resident: a.resident ? { id: a.resident.id, name: a.resident.name } : null
-                                }))}
-                                buildingId={building.id}
-                                totalApartments={building.totalApartments}
-                            />
-                        ) : null,
-
-                        subscription: building ? (
-                            <BillingSubscriptionCard
-                                subscriptionStatus={building.subscriptionStatus}
-                                buildingId={building.id}
-                                totalApartments={building.totalApartments || 0}
-                                canSubscribe={canSubscribe}
-                                profileComplete={profileComplete}
-                                buildingComplete={buildingComplete}
-                            />
-                        ) : null,
-
-                        notifications: <NotificationSettings />,
-                    }}
-                </SettingsLayout>
-
-                {/* Resident without apartment card */}
-                {!isManager && !userApartment && (
-                    <Card className="mt-6">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-1.5">
-                                <Building2 className="w-4 h-4" />
-                                Entrar na sua fração
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-label text-gray-500 mb-4">
-                                Ainda não está associado a uma fração.
-                            </p>
-                            <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 text-center">
-                                <span className="text-label font-medium text-gray-400">
-                                    Contacte o administrador para obter um código de convite
-                                </span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
+        <div className="flex-1 overflow-y-auto p-1.5">
+            {/* Header */}
+            <div className="mb-1.5">
+                <h1 className="text-heading font-semibold text-gray-800">
+                    Definições
+                </h1>
+                <p className="text-label text-gray-500">
+                    Configurações da conta e do condomínio
+                </p>
             </div>
+
+            {/* Tabbed Layout */}
+            <SettingsLayout isManager={isManager}>
+                {{
+                    profile: <ProfileSettings user={userData} />,
+
+                    building: building ? (
+                        <BuildingSettingsForm building={building} />
+                    ) : null,
+
+                    apartments: building ? (
+                        <ApartmentManager
+                            apartments={apartmentsData.map(a => ({
+                                id: a.apartment.id,
+                                unit: a.apartment.unit,
+                                permillage: a.apartment.permillage || 0,
+                                resident: a.resident ? { id: a.resident.id, name: a.resident.name } : null
+                            }))}
+                        />
+                    ) : null,
+
+                    subscription: building ? (
+                        <BillingSubscriptionCard
+                            subscriptionStatus={building.subscriptionStatus}
+                            buildingId={building.id}
+                            totalApartments={building.totalApartments || 0}
+                            canSubscribe={canSubscribe}
+                            profileComplete={profileComplete}
+                            buildingComplete={buildingComplete}
+                        />
+                    ) : null,
+
+                    notifications: <NotificationSettings />,
+                }}
+            </SettingsLayout>
+
+            {/* Resident without apartment card */}
+            {!isManager && !userApartment && (
+                <Card className="mt-6">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-1.5">
+                            <Building2 className="w-4 h-4" />
+                            Entrar na sua fração
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-label text-gray-500 mb-4">
+                            Ainda não está associado a uma fração.
+                        </p>
+                        <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 text-center">
+                            <span className="text-label font-medium text-gray-400">
+                                Contacte o administrador para obter um código de convite
+                            </span>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     )
 }

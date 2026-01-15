@@ -65,7 +65,9 @@ export function usePushNotifications() {
             setPermission(permissionResult)
 
             if (permissionResult !== 'granted') {
-                throw new Error('Permission not granted')
+                setError('Permissão negada. Ative as notificações nas definições do browser.')
+                setLoading(false)
+                return
             }
 
             const subscription = await registration.pushManager.subscribe({

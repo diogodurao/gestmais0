@@ -1,44 +1,51 @@
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { CardHeader, CardTitle } from "@/components/ui/Card"
+import { IconButton } from "@/components/ui/Icon-Button"
+import { CardHeader } from "@/components/ui/Card"
 
 interface CalendarHeaderProps {
     monthName: string
     year: number
     onNavigate: (delta: number) => void
-    onAddEvent: () => void
+    onGoToToday: () => void
     isPending: boolean
-    readOnly?: boolean
 }
 
 export function CalendarHeader({
     monthName,
     year,
     onNavigate,
-    onAddEvent,
-    isPending,
-    readOnly
+    onGoToToday,
+    isPending
 }: CalendarHeaderProps) {
     return (
         <CardHeader>
-            <div className="flex items-center justify-between w-full">
-                <CardTitle>Agenda do Edifício</CardTitle>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => onNavigate(-1)} disabled={isPending}>
-                        <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <span className="text-body font-bold min-w-[140px] text-center">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                    <IconButton
+                        size="sm"
+                        variant="default"
+                        icon={<ChevronLeft className="h-3 w-3" />}
+                        label="Mês anterior"
+                        onClick={() => onNavigate(-1)}
+                        disabled={isPending}
+                    />
+                    <IconButton
+                        size="sm"
+                        variant="default"
+                        icon={<ChevronRight className="h-3 w-3" />}
+                        label="Próximo mês"
+                        onClick={() => onNavigate(1)}
+                        disabled={isPending}
+                    />
+                    <span className="text-[12px] font-medium text-[#495057] ml-1">
                         {monthName} {year}
                     </span>
-                    <Button variant="outline" size="sm" onClick={() => onNavigate(1)} disabled={isPending}>
-                        <ChevronRight className="w-4 h-4" />
-                    </Button>
-                    {!readOnly && (
-                        <Button size="sm" onClick={onAddEvent}>
-                            <Plus className="w-4 h-4 mr-1" /> Evento
-                        </Button>
-                    )}
                 </div>
+                <Button variant="outline" size="sm" onClick={onGoToToday} disabled={isPending}>
+                    <CalendarIcon className="h-3 w-3" />
+                    <span className="hidden sm:inline ml-1">Hoje</span>
+                </Button>
             </div>
         </CardHeader>
     )

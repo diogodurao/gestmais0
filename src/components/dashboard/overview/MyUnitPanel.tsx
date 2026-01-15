@@ -15,6 +15,9 @@ interface MyUnitPanelProps {
             city?: string | null
             monthlyQuota?: number | null
         }
+        manager?: {
+            name: string
+        }
     } | null
 }
 
@@ -71,6 +74,12 @@ export function MyUnitPanel({ apartment, buildingInfo }: MyUnitPanelProps) {
                         <InfoRow
                             label="Morada"
                             value={<span className="text-[10px]">{address}</span>}
+                        />
+                    )}
+                    {buildingInfo?.manager && (
+                        <InfoRow
+                            label="Admin."
+                            value={<span className="text-[#495057]">{buildingInfo.manager.name}</span>}
                         />
                     )}
                 </div>

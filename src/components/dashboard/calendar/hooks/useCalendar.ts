@@ -2,6 +2,13 @@ import { useState, useTransition, useMemo } from "react"
 import { getCalendarEvents } from "@/lib/actions/calendar"
 import { CalendarEvent } from "@/lib/types"
 
+interface CalendarDayInfo {
+    day: number
+    date: Date
+    isCurrentMonth: boolean
+    events: CalendarEvent[]
+}
+
 export function useCalendar(
     buildingId: string,
     initialEvents: CalendarEvent[],
@@ -44,29 +51,73 @@ export function useCalendar(
         fetchEvents(newYear, newMonth)
     }
 
-    const getDaysInMonth = () => {
-        const firstDay = new Date(year, month - 1, 1)
-        const lastDay = new Date(year, month, 0)
-        const daysInMonth = lastDay.getDate()
+    const goToToday = () => {
+        const today = new Date()
+        const newYear = today.getFullYear()
+        const newMonth = today.getMonth() + 1
 
-        // Monday = 0, Sunday = 6
-        let startDay = firstDay.getDay() - 1
-        if (startDay < 0) startDay = 6
-
-        const days: (number | null)[] = []
-        for (let i = 0; i < startDay; i++) days.push(null)
-        for (let i = 1; i <= daysInMonth; i++) days.push(i)
-
-        return days
+        setMonth(newMonth)
+        setYear(newYear)
+        fetchEvents(newYear, newMonth)
     }
+
+    const getEventsForDate = (date: Date) => {
+        const dateStr = date.toISOString().split("T")[0]
+        return eventsByDate.get(dateStr) || []
+    }
+
+    const calendarDays = useMemo(() => {
+        const result: CalendarDayInfo[] = []
+        const daysInMonth = new Date(year, month, 0).getDate()
+        const firstDay = new Date(year, month - 1, 1).getDay() // Sunday = 0
+        const prevMonthDays = new Date(year, month - 1, 0).getDate()
+
+        // Previous month days
+        for (let i = firstDay - 1; i >= 0; i--) {
+            const day = prevMonthDays - i
+            const date = new Date(year, month - 2, day)
+            result.push({
+                day,
+                date,
+                isCurrentMonth: false,
+                events: getEventsForDate(date)
+            })
+        }
+
+        // Current month days
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(year, month - 1, day)
+            result.push({
+                day,
+                date,
+                isCurrentMonth: true,
+                events: getEventsForDate(date)
+            })
+        }
+
+        // Next month days (fill to 42 cells for 6 rows)
+        const remainingDays = 42 - result.length
+        for (let day = 1; day <= remainingDays; day++) {
+            const date = new Date(year, month, day)
+            result.push({
+                day,
+                date,
+                isCurrentMonth: false,
+                events: getEventsForDate(date)
+            })
+        }
+
+        return result
+    }, [year, month, eventsByDate])
 
     return {
         year,
         month,
         navigate,
+        goToToday,
         eventsByDate,
         isPending,
-        days: getDaysInMonth(),
+        calendarDays,
         refresh: () => fetchEvents(year, month)
     }
 }

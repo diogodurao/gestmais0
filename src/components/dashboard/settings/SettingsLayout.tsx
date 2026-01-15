@@ -49,8 +49,8 @@ export function SettingsLayout({ isManager, children, defaultTab = "profile" }: 
 
     return (
         <div className="grid gap-1.5 lg:grid-cols-4">
-            {/* Sidebar - Desktop */}
-            <Card className="hidden lg:block lg:col-span-1">
+            {/* Sidebar */}
+            <Card className="lg:col-span-1">
                 <CardContent className="p-1.5">
                     <div className="space-y-0.5">
                         {tabs.map((tab) => (
@@ -65,30 +65,6 @@ export function SettingsLayout({ isManager, children, defaultTab = "profile" }: 
                     </div>
                 </CardContent>
             </Card>
-
-            {/* Horizontal tabs - Mobile/Tablet */}
-            <div className="lg:hidden">
-                <Card>
-                    <CardContent className="p-1 overflow-x-auto">
-                        <div className="flex gap-0.5 min-w-max">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`flex items-center gap-1 px-2 py-1.5 rounded text-label font-medium transition-colors whitespace-nowrap ${
-                                        activeTab === tab.id
-                                            ? "bg-primary-light text-primary-dark"
-                                            : "text-gray-600 hover:bg-gray-50"
-                                    }`}
-                                >
-                                    {tab.icon}
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
 
             {/* Content Area */}
             <div className="lg:col-span-3">

@@ -2,7 +2,6 @@ import { getResidentApartment, getUnclaimedApartments } from "@/lib/actions/buil
 import { ResidentOnboardingFlow } from "@/components/dashboard/onboarding/ResidentOnboardingFlow";
 import { PaymentStatusCard } from "@/components/dashboard/payments-quotas/PaymentStatusCard";
 import { MyUnitPanel } from "@/components/dashboard/overview/MyUnitPanel";
-import { BuildingMetricsPanel } from "@/components/dashboard/overview/BuildingMetricsPanel";
 import { getEvaluationStatus } from "@/lib/actions/evaluations";
 import { EvaluationWidget } from "@/components/dashboard/evaluations/EvaluationWidget";
 import { getNotifications } from "@/lib/actions/notification";
@@ -79,12 +78,6 @@ export async function ResidentDashboard({ session }: ResidentDashboardProps) {
                     <MyUnitPanel
                         apartment={residentApartment}
                         buildingInfo={residentBuildingInfo}
-                    />
-                    <BuildingMetricsPanel
-                        isManager={false}
-                        residents={[]}
-                        unclaimedUnits={[]}
-                        residentBuildingInfo={residentBuildingInfo}
                     />
                 </div>
             </div>

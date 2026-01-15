@@ -2,18 +2,17 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { FormField } from "@/components/ui/Form-Field"
+import { FormField, FormLabel } from "@/components/ui/Form-Field"
 import { Badge } from "@/components/ui/Badge"
 import { Modal } from "@/components/ui/Modal"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { IconButton } from "@/components/ui/Icon-Button"
-import { LayoutGrid, Plus, Trash2, UserX, AlertCircle, Check } from "lucide-react"
-import { createApartment, deleteApartment } from "@/lib/actions/building"
+import { Edit } from "lucide-react"
+import { updateApartment } from "@/lib/actions/building"
 import { unclaimApartmentAction } from "@/lib/actions/residents"
-import { isUnitsComplete } from "@/lib/validations"
 
 export type Apartment = {
     id: number
@@ -28,80 +27,21 @@ export type Apartment = {
 export type ApartmentData = Apartment
 
 interface ApartmentManagerProps {
-    buildingId: string
     apartments: Apartment[]
-    totalApartments: number | null
-    buildingComplete?: boolean
 }
 
-export function ApartmentManager({ buildingId, apartments, totalApartments }: ApartmentManagerProps) {
+export function ApartmentManager({ apartments }: ApartmentManagerProps) {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
 
-    const [showAddModal, setShowAddModal] = useState(false)
-    const [newUnit, setNewUnit] = useState("")
-    const [newPermillage, setNewPermillage] = useState("")
-
-    const [deleteTarget, setDeleteTarget] = useState<Apartment | null>(null)
     const [disconnectTarget, setDisconnectTarget] = useState<Apartment | null>(null)
 
+    const [editTarget, setEditTarget] = useState<Apartment | null>(null)
+    const [editUnit, setEditUnit] = useState("")
+    const [editPermillage, setEditPermillage] = useState("")
+
     const totalPermillage = apartments.reduce((sum, apt) => sum + apt.permillage, 0)
-    const isAtLimit = totalApartments !== null && apartments.length >= totalApartments
-    // Transform to expected format for isUnitsComplete
-    const apartmentsForValidation = apartments.map(apt => ({ apartment: { permillage: apt.permillage } }))
-    const unitsComplete = isUnitsComplete(totalApartments, apartmentsForValidation)
-
-    const handleAddApartment = async () => {
-        if (!newUnit.trim() || !newPermillage.trim()) {
-            setError("Os campos Fração e Permilagem são obrigatórios.")
-            return
-        }
-
-        const permillageValue = parseFloat(newPermillage)
-        if (isNaN(permillageValue) || permillageValue <= 0) {
-            setError("A permilagem deve ser um número positivo.")
-            return
-        }
-
-        setIsLoading(true)
-        setError("")
-
-        try {
-            const result = await createApartment(buildingId, {
-                unit: newUnit.trim(),
-                permillage: permillageValue
-            })
-
-            if (result.success) {
-                setNewUnit("")
-                setNewPermillage("")
-                setShowAddModal(false)
-                router.refresh()
-            } else {
-                setError(result.error || "Ocorreu um erro inesperado")
-            }
-        } catch {
-            setError("Ocorreu um erro inesperado")
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handleDelete = async () => {
-        if (!deleteTarget) return
-
-        try {
-            const result = await deleteApartment(deleteTarget.id)
-            if (result.success) {
-                router.refresh()
-            }
-        } catch (err) {
-            console.error("Failed to delete apartment", err)
-        } finally {
-            setDeleteTarget(null)
-        }
-    }
 
     const handleDisconnect = async () => {
         if (!disconnectTarget) return
@@ -118,58 +58,68 @@ export function ApartmentManager({ buildingId, apartments, totalApartments }: Ap
         }
     }
 
+    const openEditModal = (apt: Apartment) => {
+        setEditTarget(apt)
+        setEditUnit(apt.unit)
+        setEditPermillage(apt.permillage.toString())
+        setError("")
+    }
+
+    const handleEditApartment = async () => {
+        if (!editTarget) return
+
+        if (!editUnit.trim() || !editPermillage.trim()) {
+            setError("Os campos Fração e Permilagem são obrigatórios.")
+            return
+        }
+
+        const permillageValue = parseFloat(editPermillage)
+        if (isNaN(permillageValue) || permillageValue <= 0) {
+            setError("A permilagem deve ser um número positivo.")
+            return
+        }
+
+        setIsLoading(true)
+        setError("")
+
+        try {
+            const result = await updateApartment(editTarget.id, {
+                unit: editUnit.trim(),
+                permillage: permillageValue
+            })
+
+            if (result.success) {
+                setEditTarget(null)
+                setEditUnit("")
+                setEditPermillage("")
+                router.refresh()
+            } else {
+                setError(result.error || "Ocorreu um erro inesperado")
+            }
+        } catch {
+            setError("Ocorreu um erro inesperado")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
         <>
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <CardTitle className="flex items-center gap-1.5">
-                                <LayoutGrid className="w-4 h-4" />
-                                Frações
-                            </CardTitle>
-                            <span className="text-label text-gray-500 font-mono">
-                                {apartments.length}/{totalApartments || "?"}
-                            </span>
-                            {unitsComplete ? (
-                                <span className="flex items-center gap-1 text-label text-success font-medium">
-                                    <Check className="w-3 h-3" /> Completo
-                                </span>
-                            ) : (
-                                <span className="flex items-center gap-1 text-label text-warning font-medium">
-                                    <AlertCircle className="w-3 h-3" /> Incompleto
-                                </span>
-                            )}
-                        </div>
-                        {!isAtLimit && (
-                            <Button size="sm" onClick={() => setShowAddModal(true)}>
-                                <Plus className="h-3 w-3 mr-1" /> Adicionar
-                            </Button>
-                        )}
-                    </div>
+                    <CardTitle>Frações ({apartments.length})</CardTitle>
                 </CardHeader>
 
                 <CardContent className="p-0">
-                    {/* Permillage summary */}
-                    <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                        <span className="text-label text-gray-500">Permilagem Total</span>
-                        <span className={`text-label font-mono font-medium ${Math.abs(totalPermillage - 1000) < 0.01 ? 'text-success' : 'text-warning'}`}>
-                            {totalPermillage.toFixed(2)}/1000 ‰
-                        </span>
-                    </div>
-
-                    {/* Apartments list */}
-                    <div className="divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
+                    <div className="divide-y divide-gray-100">
                         {apartments.map((apt) => (
                             <div
                                 key={apt.id}
-                                className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+                                className="flex items-center justify-between p-1.5 hover:bg-gray-50 transition-colors"
                             >
-                                <div className="flex items-center gap-2">
-                                    <div className="w-10 h-10 flex items-center justify-center rounded bg-gray-100 border border-gray-200">
-                                        <span className="text-body font-mono font-bold text-gray-700">
-                                            {apt.unit}
-                                        </span>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-8 h-8 flex items-center justify-center rounded bg-gray-50 border border-gray-200 text-body font-medium text-gray-700">
+                                        {apt.unit}
                                     </div>
                                     <div>
                                         <p className="text-body font-medium text-gray-700">
@@ -177,33 +127,24 @@ export function ApartmentManager({ buildingId, apartments, totalApartments }: Ap
                                                 <span className="text-gray-400 italic">Sem residente</span>
                                             )}
                                         </p>
-                                        <p className="text-label text-gray-500 font-mono">
-                                            {apt.permillage.toFixed(2)} ‰
+                                        <p className="text-xs text-gray-500">
+                                            {apt.permillage.toFixed(2)}‰
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1.5">
                                     {apt.resident ? (
                                         <Badge variant="success">Ocupado</Badge>
                                     ) : (
                                         <Badge variant="warning">Vago</Badge>
                                     )}
-                                    {apt.resident && (
-                                        <IconButton
-                                            size="sm"
-                                            variant="ghost"
-                                            icon={<UserX className="h-3.5 w-3.5" />}
-                                            label="Desassociar"
-                                            onClick={() => setDisconnectTarget(apt)}
-                                        />
-                                    )}
                                     <IconButton
                                         size="sm"
                                         variant="ghost"
-                                        icon={<Trash2 className="h-3.5 w-3.5" />}
-                                        label="Eliminar"
-                                        onClick={() => setDeleteTarget(apt)}
-                                        data-testid={`delete-unit-button-${apt.id}`}
+                                        icon={<Edit className="h-3 w-3" />}
+                                        label="Editar"
+                                        onClick={() => openEditModal(apt)}
+                                        data-testid={`edit-unit-button-${apt.id}`}
                                     />
                                 </div>
                             </div>
@@ -214,62 +155,57 @@ export function ApartmentManager({ buildingId, apartments, totalApartments }: Ap
                                 <p className="text-body text-gray-400 italic">
                                     Nenhuma fração definida.
                                 </p>
-                                <p className="text-label text-gray-400 mt-1">
-                                    Clique em "Adicionar" para criar a primeira fração.
-                                </p>
                             </div>
                         )}
                     </div>
-
-                    {/* Limit warning */}
-                    {isAtLimit && (
-                        <div className="flex items-center gap-2 p-3 bg-warning-light border-t border-gray-200 text-warning">
-                            <AlertCircle className="w-4 h-4" />
-                            <span className="text-label font-medium">
-                                Limite de frações atingido ({totalApartments})
-                            </span>
-                        </div>
-                    )}
                 </CardContent>
+
+                <CardFooter>
+                    <p className="text-xs text-gray-500">
+                        Total permilagem: {totalPermillage.toFixed(2)}%
+                    </p>
+                </CardFooter>
             </Card>
 
-            {/* Add Modal */}
+            {/* Edit Modal */}
             <Modal
-                open={showAddModal}
+                open={!!editTarget}
                 onClose={() => {
-                    setShowAddModal(false)
-                    setNewUnit("")
-                    setNewPermillage("")
+                    setEditTarget(null)
+                    setEditUnit("")
+                    setEditPermillage("")
                     setError("")
                 }}
-                title="Nova Fração"
-                description="Adicione uma nova fração ao edifício."
+                title="Editar Fração"
+                description={`Editar os dados da fração ${editTarget?.unit}.`}
                 footer={
-                    <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setShowAddModal(false)}>
+                    <div className="flex justify-end gap-1.5">
+                        <Button variant="outline" onClick={() => setEditTarget(null)}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleAddApartment} loading={isLoading}>
-                            Adicionar
+                        <Button onClick={handleEditApartment} loading={isLoading}>
+                            Guardar
                         </Button>
                     </div>
                 }
             >
-                <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                        <FormField label="Fração" required>
+                <div className="space-y-1.5">
+                    <div className="grid grid-cols-2 gap-1.5">
+                        <FormField required>
+                            <FormLabel>Fração</FormLabel>
                             <Input
-                                value={newUnit}
-                                onChange={(e) => setNewUnit(e.target.value)}
+                                value={editUnit}
+                                onChange={(e) => setEditUnit(e.target.value)}
                                 placeholder="Ex: 1A"
                                 className="font-mono uppercase"
                             />
                         </FormField>
-                        <FormField label="Permilagem (‰)" required>
+                        <FormField required>
+                            <FormLabel>Permilagem</FormLabel>
                             <Input
                                 type="number"
-                                value={newPermillage}
-                                onChange={(e) => setNewPermillage(e.target.value)}
+                                value={editPermillage}
+                                onChange={(e) => setEditPermillage(e.target.value)}
                                 placeholder="166.67"
                                 step="0.01"
                                 className="font-mono"
@@ -281,16 +217,6 @@ export function ApartmentManager({ buildingId, apartments, totalApartments }: Ap
                     )}
                 </div>
             </Modal>
-
-            {/* Delete Confirmation */}
-            <ConfirmModal
-                isOpen={!!deleteTarget}
-                title="Eliminar Fração"
-                message={`Tem a certeza que deseja eliminar a fração ${deleteTarget?.unit}? Esta ação é irreversível.`}
-                onConfirm={handleDelete}
-                onCancel={() => setDeleteTarget(null)}
-                variant="danger"
-            />
 
             {/* Disconnect Confirmation */}
             <ConfirmModal

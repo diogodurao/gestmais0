@@ -46,14 +46,13 @@ export function OnboardingStepPersonal({ user, onComplete }: OnboardingStepPerso
             setError("Campo obrigatório")
             return
         }
-
-        if (formData.nif && !isValidNif(formData.nif)) {
+        if (!formData.nif || !isValidNif(formData.nif)) {
             setError("NIF inválido (deve ter 9 dígitos)")
             return
         }
 
-        if (formData.iban && !isValidIban(formData.iban)) {
-            setError("O IBAN deve começar com PT50 e ter 21 dígitos")
+        if (!formData.iban || !isValidIban(formData.iban)) {
+            setError("IBAN inválido (deve ter 25 caracteres alfanuméricos)")
             return
         }
 
@@ -111,14 +110,15 @@ export function OnboardingStepPersonal({ user, onComplete }: OnboardingStepPerso
 
                 <div>
                     <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
-                        IBAN Pessoal
+                        IBAN Pessoal *
                     </label>
                     <div className="relative">
                         <input
                             type="text"
                             value={formData.iban}
-                            onChange={(e) => handleChange("iban", e.target.value.toUpperCase())}
+                            onChange={(e) => handleChange("iban", e.target.value.replace(/\s+/g, '').toUpperCase())}
                             className="w-full px-3 py-2 text-sm font-mono border border-gray-200 focus:outline-none focus:border-gray-400 uppercase"
+                            maxLength={25}
                         />
                         {isValidIban(formData.iban) && (
                             <Check className="absolute right-2 top-2.5 w-4 h-4 text-emerald-500" />

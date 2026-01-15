@@ -3,58 +3,62 @@ import { CalendarEvent } from "@/lib/types"
 
 interface CalendarDayProps {
     day: number | null
-    month: number
-    year: number
+    isCurrentMonth: boolean
     events: CalendarEvent[]
     isToday: boolean
-    readOnly?: boolean
-    onDayClick: (day: number) => void
-    onEventClick: (e: React.MouseEvent, event: CalendarEvent) => void
+    isSelected: boolean
+    onClick: () => void
+}
+
+function getEventDotColor(type: string) {
+    switch (type) {
+        case "meeting": return "#8FB996"
+        case "maintenance": return "#B8963E"
+        case "deadline": return "#B86B73"
+        default: return "#6C757D"
+    }
 }
 
 export function CalendarDay({
     day,
+    isCurrentMonth,
     events,
     isToday,
-    readOnly,
-    onDayClick,
-    onEventClick
+    isSelected,
+    onClick
 }: CalendarDayProps) {
     if (!day) {
-        return <div className="min-h-[80px] p-1 border-b border-r border-gray-100 bg-gray-50/50" />
+        return <div className="min-h-[48px] sm:min-h-[64px]" />
     }
 
     return (
-        <div
-            onClick={() => onDayClick(day)}
+        <button
+            onClick={onClick}
             className={cn(
-                "min-h-[80px] p-1 border-b border-r border-gray-100",
-                "cursor-pointer hover:bg-gray-50",
-                readOnly && "cursor-default"
+                "relative flex flex-col items-center p-1 min-h-[48px] sm:min-h-[64px] rounded transition-colors",
+                isCurrentMonth ? "hover:bg-[#F8F9FA]" : "opacity-40",
+                isSelected && "bg-[#E8F0EA] hover:bg-[#E8F0EA]",
+                isToday && !isSelected && "ring-1 ring-[#8FB996]"
             )}
         >
             <span className={cn(
-                "inline-flex items-center justify-center w-6 h-6 text-body font-medium",
-                isToday && "bg-info text-white rounded-full"
+                "text-[11px] font-medium",
+                isSelected ? "text-[#6A9B72]" : isCurrentMonth ? "text-[#495057]" : "text-[#ADB5BD]",
+                isToday && "font-bold"
             )}>
                 {day}
             </span>
-            <div className="mt-1 space-y-0.5">
-                {events.slice(0, 3).map(event => (
-                    <div
-                        key={event.id}
-                        onClick={(e) => onEventClick(e, event)}
-                        className="text-micro px-1 py-0.5 bg-info-light text-info truncate rounded cursor-pointer hover:bg-info-light"
-                    >
-                        {event.title}
-                    </div>
-                ))}
-                {events.length > 3 && (
-                    <div className="text-micro text-gray-400 px-1">
-                        +{events.length - 3} mais
-                    </div>
-                )}
-            </div>
-        </div>
+            {events.length > 0 && (
+                <div className="flex gap-0.5 mt-0.5 flex-wrap justify-center">
+                    {events.slice(0, 3).map((event, idx) => (
+                        <span
+                            key={idx}
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ backgroundColor: getEventDotColor(event.type) }}
+                        />
+                    ))}
+                </div>
+            )}
+        </button>
     )
 }

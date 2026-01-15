@@ -22,7 +22,7 @@ export default async function CalendarPage() {
     const events = await getCalendarEvents(buildingId, now.getFullYear(), now.getMonth() + 1)
 
     return (
-        <div className="p-4 md:p-6">
+        <div className="flex-1 overflow-y-auto p-1.5">
             <CalendarView
                 buildingId={buildingId}
                 initialEvents={events}

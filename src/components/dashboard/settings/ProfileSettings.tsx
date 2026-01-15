@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { FormField } from "@/components/ui/Form-Field"
+import { FormField, FormLabel } from "@/components/ui/Form-Field"
 import { Divider } from "@/components/ui/Divider"
 import { Avatar } from "@/components/ui/Avatar"
 import { User, Save, Edit, Check, AlertCircle } from "lucide-react"
@@ -137,7 +137,8 @@ export function ProfileSettings({ user }: { user: UserData }) {
                     <Divider className="my-1.5" />
 
                     <div className="space-y-1.5">
-                        <FormField label="Nome Completo" required>
+                        <FormField required>
+                            <FormLabel>Nome Completo</FormLabel>
                             <Input
                                 value={formData.name}
                                 onChange={(e) => handleChange("name", e.target.value)}
@@ -145,7 +146,8 @@ export function ProfileSettings({ user }: { user: UserData }) {
                             />
                         </FormField>
 
-                        <FormField label="Email">
+                        <FormField>
+                            <FormLabel>Email</FormLabel>
                             <Input
                                 type="email"
                                 value={user.email}
@@ -155,14 +157,12 @@ export function ProfileSettings({ user }: { user: UserData }) {
                         </FormField>
 
                         <div className="grid grid-cols-2 gap-1.5">
-                            <FormField
-                                label="NIF"
-                                description={isEditing ? "9 dígitos numéricos" : undefined}
-                            >
+                            <FormField>
+                                <FormLabel>NIF</FormLabel>
                                 <div className="relative">
                                     <Input
                                         value={formData.nif}
-                                        onChange={(e) => handleChange("nif", e.target.value)}
+                                        onChange={(e) => handleChange("nif", e.target.value.replace(/\D/g, ''))}
                                         disabled={!isEditing}
                                         maxLength={9}
                                         className="font-mono"
@@ -175,18 +175,28 @@ export function ProfileSettings({ user }: { user: UserData }) {
                                 </div>
                             </FormField>
 
-                            <FormField label="IBAN">
-                                <Input
-                                    value={formData.iban}
-                                    onChange={(e) => handleChange("iban", e.target.value)}
-                                    disabled={!isEditing}
-                                    className="font-mono uppercase"
-                                />
+                            <FormField>
+                                <FormLabel>IBAN</FormLabel>
+                                <div className="relative">
+                                    <Input
+                                        value={formData.iban}
+                                        onChange={(e) => handleChange("iban", e.target.value.replace(/\s+/g, '').toUpperCase())}
+                                        disabled={!isEditing}
+                                        maxLength={25}
+                                        className="font-mono uppercase"
+                                    />
+                                    {isValidIban(formData.iban) && (
+                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-success">
+                                            <Check className="w-4 h-4" />
+                                        </div>
+                                    )}
+                                </div>
                             </FormField>
                         </div>
 
                         {user.unitName && (
-                            <FormField label="Fração Atribuída">
+                            <FormField>
+                                <FormLabel>Fração Atribuída</FormLabel>
                                 <Input
                                     value={user.unitName}
                                     disabled

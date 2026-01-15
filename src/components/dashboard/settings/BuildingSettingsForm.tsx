@@ -6,7 +6,7 @@ import { updateBuilding } from "@/lib/actions/building"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { FormField } from "@/components/ui/Form-Field"
+import { FormField, FormLabel } from "@/components/ui/Form-Field"
 import { Divider } from "@/components/ui/Divider"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 import { Building2, Edit, Save, Check, AlertCircle } from "lucide-react"
@@ -132,7 +132,8 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-1.5">
                         {/* Building Code (read-only) */}
-                        <FormField label="Código do Edifício">
+                        <FormField>
+                            <FormLabel>Código do Edifício</FormLabel>
                             <Input
                                 value={building.code}
                                 disabled
@@ -141,7 +142,8 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         </FormField>
 
                         {/* Address */}
-                        <FormField label="Morada" required>
+                        <FormField required>
+                            <FormLabel>Morada</FormLabel>
                             <Input
                                 value={formData.street}
                                 onChange={(e) => handleChange("street", e.target.value)}
@@ -150,14 +152,16 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                         </FormField>
 
                         <div className="grid grid-cols-2 gap-1.5">
-                            <FormField label="Código Postal">
+                            <FormField>
+                                <FormLabel>Código Postal</FormLabel>
                                 <Input
                                     value={formData.number}
                                     onChange={(e) => handleChange("number", e.target.value)}
                                     disabled={!isEditing}
                                 />
                             </FormField>
-                            <FormField label="Cidade">
+                            <FormField>
+                                <FormLabel>Cidade</FormLabel>
                                 <Input
                                     value={formData.city}
                                     onChange={(e) => handleChange("city", e.target.value)}
@@ -166,20 +170,33 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                             </FormField>
                         </div>
 
-                        <FormField label="NIF do Condomínio">
+                        <FormField>
+                            <FormLabel>NIF do Condomínio</FormLabel>
                             <Input
                                 value={formData.nif}
-                                onChange={(e) => handleChange("nif", e.target.value)}
+                                onChange={(e) => handleChange("nif", e.target.value.replace(/\D/g, ''))}
                                 disabled={!isEditing}
                                 maxLength={9}
                                 className="font-mono"
                             />
                         </FormField>
 
+                        <FormField required>
+                            <FormLabel>IBAN do Condomínio</FormLabel>
+                            <Input
+                                value={formData.iban}
+                                onChange={(e) => handleChange("iban", e.target.value.replace(/\s+/g, '').toUpperCase())}
+                                disabled={!isEditing}
+                                maxLength={25}
+                                className="font-mono uppercase"
+                            />
+                        </FormField>
+
                         <Divider className="my-1.5" />
 
                         <div className="grid grid-cols-2 gap-1.5">
-                            <FormField label="Quota Mensal (€)">
+                            <FormField>
+                                <FormLabel>Quota Mensal (€)</FormLabel>
                                 <Input
                                     type="number"
                                     value={monthlyQuotaStr}
@@ -189,7 +206,8 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                     className="font-mono"
                                 />
                             </FormField>
-                            <FormField label="Total de Frações">
+                            <FormField>
+                                <FormLabel>Total de Frações</FormLabel>
                                 <Input
                                     type="number"
                                     value={formData.totalApartments}
