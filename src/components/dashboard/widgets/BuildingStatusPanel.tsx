@@ -58,9 +58,9 @@ export function BuildingStatusPanel({
     return (
         <Card>
             <CardHeader>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
-                        <Building2 className="w-4 h-4 text-[#6A9B72]" />
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                        <Building2 className="w-4 h-4 text-gray-500" />
                     </div>
                     <div className="flex-1">
                         <CardTitle>Gestão do Condomínio</CardTitle>

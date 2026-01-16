@@ -10,6 +10,7 @@ import { Modal } from "@/components/ui/Modal"
 import { getApartmentDisplayName } from "@/lib/utils"
 import { useToast } from "@/components/ui/Toast"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
+import type { OnboardingApartmentSimple } from "@/lib/types"
 
 type Resident = {
     user: {
@@ -17,15 +18,7 @@ type Resident = {
         name: string
         email: string
     }
-    apartment: {
-        id: number
-        unit: string
-    } | null
-}
-
-type Apartment = {
-    id: number
-    unit: string
+    apartment: OnboardingApartmentSimple | null
 }
 
 export function ResidentActionsMenu({
@@ -35,10 +28,10 @@ export function ResidentActionsMenu({
 }: {
     resident: Resident
     buildingId: string
-    unclaimedApartments: Apartment[]
+    unclaimedApartments: OnboardingApartmentSimple[]
 }) {
     const router = useRouter()
-    const { toast } = useToast()
+    const { addToast } = useToast()
     const [isPending, startTransition] = useTransition()
     const [isOpen, setIsOpen] = useState(false)
     const [showAssignModal, setShowAssignModal] = useState(false)
@@ -74,18 +67,18 @@ export function ResidentActionsMenu({
                     setIsOpen(false)
                     router.refresh()
                 } else {
-                    toast({
+                    addToast({
                         title: "Erro",
                         description: result.error || "Ocorreu um erro inesperado",
-                        variant: "destructive",
+                        variant: "error",
                     })
                 }
             } catch (error) {
                 console.error("Failed to remove resident", error)
-                toast({
+                addToast({
                     title: "Erro",
                     description: "Ocorreu um erro inesperado",
-                    variant: "destructive",
+                    variant: "error",
                 })
             }
         })
@@ -100,17 +93,17 @@ export function ResidentActionsMenu({
                     setIsOpen(false)
                     router.refresh()
                 } else {
-                    toast({
+                    addToast({
                         title: "Erro",
                         description: result.error || "Ocorreu um erro inesperado",
-                        variant: "destructive",
+                        variant: "error",
                     })
                 }
             } catch (error) {
-                toast({
+                addToast({
                     title: "Erro",
                     description: "Ocorreu um erro inesperado",
-                    variant: "destructive",
+                    variant: "error",
                 })
             }
         })
@@ -125,17 +118,17 @@ export function ResidentActionsMenu({
                     setIsOpen(false)
                     router.refresh()
                 } else {
-                    toast({
+                    addToast({
                         title: "Erro",
                         description: result.error || "Ocorreu um erro inesperado",
-                        variant: "destructive",
+                        variant: "error",
                     })
                 }
             } catch (error) {
-                toast({
+                addToast({
                     title: "Erro",
                     description: "Ocorreu um erro inesperado",
-                    variant: "destructive",
+                    variant: "error",
                 })
             }
         })

@@ -109,7 +109,7 @@ export async function createPoll(input: CreatePollInput): Promise<ActionResult<{
             title: "Nova Votação Disponível",
             message: `Foi criada uma nova votação: "${validated.data.title}"`,
             type: "poll",
-            link: `/dashboard/polls/${created.id}`
+            link: `/dashboard/polls?id=${created.id}`
         }, session.user.id) // Exclude creator (manager)
 
         revalidatePath("/dashboard/polls")
@@ -196,7 +196,7 @@ export async function castVote(input: CastVoteInput): Promise<ActionResult<void>
                 title: "Novo Voto Registado",
                 message: `Um condómino votou na votação: "${poll.title}"`,
                 type: "poll",
-                link: `/dashboard/polls/${poll.id}`
+                link: `/dashboard/polls?id=${poll.id}`
             })
         }
 

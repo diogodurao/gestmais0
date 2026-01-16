@@ -2,17 +2,20 @@ import { getOrCreateManagerBuilding, getBuildingResidents, getUnclaimedApartment
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations";
 import { features, can } from "@/lib/permissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Alert } from "@/components/ui/Alert";
 import { ManagerOnboardingFlow } from "@/components/dashboard/onboarding/ManagerOnboardingFlow";
-import { ResidentsList } from "@/components/dashboard/residents/ResidentsList";
+import { ResidentsList } from "@/components/dashboard/widgets/manager/ResidentsList";
 import { SubscriptionSyncWrapper } from "@/components/dashboard/subscription/SubscriptionSyncWrapper";
 import { PaymentStatusCard } from "@/components/dashboard/payments-quotas/PaymentStatusCard";
-import { MyUnitPanel } from "@/components/dashboard/overview/MyUnitPanel";
-import { BuildingStatusPanel } from "@/components/dashboard/overview/BuildingStatusPanel";
+import { MyUnitPanel } from "@/components/dashboard/widgets/MyUnitPanel";
+import { BuildingStatusPanel } from "@/components/dashboard/widgets/BuildingStatusPanel";
 import { getEvaluationStatus } from "@/lib/actions/evaluations";
+import { getNextUpcomingEvent } from "@/lib/actions/calendar";
 import { EvaluationWidget } from "@/components/dashboard/evaluations/EvaluationWidget";
 import { Lock } from "lucide-react";
 import { getNotifications } from "@/lib/actions/notification";
 import { NotificationCard } from "@/components/dashboard/notifications/NotificationCard";
+import { formatDate } from "@/lib/format";
 import type { SessionUser } from "@/lib/types";
 
 interface ManagerDashboardProps {
@@ -31,6 +34,7 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
     let apartmentsData: Awaited<ReturnType<typeof getBuildingApartments>> = []; // Store for onboarding check
     let evaluationStatus = null;
     let managerApartment: { unit: string; permillage?: number | null } | null = null;
+    let nextEvent: { title: string; startDate: string; startTime: string | null } | null = null;
 
     try {
         const building = await getOrCreateManagerBuilding();
@@ -89,6 +93,16 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
                 permillage: managerApt.apartment.permillage
             };
         }
+
+        // Get next upcoming event
+        const event = await getNextUpcomingEvent(building.id);
+        if (event) {
+            nextEvent = {
+                title: event.title,
+                startDate: event.startDate,
+                startTime: event.startTime
+            };
+        }
     } catch (e) {
         console.error("Failed to load building", e);
     }
@@ -98,6 +112,14 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
             {/* Subscription Sync Handler */}
             {buildingInfo && (
                 <SubscriptionSyncWrapper buildingId={buildingInfo.id} />
+            )}
+
+            {/* Upcoming Event Alert */}
+            {nextEvent && (
+                <Alert variant="info">
+                    {nextEvent.title} agendado para {formatDate(nextEvent.startDate, "long")}
+                    {nextEvent.startTime && ` às ${nextEvent.startTime}`}.
+                </Alert>
             )}
 
             {/* Stats row */}

@@ -101,6 +101,20 @@ export class CalendarService {
             .limit(1)
         return event || null
     }
+
+    async getNextUpcomingEvent(buildingId: string) {
+        const today = new Date().toISOString().split('T')[0]
+        const [event] = await db
+            .select()
+            .from(calendarEvents)
+            .where(and(
+                eq(calendarEvents.buildingId, buildingId),
+                gte(calendarEvents.startDate, today)
+            ))
+            .orderBy(asc(calendarEvents.startDate))
+            .limit(1)
+        return event || null
+    }
 }
 
 export const calendarService = new CalendarService()

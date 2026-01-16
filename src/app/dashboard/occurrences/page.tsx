@@ -25,6 +25,9 @@ export default async function OccurrencesPage() {
             <OccurrencesList
                 buildingId={buildingId}
                 initialOccurrences={occurrences.map(o => ({ ...o, status: o.status as any }))}
+                currentUserId={session.user.id}
+                currentUserName={session.user.name || "Utilizador"}
+                isManager={isManager}
             />
         </div>
     )

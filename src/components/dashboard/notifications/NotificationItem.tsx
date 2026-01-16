@@ -38,48 +38,45 @@ export function NotificationItem({ notification, onAction, showDismiss = true }:
     return (
         <div
             onClick={handleClick}
-            className={cn(
-                "flex items-start gap-3 p-3 cursor-pointer transition-colors",
-                notification.isRead
-                    ? "bg-white hover:bg-gray-50"
-                    : "bg-info-light hover:bg-secondary-light"
-            )}
+            className="flex items-start gap-1.5 px-2 py-1.5 cursor-pointer hover:bg-gray-50 transition-colors"
         >
+            {/* Unread indicator */}
+            <div className="w-1.5 h-1.5 mt-1 flex-shrink-0">
+                {!notification.isRead && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                )}
+            </div>
+
             {/* Icon */}
-            <span className="text-heading">
+            <span className="text-label">
                 {NOTIFICATION_ICONS[notification.type]}
             </span>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
                 <p className={cn(
-                    "text-body",
-                    notification.isRead ? "text-gray-700" : "text-gray-900 font-medium"
+                    "text-label leading-tight text-gray-700",
+                    !notification.isRead && "font-medium"
                 )}>
                     {notification.title}
                 </p>
                 {notification.message && (
-                    <p className="text-label text-gray-500 truncate">
+                    <p className="text-xs text-gray-500 truncate">
                         {notification.message}
                     </p>
                 )}
-                <p className="text-label text-gray-400 mt-1">
+                <p className="text-xs text-gray-400">
                     {formatDistanceToNow(notification.createdAt)}
                 </p>
             </div>
-
-            {/* Unread indicator */}
-            {!notification.isRead && (
-                <div className="w-2 h-2 rounded-full bg-primary mt-2" />
-            )}
 
             {/* Dismiss button */}
             {showDismiss && (
                 <button
                     onClick={handleDismiss}
-                    className="p-1 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="p-0.5 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                    <X className="w-4 h-4 text-gray-400" />
+                    <X className="w-3 h-3 text-gray-400" />
                 </button>
             )}
         </div>

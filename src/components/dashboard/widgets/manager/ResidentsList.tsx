@@ -7,13 +7,12 @@ import { List, ListItem } from "@/components/ui/List"
 import { Avatar } from "@/components/ui/Avatar"
 import { Badge } from "@/components/ui/Badge"
 import { ResidentActionsMenu } from "./ResidentActionsMenu"
+import type { OnboardingApartmentSimple } from "@/lib/types"
 
 type Resident = {
     user: { id: string; name: string; email: string }
-    apartment: { id: number; unit: string } | null
+    apartment: OnboardingApartmentSimple | null
 }
-
-type Apartment = { id: number; unit: string }
 
 export function ResidentsList({
     residents,
@@ -22,7 +21,7 @@ export function ResidentsList({
 }: {
     residents: Resident[]
     buildingId: string
-    unclaimedUnits: Apartment[]
+    unclaimedUnits: OnboardingApartmentSimple[]
 }) {
     const [searchTerm, setSearchTerm] = useState("")
 
@@ -38,9 +37,9 @@ export function ResidentsList({
         <Card>
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-8 h-8 rounded-lg bg-[#E8F0EA] flex items-center justify-center">
-                            <Users className="w-4 h-4 text-[#6A9B72]" />
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 flex items-center justify-center">
+                            <Users className="w-4 h-4 text-gray-500" />
                         </div>
                         <div>
                             <CardTitle>Residentes</CardTitle>

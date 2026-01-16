@@ -87,3 +87,15 @@ export async function deleteCalendarEvent(eventId: number): Promise<ActionResult
         return { success: false, error: "Erro ao eliminar evento" }
     }
 }
+
+export async function getNextUpcomingEvent(buildingId: string) {
+    const session = await requireSession()
+
+    if (session.user.role === 'manager') {
+        await requireBuildingAccess(buildingId)
+    } else if (session.user.buildingId !== buildingId) {
+        throw new Error("Unauthorized")
+    }
+
+    return await calendarService.getNextUpcomingEvent(buildingId)
+}

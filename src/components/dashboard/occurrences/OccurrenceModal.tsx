@@ -1,16 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Modal } from "@/components/ui/Modal"
+import { Drawer } from "@/components/ui/Drawer"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
+import { Select } from "@/components/ui/Select"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
 import { PhotoUpload } from "./PhotoUpload"
 import { createOccurrence, updateOccurrence } from "@/lib/actions/occurrences"
-import { Occurrence } from "@/lib/types"
+import { Occurrence, OccurrencePriority } from "@/lib/types"
 import { MAX_PHOTOS_PER_OCCURRENCE } from "@/lib/constants/project"
+import { OCCURRENCE_CATEGORY_OPTIONS, OCCURRENCE_PRIORITY_OPTIONS } from "@/lib/constants/ui"
 import { useToast } from "@/components/ui/Toast"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 
@@ -32,14 +35,35 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
     const isEditing = !!occurrence
 
     const [title, setTitle] = useState(occurrence?.title || "")
-    const [type, setType] = useState(occurrence?.type || "")
+    const [type, setType] = useState(occurrence?.type || "maintenance")
+    const [priority, setPriority] = useState<OccurrencePriority>(occurrence?.priority || "medium")
     const [description, setDescription] = useState(occurrence?.description || "")
     const [photos, setPhotos] = useState<SelectedPhoto[]>([])
+    const [isMobile, setIsMobile] = useState(false)
+
+    // Check if mobile on mount and resize
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 640)
+        checkMobile()
+        window.addEventListener("resize", checkMobile)
+        return () => window.removeEventListener("resize", checkMobile)
+    }, [])
+
+    // Reset form when occurrence changes (for edit mode)
+    useEffect(() => {
+        if (occurrence) {
+            setTitle(occurrence.title)
+            setType(occurrence.type)
+            setPriority(occurrence.priority || "medium")
+            setDescription(occurrence.description || "")
+        }
+    }, [occurrence])
 
     const resetForm = () => {
         if (!occurrence) {
             setTitle("")
-            setType("")
+            setType("maintenance")
+            setPriority("medium")
             setDescription("")
             // Cleanup photo previews
             photos.forEach(p => URL.revokeObjectURL(p.preview))
@@ -55,6 +79,7 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
     const { execute: createOcc, isPending: isCreating } = useAsyncAction(async (data: {
         title: string
         type: string
+        priority: OccurrencePriority
         description: string
         photos: SelectedPhoto[]
     }) => {
@@ -62,6 +87,7 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
             buildingId,
             title: data.title,
             type: data.type,
+            priority: data.priority,
             description: data.description || undefined,
         })
 
@@ -96,16 +122,18 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
     })
 
     const { execute: updateOcc, isPending: isUpdating } = useAsyncAction(
-        async (data: { id: number; title: string; type: string; description?: string }) => {
+        async (data: { id: number; title: string; type: string; priority: OccurrencePriority; description?: string }) => {
             return updateOccurrence(data.id, {
                 title: data.title,
                 type: data.type,
+                priority: data.priority,
                 description: data.description,
             })
         },
         {
             successMessage: "Ocorrência atualizada com sucesso",
             onSuccess: () => {
+                router.refresh()
                 handleClose()
             }
         }
@@ -124,16 +152,132 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
                 id: occurrence.id,
                 title: title.trim(),
                 type: type.trim(),
+                priority,
                 description: description.trim() || undefined,
             })
         } else {
             await createOcc({
                 title: title.trim(),
                 type: type.trim(),
+                priority,
                 description: description.trim(),
                 photos
             })
         }
+    }
+
+    // Form content (shared between Modal and Drawer)
+    const FormContent = (
+        <div className="space-y-4">
+            <FormField required>
+                <FormLabel>Título</FormLabel>
+                <FormControl>
+                    {(props) => (
+                        <Input
+                            {...props}
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Ex: Elevador avariado"
+                        />
+                    )}
+                </FormControl>
+                <FormError />
+            </FormField>
+
+            <div className="grid grid-cols-2 gap-3">
+                <FormField required>
+                    <FormLabel>Categoria</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Select
+                                {...props}
+                                value={type}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setType(e.target.value)}
+                            >
+                                {OCCURRENCE_CATEGORY_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </Select>
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
+
+                <FormField required>
+                    <FormLabel>Prioridade</FormLabel>
+                    <FormControl>
+                        {(props) => (
+                            <Select
+                                {...props}
+                                value={priority}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPriority(e.target.value as OccurrencePriority)}
+                            >
+                                {OCCURRENCE_PRIORITY_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </Select>
+                        )}
+                    </FormControl>
+                    <FormError />
+                </FormField>
+            </div>
+
+            <FormField>
+                <FormLabel>Descrição</FormLabel>
+                <FormControl>
+                    {(props) => (
+                        <Textarea
+                            {...props}
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Descreva a ocorrência com mais detalhe..."
+                            rows={4}
+                        />
+                    )}
+                </FormControl>
+                <FormError />
+            </FormField>
+
+            {/* Photos - only for new occurrences */}
+            {!isEditing && (
+                <PhotoUpload
+                    photos={photos}
+                    onChange={setPhotos}
+                    maxPhotos={MAX_PHOTOS_PER_OCCURRENCE}
+                />
+            )}
+        </div>
+    )
+
+    // Footer buttons (shared)
+    const FooterButtons = (
+        <div className="flex gap-2 pt-2">
+            <Button variant="outline" onClick={handleClose} disabled={isLoading}>
+                Cancelar
+            </Button>
+            <Button onClick={handleSubmit} loading={isLoading} className="flex-1">
+                {isEditing ? "Guardar" : "Criar Ocorrência"}
+            </Button>
+        </div>
+    )
+
+    // Render mobile Drawer or desktop Modal
+    if (isMobile) {
+        return (
+            <Drawer
+                open={isOpen}
+                onClose={handleClose}
+                title={isEditing ? "Editar Ocorrência" : "Nova Ocorrência"}
+                description="Registe um novo problema ou incidente."
+            >
+                {FormContent}
+                {FooterButtons}
+            </Drawer>
+        )
     }
 
     return (
@@ -142,71 +286,8 @@ export function OccurrenceModal({ isOpen, onClose, buildingId, occurrence }: Pro
             onClose={handleClose}
             title={isEditing ? "Editar Ocorrência" : "Nova Ocorrência"}
         >
-            <div className="space-y-4">
-                <FormField required>
-                    <FormLabel>Título</FormLabel>
-                    <FormControl>
-                        {(props) => (
-                            <Input
-                                {...props}
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                placeholder="Ex: Elevador avariado"
-                            />
-                        )}
-                    </FormControl>
-                    <FormError />
-                </FormField>
-
-                <FormField required>
-                    <FormLabel>Tipo</FormLabel>
-                    <FormControl>
-                        {(props) => (
-                            <Input
-                                {...props}
-                                value={type}
-                                onChange={(e) => setType(e.target.value)}
-                                placeholder="Ex: Manutenção, Ruído, Limpeza..."
-                            />
-                        )}
-                    </FormControl>
-                    <FormError />
-                </FormField>
-
-                <FormField>
-                    <FormLabel>Descrição</FormLabel>
-                    <FormControl>
-                        {(props) => (
-                            <Textarea
-                                {...props}
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Descreva a ocorrência com mais detalhe..."
-                                rows={4}
-                            />
-                        )}
-                    </FormControl>
-                    <FormError />
-                </FormField>
-
-                {/* Photos - only for new occurrences */}
-                {!isEditing && (
-                    <PhotoUpload
-                        photos={photos}
-                        onChange={setPhotos}
-                        maxPhotos={MAX_PHOTOS_PER_OCCURRENCE}
-                    />
-                )}
-
-                <div className="flex gap-2 pt-2">
-                    <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-                        Cancelar
-                    </Button>
-                    <Button onClick={handleSubmit} loading={isLoading} className="flex-1">
-                        {isEditing ? "Guardar" : "Criar Ocorrência"}
-                    </Button>
-                </div>
-            </div>
+            {FormContent}
+            {FooterButtons}
         </Modal>
     )
 }

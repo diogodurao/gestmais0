@@ -6,12 +6,7 @@ import { formatCurrency } from "@/lib/format"
 import { QuotaPreviewTable } from "./QuotaPreviewTable"
 import { type ExtraProjectSchema } from "./ExtraProjectCreate"
 import { UseFormReturn } from "react-hook-form"
-
-type Apartment = {
-    id: number
-    unit: string
-    permillage: number
-}
+import type { OnboardingApartment } from "@/lib/types"
 
 interface ExtraProjectFormProps {
     form: UseFormReturn<ExtraProjectSchema>
@@ -20,7 +15,7 @@ interface ExtraProjectFormProps {
     budgetCents: number
     installmentCount: number
     currentYear: number
-    apartments: Apartment[]
+    apartments: OnboardingApartment[]
     isPending: boolean
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
     onTogglePreview: () => void

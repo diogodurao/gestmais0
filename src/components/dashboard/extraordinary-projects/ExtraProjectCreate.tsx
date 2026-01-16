@@ -8,6 +8,7 @@ import { z } from "zod"
 import { createExtraordinaryProject } from "@/lib/actions/extraordinary-projects"
 import { useAsyncAction } from "@/hooks/useAsyncAction"
 import { ExtraProjectForm } from "./ExtraProjectForm"
+import type { OnboardingApartment } from "@/lib/types"
 
 // Schema
 export const extraProjectSchema = z.object({
@@ -21,15 +22,9 @@ export const extraProjectSchema = z.object({
 
 export type ExtraProjectSchema = z.infer<typeof extraProjectSchema>
 
-type Apartment = {
-    id: number
-    unit: string
-    permillage: number
-}
-
 interface ExtraProjectCreateProps {
     buildingId: string
-    apartments: Apartment[]
+    apartments: OnboardingApartment[]
     onCancel?: () => void
     onSuccess?: () => void
 }

@@ -1,17 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "../../components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../../components/ui/card"
-import { Badge } from "../../components/ui/badge"
-import { Input } from "../../components/ui/input"
-import { Select } from "../../components/ui/select"
-import { FormField } from "../../components/ui/form-field"
-import { Alert } from "../../components/ui/alert"
-import { Progress } from "../../components/ui/progress"
-import { ToastProvider, useToast } from "../../components/ui/toast"
-import { Stepper, StepperItem, StepperConnector } from "../../components/ui/stepper"
-import { ValidationCheck } from "../../components/ui/validation-check"
+import { Button } from "../../components/ui/Button"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../../Components/ui/Card"
+import { Badge } from "../../components/ui/Badge"
+import { Input } from "../../components/ui/Input"
+import { Select } from "../../components/ui/Select"
+import { FormField } from "../../components/ui/Form-Field"
+import { Alert } from "../../components/ui/Alert"
+import { Progress } from "../../components/ui/Progress"
+import { ToastProvider, useToast } from "../../components/ui/Toast"
+import { Stepper, StepperItem, StepperConnector } from "../../components/ui/Stepper"
+import { ValidationCheck } from "../../components/ui/Validation-Check"
 import {
   Building2, Home, CreditCard, Check, ChevronRight,
   KeyRound, AlertCircle,

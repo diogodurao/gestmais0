@@ -88,6 +88,48 @@ export type QuotaMode = "global" | "permillage"
 export type BuildingStatus = "active" | "inactive" | "pending"
 
 // ==========================================
+// ONBOARDING TYPES
+// ==========================================
+
+export type OnboardingUserData = {
+    id: string
+    name: string
+    email: string
+    nif: string | null
+    iban: string | null
+    buildingId?: string | null
+}
+
+export type OnboardingBuildingData = {
+    id: string
+    name: string
+    nif: string
+    iban: string | null
+    street: string | null
+    number: string | null
+    city: string | null
+    quotaMode: string | null
+    monthlyQuota: number | null
+    totalApartments: number | null
+}
+
+export type OnboardingApartment = {
+    id: number
+    unit: string
+    permillage: number
+}
+
+export type OnboardingApartmentSimple = {
+    id: number
+    unit: string
+}
+
+export type OnboardingBuildingInfo = {
+    id: string
+    name: string
+}
+
+// ==========================================
 // USER & SESSION TYPES
 // ==========================================
 
@@ -119,7 +161,6 @@ export type SubscriptionStatus =
     | "incomplete_expired"
     | "past_due"
     | "paused"
-    | "trialing"
     | "trialing"
     | "unpaid"
 
@@ -165,18 +206,14 @@ export type DashboardInitialData = {
 // Use schema inference instead of manual type
 export type CalendarEvent = typeof calendarEvents.$inferSelect
 
-export const EVENT_TYPE_SUGGESTIONS = [
-    "Assembleia",
-    "Manutenção",
-    "Limpeza",
-    "Outro",
-] as const
+// EVENT_TYPE_SUGGESTIONS is defined in lib/constants/ui.ts
 
 // ==========================================
 // OCCURRENCE TYPES
 // ==========================================
 
 export type OccurrenceStatus = "open" | "in_progress" | "resolved"
+export type OccurrencePriority = "low" | "medium" | "high" | "urgent"
 
 export interface Occurrence {
     id: number
@@ -185,6 +222,7 @@ export interface Occurrence {
     type: string
     description: string | null
     status: OccurrenceStatus
+    priority: OccurrencePriority
     createdBy: string
     createdAt: Date
     resolvedAt: Date | null
@@ -290,12 +328,14 @@ export interface CreateOccurrenceInput {
     buildingId: string
     title: string
     type: string
+    priority?: OccurrencePriority
     description?: string
 }
 
 export interface UpdateOccurrenceInput {
     title?: string
     type?: string
+    priority?: OccurrencePriority
     description?: string
 }
 

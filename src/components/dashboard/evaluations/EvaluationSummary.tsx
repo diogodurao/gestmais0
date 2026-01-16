@@ -1,16 +1,18 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
+import { Badge } from "@/components/ui/Badge"
+import { Progress } from "@/components/ui/Progress"
 import { StarRating } from "./StarRating"
-import { MonthlyAverages, Evaluation } from "@/lib/types"
-import { EVALUATION_CATEGORIES as CATEGORIES, EVALUATION_MONTH_NAMES as MONTH_NAMES } from "@/lib/constants"
+import { MonthlyAverages } from "@/lib/types"
+import { EVALUATION_CATEGORIES as CATEGORIES } from "@/lib/constants/ui"
+import { EVALUATION_MONTH_NAMES as MONTH_NAMES } from "@/lib/constants/timing"
 
 interface Props {
     averages: MonthlyAverages | null
-    evaluations?: Evaluation[] // Only for manager
     submissionStats?: { submitted: number; total: number; percentage: number }
     isManager: boolean
 }
 
-export function EvaluationSummary({ averages, evaluations, submissionStats, isManager }: Props) {
+export function EvaluationSummary({ averages, submissionStats, isManager }: Props) {
     if (!averages) {
         return (
             <Card>
@@ -18,7 +20,7 @@ export function EvaluationSummary({ averages, evaluations, submissionStats, isMa
                     <CardTitle>Resultados</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-body text-gray-500 text-center py-4">
+                    <p className="text-label text-gray-500 text-center py-4">
                         Ainda não há avaliações submetidas.
                     </p>
                 </CardContent>
@@ -34,81 +36,71 @@ export function EvaluationSummary({ averages, evaluations, submissionStats, isMa
         generalRating: averages.generalAvg,
     }
 
+    // Calculate overall average
+    const overallAvg = (
+        averages.securityAvg +
+        averages.cleaningAvg +
+        averages.maintenanceAvg +
+        averages.communicationAvg +
+        averages.generalAvg
+    ) / 5
+
+    const getBadgeVariant = (rating: number) => {
+        if (rating >= 4) return "success"
+        if (rating >= 3) return "warning"
+        return "error"
+    }
+
     return (
         <Card>
             <CardHeader>
                 <div className="flex items-center justify-between w-full">
-                    <CardTitle>
-                        Resultados de {MONTH_NAMES[averages.month - 1]} {averages.year}
-                    </CardTitle>
-                    {submissionStats && (
-                        <span className="text-label text-gray-500">
-                            {submissionStats.submitted} de {submissionStats.total} residentes ({submissionStats.percentage}%)
-                        </span>
-                    )}
+                    <CardTitle>{MONTH_NAMES[averages.month - 1]} {averages.year}</CardTitle>
+                    <Badge variant={getBadgeVariant(overallAvg)}>
+                        {overallAvg.toFixed(1)}
+                    </Badge>
                 </div>
             </CardHeader>
             <CardContent>
-                {/* Averages */}
-                <div className="space-y-3 mb-6">
+                {/* Overall Rating */}
+                <div className="text-center mb-1.5">
+                    <StarRating value={Math.round(overallAvg)} size="lg" readonly />
+                    <p className="text-heading font-semibold text-gray-800 mt-0.5">{overallAvg.toFixed(1)}</p>
+                    <p className="text-label text-gray-500">
+                        Média de {averages.totalResponses} avaliações
+                    </p>
+                </div>
+
+                {/* Participation (Manager only) */}
+                {isManager && submissionStats && (
+                    <div className="mb-1.5">
+                        <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-label text-gray-500">Participação</span>
+                            <span className="text-label font-medium text-gray-700">{submissionStats.percentage}%</span>
+                        </div>
+                        <Progress value={submissionStats.percentage} size="sm" />
+                        <p className="text-xs text-gray-400 mt-0.5">
+                            {submissionStats.submitted} de {submissionStats.total} condóminos
+                        </p>
+                    </div>
+                )}
+
+                <div className="border-t border-gray-100 pt-1.5 mt-1.5" />
+
+                {/* Category Ratings */}
+                <div className="space-y-1">
                     {CATEGORIES.map(({ key, label }) => (
                         <div key={key} className="flex items-center justify-between">
-                            <span className="text-body font-medium text-gray-700">
-                                {label}
-                            </span>
-                            <div className="flex items-center gap-2">
+                            <span className="text-label text-gray-500">{label}</span>
+                            <div className="flex items-center gap-1">
                                 <StarRating value={Math.round(avgMap[key])} readonly size="sm" />
-                                <span className="text-body text-gray-600 min-w-[2rem]">
+                                <span className="text-label font-medium text-gray-700 w-6 text-right">
                                     {avgMap[key].toFixed(1)}
                                 </span>
                             </div>
                         </div>
                     ))}
                 </div>
-
-                {/* Individual responses (manager only) */}
-                {isManager && evaluations && evaluations.length > 0 && (
-                    <div className="border-t border-gray-200 pt-4">
-                        <h4 className="text-body font-bold text-gray-700 mb-3">
-                            Respostas individuais
-                        </h4>
-                        <div className="space-y-3 max-h-64 overflow-y-auto">
-                            {evaluations.map((evaluation) => (
-                                <div
-                                    key={evaluation.id}
-                                    className="bg-gray-50 rounded-lg p-3"
-                                >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-body font-medium text-gray-700">
-                                            {evaluation.userName}
-                                        </span>
-                                        <span className="text-label text-gray-400">
-                                            Média: {(
-                                                (evaluation.securityRating +
-                                                    evaluation.cleaningRating +
-                                                    evaluation.maintenanceRating +
-                                                    evaluation.communicationRating +
-                                                    evaluation.generalRating) / 5
-                                            ).toFixed(1)} ⭐
-                                        </span>
-                                    </div>
-                                    <div className="flex gap-4 text-label text-gray-600 mb-2">
-                                        <span>Seg: {evaluation.securityRating}</span>
-                                        <span>Lim: {evaluation.cleaningRating}</span>
-                                        <span>Man: {evaluation.maintenanceRating}</span>
-                                        <span>Com: {evaluation.communicationRating}</span>
-                                        <span>Ger: {evaluation.generalRating}</span>
-                                    </div>
-                                    {evaluation.comments && (
-                                        <p className="text-body text-gray-600 italic">
-                                            "{evaluation.comments}"
-                                        </p>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
             </CardContent>
         </Card>
     )

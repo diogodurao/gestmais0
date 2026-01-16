@@ -2,18 +2,11 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import { MonthlyAverages } from "@/lib/types"
-import { EVALUATION_CATEGORIES as CATEGORIES, EVALUATION_MONTH_NAMES as MONTH_NAMES } from "@/lib/constants"
+import { EVALUATION_MONTH_NAMES as MONTH_NAMES } from "@/lib/constants/timing"
+import { cn } from "@/lib/utils"
 
 interface Props {
     history: MonthlyAverages[]
-}
-
-const COLORS: Record<string, string> = {
-    securityRating: "var(--color-info)", // blue
-    cleaningRating: "var(--color-success)", // green
-    maintenanceRating: "var(--color-warning)", // amber
-    communicationRating: "var(--color-secondary)", // purple
-    generalRating: "var(--color-gray-600)", // slate
 }
 
 export function EvaluationChart({ history }: Props) {
@@ -21,10 +14,10 @@ export function EvaluationChart({ history }: Props) {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Histórico</CardTitle>
+                    <CardTitle>Evolução</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-body text-gray-500 text-center py-4">
+                    <p className="text-label text-gray-500 text-center py-4">
                         Ainda não há dados históricos suficientes.
                     </p>
                 </CardContent>
@@ -32,75 +25,58 @@ export function EvaluationChart({ history }: Props) {
         )
     }
 
-    const maxValue = 5
-    const chartHeight = 200
+    const maxRating = 5
+    // Reverse to show oldest first (left to right)
+    const sortedHistory = [...history].reverse()
 
-    const getY = (value: number) => {
-        return chartHeight - (value / maxValue) * chartHeight
+    // Calculate overall average for each month
+    const getOverallAvg = (month: MonthlyAverages) => {
+        return (
+            month.securityAvg +
+            month.cleaningAvg +
+            month.maintenanceAvg +
+            month.communicationAvg +
+            month.generalAvg
+        ) / 5
     }
 
-    const getMonthLabel = (avg: MonthlyAverages) => {
-        return `${MONTH_NAMES[avg.month - 1].slice(0, 3)}`
+    const getBarColor = (rating: number) => {
+        if (rating >= 4) return "bg-success"
+        if (rating >= 3) return "bg-warning"
+        return "bg-error"
     }
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Tendências (últimos {history.length} meses)</CardTitle>
+                <CardTitle>Evolução da Avaliação</CardTitle>
             </CardHeader>
             <CardContent>
-                {/* Legend */}
-                <div className="flex flex-wrap gap-4 mb-4">
-                    {CATEGORIES.map(({ key, label }) => (
-                        <div key={key} className="flex items-center gap-2">
-                            <div
-                                className="w-3 h-3 rounded-full"
-                                style={{ backgroundColor: COLORS[key] }}
-                            />
-                            <span className="text-label text-gray-600">{label}</span>
-                        </div>
-                    ))}
-                </div>
+                <div className="flex items-end justify-between gap-1 h-24">
+                    {sortedHistory.map((month, idx) => {
+                        const avg = getOverallAvg(month)
+                        const height = (avg / maxRating) * 100
 
-                {/* Simple bar chart */}
-                <div className="overflow-x-auto">
-                    <div className="flex gap-4 min-w-fit">
-                        {history.map((month, idx) => (
-                            <div key={idx} className="flex flex-col items-center">
-                                {/* Bars */}
-                                <div className="flex gap-1 h-[120px] items-end">
-                                    {CATEGORIES.map(({ key }) => {
-                                        const avgKey = key.replace('Rating', 'Avg') as keyof MonthlyAverages
-                                        const value = month[avgKey] as number
-                                        const height = (value / 5) * 100
-
-                                        return (
-                                            <div
-                                                key={key}
-                                                className="w-3 rounded-t transition-all"
-                                                style={{
-                                                    height: `${height}%`,
-                                                    backgroundColor: COLORS[key],
-                                                }}
-                                                title={`${CATEGORIES.find(c => c.key === key)?.label}: ${value.toFixed(1)}`}
-                                            />
-                                        )
-                                    })}
+                        return (
+                            <div key={idx} className="flex-1 flex flex-col items-center gap-0.5">
+                                <div className="w-full flex flex-col justify-end h-20">
+                                    <div
+                                        className={cn(
+                                            "w-full rounded-t transition-all",
+                                            getBarColor(avg)
+                                        )}
+                                        style={{ height: `${height}%` }}
+                                    />
                                 </div>
-                                {/* Month label */}
-                                <span className="text-label text-gray-500 mt-2">
-                                    {getMonthLabel(month)}
+                                <span className="text-xs text-gray-500">
+                                    {MONTH_NAMES[month.month - 1].slice(0, 3)}
+                                </span>
+                                <span className="text-label font-medium text-gray-700">
+                                    {avg.toFixed(1)}
                                 </span>
                             </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Y-axis labels */}
-                <div className="flex justify-between text-label text-gray-400 mt-2">
-                    <span>1 ⭐</span>
-                    <span>3 ⭐</span>
-                    <span>5 ⭐</span>
+                        )
+                    })}
                 </div>
             </CardContent>
         </Card>

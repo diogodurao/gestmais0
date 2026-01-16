@@ -1,46 +1,56 @@
-import Link from "next/link"
-import { MessageCircle } from "lucide-react"
-import { Card } from "@/components/ui/Card"
+import { MessageSquare, ChevronRight, User } from "lucide-react"
 import { Badge } from "@/components/ui/Badge"
-import { Occurrence } from "@/lib/types"
+import { Occurrence, OccurrencePriority } from "@/lib/types"
 import { formatDistanceToNow } from "@/lib/format"
-import { OCCURRENCE_STATUS_CONFIG } from "@/lib/constants/ui"
+import { OCCURRENCE_STATUS_CONFIG, OCCURRENCE_PRIORITY_CONFIG } from "@/lib/constants/ui"
+import { cn } from "@/lib/utils"
 
 interface Props {
     occurrence: Occurrence
+    onClick: () => void
 }
 
-export function OccurrenceCard({ occurrence }: Props) {
+export function OccurrenceCard({ occurrence, onClick }: Props) {
+    const statusConfig = OCCURRENCE_STATUS_CONFIG[occurrence.status]
+    const priorityConfig = OCCURRENCE_PRIORITY_CONFIG[occurrence.priority as OccurrencePriority] || OCCURRENCE_PRIORITY_CONFIG.medium
+
     return (
-        <Link href={`/dashboard/occurrences/${occurrence.id}`}>
-            <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-                <div className="flex items-start justify-between mb-2">
-                    <Badge className={OCCURRENCE_STATUS_CONFIG[occurrence.status].color}>
-                        {OCCURRENCE_STATUS_CONFIG[occurrence.status].label}
-                    </Badge>
-                    <span className="text-label text-slate-400">
-                        {formatDistanceToNow(occurrence.createdAt)}
-                    </span>
-                </div>
-
-                <h3 className="text-body font-bold text-slate-900 mb-1">
-                    {occurrence.title}
-                </h3>
-
-                {occurrence.description && (
-                    <p className="text-body text-slate-600 line-clamp-2 mb-3">
-                        {occurrence.description}
-                    </p>
-                )}
-
-                <div className="flex items-center justify-between text-label text-slate-500">
-                    <div className="flex items-center gap-1">
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>{occurrence.commentCount || 0} comentários</span>
+        <div
+            onClick={onClick}
+            className="rounded-lg border border-[#E9ECEF] bg-white p-1.5 transition-colors hover:bg-[#F8F9FA] hover:border-[#DEE2E6] cursor-pointer"
+        >
+            <div className="flex items-start justify-between gap-1.5 mb-1">
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 mb-0.5">
+                        <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+                        <span className={cn("px-1 py-0.5 rounded text-[8px] font-medium", priorityConfig.bg, priorityConfig.color)}>
+                            {priorityConfig.label}
+                        </span>
                     </div>
+                    <h3 className="text-[11px] font-medium text-[#495057] truncate">{occurrence.title}</h3>
+                </div>
+                <ChevronRight className="h-4 w-4 text-[#DEE2E6] shrink-0" />
+            </div>
+
+            {occurrence.description && (
+                <p className="text-[10px] text-[#8E9AAF] line-clamp-2 mb-1.5">{occurrence.description}</p>
+            )}
+
+            <div className="flex items-center justify-between text-[9px] text-[#ADB5BD]">
+                <div className="flex items-center gap-0.5">
+                    <User className="h-3 w-3" />
                     <span>{occurrence.creatorName}</span>
                 </div>
-            </Card>
-        </Link>
+                <div className="flex items-center gap-2">
+                    {(occurrence.commentCount ?? 0) > 0 && (
+                        <span className="flex items-center gap-0.5">
+                            <MessageSquare className="h-3 w-3" />
+                            {occurrence.commentCount}
+                        </span>
+                    )}
+                    <span>{formatDistanceToNow(occurrence.createdAt)}</span>
+                </div>
+            </div>
+        </div>
     )
 }

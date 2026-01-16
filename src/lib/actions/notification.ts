@@ -103,7 +103,7 @@ export async function notifyOccurrenceCreated(
         type: 'occurrence_created',
         title: 'Nova ocorrência reportada',
         message: occurrenceTitle,
-        link: `/dashboard/occurrences/${occurrenceId}`,
+        link: `/dashboard/occurrences?id=${occurrenceId}`,
     })
 }
 
@@ -120,7 +120,7 @@ export async function notifyOccurrenceComment(
         type: 'occurrence_comment',
         title: `${commenterName} comentou`,
         message: occurrenceTitle,
-        link: `/dashboard/occurrences/${occurrenceId}`,
+        link: `/dashboard/occurrences?id=${occurrenceId}`,
     })
 }
 
@@ -142,7 +142,7 @@ export async function notifyOccurrenceStatus(
         type: 'occurrence_status',
         title: `Ocorrência ${statusLabels[newStatus] || newStatus}`,
         message: occurrenceTitle,
-        link: `/dashboard/occurrences/${occurrenceId}`,
+        link: `/dashboard/occurrences?id=${occurrenceId}`,
     })
 }
 
@@ -159,7 +159,7 @@ export async function notifyPollCreated(
         type: 'poll_created',
         title: 'Nova votação disponível',
         message: pollTitle,
-        link: `/dashboard/polls/${pollId}`,
+        link: `/dashboard/polls?id=${pollId}`,
     }, creatorId)
 }
 
@@ -173,7 +173,7 @@ export async function notifyPollClosed(
         type: 'poll_closed',
         title: 'Votação encerrada — resultados disponíveis',
         message: pollTitle,
-        link: `/dashboard/polls/${pollId}`,
+        link: `/dashboard/polls?id=${pollId}`,
     })
 }
 
@@ -190,7 +190,7 @@ export async function notifyDiscussionCreated(
         type: 'discussion_created',
         title: 'Nova discussão',
         message: discussionTitle,
-        link: `/dashboard/discussions/${discussionId}`,
+        link: `/dashboard/discussions?id=${discussionId}`,
     }, creatorId)
 }
 
@@ -207,7 +207,7 @@ export async function notifyDiscussionComment(
         type: 'discussion_comment',
         title: `${commenterName} comentou`,
         message: discussionTitle,
-        link: `/dashboard/discussions/${discussionId}`,
+        link: `/dashboard/discussions?id=${discussionId}`,
     })
 }
 

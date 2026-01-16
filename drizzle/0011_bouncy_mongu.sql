@@ -1,0 +1,1 @@
+ALTER TABLE "occurrences" ADD COLUMN "priority" text DEFAULT 'medium' NOT NULL;

@@ -202,6 +202,7 @@ export const occurrences = pgTable('occurrences', {
     type: text('type').notNull(),
     description: text('description'),
     status: text('status').notNull().default('open'), // 'open', 'in_progress', 'resolved'
+    priority: text('priority').notNull().default('medium'), // 'low', 'medium', 'high', 'urgent'
     createdBy: text('created_by').notNull().references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     resolvedAt: timestamp('resolved_at'),

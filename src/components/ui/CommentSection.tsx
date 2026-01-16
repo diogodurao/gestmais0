@@ -4,6 +4,7 @@ import { useState, useOptimistic, useTransition, useRef } from "react"
 import { Edit, Trash2, MoreVertical, Camera, X } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Textarea } from "@/components/ui/Textarea"
+import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { PhotoGallery } from "@/components/dashboard/occurrences/PhotoGallery"
 import { useToast } from "@/components/ui/Toast"
 import { formatDistanceToNow } from "@/lib/format"
@@ -67,6 +68,7 @@ export function CommentSection<T extends BaseComment>({
     const [editingId, setEditingId] = useState<number | null>(null)
     const [editContent, setEditContent] = useState("")
     const [menuOpenId, setMenuOpenId] = useState<number | null>(null)
+    const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
     const {
         allowEdit = entityType === "discussion",
@@ -204,15 +206,21 @@ export function CommentSection<T extends BaseComment>({
         })
     }
 
-    const handleDelete = async (commentId: number) => {
-        if (!confirm("Eliminar este comentário?") || !actions.delete) return
+    const handleDeleteClick = (commentId: number) => {
+        setDeleteConfirmId(commentId)
+        setMenuOpenId(null)
+    }
 
+    const confirmDelete = () => {
+        if (deleteConfirmId === null || !actions.delete) return
+
+        const commentId = deleteConfirmId
         const deleteAction = actions.delete
 
         startTransition(async () => {
             // Update UI immediately
             updateOptimisticComments({ type: 'delete', commentId })
-            setMenuOpenId(null)
+            setDeleteConfirmId(null)
 
             // Call server action
             const result = await deleteAction(commentId)
@@ -319,7 +327,7 @@ export function CommentSection<T extends BaseComment>({
                                                             )}
                                                             {allowDelete && actions.delete && (
                                                                 <button
-                                                                    onClick={() => handleDelete(comment.id)}
+                                                                    onClick={() => handleDeleteClick(comment.id)}
                                                                     className="flex items-center gap-2 px-3 py-2 text-body text-error hover:bg-gray-50 w-full"
                                                                 >
                                                                     <Trash2 className="w-4 h-4" /> Eliminar
@@ -416,6 +424,18 @@ export function CommentSection<T extends BaseComment>({
                     </p>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={deleteConfirmId !== null}
+                title="Eliminar comentário"
+                message="Tem a certeza que deseja eliminar este comentário?"
+                variant="danger"
+                confirmText="Eliminar"
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteConfirmId(null)}
+                loading={isPending}
+            />
         </div>
     )
 }

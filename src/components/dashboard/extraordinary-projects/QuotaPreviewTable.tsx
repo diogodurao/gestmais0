@@ -1,15 +1,10 @@
 import { useMemo } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { formatCurrency } from "@/lib/format"
-
-type Apartment = {
-    id: number
-    unit: string
-    permillage: number
-}
+import type { OnboardingApartment } from "@/lib/types"
 
 interface QuotaPreviewTableProps {
-    apartments: Apartment[]
+    apartments: OnboardingApartment[]
     budgetCents: number
     installmentCount: number
     isOpen: boolean

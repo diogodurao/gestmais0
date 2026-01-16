@@ -1,79 +1,139 @@
 "use client"
 
-import { useState } from "react"
-import { Plus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
+import { Plus, Clock, AlertTriangle, CheckCircle, Flame } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
+import { Card } from "@/components/ui/Card"
+import { StatCard } from "@/components/ui/Stat-Card"
+import { EmptyState } from "@/components/ui/Empty-State"
 import { OccurrenceCard } from "./OccurrenceCard"
 import { OccurrenceModal } from "./OccurrenceModal"
-import { Occurrence, OccurrenceStatus } from "@/lib/types"
-import { cn } from "@/lib/utils"
+import { OccurrenceDetailSheet } from "./OccurrenceDetailSheet"
+import { Occurrence } from "@/lib/types"
 
 interface Props {
     buildingId: string
     initialOccurrences: Occurrence[]
+    currentUserId: string
+    currentUserName: string
+    isManager: boolean
 }
 
-const TABS: { value: OccurrenceStatus | "all"; label: string }[] = [
-    { value: "all", label: "Todas" },
-    { value: "open", label: "Abertas" },
-    { value: "in_progress", label: "Em Progresso" },
-    { value: "resolved", label: "Resolvidas" },
-]
-
-export function OccurrencesList({ buildingId, initialOccurrences }: Props) {
-    const [activeTab, setActiveTab] = useState<OccurrenceStatus | "all">("all")
+export function OccurrencesList({
+    buildingId,
+    initialOccurrences,
+    currentUserId,
+    currentUserName,
+    isManager,
+}: Props) {
+    const searchParams = useSearchParams()
+    const router = useRouter()
     const [modalOpen, setModalOpen] = useState(false)
+    const [selectedOccurrenceId, setSelectedOccurrenceId] = useState<number | null>(null)
 
-    const filteredOccurrences = activeTab === "all"
-        ? initialOccurrences
-        : initialOccurrences.filter(o => o.status === activeTab)
+    // Open sheet from URL param
+    useEffect(() => {
+        const id = searchParams.get("id")
+        if (id) {
+            setSelectedOccurrenceId(Number(id))
+        }
+    }, [searchParams])
+
+    // Stats
+    const openCount = initialOccurrences.filter(o => o.status === "open").length
+    const inProgressCount = initialOccurrences.filter(o => o.status === "in_progress").length
+    const resolvedCount = initialOccurrences.filter(o => o.status === "resolved").length
+    const urgentCount = initialOccurrences.filter(o => o.priority === "urgent" && o.status !== "resolved").length
+
+    const handleViewOccurrence = (occurrence: Occurrence) => {
+        setSelectedOccurrenceId(occurrence.id)
+    }
+
+    const handleCloseSheet = () => {
+        setSelectedOccurrenceId(null)
+        // Clear URL param
+        if (searchParams.get("id")) {
+            router.replace("/dashboard/occurrences", { scroll: false })
+        }
+    }
 
     return (
         <>
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between w-full">
-                        <CardTitle>Ocorrências</CardTitle>
-                        <Button size="sm" onClick={() => setModalOpen(true)}>
-                            <Plus className="w-4 h-4 mr-1" /> Nova Ocorrência
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {/* Tabs */}
-                    <div className="flex gap-1 mb-4 border-b border-slate-200">
-                        {TABS.map((tab) => (
-                            <button
-                                key={tab.value}
-                                onClick={() => setActiveTab(tab.value)}
-                                className={cn(
-                                    "px-3 py-2 text-body font-medium border-b-2 -mb-px transition-colors",
-                                    activeTab === tab.value
-                                        ? "border-blue-600 text-blue-600"
-                                        : "border-transparent text-slate-500 hover:text-slate-700"
-                                )}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
+            {/* Header */}
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-h3 font-semibold text-slate-900">Ocorrências</h1>
+                    <p className="text-body text-slate-500">Gestão de problemas e incidentes do condomínio</p>
+                </div>
+                <Button size="sm" onClick={() => setModalOpen(true)}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="hidden sm:inline">Nova Ocorrência</span>
+                </Button>
+            </div>
 
-                    {/* List */}
-                    {filteredOccurrences.length === 0 ? (
-                        <p className="text-body text-slate-500 text-center py-8">
-                            Nenhuma ocorrência encontrada.
-                        </p>
-                    ) : (
-                        <div className="grid gap-3">
-                            {filteredOccurrences.map((occurrence) => (
-                                <OccurrenceCard key={occurrence.id} occurrence={occurrence} />
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+            {/* Stats */}
+            <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <StatCard
+                    label="Abertas"
+                    value={openCount}
+                    icon={<Clock className="h-4 w-4" />}
+                />
+                <StatCard
+                    label="Em Progresso"
+                    value={inProgressCount}
+                    icon={<AlertTriangle className="h-4 w-4" />}
+                />
+                <StatCard
+                    label="Resolvidas"
+                    value={resolvedCount}
+                    icon={<CheckCircle className="h-4 w-4" />}
+                />
+                <StatCard
+                    label="Urgentes"
+                    value={urgentCount}
+                    icon={<Flame className="h-4 w-4" />}
+                />
+            </div>
 
+            {/* Occurrences List */}
+            {initialOccurrences.length === 0 ? (
+                <Card>
+                    <EmptyState
+                        title="Sem ocorrências"
+                        description="Não há ocorrências registadas."
+                        action={
+                            <Button size="sm" onClick={() => setModalOpen(true)}>
+                                <Plus className="h-4 w-4 mr-1" />
+                                Criar Ocorrência
+                            </Button>
+                        }
+                    />
+                </Card>
+            ) : (
+                <div className="space-y-3">
+                    {initialOccurrences.map((occurrence) => (
+                        <OccurrenceCard
+                            key={occurrence.id}
+                            occurrence={occurrence}
+                            onClick={() => handleViewOccurrence(occurrence)}
+                        />
+                    ))}
+                </div>
+            )}
+
+            {/* Detail Sheet */}
+            <OccurrenceDetailSheet
+                occurrenceId={selectedOccurrenceId}
+                open={selectedOccurrenceId !== null}
+                onClose={handleCloseSheet}
+                currentUserId={currentUserId}
+                currentUserName={currentUserName}
+                isManager={isManager}
+                buildingId={buildingId}
+            />
+
+            {/* Create Modal */}
             <OccurrenceModal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}

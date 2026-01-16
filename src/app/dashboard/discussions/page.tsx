@@ -25,6 +25,9 @@ export default async function DiscussionsPage() {
             <DiscussionsList
                 buildingId={buildingId}
                 initialDiscussions={discussions}
+                currentUserId={session.user.id}
+                currentUserName={session.user.name}
+                isManager={isManager}
             />
         </div>
     )

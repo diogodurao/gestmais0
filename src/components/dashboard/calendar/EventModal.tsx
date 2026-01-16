@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 import { Select } from "@/components/ui/Select"
+import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
 import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "@/lib/actions/calendar"
 import { CalendarEvent } from "@/lib/types"
@@ -33,6 +34,7 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
     const [startTime, setStartTime] = useState(event?.startTime || "")
     const [recurrence, setRecurrence] = useState<"none" | "weekly" | "biweekly" | "monthly">("none")
     const [isLoading, setIsLoading] = useState(false)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
     const resetForm = () => {
         setTitle(event?.title || "")
@@ -82,9 +84,13 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
         setIsLoading(false)
     }
 
-    const handleDelete = async () => {
+    const handleDeleteClick = () => {
         if (!event) return
-        if (!confirm("Eliminar este evento?")) return
+        setShowDeleteConfirm(true)
+    }
+
+    const confirmDelete = async () => {
+        if (!event) return
 
         setIsLoading(true)
         const result = await deleteCalendarEvent(event.id)
@@ -95,6 +101,7 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
             addToast({ title: "Erro", description: result.error, variant: "error" })
         }
         setIsLoading(false)
+        setShowDeleteConfirm(false)
     }
 
     return (
@@ -192,7 +199,9 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                         {(props) => (
                             <Input
                                 {...props}
-                                type="time"
+                                type="text"
+                                placeholder="Ex: 19:00"
+                                pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
                                 disabled={readOnly}
@@ -225,7 +234,7 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                 {!readOnly && (
                     <div className="flex gap-2 pt-2">
                         {isEditing && (
-                            <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={handleDelete} disabled={isLoading}>
+                            <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={handleDeleteClick} disabled={isLoading}>
                                 Eliminar
                             </Button>
                         )}
@@ -245,6 +254,18 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                     </Button>
                 )}
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                title="Eliminar evento"
+                message="Tem a certeza que deseja eliminar este evento?"
+                variant="danger"
+                confirmText="Eliminar"
+                onConfirm={confirmDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
+                loading={isLoading}
+            />
         </Modal>
     )
 }

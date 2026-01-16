@@ -1,11 +1,14 @@
 import { getResidentApartment, getUnclaimedApartments } from "@/lib/actions/building";
 import { ResidentOnboardingFlow } from "@/components/dashboard/onboarding/ResidentOnboardingFlow";
 import { PaymentStatusCard } from "@/components/dashboard/payments-quotas/PaymentStatusCard";
-import { MyUnitPanel } from "@/components/dashboard/overview/MyUnitPanel";
+import { MyUnitPanel } from "@/components/dashboard/widgets/MyUnitPanel";
+import { Alert } from "@/components/ui/Alert";
 import { getEvaluationStatus } from "@/lib/actions/evaluations";
+import { getNextUpcomingEvent } from "@/lib/actions/calendar";
 import { EvaluationWidget } from "@/components/dashboard/evaluations/EvaluationWidget";
 import { getNotifications } from "@/lib/actions/notification";
 import { NotificationCard } from "@/components/dashboard/notifications/NotificationCard";
+import { formatDate } from "@/lib/format";
 import type { SessionUser } from "@/lib/types";
 
 interface ResidentDashboardProps {
@@ -18,6 +21,7 @@ export async function ResidentDashboard({ session }: ResidentDashboardProps) {
     let residentBuildingInfo = null;
     let residentApartment = null;
     let evaluationStatus = null;
+    let nextEvent: { title: string; startDate: string; startTime: string | null } | null = null;
 
     const hasBuildingId = !!session.user.buildingId;
     const hasIban = !!session.user.iban;
@@ -25,6 +29,16 @@ export async function ResidentDashboard({ session }: ResidentDashboardProps) {
     try {
         if (hasBuildingId) {
             evaluationStatus = await getEvaluationStatus(session.user.buildingId!);
+
+            // Get next upcoming event
+            const event = await getNextUpcomingEvent(session.user.buildingId!);
+            if (event) {
+                nextEvent = {
+                    title: event.title,
+                    startDate: event.startDate,
+                    startTime: event.startTime
+                };
+            }
         }
 
         residentApartment = await getResidentApartment();
@@ -60,6 +74,14 @@ export async function ResidentDashboard({ session }: ResidentDashboardProps) {
 
     return (
         <div className="space-y-1.5">
+            {/* Upcoming Event Alert */}
+            {nextEvent && (
+                <Alert variant="info">
+                    {nextEvent.title} agendado para {formatDate(nextEvent.startDate, "long")}
+                    {nextEvent.startTime && ` às ${nextEvent.startTime}`}.
+                </Alert>
+            )}
+
             {/* Stats row */}
             <div className="grid grid-cols-1 gap-1.5 lg:grid-cols-2">
                 <PaymentStatusCard userId={session.user.id} />

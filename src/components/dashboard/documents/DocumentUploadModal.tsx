@@ -31,7 +31,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 
 export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }: Props) {
     const router = useRouter()
-    const { toast } = useToast()
+    const { addToast } = useToast()
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([])
@@ -49,10 +49,10 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
         for (let i = 0; i < files.length; i++) {
             const file = files[i]
             if (file.size > MAX_FILE_SIZE) {
-                toast({
+                addToast({
                     title: "Erro",
                     description: `${file.name} é muito grande (máx. 10 MB)`,
-                    variant: "destructive",
+                    variant: "error",
                 })
                 continue
             }
@@ -104,12 +104,12 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
 
     const handleSubmit = async () => {
         if (selectedFiles.length === 0) {
-            toast({ title: "Erro", description: "Selecione ficheiros", variant: "destructive" })
+            addToast({ title: "Erro", description: "Selecione ficheiros", variant: "error" })
             return
         }
 
         if (!isNewVersion && !category) {
-            toast({ title: "Erro", description: "Selecione uma categoria", variant: "destructive" })
+            addToast({ title: "Erro", description: "Selecione uma categoria", variant: "error" })
             return
         }
 
@@ -157,27 +157,28 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
             const failCount = data.results.filter((r: any) => !r.success).length
 
             if (successCount > 0) {
-                toast({
+                addToast({
                     title: "Sucesso",
                     description: `${successCount} documento(s) carregado(s)`,
+                    variant: "success",
                 })
             }
 
             if (failCount > 0) {
-                toast({
+                addToast({
                     title: "Aviso",
                     description: `${failCount} documento(s) falharam`,
-                    variant: "destructive",
+                    variant: "error",
                 })
             }
 
             router.refresh()
             handleClose()
         } catch (error) {
-            toast({
+            addToast({
                 title: "Erro",
                 description: "Erro ao carregar documentos",
-                variant: "destructive",
+                variant: "error",
             })
         }
 
@@ -265,11 +266,15 @@ export function DocumentUploadModal({ isOpen, onClose, buildingId, originalId }:
                             {(props) => (
                                 <Select
                                     {...props}
-                                    options={CATEGORY_OPTIONS}
                                     value={category}
                                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as DocumentCategory)}
-                                    fullWidth
-                                />
+                                >
+                                    {CATEGORY_OPTIONS.map(opt => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </Select>
                             )}
                         </FormControl>
                         <FormError />

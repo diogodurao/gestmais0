@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button"
 import { StatCard } from "@/components/ui/Stat-Card"
 import { Plus, ChevronRight, FileText, Layers, DollarSign, TrendingUp, Calendar } from "lucide-react"
 import { getExtraordinaryProjects } from "@/lib/actions/extraordinary-projects"
-import { type ExtraordinaryProjectSummary } from "@/lib/types"
+import { type ExtraordinaryProjectSummary, type OnboardingApartment } from "@/lib/types"
 import { formatCurrency, getMonthName } from "@/lib/format"
 import dynamic from "next/dynamic"
 
@@ -23,15 +23,9 @@ const ExtraProjectCreate = dynamic(
 import { useToast } from "@/components/ui/Toast"
 import { Skeleton } from "@/components/ui/Skeleton"
 
-type Apartment = {
-    id: number
-    unit: string
-    permillage: number
-}
-
 interface ExtraProjectsListProps {
     buildingId: string
-    apartments?: Apartment[]
+    apartments?: OnboardingApartment[]
     readOnly?: boolean
 }
 

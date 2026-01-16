@@ -106,16 +106,20 @@ export const updateCalendarEventSchema = z.object({
 })
 
 // Occurrence Schemas
+const occurrencePriorityEnum = z.enum(["low", "medium", "high", "urgent"])
+
 export const createOccurrenceSchema = z.object({
     buildingId: z.string().min(1),
     title: z.string().min(1, "Título é obrigatório").max(200),
     type: z.string().min(1, "Tipo é obrigatório").max(100),
+    priority: occurrencePriorityEnum.default("medium"),
     description: z.string().max(2000).optional(),
 })
 
 export const updateOccurrenceSchema = z.object({
     title: z.string().min(1).max(200).optional(),
     type: z.string().min(1).max(100).optional(),
+    priority: occurrencePriorityEnum.optional(),
     description: z.string().max(2000).optional().nullable(),
 })
 

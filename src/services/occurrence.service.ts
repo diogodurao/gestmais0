@@ -19,12 +19,13 @@ export class OccurrenceService {
                 type: occurrences.type,
                 description: occurrences.description,
                 status: occurrences.status,
+                priority: occurrences.priority,
                 createdBy: occurrences.createdBy,
                 createdAt: occurrences.createdAt,
                 resolvedAt: occurrences.resolvedAt,
                 creatorName: user.name,
                 commentCount: sql<number>`(
-                    SELECT COUNT(*) FROM occurrence_comments 
+                    SELECT COUNT(*) FROM occurrence_comments
                     WHERE occurrence_id = ${occurrences.id}
                 )`.as('comment_count'),
             })
@@ -45,6 +46,7 @@ export class OccurrenceService {
                 type: occurrences.type,
                 description: occurrences.description,
                 status: occurrences.status,
+                priority: occurrences.priority,
                 createdBy: occurrences.createdBy,
                 createdAt: occurrences.createdAt,
                 resolvedAt: occurrences.resolvedAt,
@@ -65,6 +67,7 @@ export class OccurrenceService {
                 buildingId: input.buildingId,
                 title: input.title,
                 type: input.type,
+                priority: input.priority || 'medium',
                 description: input.description || null,
                 createdBy: userId,
             })

@@ -1,9 +1,10 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { OnboardingStepPersonal, type UserData } from "@/components/dashboard/onboarding/components/OnboardingStepPersonal"
+import { OnboardingStepPersonal } from "@/components/dashboard/onboarding/components/OnboardingStepPersonal"
+import type { OnboardingUserData } from "@/lib/types"
 
-export function PersonalStepClient({ user }: { user: UserData }) {
+export function PersonalStepClient({ user }: { user: OnboardingUserData }) {
     const router = useRouter()
 
     return (

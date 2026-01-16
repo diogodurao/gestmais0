@@ -5,6 +5,7 @@ import { X, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
 import { OccurrenceAttachment } from "@/lib/types"
 import { deleteOccurrenceAttachment } from "@/lib/actions/occurrences"
 import { useToast } from "@/components/ui/Toast"
+import { ConfirmModal } from "@/components/ui/ConfirmModal"
 
 interface Props {
     attachments: OccurrenceAttachment[]
@@ -16,14 +17,19 @@ export function PhotoGallery({ attachments, canDelete, currentUserId }: Props) {
     const { addToast } = useToast()
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
+    const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
     if (attachments.length === 0) return null
 
-    const handleDelete = async (attachmentId: number) => {
-        if (!confirm("Eliminar esta foto?")) return
+    const handleDeleteClick = (attachmentId: number) => {
+        setDeleteConfirmId(attachmentId)
+    }
+
+    const confirmDelete = async () => {
+        if (deleteConfirmId === null) return
 
         setIsDeleting(true)
-        const result = await deleteOccurrenceAttachment(attachmentId)
+        const result = await deleteOccurrenceAttachment(deleteConfirmId)
 
         if (result.success) {
             addToast({ title: "Sucesso", description: "Foto eliminada", variant: "success" })
@@ -32,6 +38,7 @@ export function PhotoGallery({ attachments, canDelete, currentUserId }: Props) {
             addToast({ title: "Erro", description: result.error, variant: "error" })
         }
         setIsDeleting(false)
+        setDeleteConfirmId(null)
     }
 
     const showPrev = () => {
@@ -79,7 +86,7 @@ export function PhotoGallery({ attachments, canDelete, currentUserId }: Props) {
                     {/* Delete button */}
                     {canDelete && attachments[lightboxIndex].uploadedBy === currentUserId && (
                         <button
-                            onClick={() => handleDelete(attachments[lightboxIndex].id)}
+                            onClick={() => handleDeleteClick(attachments[lightboxIndex].id)}
                             disabled={isDeleting}
                             className="absolute top-4 left-4 p-2 text-white hover:bg-white/10 rounded-lg"
                         >
@@ -120,6 +127,18 @@ export function PhotoGallery({ attachments, canDelete, currentUserId }: Props) {
                     </div>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={deleteConfirmId !== null}
+                title="Eliminar foto"
+                message="Tem a certeza que deseja eliminar esta foto?"
+                variant="danger"
+                confirmText="Eliminar"
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteConfirmId(null)}
+                loading={isDeleting}
+            />
         </>
     )
 }
