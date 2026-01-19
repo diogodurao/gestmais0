@@ -1,11 +1,11 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { updateTag } from "next/cache"
+import { after } from "next/server"
 import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { calendarService, CreateEventInput, UpdateEventInput } from "@/services/calendar.service"
 import { createCalendarEventSchema, updateCalendarEventSchema } from "@/lib/zod-schemas"
 import { ActionResult } from "@/lib/types"
-import { ROUTES } from "@/lib/routes"
 import { notifyUpcomingEvent } from "@/lib/actions/notification"
 
 export async function getCalendarEvents(buildingId: string, year: number, month: number) {
@@ -31,15 +31,19 @@ export async function createCalendarEvent(input: CreateEventInput): Promise<Acti
 
     try {
         const events = await calendarService.createEvent(validated.data, session.user.id)
+        updateTag(`calendar-${input.buildingId}`)
 
-        // Notify residents
-        await notifyUpcomingEvent(
-            input.buildingId,
-            validated.data.title,
-            validated.data.startDate
-        )
+        // Notify residents after response (non-blocking)
+        const eventTitle = validated.data.title
+        const eventDate = validated.data.startDate
+        after(async () => {
+            await notifyUpcomingEvent(
+                input.buildingId,
+                eventTitle,
+                eventDate
+            )
+        })
 
-        revalidatePath(ROUTES.DASHBOARD.CALENDAR)
         return { success: true, data: { count: events.length } }
     } catch {
         return { success: false, error: "Erro ao criar evento" }
@@ -64,7 +68,7 @@ export async function updateCalendarEvent(
 
     try {
         await calendarService.updateEvent(eventId, validated.data)
-        revalidatePath(ROUTES.DASHBOARD.CALENDAR)
+        updateTag(`calendar-${event.buildingId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao atualizar evento" }
@@ -81,7 +85,7 @@ export async function deleteCalendarEvent(eventId: number): Promise<ActionResult
 
     try {
         await calendarService.deleteEvent(eventId)
-        revalidatePath(ROUTES.DASHBOARD.CALENDAR)
+        updateTag(`calendar-${event.buildingId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao eliminar evento" }

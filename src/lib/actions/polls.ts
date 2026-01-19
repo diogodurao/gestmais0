@@ -1,6 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { updateTag } from "next/cache"
+import { after } from "next/server"
 import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { pollService, CreatePollInput, CastVoteInput } from "@/services/poll.service"
 import { createPollSchema, castVoteSchema } from "@/lib/zod-schemas"
@@ -102,17 +103,21 @@ export async function createPoll(input: CreatePollInput): Promise<ActionResult<{
 
     try {
         const created = await pollService.create(validated.data, session.user.id)
+        updateTag(`polls-${input.buildingId}`)
 
-        // Notify all residents about new poll
-        await notifyBuildingResidents({
-            buildingId: input.buildingId,
-            title: "Nova Votação Disponível",
-            message: `Foi criada uma nova votação: "${validated.data.title}"`,
-            type: "poll",
-            link: `/dashboard/polls?id=${created.id}`
-        }, session.user.id) // Exclude creator (manager)
+        // Notify all residents after response (non-blocking)
+        const pollTitle = validated.data.title
+        const creatorId = session.user.id
+        after(async () => {
+            await notifyBuildingResidents({
+                buildingId: input.buildingId,
+                title: "Nova Votação Disponível",
+                message: `Foi criada uma nova votação: "${pollTitle}"`,
+                type: "poll",
+                link: `/dashboard/polls?id=${created.id}`
+            }, creatorId)
+        })
 
-        revalidatePath("/dashboard/polls")
         return { success: true, data: { id: created.id } }
     } catch {
         return { success: false, error: "Erro ao criar votação" }
@@ -182,25 +187,28 @@ export async function castVote(input: CastVoteInput): Promise<ActionResult<void>
         const apartmentId = apartment?.id || null
 
         await pollService.castVote(validated.data, session.user.id, apartmentId)
+        updateTag(`poll-votes-${input.pollId}`)
 
-        // Notify manager about new vote
-        const buildingInfo = await db.query.building.findFirst({
-            where: eq(building.id, poll.buildingId),
-            columns: { managerId: true }
+        // Notify manager after response (non-blocking)
+        const voterId = session.user.id
+        after(async () => {
+            const buildingInfo = await db.query.building.findFirst({
+                where: eq(building.id, poll.buildingId),
+                columns: { managerId: true }
+            })
+
+            if (buildingInfo && buildingInfo.managerId !== voterId) {
+                await createNotification({
+                    buildingId: poll.buildingId,
+                    userId: buildingInfo.managerId,
+                    title: "Novo Voto Registado",
+                    message: `Um condómino votou na votação: "${poll.title}"`,
+                    type: "poll",
+                    link: `/dashboard/polls?id=${poll.id}`
+                })
+            }
         })
 
-        if (buildingInfo && buildingInfo.managerId !== session.user.id) {
-            await createNotification({
-                buildingId: poll.buildingId,
-                userId: buildingInfo.managerId,
-                title: "Novo Voto Registado",
-                message: `Um condómino votou na votação: "${poll.title}"`,
-                type: "poll",
-                link: `/dashboard/polls?id=${poll.id}`
-            })
-        }
-
-        revalidatePath(`/dashboard/polls/${input.pollId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao registar voto" }
@@ -228,16 +236,18 @@ export async function closePoll(pollId: number): Promise<ActionResult<void>> {
 
     try {
         await pollService.close(pollId)
+        updateTag(`polls-${poll.buildingId}`)
+        updateTag(`poll-${pollId}`)
 
-        // Notify residents about results
-        await notifyPollClosed(
-            poll.buildingId,
-            poll.title,
-            pollId
-        )
+        // Notify residents after response (non-blocking)
+        after(async () => {
+            await notifyPollClosed(
+                poll.buildingId,
+                poll.title,
+                pollId
+            )
+        })
 
-        revalidatePath("/dashboard/polls")
-        revalidatePath(`/dashboard/polls/${pollId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao encerrar votação" }
@@ -261,7 +271,7 @@ export async function deletePoll(pollId: number): Promise<ActionResult<void>> {
 
     try {
         await pollService.delete(pollId)
-        revalidatePath("/dashboard/polls")
+        updateTag(`polls-${poll.buildingId}`)
         return { success: true, data: undefined }
     } catch (error) {
         if (error instanceof Error && error.message === "Cannot delete poll with votes") {

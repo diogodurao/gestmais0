@@ -1,4 +1,5 @@
 import { forwardRef, type HTMLAttributes } from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 type AvatarSize = "sm" | "md" | "lg"
@@ -46,7 +47,14 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {...props}
       >
         {src ? (
-          <img src={src} alt={alt} className="h-full w-full object-cover" />
+          <Image
+            src={src}
+            alt={alt || ""}
+            fill
+            sizes={size === "sm" ? "24px" : size === "md" ? "32px" : "40px"}
+            className="object-cover"
+            unoptimized
+          />
         ) : (
           <span className="font-medium text-primary-dark">{initials}</span>
         )}

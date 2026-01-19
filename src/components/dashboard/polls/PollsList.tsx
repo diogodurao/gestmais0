@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Plus, Vote, CheckCircle, Clock, BarChart3, Search } from "lucide-react"
 import { Button } from "@/components/ui/Button"
@@ -10,8 +11,12 @@ import { StatCard } from "@/components/ui/Stat-Card"
 import { EmptyState } from "@/components/ui/Empty-State"
 import { PollCard } from "./PollCard"
 import { PollModal } from "./PollModal"
-import { PollDetailSheet } from "./PollDetailSheet"
 import { Poll, PollStatus } from "@/lib/types"
+
+const PollDetailSheet = dynamic(
+    () => import("./PollDetailSheet").then(mod => mod.PollDetailSheet),
+    { ssr: false }
+)
 
 type FilterStatus = PollStatus | "all"
 

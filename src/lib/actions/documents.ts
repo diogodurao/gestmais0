@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { updateTag } from "next/cache"
 import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { documentService } from "@/services/document.service"
 import { ActionResult, DocumentCategory, Document } from "@/lib/types"
@@ -64,8 +64,12 @@ export async function updateDocumentMetadata(
     }
 
     try {
+        const doc = await documentService.getById(documentId)
         await documentService.updateMetadata(documentId, data)
-        revalidatePath("/dashboard/documents")
+        if (doc) {
+            updateTag(`documents-${doc.buildingId}`)
+            updateTag(`document-${documentId}`)
+        }
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao atualizar documento" }
@@ -87,7 +91,7 @@ export async function deleteDocument(documentId: number): Promise<ActionResult<v
 
     try {
         await documentService.delete(documentId)
-        revalidatePath("/dashboard/documents")
+        updateTag(`documents-${doc.buildingId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao eliminar documento" }

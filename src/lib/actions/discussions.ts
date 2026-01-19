@@ -1,6 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { updateTag } from "next/cache"
+import { after } from "next/server"
 import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { discussionService, CreateDiscussionInput, UpdateDiscussionInput } from "@/services/discussion.service"
 import { createDiscussionSchema, updateDiscussionSchema } from "@/lib/zod-schemas"
@@ -54,16 +55,20 @@ export async function createDiscussion(input: CreateDiscussionInput): Promise<Ac
 
     try {
         const created = await discussionService.create(validated.data, session.user.id)
+        updateTag(`discussions-${input.buildingId}`)
 
-        // Notify residents
-        await notifyDiscussionCreated(
-            input.buildingId,
-            validated.data.title,
-            created.id,
-            session.user.id
-        )
+        // Notify residents after response (non-blocking)
+        const discussionTitle = validated.data.title
+        const creatorId = session.user.id
+        after(async () => {
+            await notifyDiscussionCreated(
+                input.buildingId,
+                discussionTitle,
+                created.id,
+                creatorId
+            )
+        })
 
-        revalidatePath("/dashboard/discussions")
         return { success: true, data: { id: created.id } }
     } catch {
         return { success: false, error: "Erro ao criar discussão" }
@@ -94,8 +99,8 @@ export async function updateDiscussion(
 
     try {
         await discussionService.update(id, validated.data)
-        revalidatePath("/dashboard/discussions")
-        revalidatePath(`/dashboard/discussions/${id}`)
+        updateTag(`discussions-${discussion.buildingId}`)
+        updateTag(`discussion-${id}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao atualizar discussão" }
@@ -127,7 +132,7 @@ export async function deleteDiscussion(id: number): Promise<ActionResult<void>> 
 
     try {
         await discussionService.delete(id)
-        revalidatePath("/dashboard/discussions")
+        updateTag(`discussions-${discussion.buildingId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao eliminar discussão" }
@@ -151,8 +156,8 @@ export async function toggleDiscussionPin(id: number): Promise<ActionResult<void
 
     try {
         await discussionService.togglePin(id)
-        revalidatePath("/dashboard/discussions")
-        revalidatePath(`/dashboard/discussions/${id}`)
+        updateTag(`discussions-${discussion.buildingId}`)
+        updateTag(`discussion-${id}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao fixar discussão" }
@@ -176,8 +181,8 @@ export async function closeDiscussion(id: number): Promise<ActionResult<void>> {
 
     try {
         await discussionService.close(id)
-        revalidatePath("/dashboard/discussions")
-        revalidatePath(`/dashboard/discussions/${id}`)
+        updateTag(`discussions-${discussion.buildingId}`)
+        updateTag(`discussion-${id}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao encerrar discussão" }
@@ -220,23 +225,27 @@ export async function addDiscussionComment(
 
     try {
         await discussionService.addComment(discussionId, content.trim(), session.user.id)
+        updateTag(`discussion-comments-${discussionId}`)
+        updateTag(`discussions-${discussion.buildingId}`)
 
-        // Notify creator if comment is not from them
+        // Notify creator after response (non-blocking)
         if (discussion.createdBy !== session.user.id) {
-            try {
-                await notifyDiscussionComment(
-                    discussion.buildingId,
-                    discussion.createdBy,
-                    session.user.name || 'Alguém',
-                    discussion.title,
-                    discussionId
-                )
-            } catch (error) {
-                console.error("Failed to notify user:", error)
-            }
+            const commenterName = session.user.name || 'Alguém'
+            after(async () => {
+                try {
+                    await notifyDiscussionComment(
+                        discussion.buildingId,
+                        discussion.createdBy,
+                        commenterName,
+                        discussion.title,
+                        discussionId
+                    )
+                } catch (error) {
+                    console.error("Failed to notify user:", error)
+                }
+            })
         }
 
-        revalidatePath(`/dashboard/discussions/${discussionId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao adicionar comentário" }
@@ -265,7 +274,7 @@ export async function updateDiscussionComment(
 
     try {
         await discussionService.updateComment(commentId, content.trim())
-        revalidatePath(`/dashboard/discussions/${comment.discussionId}`)
+        updateTag(`discussion-comments-${comment.discussionId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao atualizar comentário" }
@@ -290,7 +299,7 @@ export async function deleteDiscussionComment(commentId: number): Promise<Action
 
     try {
         await discussionService.deleteComment(commentId)
-        revalidatePath(`/dashboard/discussions/${comment.discussionId}`)
+        updateTag(`discussion-comments-${comment.discussionId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao eliminar comentário" }

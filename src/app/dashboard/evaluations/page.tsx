@@ -10,8 +10,6 @@ import {
 import { ROUTES } from "@/lib/routes"
 import { EvaluationPage } from "@/components/dashboard/evaluations/EvaluationPage"
 
-export const dynamic = 'force-dynamic'
-
 export default async function EvaluationsPage() {
     const session = await requireSession()
     const isManager = session.user.role === 'manager'

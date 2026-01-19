@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Plus, Clock, AlertTriangle, CheckCircle, Flame } from "lucide-react"
 import { Button } from "@/components/ui/Button"
@@ -9,8 +10,12 @@ import { StatCard } from "@/components/ui/Stat-Card"
 import { EmptyState } from "@/components/ui/Empty-State"
 import { OccurrenceCard } from "./OccurrenceCard"
 import { OccurrenceModal } from "./OccurrenceModal"
-import { OccurrenceDetailSheet } from "./OccurrenceDetailSheet"
 import { Occurrence } from "@/lib/types"
+
+const OccurrenceDetailSheet = dynamic(
+    () => import("./OccurrenceDetailSheet").then(mod => mod.OccurrenceDetailSheet),
+    { ssr: false }
+)
 
 interface Props {
     buildingId: string

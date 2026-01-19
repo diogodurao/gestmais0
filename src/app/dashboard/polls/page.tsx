@@ -1,10 +1,10 @@
+import { Suspense } from "react"
 import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
-import { getPolls, getUserVote } from "@/lib/actions/polls"
+import { getUserVote } from "@/lib/actions/polls"
 import { ROUTES } from "@/lib/routes"
 import { PollsList } from "@/components/dashboard/polls/PollsList"
-
-export const dynamic = 'force-dynamic'
+import { getCachedPolls } from "@/lib/cache/dashboard.cache"
 
 export default async function PollsPage() {
     const session = await requireSession()
@@ -18,23 +18,61 @@ export default async function PollsPage() {
         redirect(ROUTES.DASHBOARD.HOME)
     }
 
-    const polls = await getPolls(buildingId)
-
-    // Get user's votes to show "voted" badge
-    const userVotedPollIds: number[] = []
-    for (const poll of polls) {
-        const vote = await getUserVote(poll.id)
-        if (vote) userVotedPollIds.push(poll.id)
-    }
-
     return (
         <div className="p-4 md:p-6">
-            <PollsList
-                buildingId={buildingId}
-                initialPolls={polls}
-                userVotedPollIds={userVotedPollIds}
-                isManager={isManager}
-            />
+            <Suspense fallback={<PollsListSkeleton />}>
+                <PollsContent
+                    buildingId={buildingId}
+                    userId={session.user.id}
+                    isManager={isManager}
+                />
+            </Suspense>
+        </div>
+    )
+}
+
+async function PollsContent({
+    buildingId,
+    userId,
+    isManager,
+}: {
+    buildingId: string
+    userId: string
+    isManager: boolean
+}) {
+    const polls = await getCachedPolls(buildingId)
+
+    // Get user's votes to show "voted" badge (user-specific, not cached)
+    // Parallel fetch instead of sequential loop
+    const votes = await Promise.all(polls.map(poll => getUserVote(poll.id)))
+    const userVotedPollIds = polls
+        .filter((_, index) => votes[index])
+        .map(poll => poll.id)
+
+    return (
+        <PollsList
+            buildingId={buildingId}
+            initialPolls={polls}
+            userVotedPollIds={userVotedPollIds}
+            isManager={isManager}
+        />
+    )
+}
+
+function PollsListSkeleton() {
+    return (
+        <div className="space-y-4">
+            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+            </div>
+            <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+            </div>
         </div>
     )
 }

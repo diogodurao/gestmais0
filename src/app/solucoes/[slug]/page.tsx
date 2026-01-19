@@ -1,13 +1,15 @@
+import dynamic from "next/dynamic"
 import { cities } from "@/data/cities"
 import { Navbar } from "@/components/landing/Navbar"
 import { Hero } from "@/components/landing/Hero"
-import { Features } from "@/components/landing/Features"
-import { Pricing } from "@/components/landing/Pricing"
-import { Footer } from "@/components/landing/Footer"
-import { Faq } from "@/components/landing/Faq"
 import { notFound } from "next/navigation"
 import { JsonLd } from "@/seo/components/JsonLd"
 import { generateCityMetadata } from "@/seo/utils/metadata"
+
+const Features = dynamic(() => import("@/components/landing/Features").then(mod => mod.Features))
+const Pricing = dynamic(() => import("@/components/landing/Pricing").then(mod => mod.Pricing))
+const Faq = dynamic(() => import("@/components/landing/Faq").then(mod => mod.Faq))
+const Footer = dynamic(() => import("@/components/landing/Footer").then(mod => mod.Footer))
 
 export async function generateStaticParams() {
     return cities.map((city) => ({

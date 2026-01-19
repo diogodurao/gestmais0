@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { X, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
 import { OccurrenceAttachment } from "@/lib/types"
 import { deleteOccurrenceAttachment } from "@/lib/actions/occurrences"
@@ -61,12 +62,15 @@ export function PhotoGallery({ attachments, canDelete, currentUserId }: Props) {
                     <button
                         key={attachment.id}
                         onClick={() => setLightboxIndex(index)}
-                        className="w-20 h-20 rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
+                        className="relative w-20 h-20 rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
                     >
-                        <img
+                        <Image
                             src={attachment.fileUrl}
                             alt={attachment.fileName}
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                            unoptimized
                         />
                     </button>
                 ))}
@@ -115,6 +119,7 @@ export function PhotoGallery({ attachments, canDelete, currentUserId }: Props) {
                     )}
 
                     {/* Image */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={attachments[lightboxIndex].fileUrl}
                         alt={attachments[lightboxIndex].fileName}

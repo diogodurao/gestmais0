@@ -1,6 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { updateTag } from "next/cache"
+import { after } from "next/server"
 import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { occurrenceService } from "@/services/occurrence.service"
 import { CreateOccurrenceInput, UpdateOccurrenceInput, OccurrenceStatus } from "@/lib/types"
@@ -72,23 +73,25 @@ export async function createOccurrence(input: CreateOccurrenceInput): Promise<Ac
 
     try {
         const created = await occurrenceService.create(validated.data, session.user.id)
+        updateTag(`occurrences-${input.buildingId}`)
 
-        // Notify manager if created by resident
+        // Notify manager after response (non-blocking)
         if (session.user.role !== 'manager') {
-            try {
-                const managerId = await getManagerId(input.buildingId)
-                await notifyOccurrenceCreated(
-                    input.buildingId,
-                    managerId,
-                    input.title,
-                    created.id
-                )
-            } catch (error) {
-                console.error("Failed to notify manager:", error)
-            }
+            after(async () => {
+                try {
+                    const managerId = await getManagerId(input.buildingId)
+                    await notifyOccurrenceCreated(
+                        input.buildingId,
+                        managerId,
+                        input.title,
+                        created.id
+                    )
+                } catch (error) {
+                    console.error("Failed to notify manager:", error)
+                }
+            })
         }
 
-        revalidatePath("/dashboard/occurrences")
         return { success: true, data: { id: created.id } }
     } catch {
         return { success: false, error: "Erro ao criar ocorrência" }
@@ -127,8 +130,8 @@ export async function updateOccurrence(
             ...validated.data,
             description: validated.data.description ?? undefined
         })
-        revalidatePath("/dashboard/occurrences")
-        revalidatePath(`/dashboard/occurrences/${id}`)
+        updateTag(`occurrences-${occurrence.buildingId}`)
+        updateTag(`occurrence-${id}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao atualizar ocorrência" }
@@ -156,7 +159,7 @@ export async function deleteOccurrence(id: number): Promise<ActionResult<void>> 
 
     try {
         await occurrenceService.delete(id)
-        revalidatePath("/dashboard/occurrences")
+        updateTag(`occurrences-${occurrence.buildingId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao eliminar ocorrência" }
@@ -177,26 +180,31 @@ export async function updateOccurrenceStatus(
     }
 
     try {
-        await occurrenceService.updateStatus(id, status)
+        // Get occurrence data before updating
+        const occurrenceBefore = await occurrenceService.getById(id)
+        if (!occurrenceBefore) {
+            return { success: false, error: "Ocorrência não encontrada" }
+        }
 
-        // Notify creator
-        const occurrence = await occurrenceService.getById(id)
-        if (occurrence) {
+        await occurrenceService.updateStatus(id, status)
+        updateTag(`occurrences-${occurrenceBefore.buildingId}`)
+        updateTag(`occurrence-${id}`)
+
+        // Notify creator after response (non-blocking)
+        after(async () => {
             try {
                 await notifyOccurrenceStatus(
-                    occurrence.buildingId,
-                    occurrence.createdBy,
-                    occurrence.title,
+                    occurrenceBefore.buildingId,
+                    occurrenceBefore.createdBy,
+                    occurrenceBefore.title,
                     status,
                     id
                 )
             } catch (error) {
                 console.error("Failed to notify user:", error)
             }
-        }
+        })
 
-        revalidatePath("/dashboard/occurrences")
-        revalidatePath(`/dashboard/occurrences/${id}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao alterar estado" }
@@ -234,23 +242,26 @@ export async function addOccurrenceComment(
 
     try {
         const created = await occurrenceService.addComment(occurrenceId, content.trim(), session.user.id)
+        updateTag(`occurrence-comments-${occurrenceId}`)
 
-        // Notify creator if comment is not from them
+        // Notify creator after response (non-blocking)
         if (occurrence.createdBy !== session.user.id) {
-            try {
-                await notifyOccurrenceComment(
-                    occurrence.buildingId,
-                    occurrence.createdBy,
-                    session.user.name || 'Alguém',
-                    occurrence.title,
-                    occurrenceId
-                )
-            } catch (error) {
-                console.error("Failed to notify user:", error)
-            }
+            const commenterName = session.user.name || 'Alguém'
+            after(async () => {
+                try {
+                    await notifyOccurrenceComment(
+                        occurrence.buildingId,
+                        occurrence.createdBy,
+                        commenterName,
+                        occurrence.title,
+                        occurrenceId
+                    )
+                } catch (error) {
+                    console.error("Failed to notify user:", error)
+                }
+            })
         }
 
-        revalidatePath(`/dashboard/occurrences/${occurrenceId}`)
         return { success: true, data: { commentId: created.id } }
     } catch {
         return { success: false, error: "Erro ao adicionar comentário" }
@@ -325,7 +336,7 @@ export async function deleteOccurrenceAttachment(attachmentId: number): Promise<
 
     try {
         await occurrenceService.deleteAttachment(attachmentId)
-        revalidatePath(`/dashboard/occurrences/${attachment.occurrenceId}`)
+        updateTag(`occurrence-attachments-${attachment.occurrenceId}`)
         return { success: true, data: undefined }
     } catch {
         return { success: false, error: "Erro ao eliminar anexo" }

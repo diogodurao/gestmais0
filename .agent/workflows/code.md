@@ -1,18 +1,6 @@
 ---
-description: Remove AI generated slop; enforce simplicity; good implementation.
+description: Remove AI generated slop
 ---
-
-# Workflow
-- Be sure to typecheck when you’re done making a series of code changes
-- Prefer running single tests, and not the whole test suite, for performance
-
-# Code style
-- Write concise, algorithmic code. 
-- Use ES modules (import/export) syntax, not CommonJS (require)
-- Destructure imports when possible (eg. import { foo } from 'bar')
-- Use data structures over conditionals (when appropriate), minimal comments (only the necessary), short variable names.
-- Don´t handle edge cases I didn't ask for; Avoid over-engineering edge cases. 
-- Target solutions at ~30-50% the length of typical AI output.
 
 # Code Cleanup & Simplification Workflow
 1. **Check for "AI Slop" Styling**:

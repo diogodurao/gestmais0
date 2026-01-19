@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Plus, MessageSquare, Pin } from "lucide-react"
 import { Button } from "@/components/ui/Button"
@@ -9,9 +10,13 @@ import { StatCard } from "@/components/ui/Stat-Card"
 import { EmptyState } from "@/components/ui/Empty-State"
 import { DiscussionCard } from "./DiscussionCard"
 import { DiscussionModal } from "./DiscussionModal"
-import { DiscussionDetailSheet } from "./DiscussionDetailSheet"
 import { Discussion } from "@/lib/types"
 import { cn } from "@/lib/utils"
+
+const DiscussionDetailSheet = dynamic(
+    () => import("./DiscussionDetailSheet").then(mod => mod.DiscussionDetailSheet),
+    { ssr: false }
+)
 
 interface Props {
     buildingId: string

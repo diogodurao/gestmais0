@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Download, X } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Document } from "@/lib/types"
@@ -82,11 +83,16 @@ export function DocumentPreviewModal({ document, onClose }: Props) {
                                 title={document.title}
                             />
                         ) : isImage ? (
-                            <img
-                                src={url}
-                                alt={document.title}
-                                className="max-w-full max-h-full mx-auto rounded-lg"
-                            />
+                            <div className="relative w-full h-full min-h-[400px] flex items-center justify-center">
+                                <Image
+                                    src={url}
+                                    alt={document.title}
+                                    fill
+                                    sizes="(max-width: 896px) 100vw, 896px"
+                                    className="object-contain rounded-lg"
+                                    unoptimized
+                                />
+                            </div>
                         ) : null
                     ) : (
                         <div className="flex items-center justify-center h-full">

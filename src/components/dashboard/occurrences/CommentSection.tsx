@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useOptimistic, useTransition, useRef } from "react"
+import Image from "next/image"
 import { Camera, X } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Textarea } from "@/components/ui/Textarea"
@@ -142,14 +143,17 @@ export function CommentSection({
                     {/* Photo preview */}
                     {photo && (
                         <div className="relative w-20 h-20 mt-2">
-                            <img
+                            <Image
                                 src={photo.preview}
                                 alt="Preview"
-                                className="w-full h-full object-cover rounded-lg"
+                                fill
+                                sizes="80px"
+                                className="object-cover rounded-lg"
+                                unoptimized
                             />
                             <button
                                 onClick={removePhoto}
-                                className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 z-10"
                             >
                                 <X className="w-3 h-3" />
                             </button>

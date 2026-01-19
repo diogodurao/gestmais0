@@ -1,10 +1,9 @@
+import { Suspense } from "react"
 import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
-import { getOccurrences } from "@/lib/actions/occurrences"
 import { ROUTES } from "@/lib/routes"
 import { OccurrencesList } from "@/components/dashboard/occurrences/OccurrencesList"
-
-export const dynamic = 'force-dynamic'
+import { getCachedOccurrences } from "@/lib/cache/dashboard.cache"
 
 export default async function OccurrencesPage() {
     const session = await requireSession()
@@ -18,17 +17,58 @@ export default async function OccurrencesPage() {
         redirect(ROUTES.DASHBOARD.HOME)
     }
 
-    const occurrences = await getOccurrences(buildingId)
-
     return (
         <div className="p-4 md:p-6">
-            <OccurrencesList
-                buildingId={buildingId}
-                initialOccurrences={occurrences.map(o => ({ ...o, status: o.status as any }))}
-                currentUserId={session.user.id}
-                currentUserName={session.user.name || "Utilizador"}
-                isManager={isManager}
-            />
+            <Suspense fallback={<OccurrencesListSkeleton />}>
+                <OccurrencesContent
+                    buildingId={buildingId}
+                    currentUserId={session.user.id}
+                    currentUserName={session.user.name || "Utilizador"}
+                    isManager={isManager}
+                />
+            </Suspense>
+        </div>
+    )
+}
+
+async function OccurrencesContent({
+    buildingId,
+    currentUserId,
+    currentUserName,
+    isManager,
+}: {
+    buildingId: string
+    currentUserId: string
+    currentUserName: string
+    isManager: boolean
+}) {
+    const occurrences = await getCachedOccurrences(buildingId)
+
+    return (
+        <OccurrencesList
+            buildingId={buildingId}
+            initialOccurrences={occurrences}
+            currentUserId={currentUserId}
+            currentUserName={currentUserName}
+            isManager={isManager}
+        />
+    )
+}
+
+function OccurrencesListSkeleton() {
+    return (
+        <div className="space-y-4">
+            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+            </div>
+            <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+            </div>
         </div>
     )
 }

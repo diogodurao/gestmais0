@@ -41,10 +41,13 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
         buildingInfo = building;
         buildingCode = building.code;
 
-        const evaluationStatusResult = await getEvaluationStatus(building.id);
+        // Parallel fetch: these queries are independent
+        const [evaluationStatusResult, apartmentsResult] = await Promise.all([
+            getEvaluationStatus(building.id),
+            getBuildingApartments(building.id)
+        ]);
         evaluationStatus = evaluationStatusResult;
-
-        apartmentsData = await getBuildingApartments(building.id);
+        apartmentsData = apartmentsResult;
 
         // Check if manager has claimed a unit
         // We need to check if the valid apartments list contains one assigned to the current user
@@ -83,8 +86,14 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
             );
         }
 
-        residents = await getBuildingResidents(building.id);
-        unclaimedUnits = await getUnclaimedApartments(building.id);
+        // Parallel fetch: residents, unclaimed units, and next event are independent
+        const [residentsResult, unclaimedResult, event] = await Promise.all([
+            getBuildingResidents(building.id),
+            getUnclaimedApartments(building.id),
+            getNextUpcomingEvent(building.id)
+        ]);
+        residents = residentsResult;
+        unclaimedUnits = unclaimedResult;
 
         // Get manager's apartment for MyUnitPanel (reuse managerApt from above)
         if (managerApt) {
@@ -94,8 +103,6 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
             };
         }
 
-        // Get next upcoming event
-        const event = await getNextUpcomingEvent(building.id);
         if (event) {
             nextEvent = {
                 title: event.title,

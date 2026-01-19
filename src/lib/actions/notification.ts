@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { after } from "next/server"
 import { requireSession } from "@/lib/auth-helpers"
 import { notificationService, CreateNotificationInput, CreateBulkNotificationInput } from "@/services/notification.service"
 import { sendPushNotification } from "@/lib/actions/push-notifications"
@@ -45,15 +46,23 @@ export async function deleteNotification(notificationId: number) {
 
 // Notify single user
 export async function createNotification(input: CreateNotificationInput) {
-    // Send push (fire and forget to not block)
-    sendPushNotification(
-        input.userId,
-        input.title,
-        input.message || '',
-        input.link || '/'
-    ).catch(e => console.error("Push error:", e))
+    const result = await notificationService.create(input)
 
-    return await notificationService.create(input)
+    // Send push notification after response (non-blocking)
+    after(async () => {
+        try {
+            await sendPushNotification(
+                input.userId,
+                input.title,
+                input.message || '',
+                input.link || '/'
+            )
+        } catch (e) {
+            console.error("Push error:", e)
+        }
+    })
+
+    return result
 }
 
 // Notify all building residents
@@ -66,20 +75,26 @@ export async function notifyBuildingResidents(
         ? userIds.filter(id => id !== excludeUserId)
         : userIds
 
-    // Send push to all (fire and forget)
-    filteredUserIds.forEach(userId => {
-        sendPushNotification(
-            userId,
-            input.title,
-            input.message || '',
-            input.link || '/'
-        ).catch(e => console.error("Push error:", e))
-    })
-
-    return await notificationService.createBulk({
+    const result = await notificationService.createBulk({
         ...input,
         userIds: filteredUserIds,
     })
+
+    // Send push notifications after response (non-blocking)
+    after(async () => {
+        await Promise.all(
+            filteredUserIds.map(userId =>
+                sendPushNotification(
+                    userId,
+                    input.title,
+                    input.message || '',
+                    input.link || '/'
+                ).catch(e => console.error("Push error:", e))
+            )
+        )
+    })
+
+    return result
 }
 
 // Cleanup old notifications (call from cron job or scheduled task)

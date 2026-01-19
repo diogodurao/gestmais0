@@ -20,17 +20,21 @@ export async function getDashboardContext(session: { user: SessionUser } | null)
             // Residents need: buildingId + claimed apartment + IBAN
             const hasBuildingId = !!session.user.buildingId
             const hasIban = !!session.user.iban
-            if (hasBuildingId && hasIban) {
-                const apartment = await getResidentApartment()
-                setupComplete = !!apartment
-                residentApartment = apartment
-            } else {
-                setupComplete = false
-            }
 
-            // Fetch building for resident to show in header
-            if (session.user.buildingId) {
-                const details = await getResidentBuildingDetails(session.user.buildingId)
+            // Parallel fetch: apartment and building details are independent
+            if (hasBuildingId) {
+                const [apartment, details] = await Promise.all([
+                    hasIban ? getResidentApartment() : Promise.resolve(null),
+                    getResidentBuildingDetails(session.user.buildingId!)
+                ])
+
+                if (hasIban) {
+                    setupComplete = !!apartment
+                    residentApartment = apartment
+                } else {
+                    setupComplete = false
+                }
+
                 if (details?.building) {
                     const b = details.building
                     activeBuilding = {
@@ -43,6 +47,8 @@ export async function getDashboardContext(session: { user: SessionUser } | null)
                         isOwner: false
                     }
                 }
+            } else {
+                setupComplete = false
             }
         } else if (isManager(sessionUser)) {
             // Fetch their buildings for the selector
@@ -65,10 +71,14 @@ export async function getDashboardContext(session: { user: SessionUser } | null)
             const activeBuildingId = session.user.activeBuildingId || (buildings.length > 0 ? buildings[0].building.id : null)
 
             if (activeBuildingId) {
-                const activeBuildingData = await getBuilding(activeBuildingId)
+                // Parallel fetch: building data and apartments are independent
+                const [activeBuildingData, apartments] = await Promise.all([
+                    getBuilding(activeBuildingId),
+                    getBuildingApartments(activeBuildingId)
+                ])
+
                 if (activeBuildingData) {
                     buildingDone = isBuildingComplete(activeBuildingData)
-                    const apartments = await getBuildingApartments(activeBuildingId)
                     unitsDone = isUnitsComplete(
                         activeBuildingData.totalApartments,
                         apartments

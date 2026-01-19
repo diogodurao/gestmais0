@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { X } from "lucide-react"
@@ -12,6 +13,12 @@ export function MobileNav() {
     const { isMobileOpen, closeMobile } = useSidebar()
     const pathname = usePathname()
     const { session, activeBuilding, setupComplete } = useDashboard()
+    const [pendingHref, setPendingHref] = useState<string | null>(null)
+
+    // Reset pending state when navigation completes
+    useEffect(() => {
+        setPendingHref(null)
+    }, [pathname])
 
     // Reuse the same logic as Sidebar
     const userRole = session?.role || "resident"
@@ -52,13 +59,17 @@ export function MobileNav() {
 
                 <nav className="flex-1 px-1.5 py-1.5 space-y-0.5">
                     {filteredItems.map((item) => {
-                        const isActive = pathname === item.href
+                        // Show as active if: actually active OR pending navigation to this item
+                        const isActive = pathname === item.href || pendingHref === item.href
 
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                onClick={closeMobile}
+                                onClick={() => {
+                                    setPendingHref(item.href)
+                                    closeMobile()
+                                }}
                                 className={cn(
                                     "flex items-center gap-2 rounded px-1.5 py-1.5 text-label transition-colors",
                                     isActive
