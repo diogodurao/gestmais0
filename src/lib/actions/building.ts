@@ -11,33 +11,38 @@ import {
 } from "@/lib/zod-schemas"
 import { ActionResult } from "@/lib/types"
 
-// Auth check should ideally be here if not passed in, but userId implies trusted context or already extracted
+// ==========================================
+// MANAGER ACTIONS
+// ==========================================
+
 export async function getOrCreateManagerBuilding() {
     const session = await requireManagerSession()
-    return await buildingService.getOrCreateManagerBuilding(session.user.id)
+    const result = await buildingService.getOrCreateManagerBuilding(session.user.id)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 export async function createNewBuilding(name: string, nif: string): Promise<ActionResult<{ id: string; name: string }>> {
     const session = await requireManagerSession()
-    try {
-        const validated = createBuildingSchema.safeParse({ name, nif })
-        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+    const validated = createBuildingSchema.safeParse({ name, nif })
+    if (!validated.success) return { success: false, error: validated.error.issues[0].message }
 
-        const result = await buildingService.createNewBuilding(session.user.id, validated.data.name, validated.data.nif || "N/A")
-        return { success: true, data: result }
-    } catch (error) {
-        return { success: false, error: "Failed to create building" }
-    }
+    const result = await buildingService.createNewBuilding(session.user.id, validated.data.name, validated.data.nif || "N/A")
+    if (!result.success) return result
+    return { success: true, data: { id: result.data.id, name: result.data.name } }
 }
 
 export async function getManagerBuildings() {
     const session = await requireManagerSession()
-    return await buildingService.getManagerBuildings(session.user.id)
+    const result = await buildingService.getManagerBuildings(session.user.id)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 export async function switchActiveBuilding(buildingId: string) {
     const { session } = await requireBuildingAccess(buildingId)
-    await buildingService.switchActiveBuilding(session.user.id, buildingId)
+    const result = await buildingService.switchActiveBuilding(session.user.id, buildingId)
+    if (!result.success) throw new Error(result.error)
     return true
 }
 
@@ -47,42 +52,38 @@ export async function switchActiveBuilding(buildingId: string) {
 
 export async function joinBuilding(code: string): Promise<ActionResult<{ id: string; name: string }>> {
     const session = await requireResidentSession()
-    try {
-        const result = await buildingService.joinBuilding(session.user.id, code)
-        return { success: true, data: result }
-    } catch (error) {
-        // console.error("Error joining building:", error)
-        const msg = error instanceof Error ? error.message : "Failed to join building"
-        return { success: false, error: msg }
-    }
+    const result = await buildingService.joinBuilding(session.user.id, code)
+    if (!result.success) return result
+    return { success: true, data: { id: result.data.id, name: result.data.name } }
 }
 
 export async function getResidentBuildingDetails(buildingId: string) {
-    await requireResidentSession() // Ensure authenticated as resident
-    return await buildingService.getResidentBuildingDetails(buildingId)
+    await requireResidentSession()
+    const result = await buildingService.getResidentBuildingDetails(buildingId)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 export async function claimApartment(apartmentId: number): Promise<ActionResult<{ id: number; unit: string }>> {
     const session = await requireSession()
-    try {
-        const result = await buildingService.claimApartment(session.user.id, apartmentId)
-        revalidatePath(ROUTES.DASHBOARD.HOME)
-        return { success: true, data: result }
-    } catch (error) {
-        // console.error("Error claiming apartment:", error)
-        const msg = error instanceof Error ? error.message : "Failed to claim apartment"
-        return { success: false, error: msg }
-    }
+    const result = await buildingService.claimApartment(session.user.id, apartmentId)
+    if (!result.success) return result
+    revalidatePath(ROUTES.DASHBOARD.HOME)
+    return { success: true, data: { id: result.data.id, unit: result.data.unit } }
 }
 
 export async function getResidentApartment() {
     const session = await requireResidentSession()
-    return await buildingService.getResidentApartment(session.user.id)
+    const result = await buildingService.getResidentApartment(session.user.id)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 export async function getUnclaimedApartments(buildingId: string) {
-    await requireSession() // Any authenticated user can see unclaimed apartments (needed for claiming)
-    return await buildingService.getUnclaimedApartments(buildingId)
+    await requireSession()
+    const result = await buildingService.getUnclaimedApartments(buildingId)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 // ==========================================
@@ -91,17 +92,23 @@ export async function getUnclaimedApartments(buildingId: string) {
 
 export async function getBuildingResidents(buildingId: string) {
     await requireBuildingAccess(buildingId)
-    return await buildingService.getBuildingResidents(buildingId)
+    const result = await buildingService.getBuildingResidents(buildingId)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 export async function getBuilding(buildingId: string) {
     await requireBuildingAccess(buildingId)
-    return await buildingService.getBuilding(buildingId)
+    const result = await buildingService.getBuilding(buildingId)
+    if (!result.success) return null
+    return result.data
 }
 
 export async function getBuildingApartments(buildingId: string) {
     await requireBuildingAccess(buildingId)
-    return await buildingService.getBuildingApartments(buildingId)
+    const result = await buildingService.getBuildingApartments(buildingId)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 export async function updateBuilding(
@@ -119,27 +126,21 @@ export async function updateBuilding(
     }
 ): Promise<ActionResult<{ id: string }>> {
     await requireBuildingAccess(buildingId)
-    try {
-        const validated = updateBuildingSchema.safeParse(data)
-        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+    const validated = updateBuildingSchema.safeParse(data)
+    if (!validated.success) return { success: false, error: validated.error.issues[0].message }
 
-        const updated = await buildingService.updateBuilding(buildingId, validated.data)
-        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
-        return { success: true, data: updated }
-    } catch (error) {
-        return { success: false, error: "Failed to update building" }
-    }
+    const result = await buildingService.updateBuilding(buildingId, validated.data)
+    if (!result.success) return result
+    revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+    return { success: true, data: { id: result.data.id } }
 }
 
-export async function completeBuildingSetup(buildingId: string): Promise<ActionResult<any>> {
+export async function completeBuildingSetup(buildingId: string): Promise<ActionResult<{ id: string }>> {
     await requireBuildingAccess(buildingId)
-    try {
-        const updated = await buildingService.completeBuildingSetup(buildingId)
-        revalidatePath(ROUTES.DASHBOARD.HOME)
-        return { success: true, data: updated }
-    } catch (error) {
-        return { success: false, error: "Failed to complete setup" }
-    }
+    const result = await buildingService.completeBuildingSetup(buildingId)
+    if (!result.success) return result
+    revalidatePath(ROUTES.DASHBOARD.HOME)
+    return { success: true, data: { id: result.data.id } }
 }
 
 // ==========================================
@@ -151,63 +152,46 @@ export async function createApartment(
     data: { unit: string; permillage?: number | null }
 ): Promise<ActionResult<{ id: number; unit: string }>> {
     await requireBuildingAccess(buildingId)
-    try {
-        const validated = createApartmentSchema.safeParse(data)
-        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+    const validated = createApartmentSchema.safeParse(data)
+    if (!validated.success) return { success: false, error: validated.error.issues[0].message }
 
-        const result = await buildingService.createApartment(buildingId, validated.data)
-        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
-        return { success: true, data: result }
-    } catch (error) {
-        return { success: false, error: "Failed to create apartment" }
-    }
+    const result = await buildingService.createApartment(buildingId, validated.data)
+    if (!result.success) return result
+    revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+    return { success: true, data: { id: result.data.id, unit: result.data.unit } }
 }
 
 export async function updateApartment(
     apartmentId: number,
     data: { unit?: string; permillage?: number | null }
 ): Promise<ActionResult<{ id: number; unit: string }>> {
-    // Indirect check via requireApartmentAccess would be better, but for now:
-    // We don't have buildingId here easily without fetching.
-    // TODO: Ideally refactor service to check auth, or fetch apartment -> building here.
-    // Optimization: Assume buildingService handles it? No, service is unprotected.
-    // Let's use our new helper.
     const { requireApartmentAccess } = await import("@/lib/auth-helpers")
     await requireApartmentAccess(apartmentId)
 
-    try {
-        const validated = updateApartmentSchema.safeParse(data)
-        if (!validated.success) return { success: false, error: validated.error.issues[0].message }
+    const validated = updateApartmentSchema.safeParse(data)
+    if (!validated.success) return { success: false, error: validated.error.issues[0].message }
 
-        const result = await buildingService.updateApartment(apartmentId, validated.data)
-        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
-        return { success: true, data: result }
-    } catch (error) {
-        return { success: false, error: "Failed to update apartment" }
-    }
+    const result = await buildingService.updateApartment(apartmentId, validated.data)
+    if (!result.success) return result
+    revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+    return { success: true, data: { id: result.data.id, unit: result.data.unit } }
 }
 
 export async function deleteApartment(apartmentId: number): Promise<ActionResult<void>> {
     const { requireApartmentAccess } = await import("@/lib/auth-helpers")
     await requireApartmentAccess(apartmentId)
-    try {
-        await buildingService.deleteApartment(apartmentId)
-        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
-        revalidatePath(ROUTES.DASHBOARD.PAYMENTS)
-        return { success: true, data: undefined }
-    } catch (error) {
-        const msg = error instanceof Error ? error.message : "Failed to delete apartment"
-        return { success: false, error: msg }
-    }
+
+    const result = await buildingService.deleteApartment(apartmentId)
+    if (!result.success) return { success: false, error: result.error }
+    revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+    revalidatePath(ROUTES.DASHBOARD.PAYMENTS)
+    return { success: true, data: undefined }
 }
 
 export async function bulkDeleteApartments(apartmentIds: number[]): Promise<ActionResult<boolean>> {
-    await requireSession() // Simple auth check
-    try {
-        await buildingService.bulkDeleteApartments(apartmentIds)
-        revalidatePath(ROUTES.DASHBOARD.SETTINGS)
-        return { success: true, data: true }
-    } catch (error) {
-        return { success: false, error: "Failed to delete apartments" }
-    }
+    await requireSession()
+    const result = await buildingService.bulkDeleteApartments(apartmentIds)
+    if (!result.success) return result
+    revalidatePath(ROUTES.DASHBOARD.SETTINGS)
+    return { success: true, data: true }
 }

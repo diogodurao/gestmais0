@@ -1,7 +1,7 @@
 import { db } from "@/db"
 import { polls, pollVotes, user, apartments } from "@/db/schema"
 import { eq, and, desc, sql, count } from "drizzle-orm"
-import { PollStatus, PollType, PollWeightMode } from "@/lib/types"
+import { PollStatus, PollType, PollWeightMode, ActionResult, Ok, Err, ErrorCodes, ErrorCode } from "@/lib/types"
 
 export interface CreatePollInput {
     buildingId: string
@@ -9,16 +9,51 @@ export interface CreatePollInput {
     description?: string
     type: PollType
     weightMode: PollWeightMode
-    options?: string[] // Required for choice types
+    options?: string[]
 }
 
 export interface CastVoteInput {
     pollId: number
-    vote: string | string[] // "yes"/"no"/"abstain" or ["Option A"] or ["Option A", "Option B"]
+    vote: string | string[]
+}
+
+type PollRow = {
+    id: number
+    buildingId: string
+    title: string
+    description: string | null
+    type: PollType
+    weightMode: PollWeightMode
+    status: PollStatus
+    options: string[] | null
+    createdBy: string
+    createdAt: Date
+    closedAt: Date | null
+    creatorName: string | null
+    voteCount?: number
+}
+
+type VoteRow = {
+    id: number
+    pollId: number
+    userId: string
+    apartmentId: number | null
+    vote: string | string[]
+    createdAt: Date
+    updatedAt: Date | null
+    userName: string | null
+    apartmentPermillage: number | null
+    apartmentUnit: string | null
+}
+
+type PollResults = {
+    results: Record<string, number>
+    totalWeight: number
+    voteCount: number
 }
 
 export class PollService {
-    async getByBuilding(buildingId: string, status?: PollStatus) {
+    async getByBuilding(buildingId: string, status?: PollStatus): Promise<ActionResult<PollRow[]>> {
         const conditions = [eq(polls.buildingId, buildingId)]
         if (status) {
             conditions.push(eq(polls.status, status))
@@ -39,7 +74,7 @@ export class PollService {
                 closedAt: polls.closedAt,
                 creatorName: user.name,
                 voteCount: sql<number>`(
-                    SELECT COUNT(*) FROM poll_votes 
+                    SELECT COUNT(*) FROM poll_votes
                     WHERE poll_id = ${polls.id}
                 )`.as('vote_count'),
             })
@@ -48,10 +83,10 @@ export class PollService {
             .where(and(...conditions))
             .orderBy(desc(polls.createdAt))
 
-        return results
+        return Ok(results)
     }
 
-    async getById(id: number) {
+    async getById(id: number): Promise<ActionResult<PollRow | null>> {
         const [result] = await db
             .select({
                 id: polls.id,
@@ -72,10 +107,10 @@ export class PollService {
             .where(eq(polls.id, id))
             .limit(1)
 
-        return result || null
+        return Ok(result || null)
     }
 
-    async create(input: CreatePollInput, userId: string) {
+    async create(input: CreatePollInput, userId: string): Promise<ActionResult<typeof polls.$inferSelect>> {
         const [created] = await db
             .insert(polls)
             .values({
@@ -89,10 +124,15 @@ export class PollService {
             })
             .returning()
 
-        return created
+        return Ok(created)
     }
 
-    async close(id: number) {
+    async close(id: number): Promise<ActionResult<typeof polls.$inferSelect>> {
+        const existing = await db.select().from(polls).where(eq(polls.id, id)).limit(1)
+        if (!existing.length) {
+            return Err("Votação não encontrada", ErrorCodes.POLL_NOT_FOUND)
+        }
+
         const [updated] = await db
             .update(polls)
             .set({
@@ -102,27 +142,41 @@ export class PollService {
             .where(eq(polls.id, id))
             .returning()
 
-        return updated
+        return Ok(updated)
     }
 
-    async delete(id: number) {
-        // Only delete if no votes
-        const voteCount = await db
-            .select({ count: count() })
-            .from(pollVotes)
-            .where(eq(pollVotes.pollId, id))
+    async delete(id: number): Promise<ActionResult<boolean>> {
+        // Use transaction to prevent race condition between vote count check and delete
+        type TxResult = { success: true } | { error: string; code: ErrorCode }
 
-        if (voteCount[0].count > 0) {
-            throw new Error("Cannot delete poll with votes")
+        const result: TxResult = await db.transaction(async (tx) => {
+            const existing = await tx.select().from(polls).where(eq(polls.id, id)).limit(1)
+            if (!existing.length) {
+                return { error: "Votação não encontrada", code: ErrorCodes.POLL_NOT_FOUND }
+            }
+
+            const [voteCount] = await tx
+                .select({ count: count() })
+                .from(pollVotes)
+                .where(eq(pollVotes.pollId, id))
+
+            if (voteCount.count > 0) {
+                return { error: "Não é possível eliminar votação com votos", code: ErrorCodes.POLL_HAS_VOTES }
+            }
+
+            await tx.delete(polls).where(eq(polls.id, id))
+            return { success: true }
+        })
+
+        if ('error' in result) {
+            return Err(result.error, result.code)
         }
-
-        await db.delete(polls).where(eq(polls.id, id))
-        return true
+        return Ok(true)
     }
 
     // Votes
-    async getVotes(pollId: number) {
-        return await db
+    async getVotes(pollId: number): Promise<ActionResult<VoteRow[]>> {
+        const results = await db
             .select({
                 id: pollVotes.id,
                 pollId: pollVotes.pollId,
@@ -133,16 +187,18 @@ export class PollService {
                 updatedAt: pollVotes.updatedAt,
                 userName: user.name,
                 apartmentPermillage: apartments.permillage,
-                apartmentUnit: apartments.unit, // e.g., "3B", "T2-A"
+                apartmentUnit: apartments.unit,
             })
             .from(pollVotes)
             .leftJoin(user, eq(pollVotes.userId, user.id))
             .leftJoin(apartments, eq(pollVotes.apartmentId, apartments.id))
             .where(eq(pollVotes.pollId, pollId))
             .orderBy(pollVotes.createdAt)
+
+        return Ok(results)
     }
 
-    async getUserVote(pollId: number, userId: string) {
+    async getUserVote(pollId: number, userId: string): Promise<ActionResult<typeof pollVotes.$inferSelect | null>> {
         const [vote] = await db
             .select()
             .from(pollVotes)
@@ -152,14 +208,16 @@ export class PollService {
             ))
             .limit(1)
 
-        return vote || null
+        return Ok(vote || null)
     }
 
-    async castVote(input: CastVoteInput, userId: string, apartmentId: number | null) {
-        const existingVote = await this.getUserVote(input.pollId, userId)
+    async castVote(input: CastVoteInput, userId: string, apartmentId: number | null): Promise<ActionResult<typeof pollVotes.$inferSelect>> {
+        const existingResult = await this.getUserVote(input.pollId, userId)
+        if (!existingResult.success) return existingResult
+
+        const existingVote = existingResult.data
 
         if (existingVote) {
-            // Update existing vote
             const [updated] = await db
                 .update(pollVotes)
                 .set({
@@ -169,9 +227,8 @@ export class PollService {
                 .where(eq(pollVotes.id, existingVote.id))
                 .returning()
 
-            return updated
+            return Ok(updated)
         } else {
-            // Create new vote
             const [created] = await db
                 .insert(pollVotes)
                 .values({
@@ -182,25 +239,30 @@ export class PollService {
                 })
                 .returning()
 
-            return created
+            return Ok(created)
         }
     }
 
-    async getVoteCount(pollId: number) {
+    async getVoteCount(pollId: number): Promise<ActionResult<number>> {
         const [result] = await db
             .select({ count: count() })
             .from(pollVotes)
             .where(eq(pollVotes.pollId, pollId))
 
-        return result.count
+        return Ok(result.count)
     }
 
-    // Calculate results with optional weighting
-    async calculateResults(pollId: number) {
-        const poll = await this.getById(pollId)
-        if (!poll) return null
+    async calculateResults(pollId: number): Promise<ActionResult<PollResults | null>> {
+        const pollResult = await this.getById(pollId)
+        if (!pollResult.success) return pollResult
+        if (!pollResult.data) return Ok(null)
 
-        const votes = await this.getVotes(pollId)
+        const poll = pollResult.data
+
+        const votesResult = await this.getVotes(pollId)
+        if (!votesResult.success) return votesResult
+
+        const votes = votesResult.data
         const isWeighted = poll.weightMode === 'permilagem'
 
         if (poll.type === 'yes_no') {
@@ -216,14 +278,12 @@ export class PollService {
                 totalWeight += weight
             }
 
-            return { results, totalWeight, voteCount: votes.length }
+            return Ok({ results, totalWeight, voteCount: votes.length })
         } else {
-            // Single or multiple choice
             const results: Record<string, number> = {}
             let totalWeight = 0
             let abstainWeight = 0
 
-            // Initialize options
             if (poll.options) {
                 for (const opt of poll.options) {
                     results[opt] = 0
@@ -248,7 +308,7 @@ export class PollService {
             }
 
             results['abstain'] = abstainWeight
-            return { results, totalWeight, voteCount: votes.length }
+            return Ok({ results, totalWeight, voteCount: votes.length })
         }
     }
 }

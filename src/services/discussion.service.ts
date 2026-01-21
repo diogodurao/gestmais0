@@ -1,6 +1,7 @@
 import { db } from "@/db"
 import { discussions, discussionComments, user } from "@/db/schema"
-import { eq, and, desc, sql, count } from "drizzle-orm"
+import { eq, desc, sql, count } from "drizzle-orm"
+import { ActionResult, Ok, Err, ErrorCodes } from "@/lib/types"
 
 export interface CreateDiscussionInput {
     buildingId: string
@@ -13,8 +14,34 @@ export interface UpdateDiscussionInput {
     content?: string | null
 }
 
+type DiscussionRow = {
+    id: number
+    buildingId: string
+    title: string
+    content: string | null
+    isPinned: boolean
+    isClosed: boolean
+    createdBy: string
+    createdAt: Date
+    updatedAt: Date | null
+    lastActivityAt: Date
+    creatorName: string | null
+    commentCount?: number
+}
+
+type CommentRow = {
+    id: number
+    discussionId: number
+    content: string
+    isEdited: boolean
+    createdBy: string
+    createdAt: Date
+    updatedAt: Date | null
+    creatorName: string | null
+}
+
 export class DiscussionService {
-    async getByBuilding(buildingId: string) {
+    async getByBuilding(buildingId: string): Promise<ActionResult<DiscussionRow[]>> {
         const results = await db
             .select({
                 id: discussions.id,
@@ -29,7 +56,7 @@ export class DiscussionService {
                 lastActivityAt: discussions.lastActivityAt,
                 creatorName: user.name,
                 commentCount: sql<number>`(
-                    SELECT COUNT(*) FROM discussion_comments 
+                    SELECT COUNT(*) FROM discussion_comments
                     WHERE discussion_id = ${discussions.id}
                 )`.as('comment_count'),
             })
@@ -41,10 +68,10 @@ export class DiscussionService {
                 desc(discussions.lastActivityAt)
             )
 
-        return results
+        return Ok(results)
     }
 
-    async getById(id: number) {
+    async getById(id: number): Promise<ActionResult<DiscussionRow | null>> {
         const [result] = await db
             .select({
                 id: discussions.id,
@@ -64,10 +91,10 @@ export class DiscussionService {
             .where(eq(discussions.id, id))
             .limit(1)
 
-        return result || null
+        return Ok(result || null)
     }
 
-    async create(input: CreateDiscussionInput, userId: string) {
+    async create(input: CreateDiscussionInput, userId: string): Promise<ActionResult<typeof discussions.$inferSelect>> {
         const [created] = await db
             .insert(discussions)
             .values({
@@ -78,10 +105,15 @@ export class DiscussionService {
             })
             .returning()
 
-        return created
+        return Ok(created)
     }
 
-    async update(id: number, data: UpdateDiscussionInput) {
+    async update(id: number, data: UpdateDiscussionInput): Promise<ActionResult<typeof discussions.$inferSelect>> {
+        const existing = await db.select().from(discussions).where(eq(discussions.id, id)).limit(1)
+        if (!existing.length) {
+            return Err("Discussão não encontrada", ErrorCodes.DISCUSSION_NOT_FOUND)
+        }
+
         const [updated] = await db
             .update(discussions)
             .set({
@@ -91,49 +123,62 @@ export class DiscussionService {
             .where(eq(discussions.id, id))
             .returning()
 
-        return updated
+        return Ok(updated)
     }
 
-    async togglePin(id: number) {
-        const discussion = await this.getById(id)
-        if (!discussion) return null
+    async togglePin(id: number): Promise<ActionResult<typeof discussions.$inferSelect>> {
+        const discussionResult = await this.getById(id)
+        if (!discussionResult.success) return discussionResult
+        if (!discussionResult.data) {
+            return Err("Discussão não encontrada", ErrorCodes.DISCUSSION_NOT_FOUND)
+        }
 
         const [updated] = await db
             .update(discussions)
-            .set({ isPinned: !discussion.isPinned })
+            .set({ isPinned: !discussionResult.data.isPinned })
             .where(eq(discussions.id, id))
             .returning()
 
-        return updated
+        return Ok(updated)
     }
 
-    async close(id: number) {
+    async close(id: number): Promise<ActionResult<typeof discussions.$inferSelect>> {
+        const existing = await db.select().from(discussions).where(eq(discussions.id, id)).limit(1)
+        if (!existing.length) {
+            return Err("Discussão não encontrada", ErrorCodes.DISCUSSION_NOT_FOUND)
+        }
+
         const [updated] = await db
             .update(discussions)
             .set({ isClosed: true })
             .where(eq(discussions.id, id))
             .returning()
 
-        return updated
+        return Ok(updated)
     }
 
-    async delete(id: number) {
+    async delete(id: number): Promise<ActionResult<boolean>> {
+        const existing = await db.select().from(discussions).where(eq(discussions.id, id)).limit(1)
+        if (!existing.length) {
+            return Err("Discussão não encontrada", ErrorCodes.DISCUSSION_NOT_FOUND)
+        }
+
         await db.delete(discussions).where(eq(discussions.id, id))
-        return true
+        return Ok(true)
     }
 
-    async getCommentCount(id: number) {
+    async getCommentCount(id: number): Promise<ActionResult<number>> {
         const [result] = await db
             .select({ count: count() })
             .from(discussionComments)
             .where(eq(discussionComments.discussionId, id))
 
-        return result.count
+        return Ok(result.count)
     }
 
     // Comments
-    async getComments(discussionId: number) {
-        return await db
+    async getComments(discussionId: number): Promise<ActionResult<CommentRow[]>> {
+        const results = await db
             .select({
                 id: discussionComments.id,
                 discussionId: discussionComments.discussionId,
@@ -147,10 +192,12 @@ export class DiscussionService {
             .from(discussionComments)
             .leftJoin(user, eq(discussionComments.createdBy, user.id))
             .where(eq(discussionComments.discussionId, discussionId))
-            .orderBy(discussionComments.createdAt) // Chronological (oldest first)
+            .orderBy(discussionComments.createdAt)
+
+        return Ok(results)
     }
 
-    async addComment(discussionId: number, content: string, userId: string) {
+    async addComment(discussionId: number, content: string, userId: string): Promise<ActionResult<typeof discussionComments.$inferSelect>> {
         const [created] = await db
             .insert(discussionComments)
             .values({
@@ -166,10 +213,15 @@ export class DiscussionService {
             .set({ lastActivityAt: new Date() })
             .where(eq(discussions.id, discussionId))
 
-        return created
+        return Ok(created)
     }
 
-    async updateComment(commentId: number, content: string) {
+    async updateComment(commentId: number, content: string): Promise<ActionResult<typeof discussionComments.$inferSelect>> {
+        const existing = await db.select().from(discussionComments).where(eq(discussionComments.id, commentId)).limit(1)
+        if (!existing.length) {
+            return Err("Comentário não encontrado", ErrorCodes.COMMENT_NOT_FOUND)
+        }
+
         const [updated] = await db
             .update(discussionComments)
             .set({
@@ -180,22 +232,27 @@ export class DiscussionService {
             .where(eq(discussionComments.id, commentId))
             .returning()
 
-        return updated
+        return Ok(updated)
     }
 
-    async deleteComment(commentId: number) {
+    async deleteComment(commentId: number): Promise<ActionResult<boolean>> {
+        const existing = await db.select().from(discussionComments).where(eq(discussionComments.id, commentId)).limit(1)
+        if (!existing.length) {
+            return Err("Comentário não encontrado", ErrorCodes.COMMENT_NOT_FOUND)
+        }
+
         await db.delete(discussionComments).where(eq(discussionComments.id, commentId))
-        return true
+        return Ok(true)
     }
 
-    async getCommentById(commentId: number) {
+    async getCommentById(commentId: number): Promise<ActionResult<typeof discussionComments.$inferSelect | null>> {
         const [comment] = await db
             .select()
             .from(discussionComments)
             .where(eq(discussionComments.id, commentId))
             .limit(1)
 
-        return comment || null
+        return Ok(comment || null)
     }
 }
 

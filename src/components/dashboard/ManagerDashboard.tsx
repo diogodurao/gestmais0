@@ -165,7 +165,7 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
                                     </div>
                                     <h3 className="font-medium text-[#495057] text-[11px] uppercase mb-1">Subscrição necessária</h3>
                                     <p className="text-[10px] text-[#8E9AAF] mb-4">Subscreva para gerir residentes e registos financeiros.</p>
-                                    <a href="/dashboard/settings?tab=payments" className="px-4 py-1.5 bg-[#343A40] text-white text-[10px] font-medium rounded hover:bg-[#495057] transition-colors">
+                                    <a href="/dashboard/settings?tab=subscription" className="px-4 py-1.5 bg-[#343A40] text-white text-[10px] font-medium rounded hover:bg-[#495057] transition-colors">
                                         Subscrever
                                     </a>
                                 </div>

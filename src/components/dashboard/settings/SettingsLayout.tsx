@@ -1,11 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/Card"
 import { TabButton } from "@/components/ui/TabButton"
 import { User, Building, Key, CreditCard, Bell } from "lucide-react"
 
 type SettingsTab = "profile" | "building" | "apartments" | "subscription" | "notifications"
+
+const validTabs: SettingsTab[] = ["profile", "building", "apartments", "subscription", "notifications"]
 
 interface SettingsLayoutProps {
     isManager: boolean
@@ -20,7 +23,19 @@ interface SettingsLayoutProps {
 }
 
 export function SettingsLayout({ isManager, children, defaultTab = "profile" }: SettingsLayoutProps) {
-    const [activeTab, setActiveTab] = useState<SettingsTab>(defaultTab)
+    const searchParams = useSearchParams()
+    const tabFromUrl = searchParams.get("tab")
+    const initialTab = tabFromUrl && validTabs.includes(tabFromUrl as SettingsTab)
+        ? (tabFromUrl as SettingsTab)
+        : defaultTab
+
+    const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab)
+
+    useEffect(() => {
+        if (tabFromUrl && validTabs.includes(tabFromUrl as SettingsTab)) {
+            setActiveTab(tabFromUrl as SettingsTab)
+        }
+    }, [tabFromUrl])
 
     const tabs = [
         { id: "profile" as const, label: "Perfil", icon: <User className="h-3.5 w-3.5" />, show: true },

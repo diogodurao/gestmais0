@@ -5,7 +5,7 @@ import { calendarService } from "@/services/calendar.service"
 import { documentService } from "@/services/document.service"
 import { occurrenceService } from "@/services/occurrence.service"
 import { paymentService } from "@/services/payment.service"
-import type { Document, Occurrence } from "@/lib/types"
+import type { Document, Occurrence, Poll, Discussion } from "@/lib/types"
 
 /**
  * Cached data fetchers for dashboard pages.
@@ -21,20 +21,24 @@ import type { Document, Occurrence } from "@/lib/types"
 // POLLS
 // ============================================================================
 
-export async function getCachedPolls(buildingId: string) {
+export async function getCachedPolls(buildingId: string): Promise<Poll[]> {
     "use cache"
     cacheTag(`polls-${buildingId}`)
     cacheLife("minutes")
 
-    return await pollService.getByBuilding(buildingId)
+    const result = await pollService.getByBuilding(buildingId)
+    if (!result.success) return []
+    return result.data as Poll[]
 }
 
-export async function getCachedPoll(pollId: number) {
+export async function getCachedPoll(pollId: number): Promise<Poll | null> {
     "use cache"
     cacheTag(`poll-${pollId}`)
     cacheLife("minutes")
 
-    return await pollService.getById(pollId)
+    const result = await pollService.getById(pollId)
+    if (!result.success) return null
+    return result.data as Poll | null
 }
 
 export async function getCachedPollVotes(pollId: number) {
@@ -42,27 +46,33 @@ export async function getCachedPollVotes(pollId: number) {
     cacheTag(`poll-votes-${pollId}`)
     cacheLife("seconds")
 
-    return await pollService.getVotes(pollId)
+    const result = await pollService.getVotes(pollId)
+    if (!result.success) return []
+    return result.data
 }
 
 // ============================================================================
 // DISCUSSIONS
 // ============================================================================
 
-export async function getCachedDiscussions(buildingId: string) {
+export async function getCachedDiscussions(buildingId: string): Promise<Discussion[]> {
     "use cache"
     cacheTag(`discussions-${buildingId}`)
     cacheLife("minutes")
 
-    return await discussionService.getByBuilding(buildingId)
+    const result = await discussionService.getByBuilding(buildingId)
+    if (!result.success) return []
+    return result.data as Discussion[]
 }
 
-export async function getCachedDiscussion(discussionId: number) {
+export async function getCachedDiscussion(discussionId: number): Promise<Discussion | null> {
     "use cache"
     cacheTag(`discussion-${discussionId}`)
     cacheLife("minutes")
 
-    return await discussionService.getById(discussionId)
+    const result = await discussionService.getById(discussionId)
+    if (!result.success) return null
+    return result.data as Discussion | null
 }
 
 export async function getCachedDiscussionComments(discussionId: number) {
@@ -70,7 +80,9 @@ export async function getCachedDiscussionComments(discussionId: number) {
     cacheTag(`discussion-comments-${discussionId}`)
     cacheLife("seconds")
 
-    return await discussionService.getComments(discussionId)
+    const result = await discussionService.getComments(discussionId)
+    if (!result.success) return []
+    return result.data
 }
 
 // ============================================================================
@@ -86,7 +98,9 @@ export async function getCachedCalendarEvents(
     cacheTag(`calendar-${buildingId}`, `calendar-${buildingId}-${year}-${month}`)
     cacheLife("hours")
 
-    return await calendarService.getEvents(buildingId, year, month)
+    const result = await calendarService.getEvents(buildingId, year, month)
+    if (!result.success) return []
+    return result.data
 }
 
 export async function getCachedNextUpcomingEvent(buildingId: string) {
@@ -94,7 +108,9 @@ export async function getCachedNextUpcomingEvent(buildingId: string) {
     cacheTag(`calendar-${buildingId}`, `calendar-next-${buildingId}`)
     cacheLife("hours")
 
-    return await calendarService.getNextUpcomingEvent(buildingId)
+    const result = await calendarService.getNextUpcomingEvent(buildingId)
+    if (!result.success) return null
+    return result.data
 }
 
 // ============================================================================
@@ -106,8 +122,9 @@ export async function getCachedDocuments(buildingId: string): Promise<Document[]
     cacheTag(`documents-${buildingId}`)
     cacheLife("hours")
 
-    const docs = await documentService.getByBuilding(buildingId)
-    return docs as Document[]
+    const result = await documentService.getByBuilding(buildingId)
+    if (!result.success) return []
+    return result.data as Document[]
 }
 
 export async function getCachedDocument(documentId: number) {
@@ -115,7 +132,9 @@ export async function getCachedDocument(documentId: number) {
     cacheTag(`document-${documentId}`)
     cacheLife("hours")
 
-    return await documentService.getById(documentId)
+    const result = await documentService.getById(documentId)
+    if (!result.success) return null
+    return result.data
 }
 
 // ============================================================================
@@ -127,8 +146,9 @@ export async function getCachedOccurrences(buildingId: string): Promise<Occurren
     cacheTag(`occurrences-${buildingId}`)
     cacheLife("minutes")
 
-    const occurrences = await occurrenceService.getByBuilding(buildingId)
-    return occurrences as Occurrence[]
+    const result = await occurrenceService.getByBuilding(buildingId)
+    if (!result.success) return []
+    return result.data as Occurrence[]
 }
 
 export async function getCachedOccurrence(occurrenceId: number) {
@@ -136,7 +156,9 @@ export async function getCachedOccurrence(occurrenceId: number) {
     cacheTag(`occurrence-${occurrenceId}`)
     cacheLife("minutes")
 
-    return await occurrenceService.getById(occurrenceId)
+    const result = await occurrenceService.getById(occurrenceId)
+    if (!result.success) return null
+    return result.data
 }
 
 export async function getCachedOccurrenceComments(occurrenceId: number) {
@@ -144,7 +166,9 @@ export async function getCachedOccurrenceComments(occurrenceId: number) {
     cacheTag(`occurrence-comments-${occurrenceId}`)
     cacheLife("seconds")
 
-    return await occurrenceService.getComments(occurrenceId)
+    const result = await occurrenceService.getComments(occurrenceId)
+    if (!result.success) return []
+    return result.data
 }
 
 export async function getCachedOccurrenceAttachments(occurrenceId: number) {
@@ -152,7 +176,9 @@ export async function getCachedOccurrenceAttachments(occurrenceId: number) {
     cacheTag(`occurrence-attachments-${occurrenceId}`)
     cacheLife("minutes")
 
-    return await occurrenceService.getOccurrenceAttachments(occurrenceId)
+    const result = await occurrenceService.getOccurrenceAttachments(occurrenceId)
+    if (!result.success) return []
+    return result.data
 }
 
 // ============================================================================

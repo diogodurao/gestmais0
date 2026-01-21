@@ -9,19 +9,24 @@ import { sendPushNotification } from "@/lib/actions/push-notifications"
 // Get user's notifications
 export async function getNotifications(limit: number = 10) {
     const session = await requireSession()
-    return await notificationService.getUserNotifications(session.user.id, limit)
+    const result = await notificationService.getUserNotifications(session.user.id, limit)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 // Get unread count
 export async function getUnreadCount() {
     const session = await requireSession()
-    return await notificationService.getUnreadCount(session.user.id)
+    const result = await notificationService.getUnreadCount(session.user.id)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 // Mark single notification as read
 export async function markNotificationAsRead(notificationId: number) {
     const session = await requireSession()
-    await notificationService.markAsRead(notificationId, session.user.id)
+    const result = await notificationService.markAsRead(notificationId, session.user.id)
+    if (!result.success) return { success: false, error: result.error }
     revalidatePath("/dashboard")
     return { success: true }
 }
@@ -29,7 +34,8 @@ export async function markNotificationAsRead(notificationId: number) {
 // Mark all as read
 export async function markAllNotificationsAsRead() {
     const session = await requireSession()
-    await notificationService.markAllAsRead(session.user.id)
+    const result = await notificationService.markAllAsRead(session.user.id)
+    if (!result.success) return { success: false, error: result.error }
     revalidatePath("/dashboard")
     return { success: true }
 }
@@ -37,7 +43,8 @@ export async function markAllNotificationsAsRead() {
 // Delete notification
 export async function deleteNotification(notificationId: number) {
     const session = await requireSession()
-    await notificationService.delete(notificationId, session.user.id)
+    const result = await notificationService.delete(notificationId, session.user.id)
+    if (!result.success) return { success: false, error: result.error }
     revalidatePath("/dashboard")
     return { success: true }
 }
@@ -47,6 +54,7 @@ export async function deleteNotification(notificationId: number) {
 // Notify single user
 export async function createNotification(input: CreateNotificationInput) {
     const result = await notificationService.create(input)
+    if (!result.success) return result
 
     // Send push notification after response (non-blocking)
     after(async () => {
@@ -70,7 +78,10 @@ export async function notifyBuildingResidents(
     input: Omit<CreateBulkNotificationInput, 'userIds'>,
     excludeUserId?: string // Optionally exclude the creator
 ) {
-    const userIds = await notificationService.getBuildingResidentIds(input.buildingId)
+    const userIdsResult = await notificationService.getBuildingResidentIds(input.buildingId)
+    if (!userIdsResult.success) return userIdsResult
+
+    const userIds = userIdsResult.data
     const filteredUserIds = excludeUserId
         ? userIds.filter(id => id !== excludeUserId)
         : userIds
@@ -79,6 +90,8 @@ export async function notifyBuildingResidents(
         ...input,
         userIds: filteredUserIds,
     })
+
+    if (!result.success) return result
 
     // Send push notifications after response (non-blocking)
     after(async () => {

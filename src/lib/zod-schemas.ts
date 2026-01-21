@@ -14,7 +14,7 @@ export const updateBuildingSchema = z.object({
     city: z.string().optional().nullable(),
     street: z.string().optional().nullable(),
     number: z.string().optional().nullable(),
-    quotaMode: z.string().optional(),
+    quotaMode: z.enum(["global", "permillage"]).optional(),
     monthlyQuota: z.number().min(0).optional(),
     totalApartments: z.number().int().min(1).optional(),
 })
@@ -70,7 +70,7 @@ export const updateProjectSchema = z.object({
     description: z.string().optional(),
     documentUrl: z.string().optional(),
     documentName: z.string().optional(),
-    status: z.enum(["draft", "active", "completed", "cancelled"]).optional()
+    status: z.enum(["draft", "active", "completed", "cancelled", "archived"]).optional()
 })
 
 export const updateExtraPaymentSchema = z.object({

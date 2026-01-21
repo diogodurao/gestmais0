@@ -1,6 +1,8 @@
 import { db } from "@/db"
 import { calendarEvents } from "@/db/schema"
 import { eq, and, gte, lte, asc } from "drizzle-orm"
+import { ActionResult, Ok, Err, ErrorCodes, CalendarEvent, RecurrenceType } from "@/lib/types"
+import { DEFAULT_RECURRENCE_COUNT } from "@/lib/constants/timing"
 
 export interface CreateEventInput {
     buildingId: string
@@ -10,7 +12,7 @@ export interface CreateEventInput {
     startDate: string
     endDate?: string
     startTime?: string
-    recurrence?: "none" | "weekly" | "biweekly" | "monthly"
+    recurrence?: RecurrenceType
 }
 
 export interface UpdateEventInput {
@@ -23,13 +25,12 @@ export interface UpdateEventInput {
 }
 
 export class CalendarService {
-    async getEvents(buildingId: string, year: number, month: number) {
+    async getEvents(buildingId: string, year: number, month: number): Promise<ActionResult<CalendarEvent[]>> {
         const startOfMonth = `${year}-${String(month).padStart(2, '0')}-01`
-        // Calculate last day of month to avoid invalid dates (e.g. Feb 31)
         const lastDay = new Date(year, month, 0).getDate()
         const endOfMonth = `${year}-${String(month).padStart(2, '0')}-${lastDay}`
 
-        return await db
+        const events = await db
             .select()
             .from(calendarEvents)
             .where(and(
@@ -38,9 +39,11 @@ export class CalendarService {
                 lte(calendarEvents.startDate, endOfMonth)
             ))
             .orderBy(asc(calendarEvents.startDate))
+
+        return Ok(events)
     }
 
-    async createEvent(input: CreateEventInput, userId: string) {
+    async createEvent(input: CreateEventInput, userId: string): Promise<ActionResult<CalendarEvent[]>> {
         const events: typeof calendarEvents.$inferInsert[] = []
         const baseEvent = {
             buildingId: input.buildingId,
@@ -56,8 +59,8 @@ export class CalendarService {
         if (!input.recurrence || input.recurrence === "none") {
             events.push(baseEvent)
         } else {
-            // Generate 4 occurrences
-            for (let i = 0; i < 4; i++) {
+            // Generate recurring occurrences
+            for (let i = 0; i < DEFAULT_RECURRENCE_COUNT; i++) {
                 const date = new Date(input.startDate)
 
                 if (input.recurrence === "weekly") {
@@ -76,33 +79,57 @@ export class CalendarService {
         }
 
         const inserted = await db.insert(calendarEvents).values(events).returning()
-        return inserted
+        return Ok(inserted)
     }
 
-    async updateEvent(eventId: number, data: UpdateEventInput) {
+    async updateEvent(eventId: number, data: UpdateEventInput): Promise<ActionResult<CalendarEvent>> {
+        const existing = await db.select()
+            .from(calendarEvents)
+            .where(eq(calendarEvents.id, eventId))
+            .limit(1)
+
+        if (!existing.length) {
+            return Err("Evento não encontrado", ErrorCodes.EVENT_NOT_FOUND)
+        }
+
         const [updated] = await db
             .update(calendarEvents)
             .set(data)
             .where(eq(calendarEvents.id, eventId))
             .returning()
-        return updated
+
+        return Ok(updated)
     }
 
-    async deleteEvent(eventId: number) {
+    async deleteEvent(eventId: number): Promise<ActionResult<boolean>> {
+        const existing = await db.select()
+            .from(calendarEvents)
+            .where(eq(calendarEvents.id, eventId))
+            .limit(1)
+
+        if (!existing.length) {
+            return Err("Evento não encontrado", ErrorCodes.EVENT_NOT_FOUND)
+        }
+
         await db.delete(calendarEvents).where(eq(calendarEvents.id, eventId))
-        return true
+        return Ok(true)
     }
 
-    async getEventById(eventId: number) {
+    async getEventById(eventId: number): Promise<ActionResult<CalendarEvent>> {
         const [event] = await db
             .select()
             .from(calendarEvents)
             .where(eq(calendarEvents.id, eventId))
             .limit(1)
-        return event || null
+
+        if (!event) {
+            return Err("Evento não encontrado", ErrorCodes.EVENT_NOT_FOUND)
+        }
+
+        return Ok(event)
     }
 
-    async getNextUpcomingEvent(buildingId: string) {
+    async getNextUpcomingEvent(buildingId: string): Promise<ActionResult<CalendarEvent | null>> {
         const today = new Date().toISOString().split('T')[0]
         const [event] = await db
             .select()
@@ -113,7 +140,8 @@ export class CalendarService {
             ))
             .orderBy(asc(calendarEvents.startDate))
             .limit(1)
-        return event || null
+
+        return Ok(event || null)
     }
 }
 

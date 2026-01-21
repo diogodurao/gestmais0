@@ -1,9 +1,9 @@
 "use client"
 
 import { Button } from "@/components/ui/Button"
-import { createCheckoutSession, syncSubscriptionStatus } from "@/lib/actions/stripe"
+import { createCheckoutSession, syncSubscriptionStatus, createBillingPortalSession } from "@/lib/actions/stripe"
 import { useTransition, useState } from "react"
-import { RefreshCw, CheckCircle, AlertCircle } from "lucide-react"
+import { RefreshCw, CheckCircle, AlertCircle, CreditCard } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface SubscribeButtonProps {
@@ -19,7 +19,7 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
         startTransition(async (): Promise<void> => {
             try {
                 const result = await createCheckoutSession(buildingId)
-                if (result.success && result.url) {
+                if (result.success) {
                     window.location.href = result.url
                 } else {
                     alert(result.error || "Falha ao realizar pagamento. Por favor tente novamente.")
@@ -46,10 +46,9 @@ export function SubscribeButton({ buildingId, quantity, pricePerUnit }: Subscrib
             <Button
                 onClick={handleSubscribe}
                 disabled={isPending}
-                fullWidth
-                size="lg"
+                size="md"
                 variant="primary"
-                className="h-12 text-sm tracking-widest"
+                className="w-full h-12 text-sm tracking-widest"
             >
                 {isPending ? "A redirecionar..." : "CONFIRMAR SUBSCRIÇÃO"}
             </Button>
@@ -94,7 +93,7 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
                         Se o pagamento foi concluído mas o estado não alterou, force a sincronização.
                     </p>
                     <Button
-                        size="xs"
+                        size="sm"
                         variant="outline"
                         onClick={handleSync}
                         disabled={isPending}
@@ -114,5 +113,46 @@ export function SyncSubscriptionButton({ buildingId }: SyncSubscriptionButtonPro
                 </div>
             </div>
         </div>
+    )
+}
+
+interface ManageSubscriptionButtonProps {
+    buildingId: string
+    variant?: "default" | "urgent"
+}
+
+export function ManageSubscriptionButton({ buildingId, variant = "default" }: ManageSubscriptionButtonProps) {
+    const [isPending, startTransition] = useTransition()
+
+    const handleManage = () => {
+        startTransition(async (): Promise<void> => {
+            try {
+                const result = await createBillingPortalSession(buildingId)
+                if (result.success) {
+                    window.location.href = result.url
+                } else {
+                    alert(result.error || "Falha ao abrir portal de pagamento.")
+                }
+            } catch (error) {
+                console.error("Failed to open billing portal:", error)
+                alert("Ocorreu um erro inesperado. Por favor tente novamente.")
+            }
+        })
+    }
+
+    return (
+        <Button
+            onClick={handleManage}
+            disabled={isPending}
+            size="sm"
+            variant="outline"
+            className={variant === "urgent"
+                ? "gap-1.5 bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                : "gap-1.5"
+            }
+        >
+            <CreditCard className="w-3.5 h-3.5" />
+            {isPending ? "A abrir..." : "Atualizar Pagamento"}
+        </Button>
     )
 }

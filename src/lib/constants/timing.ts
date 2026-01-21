@@ -4,6 +4,23 @@ export const TIMING = {
     HIGHLIGHT_DURATION: 3000,
 } as const
 
+// ==========================================
+// NOTIFICATION RETENTION
+// ==========================================
+
+/** Days to keep read notifications before cleanup */
+export const NOTIFICATION_READ_RETENTION_DAYS = 7
+
+/** Days to keep unread notifications before cleanup */
+export const NOTIFICATION_UNREAD_RETENTION_DAYS = 30
+
+// ==========================================
+// CALENDAR / RECURRENCE
+// ==========================================
+
+/** Default number of recurring event occurrences to generate */
+export const DEFAULT_RECURRENCE_COUNT = 4
+
 export const MONTHS = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"

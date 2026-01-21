@@ -1,7 +1,11 @@
 import { db } from "@/db"
 import { notifications, user } from "@/db/schema"
-import { eq, and, desc, lt, count, or } from "drizzle-orm"
-import { NotificationType, Notification } from "@/lib/types"
+import { eq, and, desc, lt, count } from "drizzle-orm"
+import { NotificationType, ActionResult, Ok } from "@/lib/types"
+import {
+    NOTIFICATION_READ_RETENTION_DAYS,
+    NOTIFICATION_UNREAD_RETENTION_DAYS
+} from "@/lib/constants/timing"
 
 export interface CreateNotificationInput {
     buildingId: string
@@ -21,9 +25,10 @@ export interface CreateBulkNotificationInput {
     link?: string
 }
 
+type NotificationRow = typeof notifications.$inferSelect
+
 export class NotificationService {
-    // Get user's notifications (recent, limited)
-    async getUserNotifications(userId: string, limit: number = 10): Promise<Notification[]> {
+    async getUserNotifications(userId: string, limit: number = 10): Promise<ActionResult<NotificationRow[]>> {
         const results = await db
             .select()
             .from(notifications)
@@ -31,11 +36,10 @@ export class NotificationService {
             .orderBy(desc(notifications.createdAt))
             .limit(limit)
 
-        return results as unknown as Notification[]
+        return Ok(results)
     }
 
-    // Get unread count
-    async getUnreadCount(userId: string): Promise<number> {
+    async getUnreadCount(userId: string): Promise<ActionResult<number>> {
         const [result] = await db
             .select({ count: count() })
             .from(notifications)
@@ -44,11 +48,10 @@ export class NotificationService {
                 eq(notifications.isRead, false)
             ))
 
-        return result.count
+        return Ok(result.count)
     }
 
-    // Create single notification
-    async create(input: CreateNotificationInput) {
+    async create(input: CreateNotificationInput): Promise<ActionResult<NotificationRow>> {
         const [created] = await db
             .insert(notifications)
             .values({
@@ -61,12 +64,11 @@ export class NotificationService {
             })
             .returning()
 
-        return created
+        return Ok(created)
     }
 
-    // Create notification for multiple users
-    async createBulk(input: CreateBulkNotificationInput) {
-        if (input.userIds.length === 0) return []
+    async createBulk(input: CreateBulkNotificationInput): Promise<ActionResult<NotificationRow[]>> {
+        if (input.userIds.length === 0) return Ok([])
 
         const values = input.userIds.map(userId => ({
             buildingId: input.buildingId,
@@ -77,14 +79,15 @@ export class NotificationService {
             link: input.link || null,
         }))
 
-        return await db
+        const results = await db
             .insert(notifications)
             .values(values)
             .returning()
+
+        return Ok(results)
     }
 
-    // Mark single notification as read
-    async markAsRead(notificationId: number, userId: string) {
+    async markAsRead(notificationId: number, userId: string): Promise<ActionResult<NotificationRow | null>> {
         const [updated] = await db
             .update(notifications)
             .set({
@@ -97,11 +100,10 @@ export class NotificationService {
             ))
             .returning()
 
-        return updated
+        return Ok(updated || null)
     }
 
-    // Mark all notifications as read
-    async markAllAsRead(userId: string) {
+    async markAllAsRead(userId: string): Promise<ActionResult<boolean>> {
         await db
             .update(notifications)
             .set({
@@ -113,11 +115,10 @@ export class NotificationService {
                 eq(notifications.isRead, false)
             ))
 
-        return true
+        return Ok(true)
     }
 
-    // Delete single notification
-    async delete(notificationId: number, userId: string) {
+    async delete(notificationId: number, userId: string): Promise<ActionResult<boolean>> {
         await db
             .delete(notifications)
             .where(and(
@@ -125,44 +126,49 @@ export class NotificationService {
                 eq(notifications.userId, userId)
             ))
 
-        return true
+        return Ok(true)
     }
 
-    // Cleanup old notifications
-    // - Read notifications older than 7 days
-    // - Unread notifications older than 30 days
-    async cleanupOld() {
+    /**
+     * Cleanup old notifications based on retention policy:
+     * - Read notifications older than NOTIFICATION_READ_RETENTION_DAYS days
+     * - Unread notifications older than NOTIFICATION_UNREAD_RETENTION_DAYS days
+     */
+    async cleanupOld(): Promise<ActionResult<boolean>> {
         const now = new Date()
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+        const readRetentionDate = new Date(
+            now.getTime() - NOTIFICATION_READ_RETENTION_DAYS * 24 * 60 * 60 * 1000
+        )
+        const unreadRetentionDate = new Date(
+            now.getTime() - NOTIFICATION_UNREAD_RETENTION_DAYS * 24 * 60 * 60 * 1000
+        )
 
-        // Delete read notifications older than 7 days
+        // Delete read notifications older than retention period
         await db
             .delete(notifications)
             .where(and(
                 eq(notifications.isRead, true),
-                lt(notifications.readAt, sevenDaysAgo)
+                lt(notifications.readAt, readRetentionDate)
             ))
 
-        // Delete unread notifications older than 30 days
+        // Delete unread notifications older than retention period
         await db
             .delete(notifications)
             .where(and(
                 eq(notifications.isRead, false),
-                lt(notifications.createdAt, thirtyDaysAgo)
+                lt(notifications.createdAt, unreadRetentionDate)
             ))
 
-        return true
+        return Ok(true)
     }
 
-    // Get all building residents (for bulk notifications)
-    async getBuildingResidentIds(buildingId: string): Promise<string[]> {
+    async getBuildingResidentIds(buildingId: string): Promise<ActionResult<string[]>> {
         const residents = await db
             .select({ id: user.id })
             .from(user)
             .where(eq(user.buildingId, buildingId))
 
-        return residents.map(r => r.id)
+        return Ok(residents.map(r => r.id))
     }
 }
 

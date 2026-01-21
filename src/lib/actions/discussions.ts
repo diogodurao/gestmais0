@@ -18,15 +18,19 @@ export async function getDiscussions(buildingId: string) {
         throw new Error("Unauthorized")
     }
 
-    return await discussionService.getByBuilding(buildingId)
+    const result = await discussionService.getByBuilding(buildingId)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 // Get single discussion
 export async function getDiscussion(id: number) {
     const session = await requireSession()
-    const discussion = await discussionService.getById(id)
+    const result = await discussionService.getById(id)
+    if (!result.success) throw new Error(result.error)
+    if (!result.data) return null
 
-    if (!discussion) return null
+    const discussion = result.data
 
     if (session.user.role === 'manager') {
         await requireBuildingAccess(discussion.buildingId)
@@ -53,26 +57,25 @@ export async function createDiscussion(input: CreateDiscussionInput): Promise<Ac
         return { success: false, error: validated.error.issues[0].message }
     }
 
-    try {
-        const created = await discussionService.create(validated.data, session.user.id)
-        updateTag(`discussions-${input.buildingId}`)
+    const result = await discussionService.create(validated.data, session.user.id)
+    if (!result.success) return result
 
-        // Notify residents after response (non-blocking)
-        const discussionTitle = validated.data.title
-        const creatorId = session.user.id
-        after(async () => {
-            await notifyDiscussionCreated(
-                input.buildingId,
-                discussionTitle,
-                created.id,
-                creatorId
-            )
-        })
+    const created = result.data
+    updateTag(`discussions-${input.buildingId}`)
 
-        return { success: true, data: { id: created.id } }
-    } catch {
-        return { success: false, error: "Erro ao criar discussão" }
-    }
+    // Notify residents after response (non-blocking)
+    const discussionTitle = validated.data.title
+    const creatorId = session.user.id
+    after(async () => {
+        await notifyDiscussionCreated(
+            input.buildingId,
+            discussionTitle,
+            created.id,
+            creatorId
+        )
+    })
+
+    return { success: true, data: { id: created.id } }
 }
 
 // Update discussion (owner only)
@@ -81,11 +84,11 @@ export async function updateDiscussion(
     data: UpdateDiscussionInput
 ): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const discussion = await discussionService.getById(id)
+    const discussionResult = await discussionService.getById(id)
+    if (!discussionResult.success) return { success: false, error: discussionResult.error }
+    if (!discussionResult.data) return { success: false, error: "Discussão não encontrada" }
 
-    if (!discussion) {
-        return { success: false, error: "Discussão não encontrada" }
-    }
+    const discussion = discussionResult.data
 
     // Only owner can edit
     if (discussion.createdBy !== session.user.id) {
@@ -97,28 +100,29 @@ export async function updateDiscussion(
         return { success: false, error: validated.error.issues[0].message }
     }
 
-    try {
-        await discussionService.update(id, validated.data)
-        updateTag(`discussions-${discussion.buildingId}`)
-        updateTag(`discussion-${id}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao atualizar discussão" }
-    }
+    const result = await discussionService.update(id, validated.data)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`discussions-${discussion.buildingId}`)
+    updateTag(`discussion-${id}`)
+    return { success: true, data: undefined }
 }
 
 // Delete discussion (owner if no comments, or manager)
 export async function deleteDiscussion(id: number): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const discussion = await discussionService.getById(id)
+    const discussionResult = await discussionService.getById(id)
+    if (!discussionResult.success) return { success: false, error: discussionResult.error }
+    if (!discussionResult.data) return { success: false, error: "Discussão não encontrada" }
 
-    if (!discussion) {
-        return { success: false, error: "Discussão não encontrada" }
-    }
+    const discussion = discussionResult.data
 
     const isManager = session.user.role === 'manager'
     const isOwner = discussion.createdBy === session.user.id
-    const commentCount = await discussionService.getCommentCount(id)
+
+    const countResult = await discussionService.getCommentCount(id)
+    if (!countResult.success) return { success: false, error: countResult.error }
+    const commentCount = countResult.data
 
     // Manager can always delete
     // Owner can delete only if no comments
@@ -130,23 +134,21 @@ export async function deleteDiscussion(id: number): Promise<ActionResult<void>> 
         return { success: false, error: "Não pode eliminar discussões com comentários" }
     }
 
-    try {
-        await discussionService.delete(id)
-        updateTag(`discussions-${discussion.buildingId}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao eliminar discussão" }
-    }
+    const result = await discussionService.delete(id)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`discussions-${discussion.buildingId}`)
+    return { success: true, data: undefined }
 }
 
 // Toggle pin (manager only)
 export async function toggleDiscussionPin(id: number): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const discussion = await discussionService.getById(id)
+    const discussionResult = await discussionService.getById(id)
+    if (!discussionResult.success) return { success: false, error: discussionResult.error }
+    if (!discussionResult.data) return { success: false, error: "Discussão não encontrada" }
 
-    if (!discussion) {
-        return { success: false, error: "Discussão não encontrada" }
-    }
+    const discussion = discussionResult.data
 
     await requireBuildingAccess(discussion.buildingId)
 
@@ -154,24 +156,22 @@ export async function toggleDiscussionPin(id: number): Promise<ActionResult<void
         return { success: false, error: "Apenas gestores podem fixar discussões" }
     }
 
-    try {
-        await discussionService.togglePin(id)
-        updateTag(`discussions-${discussion.buildingId}`)
-        updateTag(`discussion-${id}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao fixar discussão" }
-    }
+    const result = await discussionService.togglePin(id)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`discussions-${discussion.buildingId}`)
+    updateTag(`discussion-${id}`)
+    return { success: true, data: undefined }
 }
 
 // Close discussion (manager only)
 export async function closeDiscussion(id: number): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const discussion = await discussionService.getById(id)
+    const discussionResult = await discussionService.getById(id)
+    if (!discussionResult.success) return { success: false, error: discussionResult.error }
+    if (!discussionResult.data) return { success: false, error: "Discussão não encontrada" }
 
-    if (!discussion) {
-        return { success: false, error: "Discussão não encontrada" }
-    }
+    const discussion = discussionResult.data
 
     await requireBuildingAccess(discussion.buildingId)
 
@@ -179,20 +179,20 @@ export async function closeDiscussion(id: number): Promise<ActionResult<void>> {
         return { success: false, error: "Apenas gestores podem encerrar discussões" }
     }
 
-    try {
-        await discussionService.close(id)
-        updateTag(`discussions-${discussion.buildingId}`)
-        updateTag(`discussion-${id}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao encerrar discussão" }
-    }
+    const result = await discussionService.close(id)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`discussions-${discussion.buildingId}`)
+    updateTag(`discussion-${id}`)
+    return { success: true, data: undefined }
 }
 
 // Get comments
 export async function getDiscussionComments(discussionId: number) {
     await requireSession()
-    return await discussionService.getComments(discussionId)
+    const result = await discussionService.getComments(discussionId)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 // Add comment (anyone with building access, if not closed)
@@ -201,11 +201,11 @@ export async function addDiscussionComment(
     content: string
 ): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const discussion = await discussionService.getById(discussionId)
+    const discussionResult = await discussionService.getById(discussionId)
+    if (!discussionResult.success) return { success: false, error: discussionResult.error }
+    if (!discussionResult.data) return { success: false, error: "Discussão não encontrada" }
 
-    if (!discussion) {
-        return { success: false, error: "Discussão não encontrada" }
-    }
+    const discussion = discussionResult.data
 
     // Verify building access
     if (session.user.role === 'manager') {
@@ -223,33 +223,31 @@ export async function addDiscussionComment(
         return { success: false, error: "Comentário não pode estar vazio" }
     }
 
-    try {
-        await discussionService.addComment(discussionId, content.trim(), session.user.id)
-        updateTag(`discussion-comments-${discussionId}`)
-        updateTag(`discussions-${discussion.buildingId}`)
+    const result = await discussionService.addComment(discussionId, content.trim(), session.user.id)
+    if (!result.success) return { success: false, error: result.error }
 
-        // Notify creator after response (non-blocking)
-        if (discussion.createdBy !== session.user.id) {
-            const commenterName = session.user.name || 'Alguém'
-            after(async () => {
-                try {
-                    await notifyDiscussionComment(
-                        discussion.buildingId,
-                        discussion.createdBy,
-                        commenterName,
-                        discussion.title,
-                        discussionId
-                    )
-                } catch (error) {
-                    console.error("Failed to notify user:", error)
-                }
-            })
-        }
+    updateTag(`discussion-comments-${discussionId}`)
+    updateTag(`discussions-${discussion.buildingId}`)
 
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao adicionar comentário" }
+    // Notify creator after response (non-blocking)
+    if (discussion.createdBy !== session.user.id) {
+        const commenterName = session.user.name || 'Alguém'
+        after(async () => {
+            try {
+                await notifyDiscussionComment(
+                    discussion.buildingId,
+                    discussion.createdBy,
+                    commenterName,
+                    discussion.title,
+                    discussionId
+                )
+            } catch (error) {
+                console.error("Failed to notify user:", error)
+            }
+        })
     }
+
+    return { success: true, data: undefined }
 }
 
 // Update comment (owner only)
@@ -258,11 +256,11 @@ export async function updateDiscussionComment(
     content: string
 ): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const comment = await discussionService.getCommentById(commentId)
+    const commentResult = await discussionService.getCommentById(commentId)
+    if (!commentResult.success) return { success: false, error: commentResult.error }
+    if (!commentResult.data) return { success: false, error: "Comentário não encontrado" }
 
-    if (!comment) {
-        return { success: false, error: "Comentário não encontrado" }
-    }
+    const comment = commentResult.data
 
     if (comment.createdBy !== session.user.id) {
         return { success: false, error: "Apenas o autor pode editar" }
@@ -272,23 +270,21 @@ export async function updateDiscussionComment(
         return { success: false, error: "Comentário não pode estar vazio" }
     }
 
-    try {
-        await discussionService.updateComment(commentId, content.trim())
-        updateTag(`discussion-comments-${comment.discussionId}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao atualizar comentário" }
-    }
+    const result = await discussionService.updateComment(commentId, content.trim())
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`discussion-comments-${comment.discussionId}`)
+    return { success: true, data: undefined }
 }
 
 // Delete comment (owner or manager)
 export async function deleteDiscussionComment(commentId: number): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const comment = await discussionService.getCommentById(commentId)
+    const commentResult = await discussionService.getCommentById(commentId)
+    if (!commentResult.success) return { success: false, error: commentResult.error }
+    if (!commentResult.data) return { success: false, error: "Comentário não encontrado" }
 
-    if (!comment) {
-        return { success: false, error: "Comentário não encontrado" }
-    }
+    const comment = commentResult.data
 
     const isManager = session.user.role === 'manager'
     const isOwner = comment.createdBy === session.user.id
@@ -297,11 +293,9 @@ export async function deleteDiscussionComment(commentId: number): Promise<Action
         return { success: false, error: "Sem permissão para eliminar" }
     }
 
-    try {
-        await discussionService.deleteComment(commentId)
-        updateTag(`discussion-comments-${comment.discussionId}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao eliminar comentário" }
-    }
+    const result = await discussionService.deleteComment(commentId)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`discussion-comments-${comment.discussionId}`)
+    return { success: true, data: undefined }
 }

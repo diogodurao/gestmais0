@@ -20,7 +20,7 @@ export type Apartment = {
     permillage: number
     resident: {
         id: string
-        name: string
+        name: string | null
     } | null
 }
 

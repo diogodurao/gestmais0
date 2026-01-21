@@ -35,15 +35,20 @@ export async function getOccurrences(buildingId: string, status?: OccurrenceStat
         throw new Error("Unauthorized")
     }
 
-    return await occurrenceService.getByBuilding(buildingId, status)
+    const result = await occurrenceService.getByBuilding(buildingId, status)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 // Get single occurrence
 export async function getOccurrence(id: number) {
     const session = await requireSession()
-    const occurrence = await occurrenceService.getById(id)
+    const result = await occurrenceService.getById(id)
 
-    if (!occurrence) return null
+    if (!result.success) throw new Error(result.error)
+    if (!result.data) return null
+
+    const occurrence = result.data
 
     // Verify access
     if (session.user.role === 'manager') {
@@ -71,31 +76,30 @@ export async function createOccurrence(input: CreateOccurrenceInput): Promise<Ac
         return { success: false, error: validated.error.issues[0].message }
     }
 
-    try {
-        const created = await occurrenceService.create(validated.data, session.user.id)
-        updateTag(`occurrences-${input.buildingId}`)
+    const result = await occurrenceService.create(validated.data, session.user.id)
+    if (!result.success) return { success: false, error: result.error }
 
-        // Notify manager after response (non-blocking)
-        if (session.user.role !== 'manager') {
-            after(async () => {
-                try {
-                    const managerId = await getManagerId(input.buildingId)
-                    await notifyOccurrenceCreated(
-                        input.buildingId,
-                        managerId,
-                        input.title,
-                        created.id
-                    )
-                } catch (error) {
-                    console.error("Failed to notify manager:", error)
-                }
-            })
-        }
+    const created = result.data
+    updateTag(`occurrences-${input.buildingId}`)
 
-        return { success: true, data: { id: created.id } }
-    } catch {
-        return { success: false, error: "Erro ao criar ocorrência" }
+    // Notify manager after response (non-blocking)
+    if (session.user.role !== 'manager') {
+        after(async () => {
+            try {
+                const managerId = await getManagerId(input.buildingId)
+                await notifyOccurrenceCreated(
+                    input.buildingId,
+                    managerId,
+                    input.title,
+                    created.id
+                )
+            } catch (error) {
+                console.error("Failed to notify manager:", error)
+            }
+        })
     }
+
+    return { success: true, data: { id: created.id } }
 }
 
 // Update occurrence (owner only, while open)
@@ -104,11 +108,13 @@ export async function updateOccurrence(
     data: UpdateOccurrenceInput
 ): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const occurrence = await occurrenceService.getById(id)
+    const occurrenceResult = await occurrenceService.getById(id)
 
-    if (!occurrence) {
+    if (!occurrenceResult.success || !occurrenceResult.data) {
         return { success: false, error: "Ocorrência não encontrada" }
     }
+
+    const occurrence = occurrenceResult.data
 
     // Only owner can edit
     if (occurrence.createdBy !== session.user.id) {
@@ -125,27 +131,27 @@ export async function updateOccurrence(
         return { success: false, error: validated.error.issues[0].message }
     }
 
-    try {
-        await occurrenceService.update(id, {
-            ...validated.data,
-            description: validated.data.description ?? undefined
-        })
-        updateTag(`occurrences-${occurrence.buildingId}`)
-        updateTag(`occurrence-${id}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao atualizar ocorrência" }
-    }
+    const result = await occurrenceService.update(id, {
+        ...validated.data,
+        description: validated.data.description ?? undefined
+    })
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`occurrences-${occurrence.buildingId}`)
+    updateTag(`occurrence-${id}`)
+    return { success: true, data: undefined }
 }
 
 // Delete occurrence (owner only, while open)
 export async function deleteOccurrence(id: number): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const occurrence = await occurrenceService.getById(id)
+    const occurrenceResult = await occurrenceService.getById(id)
 
-    if (!occurrence) {
+    if (!occurrenceResult.success || !occurrenceResult.data) {
         return { success: false, error: "Ocorrência não encontrada" }
     }
+
+    const occurrence = occurrenceResult.data
 
     // Only owner can delete
     if (occurrence.createdBy !== session.user.id) {
@@ -157,13 +163,11 @@ export async function deleteOccurrence(id: number): Promise<ActionResult<void>> 
         return { success: false, error: "Só é possível eliminar ocorrências abertas" }
     }
 
-    try {
-        await occurrenceService.delete(id)
-        updateTag(`occurrences-${occurrence.buildingId}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao eliminar ocorrência" }
-    }
+    const result = await occurrenceService.delete(id)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`occurrences-${occurrence.buildingId}`)
+    return { success: true, data: undefined }
 }
 
 // Update status (manager only)
@@ -171,50 +175,49 @@ export async function updateOccurrenceStatus(
     id: number,
     status: OccurrenceStatus
 ): Promise<ActionResult<void>> {
-    const { session } = await requireBuildingAccess(
-        (await occurrenceService.getById(id))?.buildingId || ""
-    )
+    const occurrenceResult = await occurrenceService.getById(id)
+
+    if (!occurrenceResult.success || !occurrenceResult.data) {
+        return { success: false, error: "Ocorrência não encontrada" }
+    }
+
+    const occurrence = occurrenceResult.data
+    const { session } = await requireBuildingAccess(occurrence.buildingId)
 
     if (session.user.role !== 'manager') {
         return { success: false, error: "Apenas gestores podem alterar o estado" }
     }
 
-    try {
-        // Get occurrence data before updating
-        const occurrenceBefore = await occurrenceService.getById(id)
-        if (!occurrenceBefore) {
-            return { success: false, error: "Ocorrência não encontrada" }
+    const result = await occurrenceService.updateStatus(id, status)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`occurrences-${occurrence.buildingId}`)
+    updateTag(`occurrence-${id}`)
+
+    // Notify creator after response (non-blocking)
+    after(async () => {
+        try {
+            await notifyOccurrenceStatus(
+                occurrence.buildingId,
+                occurrence.createdBy,
+                occurrence.title,
+                status,
+                id
+            )
+        } catch (error) {
+            console.error("Failed to notify user:", error)
         }
+    })
 
-        await occurrenceService.updateStatus(id, status)
-        updateTag(`occurrences-${occurrenceBefore.buildingId}`)
-        updateTag(`occurrence-${id}`)
-
-        // Notify creator after response (non-blocking)
-        after(async () => {
-            try {
-                await notifyOccurrenceStatus(
-                    occurrenceBefore.buildingId,
-                    occurrenceBefore.createdBy,
-                    occurrenceBefore.title,
-                    status,
-                    id
-                )
-            } catch (error) {
-                console.error("Failed to notify user:", error)
-            }
-        })
-
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao alterar estado" }
-    }
+    return { success: true, data: undefined }
 }
 
 // Get comments
 export async function getOccurrenceComments(occurrenceId: number) {
     await requireSession()
-    return await occurrenceService.getComments(occurrenceId)
+    const result = await occurrenceService.getComments(occurrenceId)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 // Add comment (anyone with building access)
@@ -223,11 +226,13 @@ export async function addOccurrenceComment(
     content: string
 ): Promise<ActionResult<{ commentId: number }>> {
     const session = await requireSession()
-    const occurrence = await occurrenceService.getById(occurrenceId)
+    const occurrenceResult = await occurrenceService.getById(occurrenceId)
 
-    if (!occurrence) {
+    if (!occurrenceResult.success || !occurrenceResult.data) {
         return { success: false, error: "Ocorrência não encontrada" }
     }
+
+    const occurrence = occurrenceResult.data
 
     // Verify building access
     if (session.user.role === 'manager') {
@@ -240,40 +245,41 @@ export async function addOccurrenceComment(
         return { success: false, error: "Comentário não pode estar vazio" }
     }
 
-    try {
-        const created = await occurrenceService.addComment(occurrenceId, content.trim(), session.user.id)
-        updateTag(`occurrence-comments-${occurrenceId}`)
+    const result = await occurrenceService.addComment(occurrenceId, content.trim(), session.user.id)
+    if (!result.success) return { success: false, error: result.error }
 
-        // Notify creator after response (non-blocking)
-        if (occurrence.createdBy !== session.user.id) {
-            const commenterName = session.user.name || 'Alguém'
-            after(async () => {
-                try {
-                    await notifyOccurrenceComment(
-                        occurrence.buildingId,
-                        occurrence.createdBy,
-                        commenterName,
-                        occurrence.title,
-                        occurrenceId
-                    )
-                } catch (error) {
-                    console.error("Failed to notify user:", error)
-                }
-            })
-        }
+    const created = result.data
+    updateTag(`occurrence-comments-${occurrenceId}`)
 
-        return { success: true, data: { commentId: created.id } }
-    } catch {
-        return { success: false, error: "Erro ao adicionar comentário" }
+    // Notify creator after response (non-blocking)
+    if (occurrence.createdBy !== session.user.id) {
+        const commenterName = session.user.name || 'Alguém'
+        after(async () => {
+            try {
+                await notifyOccurrenceComment(
+                    occurrence.buildingId,
+                    occurrence.createdBy,
+                    commenterName,
+                    occurrence.title,
+                    occurrenceId
+                )
+            } catch (error) {
+                console.error("Failed to notify user:", error)
+            }
+        })
     }
+
+    return { success: true, data: { commentId: created.id } }
 }
 
 // Get occurrence attachments
 export async function getOccurrenceAttachments(occurrenceId: number) {
     const session = await requireSession()
-    const occurrence = await occurrenceService.getById(occurrenceId)
+    const occurrenceResult = await occurrenceService.getById(occurrenceId)
 
-    if (!occurrence) return []
+    if (!occurrenceResult.success || !occurrenceResult.data) return []
+
+    const occurrence = occurrenceResult.data
 
     if (session.user.role === 'manager') {
         await requireBuildingAccess(occurrence.buildingId)
@@ -281,7 +287,10 @@ export async function getOccurrenceAttachments(occurrenceId: number) {
         throw new Error("Unauthorized")
     }
 
-    const attachments = await occurrenceService.getOccurrenceAttachments(occurrenceId)
+    const attachmentsResult = await occurrenceService.getOccurrenceAttachments(occurrenceId)
+    if (!attachmentsResult.success) return []
+
+    const attachments = attachmentsResult.data
 
     // Generate signed URLs for attachments if they are not already public URLs
     return await Promise.all(attachments.map(async (attachment) => {
@@ -296,7 +305,10 @@ export async function getOccurrenceAttachments(occurrenceId: number) {
 // Get comment attachments
 export async function getCommentAttachments(commentId: number) {
     await requireSession()
-    const attachments = await occurrenceService.getCommentAttachments(commentId)
+    const result = await occurrenceService.getCommentAttachments(commentId)
+    if (!result.success) return []
+
+    const attachments = result.data
 
     // Generate signed URLs
     return await Promise.all(attachments.map(async (attachment) => {
@@ -329,16 +341,14 @@ export async function deleteOccurrenceAttachment(attachmentId: number): Promise<
     }
 
     // Check if occurrence is still open
-    const occurrence = await occurrenceService.getById(attachment.occurrenceId)
-    if (!occurrence || occurrence.status === 'resolved') {
+    const occurrenceResult = await occurrenceService.getById(attachment.occurrenceId)
+    if (!occurrenceResult.success || !occurrenceResult.data || occurrenceResult.data.status === 'resolved') {
         return { success: false, error: "Ocorrência já está resolvida" }
     }
 
-    try {
-        await occurrenceService.deleteAttachment(attachmentId)
-        updateTag(`occurrence-attachments-${attachment.occurrenceId}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao eliminar anexo" }
-    }
+    const result = await occurrenceService.deleteAttachment(attachmentId)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`occurrence-attachments-${attachment.occurrenceId}`)
+    return { success: true, data: undefined }
 }

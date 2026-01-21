@@ -4,24 +4,46 @@ import { eq } from "drizzle-orm"
 import { stripe } from "@/lib/stripe"
 import { getAppUrl } from "@/lib/utils"
 import { revalidatePath } from "next/cache"
-import type Stripe from 'stripe'
+import { ActionResult, Ok, Err, ErrorCodes } from "@/lib/types"
+import { createLogger } from "@/lib/logger"
+
+const logger = createLogger('StripeService')
+
+type SyncResult = {
+    status: 'active' | 'incomplete'
+    synced: boolean
+    message?: string
+}
 
 export class StripeService {
-    async syncSubscriptionStatus(buildingId: string, userId: string, stripeCustomerId: string | null) {
+    async syncSubscriptionStatus(
+        buildingId: string,
+        userId: string,
+        stripeCustomerId: string | null
+    ): Promise<ActionResult<SyncResult>> {
         const buildingRecord = await db.query.building.findFirst({
             where: eq(building.id, buildingId),
         })
 
-        if (!buildingRecord) throw new Error("Building not found")
-        if (buildingRecord.managerId !== userId) throw new Error("Unauthorized")
+        if (!buildingRecord) {
+            return Err("Condomínio não encontrado", ErrorCodes.BUILDING_NOT_FOUND)
+        }
+
+        if (buildingRecord.managerId !== userId) {
+            return Err("Não autorizado", ErrorCodes.UNAUTHORIZED)
+        }
 
         if (buildingRecord.subscriptionStatus === 'active') {
             revalidatePath('/dashboard')
-            return { status: 'active', synced: true }
+            return Ok({ status: 'active', synced: true })
         }
 
         if (!stripeCustomerId) {
-            return { status: 'incomplete', synced: false, message: 'No Stripe customer found. Please try the checkout again.' }
+            return Ok({
+                status: 'incomplete',
+                synced: false,
+                message: 'No Stripe customer found. Please try the checkout again.'
+            })
         }
 
         try {
@@ -49,7 +71,7 @@ export class StripeService {
 
                         revalidatePath('/dashboard')
                         revalidatePath('/dashboard/settings')
-                        return { status: 'active', synced: true }
+                        return Ok({ status: 'active', synced: true })
                     }
                 }
             }
@@ -70,7 +92,7 @@ export class StripeService {
 
                     revalidatePath('/dashboard')
                     revalidatePath('/dashboard/settings')
-                    return { status: 'active', synced: true }
+                    return Ok({ status: 'active', synced: true })
                 }
             }
 
@@ -85,43 +107,51 @@ export class StripeService {
 
                     revalidatePath('/dashboard')
                     revalidatePath('/dashboard/settings')
-                    return { status: 'active', synced: true }
+                    return Ok({ status: 'active', synced: true })
                 }
             }
 
-            return { status: 'incomplete', synced: false, message: 'Payment received but subscription not yet active. Please wait a moment and retry.' }
+            return Ok({
+                status: 'incomplete',
+                synced: false,
+                message: 'Payment received but subscription not yet active. Please wait a moment and retry.'
+            })
 
         } catch (error) {
-            console.error("[syncSubscriptionStatus] Error:", error)
+            logger.error("Failed to sync subscription status", { method: 'syncSubscriptionStatus', buildingId }, error)
             const message = error instanceof Error ? error.message : 'Failed to verify subscription'
-            return { status: 'incomplete', synced: false, message }
+            return Err(message, ErrorCodes.SUBSCRIPTION_NOT_FOUND)
         }
     }
 
     async createCheckoutSession(
         buildingId: string,
         userContext: {
-            id: string,
-            email: string,
-            name: string,
+            id: string
+            email: string
+            name: string
             stripeCustomerId: string | null
         }
-    ) {
+    ): Promise<ActionResult<string>> {
         const { id: userId, email, name, stripeCustomerId: initialStripeCustomerId } = userContext
 
         const buildingRecord = await db.query.building.findFirst({
             where: eq(building.id, buildingId),
         })
 
-        if (!buildingRecord) throw new Error("Building not found")
-        if (buildingRecord.managerId !== userId) throw new Error("Unauthorized")
+        if (!buildingRecord) {
+            return Err("Condomínio não encontrado", ErrorCodes.BUILDING_NOT_FOUND)
+        }
+
+        if (buildingRecord.managerId !== userId) {
+            return Err("Não autorizado", ErrorCodes.UNAUTHORIZED)
+        }
 
         const quantity = buildingRecord.totalApartments && buildingRecord.totalApartments > 0
             ? buildingRecord.totalApartments
             : 1
 
         let stripeCustomerId = initialStripeCustomerId
-        let checkoutSession
 
         const createCustomer = async () => {
             const customer = await stripe.customers.create({
@@ -142,7 +172,7 @@ export class StripeService {
         const createSession = async (cid: string) => {
             validateEnv()
             const appUrl = getAppUrl()
-            console.log(`[StripeService] Creating session for Customer: ${cid}, Price: ${process.env.STRIPE_PRICE_ID?.substring(0, 8)}...`)
+            logger.info("Creating checkout session", { method: 'createSession', customerId: cid })
             return await stripe.checkout.sessions.create({
                 customer: cid,
                 mode: 'subscription',
@@ -154,33 +184,72 @@ export class StripeService {
             })
         }
 
-
         try {
             if (!stripeCustomerId) {
                 stripeCustomerId = await createCustomer()
             }
 
+            let checkoutSession
             try {
                 checkoutSession = await createSession(stripeCustomerId)
             } catch (error) {
-                // Safely check for Stripe error code
                 const stripeError = error as { code?: string }
                 if (stripeError.code === 'resource_missing') {
-                    console.log("[StripeService] Customer not found in Stripe, creating new one...")
+                    logger.info("Customer not found in Stripe, creating new one", { method: 'createCheckoutSession' })
                     stripeCustomerId = await createCustomer()
                     checkoutSession = await createSession(stripeCustomerId)
                 } else {
                     throw error
                 }
             }
+
+            if (!checkoutSession.url) {
+                return Err("Falha ao criar sessão de checkout", ErrorCodes.CHECKOUT_FAILED)
+            }
+
+            return Ok(checkoutSession.url)
+
         } catch (error) {
-            console.error("[createCheckoutSession] Fatal Error:", error)
-            throw error
+            logger.error("Failed to create checkout session", { method: 'createCheckoutSession', buildingId, userId }, error)
+            const message = error instanceof Error ? error.message : 'Failed to create checkout session'
+            return Err(message, ErrorCodes.CHECKOUT_FAILED)
+        }
+    }
+
+    async createBillingPortalSession(
+        buildingId: string,
+        userId: string,
+        stripeCustomerId: string | null
+    ): Promise<ActionResult<string>> {
+        const buildingRecord = await db.query.building.findFirst({
+            where: eq(building.id, buildingId),
+        })
+
+        if (!buildingRecord) {
+            return Err("Condomínio não encontrado", ErrorCodes.BUILDING_NOT_FOUND)
         }
 
-        if (!checkoutSession.url) throw new Error("Failed to create checkout session")
+        if (buildingRecord.managerId !== userId) {
+            return Err("Não autorizado", ErrorCodes.UNAUTHORIZED)
+        }
 
-        return checkoutSession.url
+        if (!stripeCustomerId) {
+            return Err("Nenhum cliente Stripe encontrado", ErrorCodes.STRIPE_CUSTOMER_ERROR)
+        }
+
+        try {
+            const appUrl = getAppUrl()
+            const session = await stripe.billingPortal.sessions.create({
+                customer: stripeCustomerId,
+                return_url: `${appUrl}/dashboard/settings`,
+            })
+
+            return Ok(session.url)
+        } catch (error) {
+            logger.error("Failed to create billing portal session", { method: 'createBillingPortalSession', buildingId }, error)
+            const message = error instanceof Error ? error.message : 'Failed to create billing portal session'
+            return Err(message, ErrorCodes.CHECKOUT_FAILED)
+        }
     }
 }
 

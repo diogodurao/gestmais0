@@ -18,7 +18,9 @@ export async function getCalendarEvents(buildingId: string, year: number, month:
         throw new Error("Unauthorized")
     }
 
-    return await calendarService.getEvents(buildingId, year, month)
+    const result = await calendarService.getEvents(buildingId, year, month)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 export async function createCalendarEvent(input: CreateEventInput): Promise<ActionResult<{ count: number }>> {
@@ -29,25 +31,23 @@ export async function createCalendarEvent(input: CreateEventInput): Promise<Acti
         return { success: false, error: validated.error.issues[0].message }
     }
 
-    try {
-        const events = await calendarService.createEvent(validated.data, session.user.id)
-        updateTag(`calendar-${input.buildingId}`)
+    const result = await calendarService.createEvent(validated.data, session.user.id)
+    if (!result.success) return result
 
-        // Notify residents after response (non-blocking)
-        const eventTitle = validated.data.title
-        const eventDate = validated.data.startDate
-        after(async () => {
-            await notifyUpcomingEvent(
-                input.buildingId,
-                eventTitle,
-                eventDate
-            )
-        })
+    updateTag(`calendar-${input.buildingId}`)
 
-        return { success: true, data: { count: events.length } }
-    } catch {
-        return { success: false, error: "Erro ao criar evento" }
-    }
+    // Notify residents after response (non-blocking)
+    const eventTitle = validated.data.title
+    const eventDate = validated.data.startDate
+    after(async () => {
+        await notifyUpcomingEvent(
+            input.buildingId,
+            eventTitle,
+            eventDate
+        )
+    })
+
+    return { success: true, data: { count: result.data.length } }
 }
 
 export async function updateCalendarEvent(
@@ -56,8 +56,9 @@ export async function updateCalendarEvent(
 ): Promise<ActionResult<void>> {
     await requireSession()
 
-    const event = await calendarService.getEventById(eventId)
-    if (!event) return { success: false, error: "Evento não encontrado" }
+    const eventResult = await calendarService.getEventById(eventId)
+    if (!eventResult.success) return { success: false, error: eventResult.error }
+    const event = eventResult.data
 
     await requireBuildingAccess(event.buildingId)
 
@@ -66,30 +67,27 @@ export async function updateCalendarEvent(
         return { success: false, error: validated.error.issues[0].message }
     }
 
-    try {
-        await calendarService.updateEvent(eventId, validated.data)
-        updateTag(`calendar-${event.buildingId}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao atualizar evento" }
-    }
+    const result = await calendarService.updateEvent(eventId, validated.data)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`calendar-${event.buildingId}`)
+    return { success: true, data: undefined }
 }
 
 export async function deleteCalendarEvent(eventId: number): Promise<ActionResult<void>> {
     await requireSession()
 
-    const event = await calendarService.getEventById(eventId)
-    if (!event) return { success: false, error: "Evento não encontrado" }
+    const eventResult = await calendarService.getEventById(eventId)
+    if (!eventResult.success) return { success: false, error: eventResult.error }
+    const event = eventResult.data
 
     await requireBuildingAccess(event.buildingId)
 
-    try {
-        await calendarService.deleteEvent(eventId)
-        updateTag(`calendar-${event.buildingId}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao eliminar evento" }
-    }
+    const result = await calendarService.deleteEvent(eventId)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`calendar-${event.buildingId}`)
+    return { success: true, data: undefined }
 }
 
 export async function getNextUpcomingEvent(buildingId: string) {
@@ -101,5 +99,7 @@ export async function getNextUpcomingEvent(buildingId: string) {
         throw new Error("Unauthorized")
     }
 
-    return await calendarService.getNextUpcomingEvent(buildingId)
+    const result = await calendarService.getNextUpcomingEvent(buildingId)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }

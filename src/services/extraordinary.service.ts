@@ -577,34 +577,38 @@ export class ExtraordinaryService {
         userId: string
     ): Promise<ActionResult<{ updated: number }>> {
         try {
-            const paymentsToUpdate = await db
-                .select()
-                .from(extraordinaryPayments)
-                .where(inArray(extraordinaryPayments.id, paymentIds))
-
-            if (paymentsToUpdate.length === 0) {
+            if (paymentIds.length === 0) {
                 return { success: true, data: { updated: 0 } }
             }
 
-            await Promise.all(paymentsToUpdate.map(payment =>
-                db.update(extraordinaryPayments)
-                    .set({
-                        status,
-                        paidAmount: status === "paid" ? payment.expectedAmount : 0,
-                        paidAt: status === "paid" ? new Date() : null,
-                        updatedAt: new Date(),
-                        updatedBy: userId,
-                    })
-                    .where(eq(extraordinaryPayments.id, payment.id))
-            ))
+            // Get projectId for revalidation before update
+            const [firstPayment] = await db
+                .select({ projectId: extraordinaryPayments.projectId })
+                .from(extraordinaryPayments)
+                .where(eq(extraordinaryPayments.id, paymentIds[0]))
+                .limit(1)
 
-            const firstPayment = paymentsToUpdate[0]
+            // Single batch update using SQL expression for paidAmount
+            const result = await db.update(extraordinaryPayments)
+                .set({
+                    status,
+                    // Use column reference: when paid, set to expected_amount; otherwise 0
+                    paidAmount: status === "paid"
+                        ? sql`${extraordinaryPayments.expectedAmount}`
+                        : 0,
+                    paidAt: status === "paid" ? new Date() : null,
+                    updatedAt: new Date(),
+                    updatedBy: userId,
+                })
+                .where(inArray(extraordinaryPayments.id, paymentIds))
+                .returning({ id: extraordinaryPayments.id })
+
             if (firstPayment) {
                 revalidatePath(`/dashboard/extraordinary/${firstPayment.projectId}`)
             }
             revalidatePath("/dashboard/extraordinary")
 
-            return { success: true, data: { updated: paymentsToUpdate.length } }
+            return { success: true, data: { updated: result.length } }
         } catch (error) {
 
             return {
@@ -699,25 +703,35 @@ export class ExtraordinaryService {
                 validApartments
             )
 
-            let updatedCount = 0
+            // Note: Each row needs a different expectedAmount, so we can't use a single
+            // batch UPDATE with inArray. Promise.all is acceptable here because:
+            // 1. This is an admin-only operation run infrequently
+            // 2. Typical project has ~20-50 payments (apartments × installments)
+            // For high-scale scenarios, consider chunking or raw SQL with UNNEST.
+            const updatePromises: Promise<unknown>[] = []
+            const now = new Date()
+
             for (const apt of calculations.apartments) {
                 for (const inst of apt.installments) {
-                    await db
-                        .update(extraordinaryPayments)
-                        .set({
-                            expectedAmount: inst.amount,
-                            updatedAt: new Date(),
-                        })
-                        .where(
-                            and(
-                                eq(extraordinaryPayments.projectId, projectId),
-                                eq(extraordinaryPayments.apartmentId, apt.apartmentId),
-                                eq(extraordinaryPayments.installment, inst.number)
+                    updatePromises.push(
+                        db.update(extraordinaryPayments)
+                            .set({
+                                expectedAmount: inst.amount,
+                                updatedAt: now,
+                            })
+                            .where(
+                                and(
+                                    eq(extraordinaryPayments.projectId, projectId),
+                                    eq(extraordinaryPayments.apartmentId, apt.apartmentId),
+                                    eq(extraordinaryPayments.installment, inst.number)
+                                )
                             )
-                        )
-                    updatedCount++
+                    )
                 }
             }
+
+            await Promise.all(updatePromises)
+            const updatedCount = updatePromises.length
 
             revalidatePath(`/dashboard/extraordinary/${projectId}`)
 

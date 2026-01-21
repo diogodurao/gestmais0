@@ -15,15 +15,20 @@ export async function getDocuments(buildingId: string, category?: DocumentCatego
         throw new Error("Unauthorized")
     }
 
-    return await documentService.getByBuilding(buildingId, category) as Document[]
+    const result = await documentService.getByBuilding(buildingId, category)
+    if (!result.success) throw new Error(result.error)
+    return result.data as Document[]
 }
 
 // Get version history
 export async function getDocumentVersions(documentId: number) {
     const session = await requireSession()
-    const doc = await documentService.getById(documentId)
+    const docResult = await documentService.getById(documentId)
 
-    if (!doc) return []
+    if (!docResult.success) return []
+    if (!docResult.data) return []
+
+    const doc = docResult.data
 
     if (session.user.role === 'manager') {
         await requireBuildingAccess(doc.buildingId)
@@ -31,15 +36,19 @@ export async function getDocumentVersions(documentId: number) {
         throw new Error("Unauthorized")
     }
 
-    return await documentService.getVersionHistory(documentId) as Document[]
+    const result = await documentService.getVersionHistory(documentId)
+    if (!result.success) return []
+    return result.data as Document[]
 }
 
 // Get download URL
 export async function getDocumentDownloadUrl(documentId: number) {
     const session = await requireSession()
-    const doc = await documentService.getById(documentId)
+    const docResult = await documentService.getById(documentId)
 
-    if (!doc) return null
+    if (!docResult.success || !docResult.data) return null
+
+    const doc = docResult.data
 
     if (session.user.role === 'manager') {
         await requireBuildingAccess(doc.buildingId)
@@ -47,7 +56,9 @@ export async function getDocumentDownloadUrl(documentId: number) {
         throw new Error("Unauthorized")
     }
 
-    return await documentService.getDownloadUrl(documentId)
+    const result = await documentService.getDownloadUrl(documentId)
+    if (!result.success) return null
+    return result.data
 }
 
 // Update metadata (manager only)
@@ -55,45 +66,43 @@ export async function updateDocumentMetadata(
     documentId: number,
     data: { title?: string; description?: string }
 ): Promise<ActionResult<void>> {
-    const { session } = await requireBuildingAccess(
-        (await documentService.getById(documentId))?.buildingId || ""
-    )
+    const docResult = await documentService.getById(documentId)
+    if (!docResult.success || !docResult.data) {
+        return { success: false, error: "Documento não encontrado" }
+    }
+
+    const doc = docResult.data
+    const { session } = await requireBuildingAccess(doc.buildingId)
 
     if (session.user.role !== 'manager') {
         return { success: false, error: "Apenas gestores podem editar documentos" }
     }
 
-    try {
-        const doc = await documentService.getById(documentId)
-        await documentService.updateMetadata(documentId, data)
-        if (doc) {
-            updateTag(`documents-${doc.buildingId}`)
-            updateTag(`document-${documentId}`)
-        }
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao atualizar documento" }
-    }
+    const result = await documentService.updateMetadata(documentId, data)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`documents-${doc.buildingId}`)
+    updateTag(`document-${documentId}`)
+    return { success: true, data: undefined }
 }
 
 // Delete document (manager only)
 export async function deleteDocument(documentId: number): Promise<ActionResult<void>> {
-    const doc = await documentService.getById(documentId)
-    if (!doc) {
+    const docResult = await documentService.getById(documentId)
+    if (!docResult.success || !docResult.data) {
         return { success: false, error: "Documento não encontrado" }
     }
 
+    const doc = docResult.data
     const { session } = await requireBuildingAccess(doc.buildingId)
 
     if (session.user.role !== 'manager') {
         return { success: false, error: "Apenas gestores podem eliminar documentos" }
     }
 
-    try {
-        await documentService.delete(documentId)
-        updateTag(`documents-${doc.buildingId}`)
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao eliminar documento" }
-    }
+    const result = await documentService.delete(documentId)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`documents-${doc.buildingId}`)
+    return { success: true, data: undefined }
 }

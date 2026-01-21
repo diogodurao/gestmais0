@@ -1,10 +1,56 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card"
-import { CreditCard, Lock } from "lucide-react"
-import { SubscribeButton, SyncSubscriptionButton } from "@/components/dashboard/subscription/SubscribeButton"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/Card"
+import { BadgeWithDot } from "@/components/ui/Badge"
+import { Alert } from "@/components/ui/Alert"
+import { CreditCard, CheckCircle, AlertTriangle, XCircle } from "lucide-react"
+import { SubscribeButton, SyncSubscriptionButton, ManageSubscriptionButton } from "@/components/dashboard/subscription/SubscribeButton"
 import { type SubscriptionStatus } from "@/lib/types"
 import { DEFAULT_SUBSCRIPTION_PRICE_PER_UNIT } from "@/lib/constants/project"
+
+type StateConfig = {
+    cardVariant: "default" | "success" | "warning" | "error"
+    badgeVariant: "info" | "success" | "warning" | "error"
+    badgeText: string
+    alertVariant: "info" | "success" | "warning" | "error"
+    alertMessage: string
+    Icon: typeof CreditCard
+}
+
+const stateConfigs: Record<string, StateConfig> = {
+    incomplete: {
+        cardVariant: "default",
+        badgeVariant: "info",
+        badgeText: "Incompleto",
+        alertVariant: "info",
+        alertMessage: "Subscreva para desbloquear todas as funcionalidades.",
+        Icon: CreditCard,
+    },
+    active: {
+        cardVariant: "success",
+        badgeVariant: "success",
+        badgeText: "Ativo",
+        alertVariant: "success",
+        alertMessage: "Subscrição ativa. Todas as funcionalidades desbloqueadas.",
+        Icon: CheckCircle,
+    },
+    past_due: {
+        cardVariant: "warning",
+        badgeVariant: "warning",
+        badgeText: "Pagamento Atrasado",
+        alertVariant: "warning",
+        alertMessage: "O seu pagamento está atrasado. Atualize o método de pagamento para evitar suspensão.",
+        Icon: AlertTriangle,
+    },
+    unpaid: {
+        cardVariant: "error",
+        badgeVariant: "error",
+        badgeText: "Suspensa",
+        alertVariant: "error",
+        alertMessage: "A sua subscrição foi suspensa por falta de pagamento.",
+        Icon: XCircle,
+    },
+}
 
 interface BillingSubscriptionCardProps {
     subscriptionStatus: string | null
@@ -25,64 +71,90 @@ export function BillingSubscriptionCard({
     buildingComplete,
     pricePerUnit = DEFAULT_SUBSCRIPTION_PRICE_PER_UNIT,
 }: BillingSubscriptionCardProps) {
-    const isActive = subscriptionStatus === 'active'
+    const normalizedStatus = subscriptionStatus || "incomplete"
+    const config = stateConfigs[normalizedStatus] || stateConfigs.incomplete
+
+    const renderIncompleteContent = () => (
+        <div className="space-y-4">
+            {canSubscribe ? (
+                <div className="flex flex-col gap-4">
+                    <SubscribeButton
+                        buildingId={buildingId}
+                        quantity={totalApartments || 1}
+                        pricePerUnit={pricePerUnit}
+                    />
+                    <SyncSubscriptionButton buildingId={buildingId} />
+                </div>
+            ) : (
+                <div className="p-3 tech-border border-dashed text-center">
+                    <p className="text-label text-gray-400 font-bold uppercase tracking-widest">
+                        [ {!profileComplete ? "Valide o seu perfil" : !buildingComplete ? "Valide o edifício" : "Insira todas as frações"} para ativar a faturação ]
+                    </p>
+                </div>
+            )}
+        </div>
+    )
+
+    const renderActiveContent = () => (
+        <div className="space-y-2">
+            <p className="text-body text-gray-500">Todas as funcionalidades estão disponíveis.</p>
+        </div>
+    )
+
+    const renderPastDueContent = () => (
+        <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+                <ManageSubscriptionButton buildingId={buildingId} />
+                <SyncSubscriptionButton buildingId={buildingId} />
+            </div>
+        </div>
+    )
+
+    const renderUnpaidContent = () => (
+        <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+                <ManageSubscriptionButton buildingId={buildingId} variant="urgent" />
+            </div>
+            <p className="text-label text-gray-500">
+                Se precisar de ajuda, contacte o suporte.
+            </p>
+        </div>
+    )
+
+    const renderContent = () => {
+        switch (normalizedStatus) {
+            case "active":
+                return renderActiveContent()
+            case "past_due":
+                return renderPastDueContent()
+            case "unpaid":
+                return renderUnpaidContent()
+            default:
+                return renderIncompleteContent()
+        }
+    }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>
+        <Card variant={config.cardVariant}>
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-1.5">
                     <CreditCard className="w-4 h-4" />
-                    Subscrição de Serviço de Faturação
+                    Subscrição
                 </CardTitle>
-                {isActive ? (
-                    <span className="status-badge status-active">Subscrição Ativa</span>
-                ) : (
-                    <span className="status-badge status-alert">A Aguardar Sincronização</span>
-                )}
+                <BadgeWithDot variant={config.badgeVariant} size="md">
+                    {config.badgeText}
+                </BadgeWithDot>
             </CardHeader>
-            <div className="p-0">
-                <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] md:grid-cols-[140px_1fr] border-b border-gray-100">
-                    <div className="label-col border-none text-label sm:text-body">Estado</div>
-                    <div className="value-col border-none px-3 py-2">
-                        <span className={`text-body font-bold uppercase ${isActive ? 'text-emerald-600' : 'text-error'}`}>
-                            {subscriptionStatus || "Incompleto"}
-                        </span>
-                    </div>
-                </div>
 
-                <div className="p-4 bg-gray-50/50">
-                    {isActive ? (
-                        <div className="space-y-2">
-                            <p className="text-body text-gray-600 uppercase font-bold tracking-tight">Subscrição Ativa</p>
-                            <p className="text-body text-gray-500">Todas as funcionalidades estão desbloqueadas.</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div className="bg-warning-light border border-gray-200 p-3">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Lock className="w-4 h-4 text-warning" />
-                                    <span className="text-body font-bold text-warning uppercase">Funcionalidades Bloqueadas</span>
-                                </div>
-                                <p className="text-label text-warning uppercase leading-tight">Subscreva para desbloquear todas as funcionalidades.</p>
-                            </div>
+            <CardContent className="space-y-4">
+                <Alert variant={config.alertVariant}>
+                    {config.alertMessage}
+                </Alert>
 
-                            {canSubscribe ? (
-                                <div className="flex flex-col gap-4">
-                                    <SubscribeButton buildingId={buildingId} quantity={totalApartments || 1} pricePerUnit={pricePerUnit} />
-                                    <SyncSubscriptionButton buildingId={buildingId} />
-                                </div>
-                            ) : (
-                                <div className="p-3 tech-border border-dashed text-center">
-                                    <p className="text-label text-gray-400 font-bold uppercase tracking-widest">
-                                        [ {!profileComplete ? "Valide o seu perfil" : !buildingComplete ? "Valide o edifício" : "Insira todas as frações"} para ativar a faturação ]
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-            <CardFooter>
+                {renderContent()}
+            </CardContent>
+
+            <CardFooter className="text-label text-gray-400">
                 Processado por Stripe
             </CardFooter>
         </Card>

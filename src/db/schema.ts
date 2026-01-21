@@ -1,5 +1,31 @@
-import { pgTable, serial, text, timestamp, boolean, integer, date, real, unique, index, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, serial, text, timestamp, boolean, integer, date, real, unique, index, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from "drizzle-orm"
+
+// --- Enums ---
+export const occurrenceStatusEnum = pgEnum('occurrence_status', ['open', 'in_progress', 'resolved'])
+export const occurrencePriorityEnum = pgEnum('occurrence_priority', ['low', 'medium', 'high', 'urgent'])
+export const pollStatusEnum = pgEnum('poll_status', ['open', 'closed'])
+export const pollTypeEnum = pgEnum('poll_type', ['yes_no', 'single_choice', 'multiple_choice'])
+export const pollWeightModeEnum = pgEnum('poll_weight_mode', ['equal', 'permilagem'])
+export const documentCategoryEnum = pgEnum('document_category', ['atas', 'regulamentos', 'contas', 'seguros', 'contratos', 'projetos', 'outros'])
+export const paymentStatusEnum = pgEnum('payment_status', ['pending', 'paid', 'late', 'partial'])
+export const projectStatusEnum = pgEnum('project_status', ['draft', 'active', 'completed', 'cancelled', 'archived'])
+export const quotaModeEnum = pgEnum('quota_mode', ['global', 'permillage'])
+export const subscriptionStatusEnum = pgEnum('subscription_status', ['incomplete', 'active', 'canceled', 'past_due'])
+export const notificationTypeEnum = pgEnum('notification_type', [
+    'occurrence_created',
+    'occurrence_comment',
+    'occurrence_status',
+    'poll_created',
+    'poll_closed',
+    'discussion_created',
+    'discussion_comment',
+    'evaluation_open',
+    'calendar_event',
+    'payment_due',
+    'payment_overdue',
+    'poll'
+])
 
 // --- Auth Tables (Better-Auth) ---
 
@@ -30,7 +56,9 @@ export const session = pgTable('session', {
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
     userId: text('user_id').notNull().references(() => user.id),
-});
+}, (table) => ({
+    idxSessionUser: index("idx_session_user").on(table.userId),
+}));
 
 export const account = pgTable('account', {
     id: text('id').primaryKey(),
@@ -46,7 +74,9 @@ export const account = pgTable('account', {
     password: text('password'),
     createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at').notNull(),
-});
+}, (table) => ({
+    idxAccountUser: index("idx_account_user").on(table.userId),
+}));
 
 export const verification = pgTable('verification', {
     id: text('id').primaryKey(),
@@ -70,14 +100,14 @@ export const building = pgTable('building', {
     number: text('number'),
     iban: text('iban'),
     totalApartments: integer('total_apartments'),
-    quotaMode: text('quota_mode').default('global'), // 'global' | 'permillage'
+    quotaMode: quotaModeEnum('quota_mode').default('global'),
     monthlyQuota: integer('monthly_quota'), // in cents
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
     // Stripe Subscription Fields
     stripeSubscriptionId: text('stripe_subscription_id'),
     stripePriceId: text('stripe_price_id'),
-    subscriptionStatus: text('subscription_status').default('incomplete'), // 'active', 'incomplete', 'canceled', 'past_due'
+    subscriptionStatus: subscriptionStatusEnum('subscription_status').default('incomplete'),
     setupComplete: boolean('setup_complete').default(false),
 });
 
@@ -89,7 +119,10 @@ export const managerBuildings = pgTable('manager_buildings', {
     buildingId: text('building_id').notNull().references(() => building.id),
     isOwner: boolean('is_owner').default(false), // Original creator
     createdAt: timestamp('created_at').defaultNow(),
-});
+}, (table) => ({
+    idxManagerBuildingsManager: index("idx_manager_buildings_manager").on(table.managerId),
+    idxManagerBuildingsBuilding: index("idx_manager_buildings_building").on(table.buildingId),
+}));
 
 // --- Unit/Apartment Tables ---
 
@@ -100,7 +133,8 @@ export const apartments = pgTable('apartments', {
     permillage: real('permillage'),
     residentId: text('resident_id').references(() => user.id), // Can be null if unclaimed
 }, (table) => ({
-    idxApartmentsBuilding: index("idx_apartments_building").on(table.buildingId)
+    idxApartmentsBuilding: index("idx_apartments_building").on(table.buildingId),
+    idxApartmentsResident: index("idx_apartments_resident").on(table.residentId),
 }));
 
 // --- RESIDENT QUOTA PAYMENTS (NOT STRIPE/SAAS) ---
@@ -112,7 +146,7 @@ export const payments = pgTable('payments', {
     apartmentId: integer('apartment_id').notNull().references(() => apartments.id),
     month: integer('month').notNull(), // 1-12
     year: integer('year').notNull(),
-    status: text('status').notNull().default('pending'), // 'paid' | 'pending' | 'late'
+    status: paymentStatusEnum('status').notNull().default('pending'),
     amount: integer('amount').notNull(), // in cents
     updatedAt: timestamp('updated_at').defaultNow(),
 }, (table) => ({
@@ -140,13 +174,16 @@ export const extraordinaryProjects = pgTable("extraordinary_projects", {
     documentName: text("document_name"),
 
     // Status tracking
-    status: text("status").default("active"),
+    status: projectStatusEnum("status").default("active"),
 
     // Audit fields
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
     createdBy: text("created_by").references(() => user.id),
-});
+}, (table) => ({
+    idxExtraProjectsBuilding: index("idx_extra_projects_building").on(table.buildingId),
+    idxExtraProjectsStatus: index("idx_extra_projects_status").on(table.status),
+}));
 
 export const extraordinaryPayments = pgTable(
     "extraordinary_payments",
@@ -163,7 +200,7 @@ export const extraordinaryPayments = pgTable(
         paidAmount: integer("paid_amount").default(0),
 
         // Status
-        status: text("status").default("pending"),
+        status: paymentStatusEnum("status").default("pending"),
 
         // Payment details
         paidAt: timestamp("paid_at"),
@@ -176,7 +213,8 @@ export const extraordinaryPayments = pgTable(
     },
     (table) => ({
         uniquePayment: unique().on(table.projectId, table.apartmentId, table.installment),
-        idxExtraPaymentsProject: index("idx_extra_payments_project").on(table.projectId)
+        idxExtraPaymentsProject: index("idx_extra_payments_project").on(table.projectId),
+        idxExtraPaymentsApartment: index("idx_extra_payments_apartment").on(table.apartmentId),
     })
 );
 
@@ -201,8 +239,8 @@ export const occurrences = pgTable('occurrences', {
     title: text('title').notNull(),
     type: text('type').notNull(),
     description: text('description'),
-    status: text('status').notNull().default('open'), // 'open', 'in_progress', 'resolved'
-    priority: text('priority').notNull().default('medium'), // 'low', 'medium', 'high', 'urgent'
+    status: occurrenceStatusEnum('status').notNull().default('open'),
+    priority: occurrencePriorityEnum('priority').notNull().default('medium'),
     createdBy: text('created_by').notNull().references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     resolvedAt: timestamp('resolved_at'),
@@ -242,9 +280,9 @@ export const polls = pgTable('polls', {
     buildingId: text('building_id').notNull().references(() => building.id),
     title: text('title').notNull(),
     description: text('description'),
-    type: text('type').notNull().$type<"yes_no" | "single_choice" | "multiple_choice">(), // 'yes_no', 'single_choice', 'multiple_choice'
-    weightMode: text('weight_mode').notNull().default('equal').$type<"equal" | "permilagem">(), // 'equal', 'permilagem'
-    status: text('status').notNull().default('open').$type<"open" | "closed">(), // 'open', 'closed'
+    type: pollTypeEnum('type').notNull(),
+    weightMode: pollWeightModeEnum('weight_mode').notNull().default('equal'),
+    status: pollStatusEnum('status').notNull().default('open'),
     options: jsonb('options').$type<string[]>(), // For choice types: ["Option A", "Option B"]
     createdBy: text('created_by').notNull().references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -325,7 +363,7 @@ export const notifications = pgTable('notifications', {
     id: serial('id').primaryKey(),
     buildingId: text('building_id').notNull().references(() => building.id),
     userId: text('user_id').notNull().references(() => user.id),
-    type: text('type').notNull(), // 'occurrence_created', 'occurrence_comment', 'poll_created', etc.
+    type: notificationTypeEnum('type').notNull(),
     title: text('title').notNull(),
     message: text('message'),
     link: text('link'), // e.g., '/dashboard/occurrences/123'
@@ -354,7 +392,7 @@ export const documents = pgTable('documents', {
     buildingId: text('building_id').notNull().references(() => building.id),
     title: text('title').notNull(),
     description: text('description'),
-    category: text('category').notNull(), // 'atas', 'regulamentos', 'contas', 'seguros', 'contratos', 'outros'
+    category: documentCategoryEnum('category').notNull(),
     fileName: text('file_name').notNull(), // Original filename
     fileKey: text('file_key').notNull(), // R2 object key
     fileUrl: text('file_url').notNull(), // Public or signed URL

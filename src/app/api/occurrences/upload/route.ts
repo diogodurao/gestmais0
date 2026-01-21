@@ -19,10 +19,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "occurrenceId é obrigatório" }, { status: 400 })
         }
 
-        const occurrence = await occurrenceService.getById(Number(occurrenceId))
-        if (!occurrence) {
+        const occurrenceResult = await occurrenceService.getById(Number(occurrenceId))
+        if (!occurrenceResult.success || !occurrenceResult.data) {
             return NextResponse.json({ error: "Ocorrência não encontrada" }, { status: 404 })
         }
+
+        const occurrence = occurrenceResult.data
 
         // Verify building access
         if (session.user.role !== 'manager' && session.user.buildingId !== occurrence.buildingId) {
@@ -36,8 +38,11 @@ export async function POST(request: NextRequest) {
 
         // Check photo limit for occurrence (not comments)
         if (!commentId) {
-            const existingCount = await occurrenceService.countOccurrenceAttachments(Number(occurrenceId))
-            if (existingCount + files.length > MAX_PHOTOS_PER_OCCURRENCE) {
+            const countResult = await occurrenceService.countOccurrenceAttachments(Number(occurrenceId))
+            if (!countResult.success) {
+                return NextResponse.json({ error: countResult.error }, { status: 500 })
+            }
+            if (countResult.data + files.length > MAX_PHOTOS_PER_OCCURRENCE) {
                 return NextResponse.json({
                     error: `Máximo ${MAX_PHOTOS_PER_OCCURRENCE} fotos por ocorrência`
                 }, { status: 400 })
@@ -70,7 +75,7 @@ export async function POST(request: NextRequest) {
             try {
                 const buffer = Buffer.from(await file.arrayBuffer())
 
-                const attachment = await occurrenceService.addAttachment(
+                const attachmentResult = await occurrenceService.addAttachment(
                     Number(occurrenceId),
                     {
                         buffer,
@@ -82,7 +87,16 @@ export async function POST(request: NextRequest) {
                     commentId ? Number(commentId) : undefined
                 )
 
-                results.push({ fileName: file.name, success: true, attachment })
+                if (!attachmentResult.success) {
+                    results.push({
+                        fileName: file.name,
+                        success: false,
+                        error: attachmentResult.error,
+                    })
+                    continue
+                }
+
+                results.push({ fileName: file.name, success: true, attachment: attachmentResult.data })
             } catch (error) {
                 results.push({
                     fileName: file.name,

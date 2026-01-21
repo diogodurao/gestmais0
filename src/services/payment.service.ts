@@ -1,5 +1,8 @@
 import { db } from "@/db"
 import { PaymentStatus, PaymentData } from "@/lib/types"
+import { createLogger } from "@/lib/logger"
+
+const logger = createLogger('PaymentService')
 import { payments, apartments, user, building, extraordinaryProjects, extraordinaryPayments } from "@/db/schema"
 import { eq, and, asc, lte, sql, sum, count, inArray } from "drizzle-orm"
 import { getInstallmentDate } from "@/lib/extraordinary-calculations"
@@ -130,20 +133,15 @@ export class PaymentService {
         let finalAmount = amount
         if (finalAmount === undefined) {
             if (status === 'paid') {
-                const apt = await db.select({ buildingId: apartments.buildingId })
+                // Single JOIN query instead of cascading lookups
+                const [result] = await db
+                    .select({ monthlyQuota: building.monthlyQuota })
                     .from(apartments)
+                    .innerJoin(building, eq(apartments.buildingId, building.id))
                     .where(eq(apartments.id, apartmentId))
                     .limit(1)
 
-                if (apt.length > 0) {
-                    const b = await db.select({ monthlyQuota: building.monthlyQuota })
-                        .from(building)
-                        .where(eq(building.id, apt[0].buildingId))
-                        .limit(1)
-                    finalAmount = b[0]?.monthlyQuota || 0
-                } else {
-                    finalAmount = 0
-                }
+                finalAmount = result?.monthlyQuota || 0
             } else {
                 finalAmount = 0
             }
@@ -220,8 +218,11 @@ export class PaymentService {
             let regOverdueMonths = 0
             let currentMonthPaid = false
 
+            // Create Map for O(1) payment lookups instead of O(n) find() calls
+            const paymentsByMonth = new Map(regPayments.map(p => [p.month, p]))
+
             for (let m = 1; m <= currentMonth; m++) {
-                const p = regPayments.find(p => p.month === m)
+                const p = paymentsByMonth.get(m)
                 if (p?.status === 'paid') {
                     totalPaidRegular += p.amount
                     if (m === currentMonth) currentMonthPaid = true
@@ -320,7 +321,7 @@ export class PaymentService {
                 },
             }
         } catch (error) {
-            console.error("Error fetching payment status:", error)
+            logger.error("Failed to fetch payment status", { method: 'getPaymentStatus' }, error)
             return { success: false, error: "Erro ao carregar estado dos pagamentos" }
         }
     }
@@ -428,7 +429,7 @@ export class PaymentService {
                 }
             }
         } catch (error) {
-            console.error("Error fetching building payment status:", error)
+            logger.error("Failed to fetch building payment status", { method: 'getBuildingPaymentStatus', buildingId }, error)
             return { success: false, error: "Erro ao carregar estado do condomínio" }
         }
     }
@@ -601,7 +602,7 @@ export class PaymentService {
                 },
             }
         } catch (error) {
-            console.error("Error fetching apartment payment status:", error)
+            logger.error("Failed to fetch apartment payment status", { method: 'getApartmentPaymentStatus', apartmentId }, error)
             return { success: false, error: "Erro ao carregar estado dos pagamentos" }
         }
     }

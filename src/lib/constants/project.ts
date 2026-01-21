@@ -2,6 +2,26 @@ export const PROJECT_DEFAULTS = {
     INSTALLMENTS: 12,
 } as const
 
+// ==========================================
+// PAYMENT THRESHOLDS
+// ==========================================
+
+/** Balance threshold in cents (€500) for payment status classification */
+export const PAYMENT_BALANCE_THRESHOLD = 50000
+
+/** Maximum overdue payments before status becomes critical */
+export const PAYMENT_OVERDUE_THRESHOLD = 2
+
+// ==========================================
+// PAGINATION
+// ==========================================
+
+/** Default page size for listings */
+export const DEFAULT_PAGE_SIZE = 20
+
+/** Maximum page size allowed */
+export const MAX_PAGE_SIZE = 100
+
 export const FLOOR_OPTIONS = [
     { value: "-2", label: "-2" },
     { value: "-1", label: "-1" },

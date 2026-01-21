@@ -172,7 +172,73 @@ export type SubscriptionSyncStatus = 'idle' | 'syncing' | 'success' | 'error'
 
 export type ActionResult<T> =
     | { success: true; data: T }
-    | { success: false; error: string }
+    | { success: false; error: string; code?: ErrorCode }
+
+// ==========================================
+// RESULT HELPERS
+// ==========================================
+
+export function Ok<T>(data: T): ActionResult<T> {
+    return { success: true, data }
+}
+
+export function Err(error: string, code?: ErrorCode): ActionResult<never> {
+    return { success: false, error, code }
+}
+
+// ==========================================
+// ERROR CODES
+// ==========================================
+
+export const ErrorCodes = {
+    // Generic
+    NOT_FOUND: 'NOT_FOUND',
+    UNAUTHORIZED: 'UNAUTHORIZED',
+    FORBIDDEN: 'FORBIDDEN',
+    VALIDATION_FAILED: 'VALIDATION_FAILED',
+    INTERNAL_ERROR: 'INTERNAL_ERROR',
+
+    // Building
+    BUILDING_NOT_FOUND: 'BUILDING_NOT_FOUND',
+    INVALID_BUILDING_CODE: 'INVALID_BUILDING_CODE',
+    BUILDING_INACTIVE: 'BUILDING_INACTIVE',
+    BUILDING_ACCESS_DENIED: 'BUILDING_ACCESS_DENIED',
+
+    // Apartment
+    APARTMENT_NOT_FOUND: 'APARTMENT_NOT_FOUND',
+    APARTMENT_ALREADY_CLAIMED: 'APARTMENT_ALREADY_CLAIMED',
+    UNIT_ALREADY_EXISTS: 'UNIT_ALREADY_EXISTS',
+    MISSING_REQUIRED_FIELDS: 'MISSING_REQUIRED_FIELDS',
+
+    // User
+    USER_NOT_FOUND: 'USER_NOT_FOUND',
+    NO_APARTMENT_ASSIGNED: 'NO_APARTMENT_ASSIGNED',
+
+    // Payment / Stripe
+    PAYMENT_FAILED: 'PAYMENT_FAILED',
+    SUBSCRIPTION_NOT_FOUND: 'SUBSCRIPTION_NOT_FOUND',
+    CHECKOUT_FAILED: 'CHECKOUT_FAILED',
+    STRIPE_CUSTOMER_ERROR: 'STRIPE_CUSTOMER_ERROR',
+
+    // Calendar
+    EVENT_NOT_FOUND: 'EVENT_NOT_FOUND',
+
+    // Documents
+    DOCUMENT_NOT_FOUND: 'DOCUMENT_NOT_FOUND',
+
+    // Polls
+    POLL_NOT_FOUND: 'POLL_NOT_FOUND',
+    POLL_HAS_VOTES: 'POLL_HAS_VOTES',
+
+    // Occurrences
+    OCCURRENCE_NOT_FOUND: 'OCCURRENCE_NOT_FOUND',
+
+    // Discussions
+    DISCUSSION_NOT_FOUND: 'DISCUSSION_NOT_FOUND',
+    COMMENT_NOT_FOUND: 'COMMENT_NOT_FOUND',
+} as const
+
+export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
 
 // ==========================================
 // DASHBOARD TYPES
@@ -205,6 +271,8 @@ export type DashboardInitialData = {
 
 // Use schema inference instead of manual type
 export type CalendarEvent = typeof calendarEvents.$inferSelect
+
+export type RecurrenceType = "none" | "weekly" | "biweekly" | "monthly"
 
 // EVENT_TYPE_SUGGESTIONS is defined in lib/constants/ui.ts
 
@@ -370,10 +438,10 @@ export interface PollVote {
     apartmentId: number | null
     vote: string | string[]
     createdAt: Date
-    updatedAt: Date
-    userName?: string | null
-    apartmentPermillage?: number | null
-    apartmentUnit?: string | null
+    updatedAt: Date | null
+    userName: string | null
+    apartmentPermillage: number | null
+    apartmentUnit: string | null
 }
 
 export interface PollResults {
@@ -395,7 +463,7 @@ export interface Discussion {
     isClosed: boolean
     createdBy: string
     createdAt: Date
-    updatedAt: Date
+    updatedAt: Date | null
     lastActivityAt: Date
     creatorName: string | null
     commentCount?: number
@@ -408,7 +476,7 @@ export interface DiscussionComment {
     isEdited: boolean
     createdBy: string
     createdAt: Date
-    updatedAt: Date
+    updatedAt: Date | null
     creatorName: string | null
 }
 

@@ -5,7 +5,7 @@ import { after } from "next/server"
 import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { pollService, CreatePollInput, CastVoteInput } from "@/services/poll.service"
 import { createPollSchema, castVoteSchema } from "@/lib/zod-schemas"
-import { ActionResult, PollResults } from "@/lib/types"
+import { ActionResult, PollResults, Poll, PollVote } from "@/lib/types"
 import { db } from "@/db"
 import { apartments, building } from "@/db/schema"
 import { notifyBuildingResidents, createNotification, notifyPollClosed } from "@/lib/actions/notification"
@@ -21,15 +21,20 @@ export async function getPolls(buildingId: string, status?: "open" | "closed") {
         throw new Error("Unauthorized")
     }
 
-    return await pollService.getByBuilding(buildingId, status)
+    const result = await pollService.getByBuilding(buildingId, status)
+    if (!result.success) throw new Error(result.error)
+    return result.data
 }
 
 // Get single poll
-export async function getPoll(id: number) {
+export async function getPoll(id: number): Promise<Poll | null> {
     const session = await requireSession()
-    const poll = await pollService.getById(id)
+    const result = await pollService.getById(id)
 
-    if (!poll) return null
+    if (!result.success) throw new Error(result.error)
+    if (!result.data) return null
+
+    const poll = result.data
 
     if (session.user.role === 'manager') {
         await requireBuildingAccess(poll.buildingId)
@@ -37,15 +42,17 @@ export async function getPoll(id: number) {
         throw new Error("Unauthorized")
     }
 
-    return poll
+    return poll as Poll
 }
 
 // Get poll votes (for results display)
-export async function getPollVotes(pollId: number) {
+export async function getPollVotes(pollId: number): Promise<PollVote[]> {
     const session = await requireSession()
-    const poll = await pollService.getById(pollId)
+    const pollResult = await pollService.getById(pollId)
 
-    if (!poll) return []
+    if (!pollResult.success || !pollResult.data) return []
+
+    const poll = pollResult.data
 
     if (session.user.role === 'manager') {
         await requireBuildingAccess(poll.buildingId)
@@ -53,32 +60,40 @@ export async function getPollVotes(pollId: number) {
         throw new Error("Unauthorized")
     }
 
-    return await pollService.getVotes(pollId)
+    const result = await pollService.getVotes(pollId)
+    if (!result.success) return []
+    return result.data as PollVote[]
 }
 
 // Get current user's vote
-export async function getUserVote(pollId: number) {
+export async function getUserVote(pollId: number): Promise<PollVote | null> {
     const session = await requireSession()
-    return await pollService.getUserVote(pollId, session.user.id)
+    const result = await pollService.getUserVote(pollId, session.user.id)
+    if (!result.success) return null
+    return result.data as PollVote | null
 }
 
 // Get calculated results
 export async function getPollResults(pollId: number): Promise<PollResults | { restricted: true; message: string } | null> {
     const session = await requireSession()
-    const poll = await pollService.getById(pollId)
+    const pollResult = await pollService.getById(pollId)
 
-    if (!poll) return null
+    if (!pollResult.success || !pollResult.data) return null
+
+    const poll = pollResult.data
 
     // Manager can always see results
     // Residents can only see after voting
     if (session.user.role !== 'manager') {
-        const userVote = await pollService.getUserVote(pollId, session.user.id)
-        if (!userVote) {
+        const userVoteResult = await pollService.getUserVote(pollId, session.user.id)
+        if (!userVoteResult.success || !userVoteResult.data) {
             return { restricted: true, message: "Vote primeiro para ver os resultados" } as const
         }
     }
 
-    return await pollService.calculateResults(pollId)
+    const result = await pollService.calculateResults(pollId)
+    if (!result.success) return null
+    return result.data
 }
 
 // Create poll (manager only)
@@ -101,37 +116,38 @@ export async function createPoll(input: CreatePollInput): Promise<ActionResult<{
         }
     }
 
-    try {
-        const created = await pollService.create(validated.data, session.user.id)
-        updateTag(`polls-${input.buildingId}`)
+    const result = await pollService.create(validated.data, session.user.id)
+    if (!result.success) return { success: false, error: result.error }
 
-        // Notify all residents after response (non-blocking)
-        const pollTitle = validated.data.title
-        const creatorId = session.user.id
-        after(async () => {
-            await notifyBuildingResidents({
-                buildingId: input.buildingId,
-                title: "Nova Votação Disponível",
-                message: `Foi criada uma nova votação: "${pollTitle}"`,
-                type: "poll",
-                link: `/dashboard/polls?id=${created.id}`
-            }, creatorId)
-        })
+    const created = result.data
+    updateTag(`polls-${input.buildingId}`)
 
-        return { success: true, data: { id: created.id } }
-    } catch {
-        return { success: false, error: "Erro ao criar votação" }
-    }
+    // Notify all residents after response (non-blocking)
+    const pollTitle = validated.data.title
+    const creatorId = session.user.id
+    after(async () => {
+        await notifyBuildingResidents({
+            buildingId: input.buildingId,
+            title: "Nova Votação Disponível",
+            message: `Foi criada uma nova votação: "${pollTitle}"`,
+            type: "poll",
+            link: `/dashboard/polls?id=${created.id}`
+        }, creatorId)
+    })
+
+    return { success: true, data: { id: created.id } }
 }
 
 // Cast vote (any building member)
 export async function castVote(input: CastVoteInput): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const poll = await pollService.getById(input.pollId)
+    const pollResult = await pollService.getById(input.pollId)
 
-    if (!poll) {
+    if (!pollResult.success || !pollResult.data) {
         return { success: false, error: "Votação não encontrada" }
     }
+
+    const poll = pollResult.data
 
     // Verify building access
     if (session.user.role === 'manager') {
@@ -174,55 +190,55 @@ export async function castVote(input: CastVoteInput): Promise<ActionResult<void>
         }
     }
 
-    try {
-        // Get user's apartment for weighted voting
-        // We look for an apartment assigned to this user in this building
-        const apartment = await db.query.apartments.findFirst({
-            where: and(
-                eq(apartments.residentId, session.user.id),
-                eq(apartments.buildingId, poll.buildingId)
-            ),
-            columns: { id: true }
+    // Get user's apartment for weighted voting
+    // We look for an apartment assigned to this user in this building
+    const apartment = await db.query.apartments.findFirst({
+        where: and(
+            eq(apartments.residentId, session.user.id),
+            eq(apartments.buildingId, poll.buildingId)
+        ),
+        columns: { id: true }
+    })
+    const apartmentId = apartment?.id || null
+
+    const voteResult = await pollService.castVote(validated.data, session.user.id, apartmentId)
+    if (!voteResult.success) return { success: false, error: voteResult.error }
+
+    updateTag(`poll-votes-${input.pollId}`)
+
+    // Notify manager after response (non-blocking)
+    const voterId = session.user.id
+    after(async () => {
+        const buildingInfo = await db.query.building.findFirst({
+            where: eq(building.id, poll.buildingId),
+            columns: { managerId: true }
         })
-        const apartmentId = apartment?.id || null
 
-        await pollService.castVote(validated.data, session.user.id, apartmentId)
-        updateTag(`poll-votes-${input.pollId}`)
-
-        // Notify manager after response (non-blocking)
-        const voterId = session.user.id
-        after(async () => {
-            const buildingInfo = await db.query.building.findFirst({
-                where: eq(building.id, poll.buildingId),
-                columns: { managerId: true }
+        if (buildingInfo && buildingInfo.managerId !== voterId) {
+            await createNotification({
+                buildingId: poll.buildingId,
+                userId: buildingInfo.managerId,
+                title: "Novo Voto Registado",
+                message: `Um condómino votou na votação: "${poll.title}"`,
+                type: "poll",
+                link: `/dashboard/polls?id=${poll.id}`
             })
+        }
+    })
 
-            if (buildingInfo && buildingInfo.managerId !== voterId) {
-                await createNotification({
-                    buildingId: poll.buildingId,
-                    userId: buildingInfo.managerId,
-                    title: "Novo Voto Registado",
-                    message: `Um condómino votou na votação: "${poll.title}"`,
-                    type: "poll",
-                    link: `/dashboard/polls?id=${poll.id}`
-                })
-            }
-        })
-
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao registar voto" }
-    }
+    return { success: true, data: undefined }
 }
 
 // Close poll (manager only)
 export async function closePoll(pollId: number): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const poll = await pollService.getById(pollId)
+    const pollResult = await pollService.getById(pollId)
 
-    if (!poll) {
+    if (!pollResult.success || !pollResult.data) {
         return { success: false, error: "Votação não encontrada" }
     }
+
+    const poll = pollResult.data
 
     await requireBuildingAccess(poll.buildingId)
 
@@ -234,34 +250,34 @@ export async function closePoll(pollId: number): Promise<ActionResult<void>> {
         return { success: false, error: "Votação já está encerrada" }
     }
 
-    try {
-        await pollService.close(pollId)
-        updateTag(`polls-${poll.buildingId}`)
-        updateTag(`poll-${pollId}`)
+    const result = await pollService.close(pollId)
+    if (!result.success) return { success: false, error: result.error }
 
-        // Notify residents after response (non-blocking)
-        after(async () => {
-            await notifyPollClosed(
-                poll.buildingId,
-                poll.title,
-                pollId
-            )
-        })
+    updateTag(`polls-${poll.buildingId}`)
+    updateTag(`poll-${pollId}`)
 
-        return { success: true, data: undefined }
-    } catch {
-        return { success: false, error: "Erro ao encerrar votação" }
-    }
+    // Notify residents after response (non-blocking)
+    after(async () => {
+        await notifyPollClosed(
+            poll.buildingId,
+            poll.title,
+            pollId
+        )
+    })
+
+    return { success: true, data: undefined }
 }
 
 // Delete poll (manager only, no votes)
 export async function deletePoll(pollId: number): Promise<ActionResult<void>> {
     const session = await requireSession()
-    const poll = await pollService.getById(pollId)
+    const pollResult = await pollService.getById(pollId)
 
-    if (!poll) {
+    if (!pollResult.success || !pollResult.data) {
         return { success: false, error: "Votação não encontrada" }
     }
+
+    const poll = pollResult.data
 
     await requireBuildingAccess(poll.buildingId)
 
@@ -269,14 +285,9 @@ export async function deletePoll(pollId: number): Promise<ActionResult<void>> {
         return { success: false, error: "Apenas gestores podem eliminar votações" }
     }
 
-    try {
-        await pollService.delete(pollId)
-        updateTag(`polls-${poll.buildingId}`)
-        return { success: true, data: undefined }
-    } catch (error) {
-        if (error instanceof Error && error.message === "Cannot delete poll with votes") {
-            return { success: false, error: "Não é possível eliminar votações com votos" }
-        }
-        return { success: false, error: "Erro ao eliminar votação" }
-    }
+    const result = await pollService.delete(pollId)
+    if (!result.success) return { success: false, error: result.error }
+
+    updateTag(`polls-${poll.buildingId}`)
+    return { success: true, data: undefined }
 }
