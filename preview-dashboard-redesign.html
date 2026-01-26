@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Redesign Preview - GestMais</title>
+  <style>
+    /* ============================================
+       DESIGN TOKENS (from refactor01 globals.css)
+       ============================================ */
+    :root {
+      /* Color Palette */
+      --color-white: #ffffff;
+      --color-pearl: #F8F8F6;
+      --color-pearl-dark: #F0F0EC;
+
+      /* Cool Gray Scale */
+      --color-gray-50: #F8F9FA;
+      --color-gray-100: #F1F3F5;
+      --color-gray-200: #E9ECEF;
+      --color-gray-300: #DEE2E6;
+      --color-gray-400: #ADB5BD;
+      --color-gray-500: #8E9AAF;
+      --color-gray-600: #6C757D;
+      --color-gray-700: #495057;
+      --color-gray-800: #343A40;
+      --color-gray-900: #212529;
+
+      /* Primary (Spring Rain) */
+      --color-primary: #8FB996;
+      --color-primary-hover: #7AAE82;
+      --color-primary-light: #E8F0EA;
+      --color-primary-dark: #6A9B72;
+
+      /* Secondary (Cool Gray Accent) */
+      --color-secondary: #8E9AAF;
+      --color-secondary-hover: #7A8699;
+      --color-secondary-light: #E9ECF0;
+
+      /* Semantic Colors */
+      --color-success: #8FB996;
+      --color-success-light: #E8F0EA;
+      --color-warning: #E5C07B;
+      --color-warning-light: #FBF6EC;
+      --color-error: #D4848C;
+      --color-error-light: #F9ECEE;
+
+      /* Spacing Scale (locked: 8, 16, 32) */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+
+      /* Typography */
+      --font-sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --font-mono: ui-monospace, monospace;
+
+      --text-micro: 9px;
+      --text-xs: 10px;
+      --text-sm: 11px;
+      --text-base: 12px;
+      --text-md: 13px;
+      --text-lg: 14px;
+      --text-xl: 16px;
+
+      --font-normal: 400;
+      --font-medium: 500;
+      --font-semibold: 600;
+
+      /* Border Radius (minimal) */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+
+      /* Max Content Width */
+      --max-content: 1000px;
+    }
+
+    /* ============================================
+       BASE STYLES
+       ============================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      color: var(--color-gray-700);
+      background-color: var(--color-white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================================
+       LAYOUT SHELL
+       ============================================ */
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 180px;
+      flex-shrink: 0;
+      background: var(--color-pearl);
+      border-right: 1px solid var(--color-gray-200);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-md);
+    }
+
+    .sidebar-brand {
+      font-size: var(--text-md);
+      font-weight: var(--font-semibold);
+      color: var(--color-gray-800);
+      padding: var(--space-sm) 0;
+      margin-bottom: var(--space-md);
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: var(--space-sm) var(--space-sm);
+      font-size: var(--text-sm);
+      color: var(--color-gray-600);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: background 150ms;
+    }
+
+    .nav-item:hover {
+      background: var(--color-gray-200);
+    }
+
+    .nav-item.active {
+      background: var(--color-primary-light);
+      color: var(--color-primary-dark);
+      font-weight: var(--font-medium);
+    }
+
+    /* Main Area */
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      height: 44px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-md);
+      border-bottom: 1px solid var(--color-gray-200);
+      background: var(--color-white);
+    }
+
+    .header-title {
+      font-size: var(--text-md);
+      font-weight: var(--font-medium);
+      color: var(--color-gray-700);
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: var(--text-sm);
+      color: var(--color-gray-600);
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--color-gray-300);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xs);
+      font-weight: var(--font-medium);
+      color: var(--color-gray-600);
+    }
+
+    /* Content Area */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-xl);
+    }
+
+    .content-wrapper {
+      max-width: var(--max-content);
+      margin: 0 auto;
+    }
+
+    /* ============================================
+       PAGE TEMPLATES
+       ============================================ */
+
+    /* Page Header */
+    .page-header {
+      margin-bottom: var(--space-xl);
+    }
+
+    .page-title {
+      font-size: var(--text-xl);
+      font-weight: var(--font-semibold);
+      color: var(--color-gray-800);
+      margin-bottom: var(--space-xs);
+    }
+
+    .page-description {
+      font-size: var(--text-sm);
+      color: var(--color-gray-500);
+    }
+
+    /* Section (spacing = 32px) */
+    .section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: var(--space-md);
+    }
+
+    .section-title {
+      font-size: var(--text-xs);
+      font-weight: var(--font-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-500);
+    }
+
+    .section-action {
+      font-size: var(--text-xs);
+      color: var(--color-gray-500);
+      text-decoration: none;
+    }
+
+    .section-action:hover {
+      color: var(--color-gray-700);
+      text-decoration: underline;
+    }
+
+    /* ============================================
+       SUMMARY ROW (replaces stat cards)
+       ============================================ */
+    .summary-row {
+      display: flex;
+      gap: var(--space-xl);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--color-gray-200);
+      margin-bottom: var(--space-xl);
+    }
+
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .summary-label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--color-gray-500);
+    }
+
+    .summary-value {
+      font-size: var(--text-lg);
+      font-weight: var(--font-semibold);
+      color: var(--color-gray-800);
+      font-family: var(--font-mono);
+    }
+
+    .summary-value.positive {
+      color: var(--color-primary-dark);
+    }
+
+    .summary-value.negative {
+      color: var(--color-error);
+    }
+
+    .summary-meta {
+      font-size: var(--text-micro);
+      color: var(--color-gray-400);
+    }
+
+    /* ============================================
+       TABLES (primary data display)
+       ============================================ */
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--text-sm);
+    }
+
+    thead th {
+      text-align: left;
+      font-size: var(--text-xs);
+      font-weight: var(--font-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--color-gray-500);
+      padding: var(--space-sm) var(--space-sm);
+      border-bottom: 1px solid var(--color-gray-200);
+      background: var(--color-gray-50);
+    }
+
+    tbody td {
+      padding: var(--space-sm) var(--space-sm);
+      border-bottom: 1px solid var(--color-gray-100);
+      color: var(--color-gray-700);
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: var(--color-gray-50);
+    }
+
+    .cell-mono {
+      font-family: var(--font-mono);
+    }
+
+    .cell-muted {
+      color: var(--color-gray-500);
+      font-size: var(--text-xs);
+    }
+
+    .cell-right {
+      text-align: right;
+    }
+
+    /* Status indicators (text-only) */
+    .status {
+      font-size: var(--text-xs);
+      font-weight: var(--font-medium);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .status-paid {
+      color: var(--color-primary-dark);
+    }
+
+    .status-pending {
+      color: var(--color-warning);
+    }
+
+    .status-overdue {
+      color: var(--color-error);
+    }
+
+    /* ============================================
+       BUTTONS
+       ============================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-sm) var(--space-md);
+      font-size: var(--text-sm);
+      font-weight: var(--font-medium);
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 150ms, border-color 150ms;
+      text-decoration: none;
+    }
+
+    /* Primary button (ONE per screen) */
+    .btn-primary {
+      background: var(--color-gray-800);
+      color: var(--color-white);
+      border-color: var(--color-gray-800);
+    }
+
+    .btn-primary:hover {
+      background: var(--color-gray-700);
+      border-color: var(--color-gray-700);
+    }
+
+    /* Neutral button (all others) */
+    .btn-neutral {
+      background: var(--color-white);
+      color: var(--color-gray-600);
+      border-color: var(--color-gray-300);
+    }
+
+    .btn-neutral:hover {
+      background: var(--color-gray-50);
+      border-color: var(--color-gray-400);
+    }
+
+    /* ============================================
+       CARDS (used sparingly for grouping only)
+       ============================================ */
+    .card {
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      background: var(--color-white);
+    }
+
+    .card-body {
+      padding: var(--space-md);
+    }
+
+    /* ============================================
+       EMPTY STATES (statement → reason → action)
+       ============================================ */
+    .empty-state {
+      padding: var(--space-2xl) var(--space-md);
+      text-align: center;
+    }
+
+    .empty-statement {
+      font-size: var(--text-md);
+      font-weight: var(--font-medium);
+      color: var(--color-gray-700);
+      margin-bottom: var(--space-xs);
+    }
+
+    .empty-reason {
+      font-size: var(--text-sm);
+      color: var(--color-gray-500);
+      margin-bottom: var(--space-md);
+    }
+
+    /* ============================================
+       INFO DISPLAY
+       ============================================ */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-sm) var(--space-lg);
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .info-label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      color: var(--color-gray-500);
+    }
+
+    .info-value {
+      font-size: var(--text-sm);
+      color: var(--color-gray-700);
+    }
+
+    .info-value.mono {
+      font-family: var(--font-mono);
+    }
+
+    /* ============================================
+       ALERT (simple, no icons)
+       ============================================ */
+    .alert {
+      padding: var(--space-sm) var(--space-md);
+      font-size: var(--text-sm);
+      border-left: 3px solid var(--color-gray-300);
+      background: var(--color-gray-50);
+      color: var(--color-gray-600);
+      margin-bottom: var(--space-md);
+    }
+
+    .alert-info {
+      border-left-color: var(--color-secondary);
+    }
+
+    /* ============================================
+       DIVIDER
+       ============================================ */
+    .divider {
+      height: 1px;
+      background: var(--color-gray-200);
+      margin: var(--space-xl) 0;
+    }
+
+    /* ============================================
+       LAYOUT VARIANTS
+       ============================================ */
+    .two-column {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-xl);
+    }
+
+    @media (max-width: 768px) {
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .summary-row {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">Condominium</div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active">Painel</a>
+      <a href="#" class="nav-item">Quotas</a>
+      <a href="#" class="nav-item">Quotas Extra</a>
+      <a href="#" class="nav-item">Agenda</a>
+      <a href="#" class="nav-item">Ocorrencias</a>
+      <a href="#" class="nav-item">Votacoes</a>
+      <a href="#" class="nav-item">Discussoes</a>
+      <a href="#" class="nav-item">Documentos</a>
+      <a href="#" class="nav-item">Definicoes</a>
+    </nav>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="main-area">
+    <!-- Header -->
+    <header class="header">
+      <span class="header-title">Edificio Aurora</span>
+      <div class="header-user">
+        <span>Diogo Durao</span>
+        <div class="avatar">DD</div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="content">
+      <div class="content-wrapper">
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <h1 class="page-title">Painel Geral</h1>
+          <p class="page-description">Visao geral do condominio e pagamentos</p>
+        </div>
+
+        <!-- Alert (upcoming event - no icon) -->
+        <div class="alert alert-info">
+          Assembleia Geral agendada para 15 de Fevereiro de 2026 as 18:00.
+        </div>
+
+        <!-- Summary Row (replaces stat cards) -->
+        <div class="summary-row">
+          <div class="summary-item">
+            <span class="summary-label">Quotas Pagas (2026)</span>
+            <span class="summary-value positive">8 / 12</span>
+            <span class="summary-meta">66.7% completo</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Em Atraso</span>
+            <span class="summary-value negative">2</span>
+            <span class="summary-meta">Nov, Dez 2025</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Quota Mensal</span>
+            <span class="summary-value">45.00</span>
+            <span class="summary-meta">EUR</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Residentes</span>
+            <span class="summary-value">12 / 16</span>
+            <span class="summary-meta">75% ocupacao</span>
+          </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="two-column">
+
+          <!-- Left Column (main content) -->
+          <div>
+            <!-- Residents Section -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="section-title">Residentes</h2>
+                <a href="#" class="section-action">Ver todos</a>
+              </div>
+
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Fracao</th>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="cell-mono">A1</td>
+                      <td>Maria Santos</td>
+                      <td class="cell-muted">maria.santos@email.com</td>
+                      <td><span class="status status-paid">Ativo</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-mono">A2</td>
+                      <td>Joao Silva</td>
+                      <td class="cell-muted">joao.silva@email.com</td>
+                      <td><span class="status status-paid">Ativo</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-mono">B1</td>
+                      <td>Ana Costa</td>
+                      <td class="cell-muted">ana.costa@email.com</td>
+                      <td><span class="status status-paid">Ativo</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-mono">B2</td>
+                      <td>Pedro Oliveira</td>
+                      <td class="cell-muted">pedro.oliveira@email.com</td>
+                      <td><span class="status status-pending">Pendente</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-mono">C1</td>
+                      <td>Sofia Ferreira</td>
+                      <td class="cell-muted">sofia.f@email.com</td>
+                      <td><span class="status status-paid">Ativo</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- Recent Payments Section -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="section-title">Pagamentos Recentes</h2>
+                <a href="#" class="section-action">Ver grelha completa</a>
+              </div>
+
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Fracao</th>
+                      <th>Mes</th>
+                      <th class="cell-right">Valor</th>
+                      <th>Estado</th>
+                      <th class="cell-muted">Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="cell-mono">A1</td>
+                      <td>Janeiro 2026</td>
+                      <td class="cell-mono cell-right">45.00</td>
+                      <td><span class="status status-paid">Pago</span></td>
+                      <td class="cell-muted">12 Jan</td>
+                    </tr>
+                    <tr>
+                      <td class="cell-mono">A2</td>
+                      <td>Janeiro 2026</td>
+                      <td class="cell-mono cell-right">45.00</td>
+                      <td><span class="status status-paid">Pago</span></td>
+                      <td class="cell-muted">10 Jan</td>
+                    </tr>
+                    <tr>
+                      <td class="cell-mono">B1</td>
+                      <td>Janeiro 2026</td>
+                      <td class="cell-mono cell-right">52.50</td>
+                      <td><span class="status status-pending">Pendente</span></td>
+                      <td class="cell-muted">-</td>
+                    </tr>
+                    <tr>
+                      <td class="cell-mono">B2</td>
+                      <td>Dezembro 2025</td>
+                      <td class="cell-mono cell-right">45.00</td>
+                      <td><span class="status status-overdue">Em atraso</span></td>
+                      <td class="cell-muted">-</td>
+                    </tr>
+                    <tr>
+                      <td class="cell-mono">C1</td>
+                      <td>Janeiro 2026</td>
+                      <td class="cell-mono cell-right">38.75</td>
+                      <td><span class="status status-paid">Pago</span></td>
+                      <td class="cell-muted">08 Jan</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- Notifications Section -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="section-title">Notificacoes</h2>
+              </div>
+
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Mensagem</th>
+                      <th class="cell-muted">Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Novo residente registado na fracao B2</td>
+                      <td class="cell-muted">Hoje, 14:32</td>
+                    </tr>
+                    <tr>
+                      <td>Pagamento de quota recebido - A1</td>
+                      <td class="cell-muted">12 Jan, 09:15</td>
+                    </tr>
+                    <tr>
+                      <td>Nova ocorrencia reportada: Elevador avariado</td>
+                      <td class="cell-muted">10 Jan, 16:48</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <!-- Right Column (secondary info) -->
+          <div>
+            <!-- My Unit Info -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="section-title">A Minha Fracao</h2>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Fracao</span>
+                      <span class="info-value mono">A1</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Permilagem</span>
+                      <span class="info-value mono">62.50</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Quota</span>
+                      <span class="info-value mono">45.00 EUR</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Edificio</span>
+                      <span class="info-value">Aurora</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Building Info -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="section-title">Condominio</h2>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Codigo</span>
+                      <span class="info-value mono">AUR-2024</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Fracoes</span>
+                      <span class="info-value">16</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Ocupacao</span>
+                      <span class="info-value">75%</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Subscricao</span>
+                      <span class="info-value">Ativa</span>
+                    </div>
+                  </div>
+
+                  <div class="divider" style="margin: 16px 0;"></div>
+
+                  <p style="font-size: var(--text-xs); color: var(--color-gray-500); margin-bottom: 12px;">
+                    Partilhe este codigo com novos residentes para se juntarem ao condominio.
+                  </p>
+
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-neutral" style="flex: 1;">Copiar codigo</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="section-title">Acoes</h2>
+              </div>
+
+              <!-- One primary action only -->
+              <button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;">
+                Registar pagamento
+              </button>
+              <button class="btn btn-neutral" style="width: 100%;">
+                Ver definicoes
+              </button>
+            </section>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="divider"></div>
+
+        <!-- ============================================
+             EMPTY STATE EXAMPLE
+             ============================================ -->
+        <section class="section">
+          <div class="section-header">
+            <h2 class="section-title">Quotas Extraordinarias</h2>
+          </div>
+
+          <div class="empty-state">
+            <p class="empty-statement">Sem quotas extraordinarias</p>
+            <p class="empty-reason">Nao existem projetos que requeiram contribuicoes adicionais neste momento.</p>
+            <button class="btn btn-neutral">Criar projeto</button>
+          </div>
+        </section>
+
+        <!-- ============================================
+             PAYMENTS GRID PAGE PREVIEW
+             ============================================ -->
+        <div class="divider"></div>
+
+        <div class="page-header">
+          <h1 class="page-title">Grelha de Quotas</h1>
+          <p class="page-description">Visao anual de pagamentos por fracao</p>
+        </div>
+
+        <div class="summary-row">
+          <div class="summary-item">
+            <span class="summary-label">Ano</span>
+            <span class="summary-value">2026</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Total Esperado</span>
+            <span class="summary-value">8,640.00</span>
+            <span class="summary-meta">EUR</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Recebido</span>
+            <span class="summary-value positive">720.00</span>
+            <span class="summary-meta">8.3%</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Em Falta</span>
+            <span class="summary-value negative">7,920.00</span>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-header">
+            <h2 class="section-title">Janeiro - Junho 2026</h2>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-neutral" style="padding: 4px 8px; font-size: 10px;">Exportar</button>
+              <button class="btn btn-primary" style="padding: 4px 8px; font-size: 10px;">Registar</button>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fracao</th>
+                  <th class="cell-right">Jan</th>
+                  <th class="cell-right">Fev</th>
+                  <th class="cell-right">Mar</th>
+                  <th class="cell-right">Abr</th>
+                  <th class="cell-right">Mai</th>
+                  <th class="cell-right">Jun</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="cell-mono">A1</td>
+                  <td class="cell-right"><span class="status status-paid">45.00</span></td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                </tr>
+                <tr>
+                  <td class="cell-mono">A2</td>
+                  <td class="cell-right"><span class="status status-paid">45.00</span></td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                </tr>
+                <tr>
+                  <td class="cell-mono">B1</td>
+                  <td class="cell-right"><span class="status status-pending">52.50</span></td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                </tr>
+                <tr>
+                  <td class="cell-mono">B2</td>
+                  <td class="cell-right"><span class="status status-overdue">45.00</span></td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                </tr>
+                <tr>
+                  <td class="cell-mono">C1</td>
+                  <td class="cell-right"><span class="status status-paid">38.75</span></td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                </tr>
+                <tr>
+                  <td class="cell-mono">C2</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                  <td class="cell-right cell-muted">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================
+             SETTINGS PAGE PREVIEW
+             ============================================ -->
+        <div class="divider"></div>
+
+        <div class="page-header">
+          <h1 class="page-title">Definicoes</h1>
+          <p class="page-description">Configuracoes do condominio e conta</p>
+        </div>
+
+        <section class="section">
+          <div class="section-header">
+            <h2 class="section-title">Informacoes do Edificio</h2>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <div class="info-grid" style="grid-template-columns: repeat(3, 1fr); gap: 16px 32px;">
+                <div class="info-item">
+                  <span class="info-label">Nome</span>
+                  <span class="info-value">Edificio Aurora</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Morada</span>
+                  <span class="info-value">Rua das Flores, 123</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Cidade</span>
+                  <span class="info-value">Lisboa</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Codigo Postal</span>
+                  <span class="info-value mono">1200-123</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Total Fracoes</span>
+                  <span class="info-value">16</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Quota Base</span>
+                  <span class="info-value mono">45.00 EUR</span>
+                </div>
+              </div>
+
+              <div style="margin-top: 16px;">
+                <button class="btn btn-neutral">Editar informacoes</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h2 class="section-title">Subscricao</h2>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <div class="info-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="info-item">
+                  <span class="info-label">Plano</span>
+                  <span class="info-value">Profissional</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Estado</span>
+                  <span class="info-value" style="color: var(--color-primary-dark);">Ativa</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Proxima Fatura</span>
+                  <span class="info-value">01 Fev 2026</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Valor Mensal</span>
+                  <span class="info-value mono">9.90 EUR</span>
+                </div>
+              </div>
+
+              <div style="margin-top: 16px; display: flex; gap: 8px;">
+                <button class="btn btn-neutral">Gerir subscricao</button>
+                <button class="btn btn-neutral">Ver faturas</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>
