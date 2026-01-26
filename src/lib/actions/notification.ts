@@ -440,3 +440,43 @@ export async function notifyUpcomingEvent(
         link: '/dashboard/calendar',
     })
 }
+
+// --- Subscription Payment Notifications ---
+
+export async function notifySubscriptionPaymentFailed(
+    buildingId: string,
+    managerId: string,
+    managerEmail: string,
+    managerName: string,
+    buildingName: string
+) {
+    const { sendEmail } = await import("@/lib/email")
+    const { getSubscriptionPaymentFailedEmailTemplate } = await import("@/lib/email")
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gestmais.pt'
+    const updatePaymentLink = `${baseUrl}/dashboard/settings?tab=billing`
+
+    // Create in-app notification
+    await createNotification({
+        buildingId,
+        userId: managerId,
+        type: 'subscription_payment_failed',
+        title: 'Pagamento da subscrição falhou',
+        message: 'Atualize o método de pagamento para evitar suspensão',
+        link: '/dashboard/settings?tab=billing',
+    })
+
+    // Send email
+    const template = getSubscriptionPaymentFailedEmailTemplate(
+        managerName,
+        buildingName,
+        updatePaymentLink
+    )
+
+    await sendEmail({
+        to: managerEmail,
+        subject: 'Pagamento da subscrição falhou - GestMais',
+        text: template.text,
+        html: template.html,
+    })
+}

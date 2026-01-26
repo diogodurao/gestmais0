@@ -253,7 +253,13 @@ export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
 // ==========================================
 
 export type ManagedBuilding = {
-    building: { id: string; name: string; code: string; subscriptionStatus?: string | null }
+    building: {
+        id: string
+        name: string
+        code: string
+        subscriptionStatus?: string | null
+        subscriptionPastDueAt?: Date | string | null
+    }
     isOwner: boolean | null
 }
 
@@ -356,6 +362,7 @@ export type NotificationType =
     | 'payment_due'
     | 'payment_overdue'
     | 'poll'
+    | 'subscription_payment_failed'
 
 export interface Notification {
     id: number

@@ -1,10 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
+import { useState, useEffect, useTransition } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/Card"
 import { TabButton } from "@/components/ui/TabButton"
-import { User, Building, Key, CreditCard, Bell, Landmark } from "lucide-react"
+import { Modal } from "@/components/ui/Modal"
+import { Button } from "@/components/ui/Button"
+import { User, Building, Key, CreditCard, Bell, Landmark, LogOut } from "lucide-react"
+import { authClient } from "@/lib/auth-client"
 
 type SettingsTab = "profile" | "building" | "apartments" | "subscription" | "banking" | "notifications"
 
@@ -25,7 +28,10 @@ interface SettingsLayoutProps {
 
 export function SettingsLayout({ isManager, children, defaultTab = "profile" }: SettingsLayoutProps) {
     const searchParams = useSearchParams()
+    const router = useRouter()
     const [activeTab, setActiveTab] = useState<SettingsTab>(defaultTab)
+    const [isLoggingOut, startLogout] = useTransition()
+    const [showLogoutModal, setShowLogoutModal] = useState(false)
 
     // Sync tab from URL after hydration to avoid mismatch
     useEffect(() => {
@@ -34,6 +40,13 @@ export function SettingsLayout({ isManager, children, defaultTab = "profile" }: 
             setActiveTab(tabFromUrl as SettingsTab)
         }
     }, [searchParams])
+
+    const handleLogout = () => {
+        startLogout(async () => {
+            await authClient.signOut()
+            router.push("/sign-in")
+        })
+    }
 
     const tabs = [
         { id: "profile" as const, label: "Perfil", icon: <User className="h-3.5 w-3.5" />, show: true },
@@ -79,8 +92,52 @@ export function SettingsLayout({ isManager, children, defaultTab = "profile" }: 
                             />
                         ))}
                     </div>
+
+                    {/* Logout */}
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                        <button
+                            onClick={() => setShowLogoutModal(true)}
+                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-body text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                            <LogOut className="h-3.5 w-3.5" />
+                            Terminar Sessão
+                        </button>
+                    </div>
                 </CardContent>
             </Card>
+
+            {/* Logout Confirmation Modal */}
+            <Modal
+                open={showLogoutModal}
+                onClose={() => setShowLogoutModal(false)}
+                title="Terminar Sessão"
+                description="Tem a certeza que deseja sair da sua conta?"
+                size="sm"
+                footer={
+                    <div className="flex gap-2 justify-end">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowLogoutModal(false)}
+                            disabled={isLoggingOut}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={handleLogout}
+                            disabled={isLoggingOut}
+                        >
+                            {isLoggingOut ? "A sair..." : "Terminar Sessão"}
+                        </Button>
+                    </div>
+                }
+            >
+                <p className="text-body text-gray-600">
+                    Será redirecionado para a página de login.
+                </p>
+            </Modal>
 
             {/* Content Area */}
             <div className="lg:col-span-3">

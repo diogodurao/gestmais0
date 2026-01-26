@@ -11,7 +11,7 @@ export const documentCategoryEnum = pgEnum('document_category', ['atas', 'regula
 export const paymentStatusEnum = pgEnum('payment_status', ['pending', 'paid', 'late', 'partial'])
 export const projectStatusEnum = pgEnum('project_status', ['draft', 'active', 'completed', 'cancelled', 'archived'])
 export const quotaModeEnum = pgEnum('quota_mode', ['global', 'permillage'])
-export const subscriptionStatusEnum = pgEnum('subscription_status', ['incomplete', 'active', 'canceled', 'past_due'])
+export const subscriptionStatusEnum = pgEnum('subscription_status', ['incomplete', 'active', 'canceled', 'past_due', 'unpaid'])
 export const bankConnectionStatusEnum = pgEnum('bank_connection_status', ['pending', 'active', 'expired', 'revoked', 'error'])
 export const bankTransactionTypeEnum = pgEnum('bank_transaction_type', ['credit', 'debit'])
 export const transactionMatchStatusEnum = pgEnum('transaction_match_status', ['unmatched', 'matched', 'ignored'])
@@ -27,7 +27,8 @@ export const notificationTypeEnum = pgEnum('notification_type', [
     'calendar_event',
     'payment_due',
     'payment_overdue',
-    'poll'
+    'poll',
+    'subscription_payment_failed'
 ])
 
 // --- Auth Tables (Better-Auth) ---
@@ -113,6 +114,8 @@ export const building = pgTable('building', {
     stripeSubscriptionId: text('stripe_subscription_id'),
     stripePriceId: text('stripe_price_id'),
     subscriptionStatus: subscriptionStatusEnum('subscription_status').default('incomplete'),
+    subscriptionCurrentPeriodEnd: timestamp('subscription_current_period_end'),
+    subscriptionPastDueAt: timestamp('subscription_past_due_at'),
     setupComplete: boolean('setup_complete').default(false),
 });
 

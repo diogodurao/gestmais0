@@ -7,6 +7,7 @@ import { CreditCard, CheckCircle, AlertTriangle, XCircle } from "lucide-react"
 import { SubscribeButton, SyncSubscriptionButton, ManageSubscriptionButton } from "@/components/dashboard/subscription/SubscribeButton"
 import { type SubscriptionStatus } from "@/lib/types"
 import { DEFAULT_SUBSCRIPTION_PRICE_PER_UNIT } from "@/lib/constants/project"
+import { getGracePeriodDaysRemaining } from "@/lib/permissions"
 
 type StateConfig = {
     cardVariant: "default" | "success" | "warning" | "error"
@@ -54,6 +55,7 @@ const stateConfigs: Record<string, StateConfig> = {
 
 interface BillingSubscriptionCardProps {
     subscriptionStatus: string | null
+    subscriptionPastDueAt?: Date | string | null
     buildingId: string
     totalApartments?: number
     canSubscribe: boolean
@@ -64,6 +66,7 @@ interface BillingSubscriptionCardProps {
 
 export function BillingSubscriptionCard({
     subscriptionStatus,
+    subscriptionPastDueAt,
     buildingId,
     totalApartments = 0,
     canSubscribe,
@@ -73,6 +76,12 @@ export function BillingSubscriptionCard({
 }: BillingSubscriptionCardProps) {
     const normalizedStatus = subscriptionStatus || "incomplete"
     const config = stateConfigs[normalizedStatus] || stateConfigs.incomplete
+
+    // Calculate grace period days remaining for past_due status
+    const daysRemaining = getGracePeriodDaysRemaining({
+        subscriptionStatus,
+        subscriptionPastDueAt
+    })
 
     const renderIncompleteContent = () => (
         <div className="space-y-4">
@@ -103,6 +112,16 @@ export function BillingSubscriptionCard({
 
     const renderPastDueContent = () => (
         <div className="space-y-4">
+            {daysRemaining !== null && daysRemaining > 0 && (
+                <p className="text-body text-warning font-medium">
+                    Tem {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'} para atualizar o pagamento antes da suspensão.
+                </p>
+            )}
+            {daysRemaining !== null && daysRemaining === 0 && (
+                <p className="text-body text-error font-medium">
+                    Último dia para atualizar o pagamento antes da suspensão.
+                </p>
+            )}
             <div className="flex flex-col sm:flex-row gap-3">
                 <ManageSubscriptionButton buildingId={buildingId} />
                 <SyncSubscriptionButton buildingId={buildingId} />

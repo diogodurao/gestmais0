@@ -42,7 +42,8 @@ export async function getDashboardContext(session: { user: SessionUser } | null)
                             id: b.id,
                             name: b.name,
                             code: b.code,
-                            subscriptionStatus: b.subscriptionStatus
+                            subscriptionStatus: b.subscriptionStatus,
+                            subscriptionPastDueAt: b.subscriptionPastDueAt
                         },
                         isOwner: false
                     }
@@ -58,7 +59,8 @@ export async function getDashboardContext(session: { user: SessionUser } | null)
                     id: b.building.id,
                     name: b.building.name,
                     code: b.building.code,
-                    subscriptionStatus: b.building.subscriptionStatus
+                    subscriptionStatus: b.building.subscriptionStatus,
+                    subscriptionPastDueAt: b.building.subscriptionPastDueAt
                 },
                 isOwner: b.isOwner
             }))

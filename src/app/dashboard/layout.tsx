@@ -8,6 +8,7 @@ import { SidebarProvider } from "@/components/layout/SidebarProvider"
 import { getDashboardContext } from "@/lib/actions/dashboard"
 import { DashboardProvider } from "@/contexts/DashboardContext"
 import { DashboardSkeleton } from "@/components/performance/DashboardSkeleton"
+import { SubscriptionBlockedCheck } from "@/components/dashboard/subscription/SubscriptionBlockedCheck"
 
 export default function DashboardLayout({
     children,
@@ -35,6 +36,7 @@ async function DashboardLayoutContent({
 
     return (
         <DashboardProvider initialData={initialData}>
+            <SubscriptionBlockedCheck />
             <SidebarProvider>
                 <div className="h-screen w-screen overflow-hidden bg-white p-1.5 flex gap-1.5">
                     <MobileNav />

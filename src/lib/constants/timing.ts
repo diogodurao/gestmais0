@@ -5,6 +5,13 @@ export const TIMING = {
 } as const
 
 // ==========================================
+// SUBSCRIPTION GRACE PERIOD
+// ==========================================
+
+/** Days allowed for payment update after subscription becomes past_due before blocking */
+export const SUBSCRIPTION_GRACE_PERIOD_DAYS = 3
+
+// ==========================================
 // NOTIFICATION RETENTION
 // ==========================================
 

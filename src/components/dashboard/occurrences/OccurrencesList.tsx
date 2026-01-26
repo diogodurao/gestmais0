@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Plus, Clock, AlertTriangle, CheckCircle, Flame } from "lucide-react"
+import { Plus, Clock, AlertTriangle, CheckCircle, Flame, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { StatCard } from "@/components/ui/Stat-Card"
@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/Empty-State"
 import { OccurrenceCard } from "./OccurrenceCard"
 import { OccurrenceModal } from "./OccurrenceModal"
 import { Occurrence } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 const OccurrenceDetailSheet = dynamic(
     () => import("./OccurrenceDetailSheet").then(mod => mod.OccurrenceDetailSheet),
@@ -36,6 +37,7 @@ export function OccurrencesList({
     const router = useRouter()
     const [modalOpen, setModalOpen] = useState(false)
     const [selectedOccurrenceId, setSelectedOccurrenceId] = useState<number | null>(null)
+    const [showResolved, setShowResolved] = useState(false)
 
     // Open sheet from URL param
     useEffect(() => {
@@ -45,10 +47,14 @@ export function OccurrencesList({
         }
     }, [searchParams])
 
+    // Split occurrences into active and resolved
+    const activeOccurrences = initialOccurrences.filter(o => o.status !== "resolved")
+    const resolvedOccurrences = initialOccurrences.filter(o => o.status === "resolved")
+
     // Stats
     const openCount = initialOccurrences.filter(o => o.status === "open").length
     const inProgressCount = initialOccurrences.filter(o => o.status === "in_progress").length
-    const resolvedCount = initialOccurrences.filter(o => o.status === "resolved").length
+    const resolvedCount = resolvedOccurrences.length
     const urgentCount = initialOccurrences.filter(o => o.priority === "urgent" && o.status !== "resolved").length
 
     const handleViewOccurrence = (occurrence: Occurrence) => {
@@ -101,12 +107,12 @@ export function OccurrencesList({
                 />
             </div>
 
-            {/* Occurrences List */}
-            {initialOccurrences.length === 0 ? (
+            {/* Active Occurrences List */}
+            {activeOccurrences.length === 0 ? (
                 <Card>
                     <EmptyState
-                        title="Sem ocorrências"
-                        description="Não há ocorrências registadas."
+                        title="Sem ocorrências ativas"
+                        description="Não há ocorrências por resolver."
                         action={
                             <Button size="sm" onClick={() => setModalOpen(true)}>
                                 <Plus className="h-4 w-4 mr-1" />
@@ -117,13 +123,42 @@ export function OccurrencesList({
                 </Card>
             ) : (
                 <div className="space-y-3">
-                    {initialOccurrences.map((occurrence) => (
+                    {activeOccurrences.map((occurrence) => (
                         <OccurrenceCard
                             key={occurrence.id}
                             occurrence={occurrence}
                             onClick={() => handleViewOccurrence(occurrence)}
                         />
                     ))}
+                </div>
+            )}
+
+            {/* Resolved Occurrences Section */}
+            {resolvedOccurrences.length > 0 && (
+                <div className="mt-6">
+                    <button
+                        onClick={() => setShowResolved(!showResolved)}
+                        className="flex items-center gap-2 text-body font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                    >
+                        <ChevronDown
+                            className={cn(
+                                "h-4 w-4 transition-transform",
+                                showResolved && "rotate-180"
+                            )}
+                        />
+                        Ocorrências Resolvidas ({resolvedCount})
+                    </button>
+                    {showResolved && (
+                        <div className="mt-3 space-y-3">
+                            {resolvedOccurrences.map((occurrence) => (
+                                <OccurrenceCard
+                                    key={occurrence.id}
+                                    occurrence={occurrence}
+                                    onClick={() => handleViewOccurrence(occurrence)}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 

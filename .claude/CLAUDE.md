@@ -23,8 +23,8 @@ Always use Context7 MCP when I need library/API documentation, code generation, 
 - when generating and changing code, never change the code that is not related to the task. If its not clear, ask questions or plan mode until it is clear.
 - if the task is extensive, use a task list or plan mode; Choose what you think is best.
 - if you need to change something, ask me first.
-
-
+- always make a quick plan before making any changes. dont matter how small the change is.
+- always create a brief schema from the last changes to understand the context.
 ---
 
 ## TypeScript
@@ -32,32 +32,6 @@ Always use Context7 MCP when I need library/API documentation, code generation, 
 - Use strict mode; avoid `any` types
 - Always typecheck after making code changes
 - Centralize types in `src/lib/types.ts`
-
----
-
-## React Patterns
-
-### Async State Management
-
-Replace manual `isLoading` state with:
-
-- **`useTransition`** - for async actions that update UI/render data
-- **`useAsyncAction`** - for server actions (wraps with toast notifications)
-- **`useOptimisticAction`** - for optimistic updates
-
-### Component IDs
-
-Use `useId()` instead of `Math.random()` for stable IDs across SSR/hydration.
-
-> `Math.random()` causes: hydration mismatches, component remounts, broken animations, lost focus/scroll position.
-
----
-
-## Server Actions
-
-- Return results, not `void` (avoid `Promise<void>` return types)
-- Use pattern: `Promise<{ success: boolean; data?: T; error?: string }>`
-- Use `useAsyncAction` hook on client instead of manual try/catch
 
 ---
 

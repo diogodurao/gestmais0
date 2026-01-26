@@ -1,4 +1,5 @@
 import type { SessionUser, UserRole, SubscriptionStatus } from "./types"
+import { SUBSCRIPTION_GRACE_PERIOD_DAYS } from "./constants/timing"
 
 // ==========================================
 // TYPES
@@ -8,6 +9,7 @@ type BuildingContext = {
     subscriptionStatus?: SubscriptionStatus | string | null
     managerId?: string
     setupComplete?: boolean | null
+    subscriptionPastDueAt?: Date | string | null
 }
 
 type PermissionContext = {
@@ -41,6 +43,54 @@ export function hasActiveSubscription(building: BuildingContext | null | undefin
 
 export function isSubscriptionIncomplete(building: BuildingContext | null | undefined): boolean {
     return !building?.subscriptionStatus || building.subscriptionStatus === "incomplete"
+}
+
+/**
+ * Check if subscription is blocked (past grace period OR unpaid status)
+ * Returns true if manager should be blocked from using the app
+ */
+export function isSubscriptionBlocked(building: BuildingContext | null | undefined): boolean {
+    if (!building) return false
+
+    // Immediately blocked if unpaid
+    if (building.subscriptionStatus === "unpaid") return true
+
+    // Check if past_due and grace period expired
+    if (building.subscriptionStatus === "past_due" && building.subscriptionPastDueAt) {
+        const pastDueDate = typeof building.subscriptionPastDueAt === 'string'
+            ? new Date(building.subscriptionPastDueAt)
+            : building.subscriptionPastDueAt
+
+        const now = new Date()
+        const daysSincePastDue = Math.floor(
+            (now.getTime() - pastDueDate.getTime()) / (1000 * 60 * 60 * 24)
+        )
+
+        return daysSincePastDue >= SUBSCRIPTION_GRACE_PERIOD_DAYS
+    }
+
+    return false
+}
+
+/**
+ * Get days remaining in grace period for past_due subscriptions
+ * Returns null if not in grace period, 0 or negative if expired
+ */
+export function getGracePeriodDaysRemaining(building: BuildingContext | null | undefined): number | null {
+    if (!building) return null
+    if (building.subscriptionStatus !== "past_due") return null
+    if (!building.subscriptionPastDueAt) return null
+
+    const pastDueDate = typeof building.subscriptionPastDueAt === 'string'
+        ? new Date(building.subscriptionPastDueAt)
+        : building.subscriptionPastDueAt
+
+    const now = new Date()
+    const daysSincePastDue = Math.floor(
+        (now.getTime() - pastDueDate.getTime()) / (1000 * 60 * 60 * 24)
+    )
+
+    return Math.max(0, SUBSCRIPTION_GRACE_PERIOD_DAYS - daysSincePastDue)
 }
 
 // ==========================================

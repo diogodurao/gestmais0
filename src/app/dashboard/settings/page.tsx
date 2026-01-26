@@ -123,6 +123,7 @@ export default async function SettingsPage() {
                     subscription: building ? (
                         <BillingSubscriptionCard
                             subscriptionStatus={building.subscriptionStatus}
+                            subscriptionPastDueAt={building.subscriptionPastDueAt}
                             buildingId={building.id}
                             totalApartments={building.totalApartments || 0}
                             canSubscribe={canSubscribe}

@@ -425,3 +425,60 @@ export function getExtraordinaryPaymentOverdueEmailTemplate(
     `,
   }
 }
+
+export function getSubscriptionPaymentFailedEmailTemplate(
+  managerName: string,
+  buildingName: string,
+  updatePaymentLink: string
+) {
+  const safeName = escapeHtml(managerName)
+  const safeBuildingName = escapeHtml(buildingName)
+
+  return {
+    text: `Olá ${managerName}, o pagamento da subscrição do edifício "${buildingName}" falhou. Tem 3 dias para atualizar o método de pagamento antes da suspensão do serviço. Atualizar método de pagamento: ${updatePaymentLink}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #F8F8F6;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table width="400" cellpadding="0" cellspacing="0" style="background: white; border-radius: 8px; border: 1px solid #E9ECEF;">
+                  <tr>
+                    <td style="padding: 32px;">
+                      <h1 style="margin: 0 0 24px; font-size: 20px; font-weight: 600; color: #D4848C;">
+                        Pagamento da Subscrição Falhou
+                      </h1>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        Olá ${safeName},
+                      </p>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        O pagamento da subscrição do edifício <strong>${safeBuildingName}</strong> não foi processado com sucesso.
+                      </p>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #E5C07B; font-weight: 600;">
+                        Tem 3 dias para atualizar o método de pagamento antes da suspensão do serviço.
+                      </p>
+                      <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        Por favor atualize o seu método de pagamento para continuar a utilizar o GestMais sem interrupções.
+                      </p>
+                      <a href="${updatePaymentLink}" style="display: inline-block; padding: 12px 24px; background-color: #8FB996; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;">
+                        Atualizar Método de Pagamento
+                      </a>
+                      <p style="margin: 24px 0 0; font-size: 12px; color: #8E9AAF;">
+                        Se precisar de ajuda, contacte o suporte em suporte@gestmais.pt
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `,
+  }
+}

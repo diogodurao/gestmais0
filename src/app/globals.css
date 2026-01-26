@@ -205,6 +205,12 @@
    ============================================ */
 
 @layer utilities {
+  .container {
+    max-width: 1200px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
   @media (max-width: 640px) {
     .mobile-stack {
       flex-direction: column;
