@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pages Redesign Preview - GestMais</title>
+  <style>
+    /* ============================================
+       DESIGN TOKENS (from refactor01 globals.css)
+       ============================================ */
+    :root {
+      --color-white: #ffffff;
+      --color-pearl: #F8F8F6;
+      --color-gray-50: #F8F9FA;
+      --color-gray-100: #F1F3F5;
+      --color-gray-200: #E9ECEF;
+      --color-gray-300: #DEE2E6;
+      --color-gray-400: #ADB5BD;
+      --color-gray-500: #8E9AAF;
+      --color-gray-600: #6C757D;
+      --color-gray-700: #495057;
+      --color-gray-800: #343A40;
+      --color-gray-900: #212529;
+
+      --color-primary: #8FB996;
+      --color-primary-hover: #7AAE82;
+      --color-primary-light: #E8F0EA;
+      --color-primary-dark: #6A9B72;
+
+      --color-secondary: #8E9AAF;
+      --color-secondary-light: #E9ECF0;
+
+      --color-success: #8FB996;
+      --color-warning: #E5C07B;
+      --color-error: #D4848C;
+
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+
+      --font-sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --font-mono: ui-monospace, monospace;
+
+      --text-micro: 9px;
+      --text-xs: 10px;
+      --text-sm: 11px;
+      --text-base: 12px;
+      --text-md: 13px;
+      --text-lg: 14px;
+      --text-xl: 16px;
+
+      --font-normal: 400;
+      --font-medium: 500;
+      --font-semibold: 600;
+
+      --radius-sm: 4px;
+      --radius-md: 6px;
+
+      --max-content: 1000px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      color: var(--color-gray-700);
+      background-color: var(--color-gray-100);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================================
+       PAGE PREVIEW CONTAINER
+       ============================================ */
+    .preview-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: var(--space-xl);
+    }
+
+    .preview-label {
+      font-size: var(--text-xs);
+      font-weight: var(--font-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-gray-500);
+      margin-bottom: var(--space-sm);
+      padding: var(--space-sm) 0;
+      border-bottom: 1px dashed var(--color-gray-300);
+    }
+
+    .preview-frame {
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-2xl);
+      overflow: hidden;
+    }
+
+    .preview-content {
+      padding: var(--space-xl);
+      max-width: var(--max-content);
+      margin: 0 auto;
+    }
+
+    /* ============================================
+       COMMON COMPONENTS
+       ============================================ */
+    .page-header {
+      margin-bottom: var(--space-xl);
+    }
+
+    .page-title {
+      font-size: var(--text-xl);
+      font-weight: var(--font-semibold);
+      color: var(--color-gray-800);
+      margin-bottom: var(--space-xs);
+    }
+
+    .page-description {
+      font-size: var(--text-sm);
+      color: var(--color-gray-500);
+    }
+
+    .page-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+
+    .section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: var(--space-md);
+    }
+
+    .section-title {
+      font-size: var(--text-xs);
+      font-weight: var(--font-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gray-500);
+    }
+
+    .section-action {
+      font-size: var(--text-xs);
+      color: var(--color-gray-500);
+      text-decoration: none;
+    }
+
+    .section-action:hover {
+      color: var(--color-gray-700);
+      text-decoration: underline;
+    }
+
+    .summary-row {
+      display: flex;
+      gap: var(--space-xl);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--color-gray-200);
+      margin-bottom: var(--space-xl);
+    }
+
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .summary-label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--color-gray-500);
+    }
+
+    .summary-value {
+      font-size: var(--text-lg);
+      font-weight: var(--font-semibold);
+      color: var(--color-gray-800);
+      font-family: var(--font-mono);
+    }
+
+    .summary-value.positive { color: var(--color-primary-dark); }
+    .summary-value.negative { color: var(--color-error); }
+    .summary-value.warning { color: var(--color-warning); }
+
+    .summary-meta {
+      font-size: var(--text-micro);
+      color: var(--color-gray-400);
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--text-sm);
+    }
+
+    thead th {
+      text-align: left;
+      font-size: var(--text-xs);
+      font-weight: var(--font-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--color-gray-500);
+      padding: var(--space-sm);
+      border-bottom: 1px solid var(--color-gray-200);
+      background: var(--color-gray-50);
+    }
+
+    tbody td {
+      padding: var(--space-sm);
+      border-bottom: 1px solid var(--color-gray-100);
+      color: var(--color-gray-700);
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: var(--color-gray-50);
+    }
+
+    tbody tr.clickable {
+      cursor: pointer;
+    }
+
+    .cell-mono { font-family: var(--font-mono); }
+    .cell-muted { color: var(--color-gray-500); font-size: var(--text-xs); }
+    .cell-right { text-align: right; }
+    .cell-center { text-align: center; }
+    .cell-nowrap { white-space: nowrap; }
+
+    /* Status */
+    .status {
+      font-size: var(--text-xs);
+      font-weight: var(--font-medium);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .status-paid, .status-active, .status-approved { color: var(--color-primary-dark); }
+    .status-pending, .status-open { color: var(--color-warning); }
+    .status-overdue, .status-rejected, .status-closed { color: var(--color-error); }
+    .status-draft { color: var(--color-gray-500); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-sm) var(--space-md);
+      font-size: var(--text-sm);
+      font-weight: var(--font-medium);
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 150ms, border-color 150ms;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--color-gray-800);
+      color: var(--color-white);
+      border-color: var(--color-gray-800);
+    }
+
+    .btn-primary:hover {
+      background: var(--color-gray-700);
+      border-color: var(--color-gray-700);
+    }
+
+    .btn-neutral {
+      background: var(--color-white);
+      color: var(--color-gray-600);
+      border-color: var(--color-gray-300);
+    }
+
+    .btn-neutral:hover {
+      background: var(--color-gray-50);
+      border-color: var(--color-gray-400);
+    }
+
+    .btn-sm {
+      padding: var(--space-xs) var(--space-sm);
+      font-size: var(--text-xs);
+    }
+
+    /* Cards (sparingly) */
+    .card {
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      background: var(--color-white);
+    }
+
+    .card-body {
+      padding: var(--space-md);
+    }
+
+    /* Info grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-sm) var(--space-lg);
+    }
+
+    .info-grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .info-label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      color: var(--color-gray-500);
+    }
+
+    .info-value {
+      font-size: var(--text-sm);
+      color: var(--color-gray-700);
+    }
+
+    .info-value.mono {
+      font-family: var(--font-mono);
+    }
+
+    /* Empty state */
+    .empty-state {
+      padding: var(--space-2xl) var(--space-md);
+      text-align: center;
+    }
+
+    .empty-statement {
+      font-size: var(--text-md);
+      font-weight: var(--font-medium);
+      color: var(--color-gray-700);
+      margin-bottom: var(--space-xs);
+    }
+
+    .empty-reason {
+      font-size: var(--text-sm);
+      color: var(--color-gray-500);
+      margin-bottom: var(--space-md);
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--color-gray-200);
+      margin: var(--space-xl) 0;
+    }
+
+    /* Two column layout */
+    .two-column {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-xl);
+    }
+
+    /* Progress bar (simple) */
+    .progress-bar {
+      height: 4px;
+      background: var(--color-gray-200);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: var(--space-xs);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--color-gray-600);
+      transition: width 200ms;
+    }
+
+    .progress-fill.positive { background: var(--color-primary-dark); }
+
+    /* Tabs (simple) */
+    .tabs {
+      display: flex;
+      gap: var(--space-md);
+      border-bottom: 1px solid var(--color-gray-200);
+      margin-bottom: var(--space-xl);
+    }
+
+    .tab {
+      padding: var(--space-sm) 0;
+      font-size: var(--text-sm);
+      color: var(--color-gray-500);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+
+    .tab:hover {
+      color: var(--color-gray-700);
+    }
+
+    .tab.active {
+      color: var(--color-gray-800);
+      border-bottom-color: var(--color-gray-800);
+      font-weight: var(--font-medium);
+    }
+
+    /* Filters row */
+    .filters-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .filter-label {
+      font-size: var(--text-xs);
+      color: var(--color-gray-500);
+      text-transform: uppercase;
+    }
+
+    .filter-select {
+      padding: var(--space-xs) var(--space-sm);
+      font-size: var(--text-sm);
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-sm);
+      background: var(--color-white);
+      color: var(--color-gray-700);
+    }
+
+    /* Calendar specific */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      background: var(--color-gray-200);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .calendar-header-cell {
+      padding: var(--space-sm);
+      text-align: center;
+      font-size: var(--text-xs);
+      font-weight: var(--font-semibold);
+      text-transform: uppercase;
+      color: var(--color-gray-500);
+      background: var(--color-gray-50);
+    }
+
+    .calendar-cell {
+      min-height: 80px;
+      padding: var(--space-xs);
+      background: var(--color-white);
+      vertical-align: top;
+    }
+
+    .calendar-cell.other-month {
+      background: var(--color-gray-50);
+    }
+
+    .calendar-day {
+      font-size: var(--text-xs);
+      font-weight: var(--font-medium);
+      color: var(--color-gray-600);
+      margin-bottom: var(--space-xs);
+    }
+
+    .calendar-cell.today .calendar-day {
+      color: var(--color-gray-800);
+      font-weight: var(--font-semibold);
+    }
+
+    .calendar-event {
+      font-size: var(--text-micro);
+      padding: 2px 4px;
+      margin-bottom: 2px;
+      border-radius: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: var(--color-gray-100);
+      color: var(--color-gray-700);
+    }
+
+    .calendar-event.highlight {
+      background: var(--color-primary-light);
+      color: var(--color-primary-dark);
+    }
+
+    /* Poll options */
+    .poll-option {
+      padding: var(--space-sm);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-sm);
+    }
+
+    .poll-option-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-xs);
+    }
+
+    .poll-option-text {
+      font-size: var(--text-sm);
+      color: var(--color-gray-700);
+    }
+
+    .poll-option-votes {
+      font-size: var(--text-xs);
+      color: var(--color-gray-500);
+      font-family: var(--font-mono);
+    }
+
+    .poll-option.selected {
+      border-color: var(--color-gray-400);
+      background: var(--color-gray-50);
+    }
+
+    /* Detail view breadcrumb */
+    .breadcrumb {
+      font-size: var(--text-xs);
+      color: var(--color-gray-500);
+      margin-bottom: var(--space-md);
+    }
+
+    .breadcrumb a {
+      color: var(--color-gray-500);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumb-separator {
+      margin: 0 var(--space-xs);
+    }
+
+    @media (max-width: 768px) {
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+      .info-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .summary-row {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="preview-container">
+
+  <!-- ============================================
+       PAGE 1: QUOTAS (Payments Grid)
+       ============================================ -->
+  <div class="preview-label">Pagina: Quotas (Grelha de Pagamentos)</div>
+  <div class="preview-frame">
+    <div class="preview-content">
+
+      <div class="page-header">
+        <h1 class="page-title">Quotas</h1>
+        <p class="page-description">Gestao de pagamentos mensais por fracao</p>
+      </div>
+
+      <div class="filters-row">
+        <div class="filter-group">
+          <span class="filter-label">Ano</span>
+          <select class="filter-select">
+            <option>2026</option>
+            <option>2025</option>
+            <option>2024</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Estado</span>
+          <select class="filter-select">
+            <option>Todos</option>
+            <option>Pagos</option>
+            <option>Pendentes</option>
+            <option>Em atraso</option>
+          </select>
+        </div>
+        <div style="margin-left: auto;">
+          <button class="btn btn-primary">Registar pagamento</button>
+        </div>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-item">
+          <span class="summary-label">Total Esperado</span>
+          <span class="summary-value">8,640.00</span>
+          <span class="summary-meta">16 fracoes x 12 meses</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Recebido</span>
+          <span class="summary-value positive">2,160.00</span>
+          <span class="summary-meta">25% do total</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Pendente</span>
+          <span class="summary-value">6,030.00</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Em Atraso</span>
+          <span class="summary-value negative">450.00</span>
+          <span class="summary-meta">5 pagamentos</span>
+        </div>
+      </div>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Janeiro - Junho 2026</h2>
+          <button class="btn btn-neutral btn-sm">Exportar CSV</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fracao</th>
+                <th>Residente</th>
+                <th class="cell-right">Valor</th>
+                <th class="cell-center">Jan</th>
+                <th class="cell-center">Fev</th>
+                <th class="cell-center">Mar</th>
+                <th class="cell-center">Abr</th>
+                <th class="cell-center">Mai</th>
+                <th class="cell-center">Jun</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-mono">A1</td>
+                <td>Maria Santos</td>
+                <td class="cell-mono cell-right">45.00</td>
+                <td class="cell-center"><span class="status status-paid">Pago</span></td>
+                <td class="cell-center"><span class="status status-paid">Pago</span></td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+              </tr>
+              <tr>
+                <td class="cell-mono">A2</td>
+                <td>Joao Silva</td>
+                <td class="cell-mono cell-right">45.00</td>
+                <td class="cell-center"><span class="status status-paid">Pago</span></td>
+                <td class="cell-center"><span class="status status-pending">Pend</span></td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+              </tr>
+              <tr>
+                <td class="cell-mono">B1</td>
+                <td>Ana Costa</td>
+                <td class="cell-mono cell-right">52.50</td>
+                <td class="cell-center"><span class="status status-paid">Pago</span></td>
+                <td class="cell-center"><span class="status status-paid">Pago</span></td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+              </tr>
+              <tr>
+                <td class="cell-mono">B2</td>
+                <td>Pedro Oliveira</td>
+                <td class="cell-mono cell-right">45.00</td>
+                <td class="cell-center"><span class="status status-overdue">Atraso</span></td>
+                <td class="cell-center"><span class="status status-overdue">Atraso</span></td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+              </tr>
+              <tr>
+                <td class="cell-mono">C1</td>
+                <td>Sofia Ferreira</td>
+                <td class="cell-mono cell-right">38.75</td>
+                <td class="cell-center"><span class="status status-paid">Pago</span></td>
+                <td class="cell-center"><span class="status status-paid">Pago</span></td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+              </tr>
+              <tr>
+                <td class="cell-mono">C2</td>
+                <td class="cell-muted">Nao atribuido</td>
+                <td class="cell-mono cell-right">38.75</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+                <td class="cell-center cell-muted">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       PAGE 2: QUOTAS EXTRAORDINARIAS (List)
+       ============================================ -->
+  <div class="preview-label">Pagina: Quotas Extraordinarias (Lista)</div>
+  <div class="preview-frame">
+    <div class="preview-content">
+
+      <div class="page-header">
+        <h1 class="page-title">Quotas Extraordinarias</h1>
+        <p class="page-description">Projetos com contribuicoes adicionais</p>
+        <div class="page-actions">
+          <button class="btn btn-primary">Criar projeto</button>
+        </div>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-item">
+          <span class="summary-label">Projetos Ativos</span>
+          <span class="summary-value">2</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total Orcamentado</span>
+          <span class="summary-value">15,000.00</span>
+          <span class="summary-meta">EUR</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Recolhido</span>
+          <span class="summary-value positive">8,750.00</span>
+          <span class="summary-meta">58.3%</span>
+        </div>
+      </div>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Projetos</h2>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Projeto</th>
+                <th>Orcamento</th>
+                <th>Recolhido</th>
+                <th>Progresso</th>
+                <th>Estado</th>
+                <th>Criado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="clickable">
+                <td>
+                  <span style="font-weight: var(--font-medium);">Reparacao do Telhado</span>
+                  <br><span class="cell-muted">Reparacao de infiltracoes na cobertura</span>
+                </td>
+                <td class="cell-mono">8,000.00</td>
+                <td class="cell-mono">6,250.00</td>
+                <td style="min-width: 100px;">
+                  <span class="cell-muted">78%</span>
+                  <div class="progress-bar">
+                    <div class="progress-fill positive" style="width: 78%;"></div>
+                  </div>
+                </td>
+                <td><span class="status status-active">Ativo</span></td>
+                <td class="cell-muted cell-nowrap">15 Nov 2025</td>
+              </tr>
+              <tr class="clickable">
+                <td>
+                  <span style="font-weight: var(--font-medium);">Pintura das Fachadas</span>
+                  <br><span class="cell-muted">Pintura exterior do edificio</span>
+                </td>
+                <td class="cell-mono">7,000.00</td>
+                <td class="cell-mono">2,500.00</td>
+                <td style="min-width: 100px;">
+                  <span class="cell-muted">36%</span>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 36%;"></div>
+                  </div>
+                </td>
+                <td><span class="status status-active">Ativo</span></td>
+                <td class="cell-muted cell-nowrap">03 Jan 2026</td>
+              </tr>
+              <tr class="clickable">
+                <td>
+                  <span style="font-weight: var(--font-medium);">Substituicao Elevador</span>
+                  <br><span class="cell-muted">Instalacao de novo elevador</span>
+                </td>
+                <td class="cell-mono">25,000.00</td>
+                <td class="cell-mono">25,000.00</td>
+                <td style="min-width: 100px;">
+                  <span class="cell-muted">100%</span>
+                  <div class="progress-bar">
+                    <div class="progress-fill positive" style="width: 100%;"></div>
+                  </div>
+                </td>
+                <td><span class="status status-closed">Concluido</span></td>
+                <td class="cell-muted cell-nowrap">10 Mar 2025</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       PAGE 3: QUOTA EXTRAORDINARIA (Detail)
+       ============================================ -->
+  <div class="preview-label">Pagina: Quota Extraordinaria (Detalhe do Projeto)</div>
+  <div class="preview-frame">
+    <div class="preview-content">
+
+      <div class="breadcrumb">
+        <a href="#">Quotas Extraordinarias</a>
+        <span class="breadcrumb-separator">/</span>
+        <span>Reparacao do Telhado</span>
+      </div>
+
+      <div class="page-header">
+        <h1 class="page-title">Reparacao do Telhado</h1>
+        <p class="page-description">Reparacao de infiltracoes na cobertura do edificio</p>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-item">
+          <span class="summary-label">Orcamento</span>
+          <span class="summary-value">8,000.00</span>
+          <span class="summary-meta">EUR</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Recolhido</span>
+          <span class="summary-value positive">6,250.00</span>
+          <span class="summary-meta">78.1%</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Em Falta</span>
+          <span class="summary-value">1,750.00</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Estado</span>
+          <span class="summary-value" style="font-family: var(--font-sans); font-size: var(--text-md);">Ativo</span>
+        </div>
+      </div>
+
+      <div class="two-column">
+        <div>
+          <!-- Payments grid -->
+          <section class="section">
+            <div class="section-header">
+              <h2 class="section-title">Pagamentos por Fracao</h2>
+              <button class="btn btn-primary btn-sm">Registar pagamento</button>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fracao</th>
+                    <th>Residente</th>
+                    <th class="cell-right">Quota</th>
+                    <th class="cell-right">Pago</th>
+                    <th class="cell-right">Em Falta</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="cell-mono">A1</td>
+                    <td>Maria Santos</td>
+                    <td class="cell-mono cell-right">500.00</td>
+                    <td class="cell-mono cell-right">500.00</td>
+                    <td class="cell-mono cell-right">0.00</td>
+                    <td><span class="status status-paid">Pago</span></td>
+                  </tr>
+                  <tr>
+                    <td class="cell-mono">A2</td>
+                    <td>Joao Silva</td>
+                    <td class="cell-mono cell-right">500.00</td>
+                    <td class="cell-mono cell-right">500.00</td>
+                    <td class="cell-mono cell-right">0.00</td>
+                    <td><span class="status status-paid">Pago</span></td>
+                  </tr>
+                  <tr>
+                    <td class="cell-mono">B1</td>
+                    <td>Ana Costa</td>
+                    <td class="cell-mono cell-right">625.00</td>
+                    <td class="cell-mono cell-right">625.00</td>
+                    <td class="cell-mono cell-right">0.00</td>
+                    <td><span class="status status-paid">Pago</span></td>
+                  </tr>
+                  <tr>
+                    <td class="cell-mono">B2</td>
+                    <td>Pedro Oliveira</td>
+                    <td class="cell-mono cell-right">500.00</td>
+                    <td class="cell-mono cell-right">250.00</td>
+                    <td class="cell-mono cell-right">250.00</td>
+                    <td><span class="status status-pending">Parcial</span></td>
+                  </tr>
+                  <tr>
+                    <td class="cell-mono">C1</td>
+                    <td>Sofia Ferreira</td>
+                    <td class="cell-mono cell-right">375.00</td>
+                    <td class="cell-mono cell-right">375.00</td>
+                    <td class="cell-mono cell-right">0.00</td>
+                    <td><span class="status status-paid">Pago</span></td>
+                  </tr>
+                  <tr>
+                    <td class="cell-mono">C2</td>
+                    <td class="cell-muted">Nao atribuido</td>
+                    <td class="cell-mono cell-right">375.00</td>
+                    <td class="cell-mono cell-right">0.00</td>
+                    <td class="cell-mono cell-right">375.00</td>
+                    <td><span class="status status-pending">Pendente</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div>
+          <!-- Project info -->
+          <section class="section">
+            <div class="section-header">
+              <h2 class="section-title">Informacoes</h2>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">Data Inicio</span>
+                    <span class="info-value">15 Nov 2025</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Prazo</span>
+                    <span class="info-value">28 Fev 2026</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Metodo</span>
+                    <span class="info-value">Por permilagem</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Parcelas</span>
+                    <span class="info-value">Pagamento unico</span>
+                  </div>
+                </div>
+
+                <div class="divider" style="margin: 16px 0;"></div>
+
+                <div class="info-item">
+                  <span class="info-label">Descricao</span>
+                  <p class="info-value" style="margin-top: 4px;">
+                    Trabalhos de reparacao das infiltracoes detectadas na cobertura do edificio, incluindo impermeabilizacao e substituicao de telhas danificadas.
+                  </p>
+                </div>
+
+                <div style="margin-top: 16px;">
+                  <button class="btn btn-neutral" style="width: 100%;">Editar projeto</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       PAGE 4: CALENDARIO
+       ============================================ -->
+  <div class="preview-label">Pagina: Calendario / Agenda</div>
+  <div class="preview-frame">
+    <div class="preview-content">
+
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h1 class="page-title">Agenda</h1>
+          <p class="page-description">Eventos e reunioes do condominio</p>
+        </div>
+        <button class="btn btn-primary">Criar evento</button>
+      </div>
+
+      <div class="filters-row">
+        <div class="filter-group">
+          <button class="btn btn-neutral btn-sm">Anterior</button>
+          <span style="font-weight: var(--font-medium); padding: 0 var(--space-md);">Fevereiro 2026</span>
+          <button class="btn btn-neutral btn-sm">Proximo</button>
+        </div>
+        <div class="filter-group" style="margin-left: auto;">
+          <span class="filter-label">Vista</span>
+          <select class="filter-select">
+            <option>Mes</option>
+            <option>Semana</option>
+            <option>Lista</option>
+          </select>
+        </div>
+      </div>
+
+      <section class="section">
+        <div class="calendar-grid">
+          <!-- Header -->
+          <div class="calendar-header-cell">Seg</div>
+          <div class="calendar-header-cell">Ter</div>
+          <div class="calendar-header-cell">Qua</div>
+          <div class="calendar-header-cell">Qui</div>
+          <div class="calendar-header-cell">Sex</div>
+          <div class="calendar-header-cell">Sab</div>
+          <div class="calendar-header-cell">Dom</div>
+
+          <!-- Week 1 -->
+          <div class="calendar-cell other-month"><span class="calendar-day">27</span></div>
+          <div class="calendar-cell other-month"><span class="calendar-day">28</span></div>
+          <div class="calendar-cell other-month"><span class="calendar-day">29</span></div>
+          <div class="calendar-cell other-month"><span class="calendar-day">30</span></div>
+          <div class="calendar-cell other-month"><span class="calendar-day">31</span></div>
+          <div class="calendar-cell"><span class="calendar-day">1</span></div>
+          <div class="calendar-cell"><span class="calendar-day">2</span></div>
+
+          <!-- Week 2 -->
+          <div class="calendar-cell"><span class="calendar-day">3</span></div>
+          <div class="calendar-cell"><span class="calendar-day">4</span></div>
+          <div class="calendar-cell"><span class="calendar-day">5</span></div>
+          <div class="calendar-cell"><span class="calendar-day">6</span></div>
+          <div class="calendar-cell"><span class="calendar-day">7</span></div>
+          <div class="calendar-cell"><span class="calendar-day">8</span></div>
+          <div class="calendar-cell"><span class="calendar-day">9</span></div>
+
+          <!-- Week 3 -->
+          <div class="calendar-cell"><span class="calendar-day">10</span></div>
+          <div class="calendar-cell"><span class="calendar-day">11</span></div>
+          <div class="calendar-cell"><span class="calendar-day">12</span></div>
+          <div class="calendar-cell"><span class="calendar-day">13</span></div>
+          <div class="calendar-cell"><span class="calendar-day">14</span></div>
+          <div class="calendar-cell">
+            <span class="calendar-day">15</span>
+            <div class="calendar-event highlight">Assembleia Geral 18:00</div>
+          </div>
+          <div class="calendar-cell"><span class="calendar-day">16</span></div>
+
+          <!-- Week 4 -->
+          <div class="calendar-cell"><span class="calendar-day">17</span></div>
+          <div class="calendar-cell"><span class="calendar-day">18</span></div>
+          <div class="calendar-cell"><span class="calendar-day">19</span></div>
+          <div class="calendar-cell">
+            <span class="calendar-day">20</span>
+            <div class="calendar-event">Manutencao elevador</div>
+          </div>
+          <div class="calendar-cell"><span class="calendar-day">21</span></div>
+          <div class="calendar-cell"><span class="calendar-day">22</span></div>
+          <div class="calendar-cell"><span class="calendar-day">23</span></div>
+
+          <!-- Week 5 -->
+          <div class="calendar-cell"><span class="calendar-day">24</span></div>
+          <div class="calendar-cell"><span class="calendar-day">25</span></div>
+          <div class="calendar-cell today"><span class="calendar-day">26</span></div>
+          <div class="calendar-cell"><span class="calendar-day">27</span></div>
+          <div class="calendar-cell">
+            <span class="calendar-day">28</span>
+            <div class="calendar-event">Prazo quota extra</div>
+          </div>
+          <div class="calendar-cell other-month"><span class="calendar-day">1</span></div>
+          <div class="calendar-cell other-month"><span class="calendar-day">2</span></div>
+        </div>
+      </section>
+
+      <!-- Upcoming events as table -->
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Proximos Eventos</h2>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Evento</th>
+                <th>Descricao</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-nowrap">15 Fev 2026, 18:00</td>
+                <td style="font-weight: var(--font-medium);">Assembleia Geral</td>
+                <td class="cell-muted">Reuniao anual de condóminos para aprovacao de contas e orcamento</td>
+              </tr>
+              <tr>
+                <td class="cell-nowrap">20 Fev 2026, 09:00</td>
+                <td style="font-weight: var(--font-medium);">Manutencao Elevador</td>
+                <td class="cell-muted">Inspecao periodica obrigatoria do elevador</td>
+              </tr>
+              <tr>
+                <td class="cell-nowrap">28 Fev 2026</td>
+                <td style="font-weight: var(--font-medium);">Prazo Quota Extra</td>
+                <td class="cell-muted">Data limite para pagamento da quota extraordinaria - Telhado</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       PAGE 5: OCORRENCIAS (List)
+       ============================================ -->
+  <div class="preview-label">Pagina: Ocorrencias (Lista)</div>
+  <div class="preview-frame">
+    <div class="preview-content">
+
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h1 class="page-title">Ocorrencias</h1>
+          <p class="page-description">Relatos de problemas e manutencao</p>
+        </div>
+        <button class="btn btn-primary">Reportar ocorrencia</button>
+      </div>
+
+      <div class="tabs">
+        <a href="#" class="tab active">Todas (8)</a>
+        <a href="#" class="tab">Abertas (3)</a>
+        <a href="#" class="tab">Em progresso (2)</a>
+        <a href="#" class="tab">Resolvidas (3)</a>
+      </div>
+
+      <section class="section">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Assunto</th>
+                <th>Reportado por</th>
+                <th>Estado</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="clickable">
+                <td class="cell-mono">#008</td>
+                <td>
+                  <span style="font-weight: var(--font-medium);">Elevador avariado</span>
+                  <br><span class="cell-muted">Elevador parado no 3o andar desde ontem</span>
+                </td>
+                <td>Joao Silva (A2)</td>
+                <td><span class="status status-open">Aberta</span></td>
+                <td class="cell-muted cell-nowrap">25 Jan 2026</td>
+              </tr>
+              <tr class="clickable">
+                <td class="cell-mono">#007</td>
+                <td>
+                  <span style="font-weight: var(--font-medium);">Infiltracao na garagem</span>
+                  <br><span class="cell-muted">Agua a escorrer pelo teto na zona dos lugares 5-8</span>
+                </td>
+                <td>Maria Santos (A1)</td>
+                <td><span class="status status-pending">Em progresso</span></td>
+                <td class="cell-muted cell-nowrap">20 Jan 2026</td>
+              </tr>
+              <tr class="clickable">
+                <td class="cell-mono">#006</td>
+                <td>
+                  <span style="font-weight: var(--font-medium);">Luz do hall fundida</span>
+                  <br><span class="cell-muted">Lampada do hall do 2o andar nao funciona</span>
+                </td>
+                <td>Ana Costa (B1)</td>
+                <td><span class="status status-open">Aberta</span></td>
+                <td class="cell-muted cell-nowrap">18 Jan 2026</td>
+              </tr>
+              <tr class="clickable">
+                <td class="cell-mono">#005</td>
+                <td>
+                  <span style="font-weight: var(--font-medium);">Ruido excessivo</span>
+                  <br><span class="cell-muted">Obras no apartamento C2 apos as 20h</span>
+                </td>
+                <td>Pedro Oliveira (B2)</td>
+                <td><span class="status status-closed">Resolvida</span></td>
+                <td class="cell-muted cell-nowrap">10 Jan 2026</td>
+              </tr>
+              <tr class="clickable">
+                <td class="cell-mono">#004</td>
+                <td>
+                  <span style="font-weight: var(--font-medium);">Porta da entrada nao fecha</span>
+                  <br><span class="cell-muted">Mola da porta principal avariada</span>
+                </td>
+                <td>Sofia Ferreira (C1)</td>
+                <td><span class="status status-pending">Em progresso</span></td>
+                <td class="cell-muted cell-nowrap">05 Jan 2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       PAGE 6: OCORRENCIA (Detail)
+       ============================================ -->
+  <div class="preview-label">Pagina: Ocorrencia (Detalhe)</div>
+  <div class="preview-frame">
+    <div class="preview-content">
+
+      <div class="breadcrumb">
+        <a href="#">Ocorrencias</a>
+        <span class="breadcrumb-separator">/</span>
+        <span>#008 Elevador avariado</span>
+      </div>
+
+      <div class="page-header">
+        <h1 class="page-title">Elevador avariado</h1>
+        <p class="page-description">Elevador parado no 3o andar desde ontem a noite</p>
+      </div>
+
+      <div class="two-column">
+        <div>
+          <!-- Description -->
+          <section class="section">
+            <div class="section-header">
+              <h2 class="section-title">Descricao</h2>
+            </div>
+
+            <p style="color: var(--color-gray-700); line-height: 1.6;">
+              O elevador ficou parado no 3o andar ontem por volta das 22h. Tentei chamar varias vezes mas nao responde aos comandos. A luz interior esta acesa mas a porta nao abre. Ninguem ficou preso no interior.
+            </p>
+          </section>
+
+          <!-- Comments / Timeline -->
+          <section class="section">
+            <div class="section-header">
+              <h2 class="section-title">Historico</h2>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Autor</th>
+                    <th>Comentario</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="cell-muted cell-nowrap">25 Jan, 22:15</td>
+                    <td>Joao Silva</td>
+                    <td>Ocorrencia criada</td>
+                  </tr>
+                  <tr>
+                    <td class="cell-muted cell-nowrap">26 Jan, 09:30</td>
+                    <td>Administracao</td>
+                    <td>Tecnico contactado. Visita agendada para hoje a tarde.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="margin-top: var(--space-md);">
+              <textarea
+                placeholder="Adicionar comentario..."
+                style="width: 100%; padding: var(--space-sm); border: 1px solid var(--color-gray-300); border-radius: var(--radius-sm); font-family: inherit; font-size: var(--text-sm); resize: vertical; min-height: 60px;"
+              ></textarea>
+              <div style="margin-top: var(--space-sm); text-align: right;">
+                <button class="btn btn-neutral btn-sm">Adicionar comentario</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div>
+          <!-- Info -->
+          <section class="section">
+            <div class="section-header">
+              <h2 class="section-title">Detalhes</h2>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">ID</span>
+                    <span class="info-value mono">#008</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Estado</span>
+                    <span class="info-value"><span class="status status-open">Aberta</span></span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Reportado por</span>
+                    <span class="info-value">Joao Silva</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Fracao</span>
+                    <span class="info-value mono">A2</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Data</span>
+                    <span class="info-value">25 Jan 2026</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Categoria</span>
+                    <span class="info-value">Equipamentos</span>
+                  </div>
+                </div>
+
+                <div class="divider" style="margin: 16px 0;"></div>
+
+                <div class="info-item">
+                  <span class="info-label">Alterar estado</span>
+                  <select class="filter-select" style="width: 100%; margin-top: 4px;">
+                    <option>Aberta</option>
+                    <option>Em progresso</option>
+                    <option>Resolvida</option>
+                  </select>
+                </div>
+
+                <div style="margin-top: var(--space-md);">
+                  <button class="btn btn-neutral" style="width: 100%;">Guardar alteracoes</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       PAGE 7: VOTACOES (List)
+       ============================================ -->
+  <div class="preview-label">Pagina: Votacoes (Lista)</div>
+  <div class="preview-frame">
+    <div class="preview-content">
+
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h1 class="page-title">Votacoes</h1>
+          <p class="page-description">Sondagens e deliberacoes do condominio</p>
+        </div>
+        <button class="btn btn-primary">Criar votacao</button>
+      </div>
+
+      <div class="tabs">
+        <a href="#" class="tab active">Ativas (2)</a>
+        <a href="#" class="tab">Encerradas (5)</a>
+      </div>
+
+      <section class="section">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Votacao</th>
+                <th>Participacao</th>
+                <th>Termina</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="clickable">
+                <td>
+                  <span style="font-weight: var(--font-medium);">Horario de obras</span>
+                  <br><span class="cell-muted">Definir horario permitido para obras nos apartamentos</span>
+                </td>
+                <td class="cell-mono">8 / 12</td>
+                <td class="cell-nowrap">28 Jan 2026</td>
+                <td><span class="status status-active">Ativa</span></td>
+              </tr>
+              <tr class="clickable">
+                <td>
+                  <span style="font-weight: var(--font-medium);">Instalacao de paineis solares</span>
+                  <br><span class="cell-muted">Aprovacao do projeto de energia solar para areas comuns</span>
+                </td>
+                <td class="cell-mono">5 / 12</td>
+                <td class="cell-nowrap">15 Fev 2026</td>
+                <td><span class="status status-active">Ativa</span></td>
+              </tr>
+              <tr class="clickable">
+                <td>
+                  <span style="font-weight: var(--font-medium);">Regulamento de animais</span>
+                  <br><span class="cell-muted">Aprovacao de regras para animais de estimacao</span>
+                </td>
+                <td class="cell-mono">11 / 12</td>
+                <td class="cell-nowrap">10 Jan 2026</td>
+                <td><span class="status status-closed">Encerrada</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       PAGE 8: VOTACAO (Detail)
+       ============================================ -->
+  <div class="preview-label">Pagina: Votacao (Detalhe / Votar)</div>
+  <div class="preview-frame">
+    <div class="preview-content">
+
+      <div class="breadcrumb">
+        <a href="#">Votacoes</a>
+        <span class="breadcrumb-separator">/</span>
+        <span>Horario de obras</span>
+      </div>
+
+      <div class="page-header">
+        <h1 class="page-title">Horario de obras</h1>
+        <p class="page-description">Definir horario permitido para realizacao de obras ruidosas nos apartamentos</p>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-item">
+          <span class="summary-label">Participacao</span>
+          <span class="summary-value">8 / 12</span>
+          <span class="summary-meta">66.7%</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Termina em</span>
+          <span class="summary-value">2 dias</span>
+          <span class="summary-meta">28 Jan 2026</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Tipo</span>
+          <span class="summary-value" style="font-family: var(--font-sans); font-size: var(--text-md);">Maioria simples</span>
+        </div>
+      </div>
+
+      <div class="two-column">
+        <div>
+          <!-- Voting options -->
+          <section class="section">
+            <div class="section-header">
+              <h2 class="section-title">Opcoes</h2>
+            </div>
+
+            <div class="poll-option selected">
+              <div class="poll-option-header">
+                <span class="poll-option-text">09:00 - 18:00 (dias uteis)</span>
+                <span class="poll-option-votes">5 votos (62.5%)</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill positive" style="width: 62.5%;"></div>
+              </div>
+            </div>
+
+            <div class="poll-option">
+              <div class="poll-option-header">
+                <span class="poll-option-text">09:00 - 20:00 (dias uteis)</span>
+                <span class="poll-option-votes">2 votos (25%)</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 25%;"></div>
+              </div>
+            </div>
+
+            <div class="poll-option">
+              <div class="poll-option-header">
+                <span class="poll-option-text">08:00 - 19:00 (incluindo sabados)</span>
+                <span class="poll-option-votes">1 voto (12.5%)</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 12.5%;"></div>
+              </div>
+            </div>
+
+            <p style="font-size: var(--text-xs); color: var(--color-gray-500); margin-top: var(--space-md);">
+              O seu voto foi registado. Pode alterar a sua escolha ate ao encerramento da votacao.
+            </p>
+          </section>
+
+          <!-- Votes table -->
+          <section class="section">
+            <div class="section-header">
+              <h2 class="section-title">Votos</h2>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fracao</th>
+                    <th>Residente</th>
+                    <th>Voto</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="cell-mono">A1</td>
+                    <td>Maria Santos</td>
+                    <td>09:00 - 18:00 (dias uteis)</td>
+                    <td class="cell-muted">24 Jan</td>
+                  </tr>
+                  <tr>
+                    <td class="cell-mono">A2</td>
+                    <td>Joao Silva</td>
+                    <td>09:00 - 20:00 (dias uteis)</td>
+                    <td class="cell-muted">24 Jan</td>
+                  </tr>
+                  <tr>
+                    <td class="cell-mono">B1</td>
+                    <td>Ana Costa</td>
+                    <td>09:00 - 18:00 (dias uteis)</td>
+                    <td class="cell-muted">25 Jan</td>
+                  </tr>
+                  <tr>
+                    <td class="cell-mono">B2</td>
+                    <td>Pedro Oliveira</td>
+                    <td class="cell-muted">Ainda nao votou</td>
+                    <td class="cell-muted">-</td>
+                  </tr>
+                  <tr>
+                    <td class="cell-mono">C1</td>
+                    <td>Sofia Ferreira</td>
+                    <td>09:00 - 18:00 (dias uteis)</td>
+                    <td class="cell-muted">26 Jan</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div>
+          <!-- Poll info -->
+          <section class="section">
+            <div class="section-header">
+              <h2 class="section-title">Detalhes</h2>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">Criada por</span>
+                    <span class="info-value">Administracao</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Data inicio</span>
+                    <span class="info-value">20 Jan 2026</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Data fim</span>
+                    <span class="info-value">28 Jan 2026</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Quorum</span>
+                    <span class="info-value">50%</span>
+                  </div>
+                </div>
+
+                <div class="divider" style="margin: 16px 0;"></div>
+
+                <div class="info-item">
+                  <span class="info-label">Descricao</span>
+                  <p class="info-value" style="margin-top: 4px;">
+                    Esta votacao visa definir o horario em que sao permitidas obras ruidosas nos apartamentos, de forma a minimizar o incomodo para os restantes moradores.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       PAGE 9: DISCUSSOES (Empty State Example)
+       ============================================ -->
+  <div class="preview-label">Pagina: Discussoes (Empty State)</div>
+  <div class="preview-frame">
+    <div class="preview-content">
+
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h1 class="page-title">Discussoes</h1>
+          <p class="page-description">Forum de discussao entre condóminos</p>
+        </div>
+        <button class="btn btn-primary">Criar topico</button>
+      </div>
+
+      <div class="empty-state">
+        <p class="empty-statement">Sem discussoes</p>
+        <p class="empty-reason">Nenhum topico de discussao foi criado. Inicie uma conversa sobre assuntos do condominio.</p>
+        <button class="btn btn-neutral">Criar primeiro topico</button>
+      </div>
+
+    </div>
+  </div>
+
+
+</div>
+
+</body>
+</html>
