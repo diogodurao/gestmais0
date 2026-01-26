@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, X } from "lucide-react"
 import { Modal } from "@/components/ui/Modal"
@@ -10,8 +10,10 @@ import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 import { Select } from "@/components/ui/Select"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
+import { NotificationOptionsSection, type Resident } from "@/components/ui/ResidentSelector"
 import { createPoll } from "@/lib/actions/polls"
-import { PollType, PollWeightMode } from "@/lib/types"
+import { getBuildingResidentsForSelector } from "@/lib/actions/notification"
+import { PollType, PollWeightMode, NotificationOptions } from "@/lib/types"
 import { WEIGHT_MODE_CONFIG } from "@/lib/constants/ui"
 import { useToast } from "@/components/ui/Toast"
 
@@ -33,6 +35,15 @@ export function PollModal({ isOpen, onClose, buildingId }: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
 
+    // Notification options
+    const [sendAppNotification, setSendAppNotification] = useState(true)
+    const [sendEmail, setSendEmail] = useState(false)
+    const [recipients, setRecipients] = useState<'all' | string[]>('all')
+
+    const fetchResidents = useCallback(async (buildingId: string): Promise<Resident[]> => {
+        return getBuildingResidentsForSelector(buildingId)
+    }, [])
+
     // Check if mobile on mount and resize
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 640)
@@ -47,6 +58,9 @@ export function PollModal({ isOpen, onClose, buildingId }: Props) {
         setType("yes_no")
         setWeightMode("equal")
         setOptions(["", "", ""])
+        setSendAppNotification(true)
+        setSendEmail(false)
+        setRecipients('all')
     }
 
     const handleClose = () => {
@@ -88,6 +102,13 @@ export function PollModal({ isOpen, onClose, buildingId }: Props) {
 
         setIsLoading(true)
 
+        // Build notification options
+        const notificationOptions: NotificationOptions = {
+            sendAppNotification,
+            sendEmail,
+            recipients,
+        }
+
         const result = await createPoll({
             buildingId,
             title: title.trim(),
@@ -95,6 +116,7 @@ export function PollModal({ isOpen, onClose, buildingId }: Props) {
             type,
             weightMode,
             options: type !== "yes_no" ? options.filter(o => o.trim()) : undefined,
+            notificationOptions,
         })
 
         if (result.success) {
@@ -210,6 +232,19 @@ export function PollModal({ isOpen, onClose, buildingId }: Props) {
                     </div>
                 </FormField>
             )}
+
+            {/* Notification Options */}
+            <NotificationOptionsSection
+                sendAppNotification={sendAppNotification}
+                onSendAppNotificationChange={setSendAppNotification}
+                sendEmail={sendEmail}
+                onSendEmailChange={setSendEmail}
+                recipients={recipients}
+                onRecipientsChange={setRecipients}
+                buildingId={buildingId}
+                fetchResidents={fetchResidents}
+                disabled={isLoading}
+            />
         </div>
     )
 

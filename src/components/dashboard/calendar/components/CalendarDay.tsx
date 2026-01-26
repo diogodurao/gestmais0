@@ -10,12 +10,12 @@ interface CalendarDayProps {
     onClick: () => void
 }
 
-function getEventDotColor(type: string) {
+function getEventDotClass(type: string) {
     switch (type) {
-        case "meeting": return "#8FB996"
-        case "maintenance": return "#B8963E"
-        case "deadline": return "#B86B73"
-        default: return "#6C757D"
+        case "meeting": return "bg-primary"
+        case "maintenance": return "bg-warning"
+        case "deadline": return "bg-error"
+        default: return "bg-gray-500"
     }
 }
 
@@ -36,14 +36,14 @@ export function CalendarDay({
             onClick={onClick}
             className={cn(
                 "relative flex flex-col items-center p-1 min-h-[48px] sm:min-h-[64px] rounded transition-colors",
-                isCurrentMonth ? "hover:bg-[#F8F9FA]" : "opacity-40",
-                isSelected && "bg-[#E8F0EA] hover:bg-[#E8F0EA]",
-                isToday && !isSelected && "ring-1 ring-[#8FB996]"
+                isCurrentMonth ? "hover:bg-gray-100" : "opacity-40",
+                isSelected && "bg-primary-light hover:bg-primary-light",
+                isToday && !isSelected && "ring-1 ring-primary"
             )}
         >
             <span className={cn(
-                "text-[11px] font-medium",
-                isSelected ? "text-[#6A9B72]" : isCurrentMonth ? "text-[#495057]" : "text-[#ADB5BD]",
+                "text-body font-medium",
+                isSelected ? "text-primary-dark" : isCurrentMonth ? "text-gray-600" : "text-gray-400",
                 isToday && "font-bold"
             )}>
                 {day}
@@ -53,8 +53,7 @@ export function CalendarDay({
                     {events.slice(0, 3).map((event, idx) => (
                         <span
                             key={idx}
-                            className="w-1.5 h-1.5 rounded-full"
-                            style={{ backgroundColor: getEventDotColor(event.type) }}
+                            className={cn("w-1.5 h-1.5 rounded-full", getEventDotClass(event.type))}
                         />
                     ))}
                 </div>

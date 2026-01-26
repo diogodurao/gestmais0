@@ -5,10 +5,12 @@ import { after } from "next/server"
 import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { pollService, CreatePollInput, CastVoteInput } from "@/services/poll.service"
 import { createPollSchema, castVoteSchema } from "@/lib/zod-schemas"
-import { ActionResult, PollResults, Poll, PollVote } from "@/lib/types"
+import { ActionResult, PollResults, Poll, PollVote, NotificationOptions } from "@/lib/types"
 import { db } from "@/db"
 import { apartments, building } from "@/db/schema"
 import { notifyBuildingResidents, createNotification, notifyPollClosed } from "@/lib/actions/notification"
+import { getResidentEmails, sendBulkEmails } from "@/lib/actions/email-notifications"
+import { getPollCreatedEmailTemplate } from "@/lib/email"
 import { eq, and } from "drizzle-orm"
 
 // Get all polls for building
@@ -96,8 +98,12 @@ export async function getPollResults(pollId: number): Promise<PollResults | { re
     return result.data
 }
 
+interface CreatePollWithNotificationsInput extends CreatePollInput {
+    notificationOptions?: NotificationOptions
+}
+
 // Create poll (manager only)
-export async function createPoll(input: CreatePollInput): Promise<ActionResult<{ id: number }>> {
+export async function createPoll(input: CreatePollWithNotificationsInput): Promise<ActionResult<{ id: number }>> {
     const { session } = await requireBuildingAccess(input.buildingId)
 
     if (session.user.role !== 'manager') {
@@ -122,17 +128,98 @@ export async function createPoll(input: CreatePollInput): Promise<ActionResult<{
     const created = result.data
     updateTag(`polls-${input.buildingId}`)
 
-    // Notify all residents after response (non-blocking)
+    // Handle notifications after response (non-blocking)
     const pollTitle = validated.data.title
+    const pollDescription = validated.data.description || null
     const creatorId = session.user.id
+    const notificationOptions = input.notificationOptions
+
     after(async () => {
-        await notifyBuildingResidents({
-            buildingId: input.buildingId,
-            title: "Nova Votação Disponível",
-            message: `Foi criada uma nova votação: "${pollTitle}"`,
-            type: "poll",
-            link: `/dashboard/polls?id=${created.id}`
-        }, creatorId)
+        try {
+            // Default behavior: send app notification to all
+            if (!notificationOptions) {
+                await notifyBuildingResidents({
+                    buildingId: input.buildingId,
+                    title: "Nova Votação Disponível",
+                    message: `Foi criada uma nova votação: "${pollTitle}"`,
+                    type: "poll",
+                    link: `/dashboard/polls?id=${created.id}`
+                }, creatorId)
+                return
+            }
+
+            // Custom notification handling
+            const { sendAppNotification, sendEmail: shouldSendEmail, recipients } = notificationOptions
+
+            // Get building name for email
+            let buildingName = ''
+            if (shouldSendEmail) {
+                const [buildingData] = await db
+                    .select({ name: building.name })
+                    .from(building)
+                    .where(eq(building.id, input.buildingId))
+                    .limit(1)
+                buildingName = buildingData?.name || ''
+            }
+
+            // Get recipient user IDs
+            const userIds = recipients === 'all'
+                ? undefined
+                : recipients
+
+            // Send app notifications
+            if (sendAppNotification) {
+                if (recipients === 'all') {
+                    await notifyBuildingResidents({
+                        buildingId: input.buildingId,
+                        title: "Nova Votação Disponível",
+                        message: `Foi criada uma nova votação: "${pollTitle}"`,
+                        type: "poll",
+                        link: `/dashboard/polls?id=${created.id}`
+                    }, creatorId)
+                } else if (userIds && userIds.length > 0) {
+                    // Send to specific users
+                    await Promise.all(
+                        userIds.map(userId =>
+                            createNotification({
+                                buildingId: input.buildingId,
+                                userId,
+                                type: 'poll_created',
+                                title: 'Nova Votação Disponível',
+                                message: pollTitle,
+                                link: `/dashboard/polls?id=${created.id}`,
+                            })
+                        )
+                    )
+                }
+            }
+
+            // Send emails
+            if (shouldSendEmail) {
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gestmais.pt'
+                const link = `${baseUrl}/dashboard/polls?id=${created.id}`
+                const template = getPollCreatedEmailTemplate(
+                    buildingName,
+                    pollTitle,
+                    pollDescription,
+                    link
+                )
+
+                const emailRecipients = await getResidentEmails(input.buildingId, userIds)
+                // Filter out the creator
+                const filteredRecipients = emailRecipients.filter(r => r.userId !== creatorId)
+
+                if (filteredRecipients.length > 0) {
+                    await sendBulkEmails({
+                        recipients: filteredRecipients.map(r => ({ email: r.email, name: r.name })),
+                        subject: `🗳️ Nova Votação - ${buildingName}`,
+                        template,
+                    })
+                }
+            }
+        } catch (error) {
+            console.error("Failed to send poll notifications:", error)
+        }
     })
 
     return { success: true, data: { id: created.id } }

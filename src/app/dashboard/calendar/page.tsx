@@ -27,6 +27,7 @@ export default async function CalendarPage() {
                     year={now.getFullYear()}
                     month={now.getMonth() + 1}
                     readOnly={!isManager}
+                    isManager={isManager}
                 />
             </Suspense>
         </div>
@@ -38,11 +39,13 @@ async function CalendarContent({
     year,
     month,
     readOnly,
+    isManager,
 }: {
     buildingId: string
     year: number
     month: number
     readOnly: boolean
+    isManager: boolean
 }) {
     const events = await getCachedCalendarEvents(buildingId, year, month)
 
@@ -53,6 +56,7 @@ async function CalendarContent({
             initialYear={year}
             initialMonth={month}
             readOnly={readOnly}
+            isManager={isManager}
         />
     )
 }

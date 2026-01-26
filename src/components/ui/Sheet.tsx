@@ -58,10 +58,10 @@ export function Sheet({ open, onClose, side = "right", title, description, child
             <div className="flex items-start justify-between">
               <div>
                 {title && (
-                  <h2 className="text-[14px] font-medium text-gray-900">{title}</h2>
+                  <h2 className="text-sm font-medium text-gray-900">{title}</h2>
                 )}
                 {description && (
-                  <p className="mt-1 text-[11px] text-gray-500">{description}</p>
+                  <p className="mt-1 text-body text-gray-500">{description}</p>
                 )}
               </div>
               <button

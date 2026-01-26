@@ -134,7 +134,7 @@ function MobilePaymentCard({
                                         !isInteractive && "cursor-default"
                                     )}
                                 >
-                                    <div className="text-[10px] font-medium text-gray-500">{monthName.slice(0, 3)}</div>
+                                    <div className="text-label font-medium text-gray-500">{monthName.slice(0, 3)}</div>
                                     <div className={cn(
                                         "text-label font-bold mt-0.5",
                                         status === "paid" && "text-primary-dark",
@@ -150,13 +150,13 @@ function MobilePaymentCard({
 
                     {/* Legend */}
                     <div className="flex items-center justify-center gap-2 mt-1.5 pt-1.5 border-t border-gray-200">
-                        <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
+                        <span className="flex items-center gap-0.5 text-label text-gray-500">
                             <span className="w-2 h-2 bg-primary rounded-sm" /> Pago
                         </span>
-                        <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
+                        <span className="flex items-center gap-0.5 text-label text-gray-500">
                             <span className="w-2 h-2 bg-gray-300 rounded-sm" /> Pendente
                         </span>
-                        <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
+                        <span className="flex items-center gap-0.5 text-label text-gray-500">
                             <span className="w-2 h-2 bg-error rounded-sm" /> Dívida
                         </span>
                     </div>

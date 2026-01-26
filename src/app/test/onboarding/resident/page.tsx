@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "../../components/ui/Button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../../Components/ui/Card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../../components/ui/Card"
 import { Badge } from "../../components/ui/Badge"
 import { Input } from "../../components/ui/Input"
 import { Select } from "../../components/ui/Select"

@@ -134,7 +134,7 @@ export function DiscussionsList({
                         className={cn(
                             "px-3 py-2 text-body font-medium border-b-2 -mb-px transition-colors",
                             activeTab === tab.value
-                                ? "border-[#8FB996] text-[#6A9B72]"
+                                ? "border-primary text-primary-dark"
                                 : "border-transparent text-gray-500 hover:text-gray-700"
                         )}
                     >

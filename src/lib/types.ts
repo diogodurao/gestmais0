@@ -236,6 +236,14 @@ export const ErrorCodes = {
     // Discussions
     DISCUSSION_NOT_FOUND: 'DISCUSSION_NOT_FOUND',
     COMMENT_NOT_FOUND: 'COMMENT_NOT_FOUND',
+
+    // Banking / Open Banking
+    BANK_CONNECTION_NOT_FOUND: 'BANK_CONNECTION_NOT_FOUND',
+    BANK_CONNECTION_EXPIRED: 'BANK_CONNECTION_EXPIRED',
+    BANK_CONNECTION_ERROR: 'BANK_CONNECTION_ERROR',
+    BANK_SYNC_FAILED: 'BANK_SYNC_FAILED',
+    BANK_ACCOUNT_NOT_FOUND: 'BANK_ACCOUNT_NOT_FOUND',
+    BANK_TRANSACTION_NOT_FOUND: 'BANK_TRANSACTION_NOT_FOUND',
 } as const
 
 export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
@@ -324,6 +332,16 @@ export interface OccurrenceAttachment {
 // ==========================================
 // NOTIFICATION TYPES
 // ==========================================
+
+/**
+ * Options for controlling how notifications are sent
+ * Used by managers when creating calendar events and polls
+ */
+export interface NotificationOptions {
+    sendAppNotification: boolean  // default: true
+    sendEmail: boolean            // default: false
+    recipients: 'all' | string[]  // 'all' or array of userIds
+}
 
 export type NotificationType =
     | 'occurrence_created'
@@ -534,4 +552,85 @@ export interface UploadNewVersionInput {
         mimeType: string
         size: number
     }
+}
+
+// ==========================================
+// BANKING / OPEN BANKING TYPES
+// ==========================================
+
+export type BankConnectionStatus = 'pending' | 'active' | 'expired' | 'revoked' | 'error'
+export type BankTransactionType = 'credit' | 'debit'
+export type TransactionMatchStatus = 'unmatched' | 'matched' | 'ignored'
+
+export interface BankConnection {
+    id: number
+    buildingId: string
+    accessToken: string | null
+    refreshToken: string | null
+    tokenExpiresAt: Date | null
+    providerName: string | null
+    status: BankConnectionStatus
+    lastSyncAt: Date | null
+    lastError: string | null
+    createdAt: Date
+    updatedAt: Date
+    createdBy: string | null
+}
+
+export interface BankAccount {
+    id: number
+    connectionId: number
+    buildingId: string
+    tinkAccountId: string | null
+    name: string | null
+    iban: string | null
+    balance: number | null
+    availableBalance: number | null
+    currency: string
+    accountType: string | null
+    lastSyncAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+}
+
+export interface BankTransaction {
+    id: number
+    accountId: number
+    buildingId: string
+    tinkTransactionId: string | null
+    amount: number
+    type: BankTransactionType
+    description: string | null
+    originalDescription: string | null
+    transactionDate: string
+    bookingDate: string | null
+    counterpartyName: string | null
+    counterpartyIban: string | null
+    matchedApartmentId: number | null
+    matchedPaymentId: number | null
+    matchStatus: TransactionMatchStatus
+    createdAt: Date
+}
+
+export interface ResidentIban {
+    id: number
+    apartmentId: number
+    iban: string
+    label: string | null
+    isPrimary: boolean
+    createdAt: Date
+}
+
+// Banking summary types for UI
+export interface BankConnectionSummary {
+    status: BankConnectionStatus
+    providerName: string | null
+    lastSyncAt: Date | null
+    accountCount: number
+    totalBalance: number // in cents
+}
+
+export interface UnmatchedTransaction extends BankTransaction {
+    accountName: string | null
+    accountIban: string | null
 }

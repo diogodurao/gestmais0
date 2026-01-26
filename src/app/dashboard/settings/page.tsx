@@ -2,12 +2,14 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { getBuilding, getBuildingApartments, getResidentApartment } from "@/lib/actions/building"
+import { getBankConnectionStatus } from "@/lib/actions/banking"
 import { BuildingSettingsForm } from "@/components/dashboard/settings/BuildingSettingsForm"
 import { ApartmentManager } from "@/components/dashboard/settings/ApartmentManager"
 import { ProfileSettings } from "@/components/dashboard/settings/ProfileSettings"
 import { NotificationSettings } from "@/components/dashboard/settings/NotificationSettings"
 import { SettingsLayout } from "@/components/dashboard/settings/SettingsLayout"
 import { BillingSubscriptionCard } from "@/components/dashboard/subscription/BillingSubscriptionCard"
+import { BankingSection } from "@/components/dashboard/banking/BankingSection"
 import { Building2 } from "lucide-react"
 import { getApartmentDisplayName } from "@/lib/utils"
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
@@ -64,10 +66,17 @@ export default async function SettingsPage() {
     let building = null
     let apartmentsData: Awaited<ReturnType<typeof getBuildingApartments>> = []
 
+    let bankConnectionStatus = null
+
     if (session.user.role === 'manager' && managerActiveBuildingId) {
         building = await getBuilding(managerActiveBuildingId)
         if (building) {
             apartmentsData = await getBuildingApartments(managerActiveBuildingId)
+            // Fetch bank connection status
+            const bankResult = await getBankConnectionStatus(managerActiveBuildingId)
+            if (bankResult.success) {
+                bankConnectionStatus = bankResult.data
+            }
         }
     }
 
@@ -119,6 +128,18 @@ export default async function SettingsPage() {
                             canSubscribe={canSubscribe}
                             profileComplete={profileComplete}
                             buildingComplete={buildingComplete}
+                        />
+                    ) : null,
+
+                    banking: building ? (
+                        <BankingSection
+                            buildingId={building.id}
+                            connectionStatus={bankConnectionStatus}
+                            apartments={apartmentsData.map(a => ({
+                                id: a.apartment.id,
+                                unit: a.apartment.unit,
+                                residentName: a.resident?.name ?? null
+                            }))}
                         />
                     ) : null,
 

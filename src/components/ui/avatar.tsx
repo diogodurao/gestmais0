@@ -14,16 +14,16 @@ interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const sizeStyles: Record<AvatarSize, string> = {
-  sm: "h-6 w-6 text-[9px]",
-  md: "h-8 w-8 text-[10px]",
-  lg: "h-10 w-10 text-[12px]",
+  sm: "h-6 w-6 text-label",
+  md: "h-8 w-8 text-body",
+  lg: "h-10 w-10 text-heading",
 }
 
 const statusColors: Record<AvatarStatus, string> = {
-  online: "bg-[#8FB996]",
-  offline: "bg-[#ADB5BD]",
-  busy: "bg-[#B86B73]",
-  away: "bg-[#B8963E]",
+  online: "bg-primary",
+  offline: "bg-gray-400",
+  busy: "bg-error",
+  away: "bg-warning",
 }
 
 const statusSizes: Record<AvatarSize, string> = {
@@ -40,7 +40,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
       <div
         ref={ref}
         className={cn(
-          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E8F0EA]",
+          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-light",
           sizeStyles[size],
           className
         )}
@@ -120,9 +120,9 @@ interface AvatarWithNameProps extends AvatarProps {
 export const AvatarWithName = forwardRef<HTMLDivElement, AvatarWithNameProps>(
   ({ className, name, description, size = "md", ...avatarProps }, ref) => {
     const textSizes = {
-      sm: { name: "text-[10px]", description: "text-[9px]" },
-      md: { name: "text-[11px]", description: "text-[10px]" },
-      lg: { name: "text-[12px]", description: "text-[11px]" },
+      sm: { name: "text-body", description: "text-label" },
+      md: { name: "text-body", description: "text-body" },
+      lg: { name: "text-heading", description: "text-body" },
     }
 
     return (
@@ -133,7 +133,7 @@ export const AvatarWithName = forwardRef<HTMLDivElement, AvatarWithNameProps>(
             {name}
           </p>
           {description && (
-            <p className={cn("text-[#8E9AAF] truncate", textSizes[size].description)}>
+            <p className={cn("text-secondary truncate", textSizes[size].description)}>
               {description}
             </p>
           )}

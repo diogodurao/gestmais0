@@ -3,9 +3,9 @@
 import { forwardRef, type HTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 import { Search, Filter } from "lucide-react"
-import { Input } from "./input"
-import { Button } from "./button"
-import { Dropdown, DropdownItem, DropdownDivider } from "./dropdown"
+import { Input } from "./Input"
+import { Button } from "./Button"
+import { Dropdown, DropdownItem } from "./Dropdown"
 
 interface FilterOption {
   value: string
@@ -92,7 +92,7 @@ export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
 FilterBar.displayName = "FilterBar"
 
 // Simple Search Bar
-interface SearchBarProps extends HTMLAttributes<HTMLDivElement> {
+interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   value?: string
   onChange?: (value: string) => void
   placeholder?: string
@@ -124,7 +124,7 @@ export const SearchBar = forwardRef<HTMLDivElement, SearchBarProps>(
 SearchBar.displayName = "SearchBar"
 
 // Filter Button Group
-interface FilterButtonGroupProps extends HTMLAttributes<HTMLDivElement> {
+interface FilterButtonGroupProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   options: FilterOption[]
   value: string
   onChange: (value: string) => void

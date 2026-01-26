@@ -10,9 +10,9 @@ interface ListProps extends HTMLAttributes<HTMLUListElement> {
 
 const listVariantStyles: Record<ListVariant, string> = {
   default: "",
-  bordered: "rounded-lg border border-[#E9ECEF]",
-  divided: "divide-y divide-[#F1F3F5]",
-  card: "rounded-lg border border-[#E9ECEF] divide-y divide-[#F1F3F5]",
+  bordered: "rounded-lg border border-gray-200",
+  divided: "divide-y divide-gray-100",
+  card: "rounded-lg border border-gray-200 divide-y divide-gray-100",
 }
 
 export const List = forwardRef<HTMLUListElement, ListProps>(
@@ -61,13 +61,13 @@ export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
     const sizeStyles = {
       sm: {
         padding: "px-1.5 py-1",
-        title: "text-[10px]",
-        description: "text-[9px]",
+        title: "text-body",
+        description: "text-label",
       },
       md: {
         padding: "px-1.5 py-1.5",
-        title: "text-[11px]",
-        description: "text-[10px]",
+        title: "text-body",
+        description: "text-body",
       },
     }
 
@@ -83,25 +83,25 @@ export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
         className={cn(
           "flex items-center gap-1.5 bg-white",
           sizes.padding,
-          isInteractive && "cursor-pointer transition-colors hover:bg-[#F8F9FA]",
-          active && "bg-[#E8F0EA]",
-          selected && "bg-[#F8F9FA] ring-1 ring-[#8FB996] ring-inset",
+          isInteractive && "cursor-pointer transition-colors hover:bg-gray-50",
+          active && "bg-primary-light",
+          selected && "bg-gray-50 ring-1 ring-primary ring-inset",
           className
         )}
         {...props}
       >
         {leading && <div className="flex-shrink-0">{leading}</div>}
         <div className="min-w-0 flex-1">
-          <p className={cn("font-medium text-[#495057] truncate", sizes.title)}>{title}</p>
+          <p className={cn("font-medium text-gray-700 truncate", sizes.title)}>{title}</p>
           {description && (
-            <p className={cn("text-[#8E9AAF] truncate", sizes.description)}>
+            <p className={cn("text-secondary truncate", sizes.description)}>
               {description}
             </p>
           )}
         </div>
         {trailing && <div className="flex-shrink-0">{trailing}</div>}
         {showChevron && !trailing && (
-          <ChevronRight className="h-4 w-4 text-[#DEE2E6] shrink-0" />
+          <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
         )}
       </li>
     )
@@ -138,12 +138,12 @@ export const ListHeader = forwardRef<HTMLDivElement, ListHeaderProps>(
     <div
       ref={ref}
       className={cn(
-        "flex items-center justify-between px-1.5 py-1 bg-[#F8F9FA] border-b border-[#E9ECEF]",
+        "flex items-center justify-between px-1.5 py-1 bg-gray-50 border-b border-gray-200",
         className
       )}
       {...props}
     >
-      <span className="text-[10px] font-medium text-[#8E9AAF] uppercase tracking-wide">
+      <span className="text-body font-medium text-secondary uppercase tracking-wide">
         {title}
       </span>
       {action}
@@ -158,7 +158,7 @@ export const ListFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
     <div
       ref={ref}
       className={cn(
-        "px-1.5 py-1 bg-[#F8F9FA] border-t border-[#E9ECEF] text-center",
+        "px-1.5 py-1 bg-gray-50 border-t border-gray-200 text-center",
         className
       )}
       {...props}

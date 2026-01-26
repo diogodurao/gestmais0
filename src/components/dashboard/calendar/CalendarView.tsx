@@ -20,6 +20,7 @@ interface Props {
     initialYear: number
     initialMonth: number
     readOnly?: boolean
+    isManager?: boolean
 }
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
@@ -28,10 +29,10 @@ const MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
 
 function getEventTypeStyles(type: string) {
     const styles: Record<string, { border: string; label: string; variant: "success" | "warning" | "error" | "default" }> = {
-        meeting: { border: "border-[#D4E5D7]", label: "Reunião", variant: "success" },
-        maintenance: { border: "border-[#F0E4C8]", label: "Manutenção", variant: "warning" },
-        deadline: { border: "border-[#EFCDD1]", label: "Prazo", variant: "error" },
-        general: { border: "border-[#DEE2E6]", label: "Geral", variant: "default" },
+        meeting: { border: "border-primary-light", label: "Reunião", variant: "success" },
+        maintenance: { border: "border-warning-light", label: "Manutenção", variant: "warning" },
+        deadline: { border: "border-error-light", label: "Prazo", variant: "error" },
+        general: { border: "border-gray-300", label: "Geral", variant: "default" },
     }
     return styles[type] || styles.general
 }
@@ -56,7 +57,7 @@ function EventCard({
 
     return (
         <div className={cn(
-            "rounded-lg border p-1.5 transition-colors hover:bg-[#F8F9FA]",
+            "rounded-lg border p-1.5 transition-colors hover:bg-gray-100",
             styles.border
         )}>
             <div className="flex items-start justify-between gap-1.5">
@@ -65,17 +66,17 @@ function EventCard({
                         <Badge variant={styles.variant}>
                             {styles.label}
                         </Badge>
-                        <span className="text-[9px] text-[#8E9AAF]">{formatDate(event.startDate)}</span>
+                        <span className="text-xs text-secondary">{formatDate(event.startDate)}</span>
                     </div>
-                    <h3 className="text-[11px] font-medium text-[#495057] truncate">{event.title}</h3>
+                    <h3 className="text-body font-medium text-gray-600 truncate">{event.title}</h3>
                     {event.description && (
-                        <p className="text-[10px] text-[#8E9AAF] line-clamp-2 mt-0.5">{event.description}</p>
+                        <p className="text-label text-secondary line-clamp-2 mt-0.5">{event.description}</p>
                     )}
                 </div>
             </div>
 
-            <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-[#F1F3F5]">
-                <div className="flex items-center gap-2 text-[9px] text-[#8E9AAF]">
+            <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-gray-200">
+                <div className="flex items-center gap-2 text-xs text-secondary">
                     {event.startTime && (
                         <span className="flex items-center gap-0.5">
                             <Clock className="h-3 w-3" />
@@ -95,7 +96,7 @@ function EventCard({
                         <IconButton
                             size="sm"
                             variant="ghost"
-                            icon={<Trash2 className="h-3 w-3 text-[#B86B73]" />}
+                            icon={<Trash2 className="h-3 w-3 text-error" />}
                             label="Eliminar"
                             onClick={onDelete}
                         />
@@ -106,7 +107,7 @@ function EventCard({
     )
 }
 
-export function CalendarView({ buildingId, initialEvents, initialYear, initialMonth, readOnly }: Props) {
+export function CalendarView({ buildingId, initialEvents, initialYear, initialMonth, readOnly, isManager }: Props) {
     const {
         year,
         month,
@@ -165,8 +166,8 @@ export function CalendarView({ buildingId, initialEvents, initialYear, initialMo
             {/* Page Header */}
             <div className="mb-1.5 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-[14px] font-semibold text-[#343A40]">Agenda</h1>
-                    <p className="text-[10px] text-[#8E9AAF]">Eventos e datas importantes do condomínio</p>
+                    <h1 className="text-base font-semibold text-gray-800">Agenda</h1>
+                    <p className="text-label text-secondary">Eventos e datas importantes do condomínio</p>
                 </div>
                 {!readOnly && (
                     <Button size="sm" onClick={handleCreateEvent}>
@@ -190,7 +191,7 @@ export function CalendarView({ buildingId, initialEvents, initialYear, initialMo
                         {/* Weekday headers */}
                         <div className="grid grid-cols-7 mb-1">
                             {WEEKDAYS.map((day) => (
-                                <div key={day} className="text-center text-[9px] font-medium text-[#8E9AAF] uppercase tracking-wide py-1">
+                                <div key={day} className="text-center text-xs font-medium text-secondary uppercase tracking-wide py-1">
                                     {day}
                                 </div>
                             ))}
@@ -219,15 +220,15 @@ export function CalendarView({ buildingId, initialEvents, initialYear, initialMo
                         </div>
 
                         {/* Legend */}
-                        <div className="flex items-center justify-center gap-3 mt-1.5 pt-1.5 border-t border-[#F1F3F5]">
-                            <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-                                <span className="w-2 h-2 rounded-full bg-[#8FB996]" /> Reunião
+                        <div className="flex items-center justify-center gap-3 mt-1.5 pt-1.5 border-t border-gray-200">
+                            <span className="flex items-center gap-1 text-xs text-secondary">
+                                <span className="w-2 h-2 rounded-full bg-primary" /> Reunião
                             </span>
-                            <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-                                <span className="w-2 h-2 rounded-full bg-[#B8963E]" /> Manutenção
+                            <span className="flex items-center gap-1 text-xs text-secondary">
+                                <span className="w-2 h-2 rounded-full bg-warning" /> Manutenção
                             </span>
-                            <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-                                <span className="w-2 h-2 rounded-full bg-[#B86B73]" /> Prazo
+                            <span className="flex items-center gap-1 text-xs text-secondary">
+                                <span className="w-2 h-2 rounded-full bg-error" /> Prazo
                             </span>
                         </div>
                     </CardContent>
@@ -259,9 +260,9 @@ export function CalendarView({ buildingId, initialEvents, initialYear, initialMo
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-6 text-center">
-                                <CalendarIcon className="h-8 w-8 text-[#DEE2E6] mb-1.5" />
-                                <p className="text-[11px] font-medium text-[#8E9AAF]">Sem eventos</p>
-                                <p className="text-[10px] text-[#ADB5BD]">
+                                <CalendarIcon className="h-8 w-8 text-gray-300 mb-1.5" />
+                                <p className="text-body font-medium text-secondary">Sem eventos</p>
+                                <p className="text-label text-gray-400">
                                     {selectedDate ? "Nenhum evento neste dia" : "Selecione um dia para ver eventos"}
                                 </p>
                                 {!readOnly && (
@@ -283,6 +284,7 @@ export function CalendarView({ buildingId, initialEvents, initialYear, initialMo
                 initialDate={selectedDate?.toISOString().split("T")[0] || null}
                 event={selectedEvent}
                 readOnly={readOnly}
+                isManager={isManager}
             />
         </>
     )

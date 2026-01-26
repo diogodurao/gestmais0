@@ -52,7 +52,7 @@ export function OnboardingStepper({
           <div className="text-label font-mono text-gray-400 uppercase tracking-widest mb-2">
             {label}
           </div>
-          <h1 className="text-[18px] font-semibold text-gray-800 uppercase tracking-wide">
+          <h1 className="text-heading font-semibold text-gray-800 uppercase tracking-wide">
             {title}
           </h1>
           {description && (

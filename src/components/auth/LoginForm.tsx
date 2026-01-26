@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
@@ -75,6 +76,15 @@ export function LoginForm() {
                 </FormControl>
                 <FormError />
             </FormField>
+
+            <div className="flex justify-end">
+                <Link
+                    href="/forgot-password"
+                    className="text-label text-primary hover:underline"
+                >
+                    Esqueceu a palavra-passe?
+                </Link>
+            </div>
 
             {error && <p className="text-label text-error">{error}</p>}
 

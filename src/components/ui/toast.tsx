@@ -65,10 +65,10 @@ function ToastContainer() {
 }
 
 const variantStyles: Record<ToastVariant, { bg: string; icon: string }> = {
-  info: { bg: "bg-white", icon: "text-blue-500" },
-  success: { bg: "bg-white", icon: "text-emerald-500" },
-  warning: { bg: "bg-white", icon: "text-amber-500" },
-  error: { bg: "bg-white", icon: "text-red-500" },
+  info: { bg: "bg-white", icon: "text-secondary" },
+  success: { bg: "bg-white", icon: "text-primary" },
+  warning: { bg: "bg-white", icon: "text-warning" },
+  error: { bg: "bg-white", icon: "text-error" },
 }
 
 const icons: Record<ToastVariant, typeof Info> = {
@@ -92,9 +92,9 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
     >
       <Icon className={cn("h-4 w-4 flex-shrink-0 mt-0.5", styles.icon)} />
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-gray-900">{toast.title}</p>
+        <p className="text-subtitle font-medium text-gray-900">{toast.title}</p>
         {toast.description && (
-          <p className="mt-0.5 text-[11px] text-gray-500">{toast.description}</p>
+          <p className="mt-0.5 text-body text-gray-500">{toast.description}</p>
         )}
       </div>
       <button

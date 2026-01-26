@@ -11,20 +11,20 @@ interface InfoRowProps extends HTMLAttributes<HTMLDivElement> {
 
 const sizeStyles = {
   sm: {
-    label: "text-[9px]",
-    value: "text-[9px]",
+    label: "text-label",
+    value: "text-label",
     icon: "h-3 w-3",
     gap: "gap-0.5",
   },
   md: {
-    label: "text-[10px]",
-    value: "text-[10px]",
+    label: "text-body",
+    value: "text-body",
     icon: "h-3.5 w-3.5",
     gap: "gap-1",
   },
   lg: {
-    label: "text-[11px]",
-    value: "text-[11px]",
+    label: "text-body",
+    value: "text-body",
     icon: "h-4 w-4",
     gap: "gap-1.5",
   },
@@ -45,11 +45,11 @@ export const InfoRow = forwardRef<HTMLDivElement, InfoRowProps>(
     if (direction === "vertical") {
       return (
         <div ref={ref} className={cn("", className)} {...props}>
-          <p className={cn("font-medium text-[#8E9AAF] uppercase tracking-wide mb-0.5", sizes.label)}>
+          <p className={cn("font-medium text-secondary uppercase tracking-wide mb-0.5", sizes.label)}>
             {label}
           </p>
-          <div className={cn("flex items-center text-[#495057]", sizes.gap)}>
-            {icon && <span className={cn("text-[#8E9AAF]", sizes.icon)}>{icon}</span>}
+          <div className={cn("flex items-center text-gray-700", sizes.gap)}>
+            {icon && <span className={cn("text-secondary", sizes.icon)}>{icon}</span>}
             <span className={cn("font-medium", sizes.value)}>{value}</span>
           </div>
         </div>
@@ -62,10 +62,10 @@ export const InfoRow = forwardRef<HTMLDivElement, InfoRowProps>(
         className={cn("flex items-center justify-between", className)}
         {...props}
       >
-        <span className={cn("text-[#8E9AAF]", sizes.label)}>{label}</span>
+        <span className={cn("text-secondary", sizes.label)}>{label}</span>
         <div className={cn("flex items-center", sizes.gap)}>
-          {icon && <span className={cn("text-[#8E9AAF]", sizes.icon)}>{icon}</span>}
-          <span className={cn("font-medium text-[#495057]", sizes.value)}>{value}</span>
+          {icon && <span className={cn("text-secondary", sizes.icon)}>{icon}</span>}
+          <span className={cn("font-medium text-gray-700", sizes.value)}>{value}</span>
         </div>
       </div>
     )

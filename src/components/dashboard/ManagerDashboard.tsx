@@ -159,13 +159,13 @@ export async function ManagerDashboard({ session }: ManagerDashboardProps) {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex flex-col items-center justify-center p-6 bg-[#F8F9FA] border-2 border-dashed border-[#E9ECEF] rounded-lg text-center">
-                                    <div className="p-3 bg-[#E9ECEF] rounded-full mb-3">
-                                        <Lock className="w-5 h-5 text-[#8E9AAF]" />
+                                <div className="flex flex-col items-center justify-center p-6 bg-gray-100 border-2 border-dashed border-gray-200 rounded-lg text-center">
+                                    <div className="p-3 bg-gray-200 rounded-full mb-3">
+                                        <Lock className="w-5 h-5 text-secondary" />
                                     </div>
-                                    <h3 className="font-medium text-[#495057] text-[11px] uppercase mb-1">Subscrição necessária</h3>
-                                    <p className="text-[10px] text-[#8E9AAF] mb-4">Subscreva para gerir residentes e registos financeiros.</p>
-                                    <a href="/dashboard/settings?tab=subscription" className="px-4 py-1.5 bg-[#343A40] text-white text-[10px] font-medium rounded hover:bg-[#495057] transition-colors">
+                                    <h3 className="font-medium text-gray-600 text-body uppercase mb-1">Subscrição necessária</h3>
+                                    <p className="text-label text-secondary mb-4">Subscreva para gerir residentes e registos financeiros.</p>
+                                    <a href="/dashboard/settings?tab=subscription" className="px-4 py-1.5 bg-gray-800 text-white text-label font-medium rounded hover:bg-gray-600 transition-colors">
                                         Subscrever
                                     </a>
                                 </div>

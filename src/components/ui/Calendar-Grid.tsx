@@ -23,11 +23,11 @@ interface CalendarGridProps extends HTMLAttributes<HTMLDivElement> {
 const WEEKDAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
 const eventTypeColors: Record<string, string> = {
-  meeting: "bg-[#8FB996]",
-  maintenance: "bg-[#B8963E]",
-  deadline: "bg-[#B86B73]",
-  general: "bg-[#6C757D]",
-  default: "bg-[#8FB996]",
+  meeting: "bg-primary",
+  maintenance: "bg-warning",
+  deadline: "bg-error",
+  general: "bg-gray-500",
+  default: "bg-primary",
 }
 
 function getDaysInMonth(year: number, month: number): Date[] {
@@ -94,7 +94,7 @@ export const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
           {weekdayLabels.map((day) => (
             <div
               key={day}
-              className="text-center text-[9px] font-medium text-[#8E9AAF] uppercase tracking-wide py-1"
+              className="text-center text-xs font-medium text-secondary uppercase tracking-wide py-1"
             >
               {day}
             </div>
@@ -102,7 +102,7 @@ export const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-px bg-[#E9ECEF] border border-[#E9ECEF] rounded-lg overflow-hidden">
+        <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden">
           {days.map((date, idx) => {
             const isCurrentMonth = date.getMonth() === month
             const dayEvents = getEventsForDay(date)
@@ -116,18 +116,18 @@ export const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
                 onClick={() => onDayClick?.(date)}
                 className={cn(
                   "min-h-[60px] sm:min-h-[80px] p-0.5 bg-white text-left transition-colors",
-                  "hover:bg-[#F8F9FA]",
-                  !isCurrentMonth && "bg-[#FAFBFC]",
-                  isSelected && "ring-2 ring-[#8FB996] ring-inset"
+                  "hover:bg-gray-50",
+                  !isCurrentMonth && "bg-gray-50",
+                  isSelected && "ring-2 ring-primary ring-inset"
                 )}
               >
                 <div className="flex flex-col h-full">
                   <span
                     className={cn(
-                      "text-[10px] font-medium w-5 h-5 flex items-center justify-center rounded-full",
-                      !isCurrentMonth && "text-[#ADB5BD]",
-                      isCurrentMonth && "text-[#495057]",
-                      isTodayDate && "bg-[#8FB996] text-white"
+                      "text-label font-medium w-5 h-5 flex items-center justify-center rounded-full",
+                      !isCurrentMonth && "text-gray-400",
+                      isCurrentMonth && "text-gray-700",
+                      isTodayDate && "bg-primary text-white"
                     )}
                   >
                     {date.getDate()}
@@ -151,7 +151,7 @@ export const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
                       />
                     ))}
                     {dayEvents.length > 3 && (
-                      <span className="text-[8px] text-[#8E9AAF]">+{dayEvents.length - 3}</span>
+                      <span className="text-micro text-secondary">+{dayEvents.length - 3}</span>
                     )}
                   </div>
                 </div>
@@ -170,17 +170,17 @@ CalendarGrid.displayName = "CalendarGrid"
 export function CalendarLegend({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center justify-center gap-3 flex-wrap", className)}>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#8FB996] rounded-full" /> Reunião
+      <span className="flex items-center gap-1 text-xs text-secondary">
+        <span className="w-2 h-2 bg-primary rounded-full" /> Reunião
       </span>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#B8963E] rounded-full" /> Manutenção
+      <span className="flex items-center gap-1 text-xs text-secondary">
+        <span className="w-2 h-2 bg-warning rounded-full" /> Manutenção
       </span>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#B86B73] rounded-full" /> Prazo
+      <span className="flex items-center gap-1 text-xs text-secondary">
+        <span className="w-2 h-2 bg-error rounded-full" /> Prazo
       </span>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#6C757D] rounded-full" /> Geral
+      <span className="flex items-center gap-1 text-xs text-secondary">
+        <span className="w-2 h-2 bg-gray-500 rounded-full" /> Geral
       </span>
     </div>
   )

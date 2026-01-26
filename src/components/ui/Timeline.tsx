@@ -26,7 +26,7 @@ export const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
     return (
       <div ref={ref} className={cn("relative", className)} {...props}>
         {/* Vertical Line */}
-        <div className="absolute left-3 top-0 bottom-0 w-px bg-[#E9ECEF]" />
+        <div className="absolute left-3 top-0 bottom-0 w-px bg-gray-200" />
 
         <div className={cn("space-y-1.5", variant === "compact" && "space-y-1")}>
           {items.map((item, idx) => (
@@ -59,19 +59,19 @@ export const TimelineItem = forwardRef<HTMLDivElement, TimelineItemProps>(
         <div
           className={cn(
             "absolute left-0 w-6 h-6 flex items-center justify-center rounded-full border-2 border-white z-10",
-            item.iconBg || "bg-[#F8F9FA]"
+            item.iconBg || "bg-gray-50"
           )}
         >
           {item.icon ? (
-            <span className="text-[#6C757D]">{item.icon}</span>
+            <span className="text-gray-500">{item.icon}</span>
           ) : (
-            <span className="w-2 h-2 rounded-full bg-[#8FB996]" />
+            <span className="w-2 h-2 rounded-full bg-primary" />
           )}
         </div>
 
         {/* Content */}
         <div className={cn(
-          "flex-1 rounded-lg bg-[#F8F9FA] border border-[#E9ECEF] p-1.5",
+          "flex-1 rounded-lg bg-gray-50 border border-gray-200 p-1.5",
           variant === "compact" && "p-1"
         )}>
           {/* Header */}
@@ -80,24 +80,24 @@ export const TimelineItem = forwardRef<HTMLDivElement, TimelineItemProps>(
               {item.author && (
                 <>
                   <Avatar size="sm" fallback={item.author.name.charAt(0)} alt={item.author.name} />
-                  <span className="text-[10px] font-medium text-[#495057]">
+                  <span className="text-body font-medium text-gray-700">
                     {item.author.name}
                   </span>
                   {item.isManager && (
-                    <span className="px-1 py-0.5 rounded text-[8px] font-medium bg-[#E8F0EA] text-[#6A9B72]">
+                    <span className="px-1 py-0.5 rounded text-micro font-medium bg-primary-light text-primary-dark">
                       Admin
                     </span>
                   )}
                 </>
               )}
             </div>
-            <span className="text-[9px] text-[#ADB5BD]">{item.time}</span>
+            <span className="text-label text-gray-400">{item.time}</span>
           </div>
 
           {/* Content */}
-          <h4 className="text-[10px] font-medium text-[#495057]">{item.title}</h4>
+          <h4 className="text-body font-medium text-gray-700">{item.title}</h4>
           {item.description && (
-            <p className="text-[9px] text-[#6C757D] mt-0.5">{item.description}</p>
+            <p className="text-label text-gray-500 mt-0.5">{item.description}</p>
           )}
         </div>
       </div>
@@ -126,14 +126,14 @@ export const ActivityItem = forwardRef<HTMLDivElement, ActivityItemProps>(
         <div
           className={cn(
             "w-6 h-6 rounded-full flex items-center justify-center shrink-0",
-            iconBg || "bg-[#F1F3F5]"
+            iconBg || "bg-gray-100"
           )}
         >
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] text-[#495057]">{title}</p>
-          <p className="text-[9px] text-[#ADB5BD]">{time}</p>
+          <p className="text-body text-gray-700">{title}</p>
+          <p className="text-label text-gray-400">{time}</p>
         </div>
       </div>
     )

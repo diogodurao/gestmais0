@@ -82,6 +82,10 @@
   --text-subtitle: 13px;
   --text-heading: 14px;
 
+  /* Display Sizes (landing/marketing) */
+  --text-display-sm: 28px;
+  --text-display: 32px;
+
   /* Line Heights */
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;

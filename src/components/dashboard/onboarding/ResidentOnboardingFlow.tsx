@@ -168,7 +168,7 @@ export function ResidentOnboardingFlow({
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
               placeholder="XXXXXX"
-              className="w-full text-center text-[18px] font-mono font-semibold tracking-[0.5em] px-3 py-3 border border-gray-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary uppercase"
+              className="w-full text-center text-heading font-mono font-semibold tracking-[0.5em] px-3 py-3 border border-gray-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary uppercase"
               maxLength={6}
             />
           </div>

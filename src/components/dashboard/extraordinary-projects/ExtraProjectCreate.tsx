@@ -18,6 +18,7 @@ export const extraProjectSchema = z.object({
     installments: z.coerce.number().int().min(1, "Mínimo 1 prestação").max(60, "Máximo 60 prestações"),
     startMonth: z.coerce.number().min(1).max(12),
     startYear: z.coerce.number().min(2024),
+    paymentDueDay: z.coerce.number().int().min(1).max(28).optional(),
 })
 
 export type ExtraProjectSchema = z.infer<typeof extraProjectSchema>
@@ -46,7 +47,8 @@ export function ExtraProjectCreate({ buildingId, apartments, onCancel, onSuccess
             budget: 0,
             installments: 1,
             startMonth: currentMonth,
-            startYear: currentYear
+            startYear: currentYear,
+            paymentDueDay: undefined,
         }
     })
 
@@ -111,6 +113,7 @@ export function ExtraProjectCreate({ buildingId, apartments, onCancel, onSuccess
             numInstallments: data.formData.installments,
             startMonth: data.formData.startMonth,
             startYear: data.formData.startYear,
+            paymentDueDay: data.formData.paymentDueDay || undefined,
             documentUrl
         })
     }, {

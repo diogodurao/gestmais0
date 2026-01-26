@@ -49,7 +49,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
     return (
         <div className={cn(
             "rounded-lg border bg-white overflow-hidden",
-            hasDebt ? "border-[#EFCDD1]" : "border-[#E9ECEF]"
+            hasDebt ? "border-error-light" : "border-gray-200"
         )}>
             <div
                 className="p-1.5 cursor-pointer"
@@ -65,10 +65,10 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                         <div className={cn(
                             "shrink-0 w-8 h-8 flex items-center justify-center font-medium text-body rounded border",
                             apartment.status === "complete"
-                                ? "bg-primary-light text-primary-dark border-[#D4E5D7]"
+                                ? "bg-primary-light text-primary-dark border-primary-light"
                                 : apartment.status === "partial"
-                                    ? "bg-warning-light text-warning border-[#F0E4C8]"
-                                    : "bg-error-light text-error border-[#EFCDD1]"
+                                    ? "bg-warning-light text-warning border-warning-light"
+                                    : "bg-error-light text-error border-error-light"
                         )}>
                             {apartment.unit}
                         </div>
@@ -105,7 +105,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
             </div>
 
             {isExpanded && (
-                <div className="border-t border-[#F1F3F5] bg-gray-50 p-1.5">
+                <div className="border-t border-gray-100 bg-gray-50 p-1.5">
                     <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
                         Prestações
                     </div>
@@ -127,10 +127,10 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                                     disabled={!isInteractive}
                                     className={cn(
                                         "p-1.5 text-center transition-all border rounded",
-                                        inst.status === "paid" && "bg-primary-light border-[#D4E5D7]",
-                                        inst.status === "late" && "bg-error-light border-[#EFCDD1]",
-                                        inst.status === "pending" && "bg-white border-[#E9ECEF]",
-                                        inst.status === "partial" && "bg-warning-light border-[#F0E4C8]",
+                                        inst.status === "paid" && "bg-primary-light border-primary-light",
+                                        inst.status === "late" && "bg-error-light border-error-light",
+                                        inst.status === "pending" && "bg-white border-gray-200",
+                                        inst.status === "partial" && "bg-warning-light border-warning-light",
                                         isInteractive && "cursor-pointer active:scale-95",
                                         !isInteractive && "cursor-default"
                                     )}
@@ -155,7 +155,7 @@ export function MobileApartmentCard({ apartment, project, toolMode, onCellClick,
                         })}
                     </div>
 
-                    <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-[#E9ECEF]">
+                    <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-gray-200">
                         <span className="text-xs text-gray-500">
                             Quota: {apartment.permillage.toFixed(2)}‰
                         </span>

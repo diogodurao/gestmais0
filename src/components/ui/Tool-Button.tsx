@@ -12,20 +12,20 @@ interface ToolButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ToolVariant, { active: string; inactive: string }> = {
   default: {
-    active: "bg-[#E9ECF0] text-[#495057]",
-    inactive: "text-[#8E9AAF]",
+    active: "bg-gray-200 text-gray-700",
+    inactive: "text-secondary",
   },
   success: {
-    active: "bg-[#E8F0EA] text-[#6A9B72]",
-    inactive: "text-[#8E9AAF]",
+    active: "bg-primary-light text-primary-dark",
+    inactive: "text-secondary",
   },
   warning: {
-    active: "bg-[#FBF6EC] text-[#B8963E]",
-    inactive: "text-[#8E9AAF]",
+    active: "bg-warning-light text-warning",
+    inactive: "text-secondary",
   },
   error: {
-    active: "bg-[#F9ECEE] text-[#B86B73]",
-    inactive: "text-[#8E9AAF]",
+    active: "bg-error-light text-error",
+    inactive: "text-secondary",
   },
 }
 
@@ -47,8 +47,8 @@ export const ToolButton = forwardRef<HTMLButtonElement, ToolButtonProps>(
         type="button"
         disabled={disabled}
         className={cn(
-          "flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium transition-colors",
-          "hover:bg-[#F8F9FA]",
+          "flex items-center gap-1 rounded px-1.5 py-1 text-body font-medium transition-colors",
+          "hover:bg-gray-50",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           active ? styles.active : styles.inactive,
           className
@@ -75,7 +75,7 @@ export function ToolButtonGroup({ children, label, className }: ToolButtonGroupP
   return (
     <div className={cn("flex items-center gap-1", className)}>
       {label && (
-        <span className="text-[9px] font-medium text-[#8E9AAF] mr-1 uppercase tracking-wide">
+        <span className="text-label font-medium text-secondary mr-1 uppercase tracking-wide">
           {label}
         </span>
       )}

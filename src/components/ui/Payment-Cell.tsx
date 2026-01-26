@@ -20,23 +20,23 @@ const statusStyles: Record<PaymentStatus, {
   label: string
 }> = {
   paid: {
-    bg: "bg-[#E8F0EA]",
-    text: "text-[#6A9B72]",
-    border: "border-[#D4E5D7]",
+    bg: "bg-primary-light",
+    text: "text-primary-dark",
+    border: "border-primary-light",
     symbol: "✓",
     label: "Pago",
   },
   pending: {
     bg: "bg-white",
-    text: "text-[#ADB5BD]",
-    border: "border-[#E9ECEF]",
+    text: "text-gray-400",
+    border: "border-gray-200",
     symbol: "—",
     label: "Pendente",
   },
   late: {
-    bg: "bg-[#F9ECEE]",
-    text: "text-[#B86B73]",
-    border: "border-[#EFCDD1]",
+    bg: "bg-error-light",
+    text: "text-error",
+    border: "border-error-light",
     symbol: "!",
     label: "Dívida",
   },
@@ -44,16 +44,16 @@ const statusStyles: Record<PaymentStatus, {
 
 const sizeStyles = {
   sm: {
-    cell: "h-5 text-[8px]",
-    amount: "text-[8px]",
+    cell: "h-5 text-micro",
+    amount: "text-micro",
   },
   md: {
-    cell: "h-6 text-[9px]",
-    amount: "text-[9px]",
+    cell: "h-6 text-xs",
+    amount: "text-xs",
   },
   lg: {
-    cell: "h-8 text-[10px]",
-    amount: "text-[10px]",
+    cell: "h-8 text-label",
+    amount: "text-label",
   },
 }
 
@@ -90,7 +90,7 @@ export const PaymentCell = forwardRef<HTMLButtonElement, PaymentCellProps>(
           styles.bg,
           styles.text,
           sizes.cell,
-          interactive && "cursor-crosshair hover:ring-1 hover:ring-[#8FB996]",
+          interactive && "cursor-crosshair hover:ring-1 hover:ring-primary",
           !interactive && "cursor-default",
           disabled && "opacity-50 cursor-not-allowed",
           className
@@ -138,9 +138,9 @@ export const MobilePaymentCell = forwardRef<HTMLButtonElement, MobilePaymentCell
         {...props}
       >
         {monthLabel && (
-          <div className="text-[8px] font-medium text-[#8E9AAF]">{monthLabel}</div>
+          <div className="text-micro font-medium text-secondary">{monthLabel}</div>
         )}
-        <div className={cn("text-[10px] font-bold mt-0.5", styles.text)}>
+        <div className={cn("text-label font-bold mt-0.5", styles.text)}>
           {styles.symbol}
         </div>
       </button>
@@ -154,14 +154,14 @@ MobilePaymentCell.displayName = "MobilePaymentCell"
 export function PaymentLegend({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center justify-center gap-3", className)}>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#8FB996] rounded" /> Pago
+      <span className="flex items-center gap-1 text-xs text-secondary">
+        <span className="w-2 h-2 bg-primary rounded" /> Pago
       </span>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#DEE2E6] rounded" /> Pendente
+      <span className="flex items-center gap-1 text-xs text-secondary">
+        <span className="w-2 h-2 bg-gray-300 rounded" /> Pendente
       </span>
-      <span className="flex items-center gap-1 text-[9px] text-[#8E9AAF]">
-        <span className="w-2 h-2 bg-[#D4848C] rounded" /> Dívida
+      <span className="flex items-center gap-1 text-xs text-secondary">
+        <span className="w-2 h-2 bg-error rounded" /> Dívida
       </span>
     </div>
   )

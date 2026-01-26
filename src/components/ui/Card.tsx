@@ -8,12 +8,12 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<CardVariant, string> = {
-  default: "border-[#E9ECEF] bg-white",
-  interactive: "border-[#E9ECEF] bg-white transition-colors hover:bg-[#F8F9FA] hover:border-[#DEE2E6] cursor-pointer",
-  highlighted: "border-[#D4E5D7] bg-[#F8FAF8]",
-  success: "border-[#D4E5D7] bg-[#F8FAF8]",
-  warning: "border-[#F0E4C8] bg-[#FDFBF6]",
-  error: "border-[#EFCDD1] bg-[#FDF8F8]",
+  default: "border-gray-200 bg-white",
+  interactive: "border-gray-200 bg-white transition-colors hover:bg-gray-50 hover:border-gray-300 cursor-pointer",
+  highlighted: "border-primary-light bg-success-light",
+  success: "border-primary-light bg-success-light",
+  warning: "border-warning-light bg-warning-light",
+  error: "border-error-light bg-error-light",
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -57,7 +57,7 @@ export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<H
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn("mt-0.5 text-label text-[#8E9AAF]", className)}
+      className={cn("mt-0.5 text-label text-secondary", className)}
       {...props}
     />
   )

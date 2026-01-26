@@ -5,8 +5,13 @@ import { after } from "next/server"
 import { requireSession, requireBuildingAccess } from "@/lib/auth-helpers"
 import { calendarService, CreateEventInput, UpdateEventInput } from "@/services/calendar.service"
 import { createCalendarEventSchema, updateCalendarEventSchema } from "@/lib/zod-schemas"
-import { ActionResult } from "@/lib/types"
-import { notifyUpcomingEvent } from "@/lib/actions/notification"
+import { ActionResult, NotificationOptions } from "@/lib/types"
+import { notifyBuildingResidents, createNotification } from "@/lib/actions/notification"
+import { getResidentEmails, sendBulkEmails } from "@/lib/actions/email-notifications"
+import { getCalendarEventEmailTemplate, sendEmail } from "@/lib/email"
+import { db } from "@/db"
+import { building } from "@/db/schema"
+import { eq } from "drizzle-orm"
 
 export async function getCalendarEvents(buildingId: string, year: number, month: number) {
     const session = await requireSession()
@@ -23,7 +28,11 @@ export async function getCalendarEvents(buildingId: string, year: number, month:
     return result.data
 }
 
-export async function createCalendarEvent(input: CreateEventInput): Promise<ActionResult<{ count: number }>> {
+interface CreateCalendarEventWithNotificationsInput extends CreateEventInput {
+    notificationOptions?: NotificationOptions
+}
+
+export async function createCalendarEvent(input: CreateCalendarEventWithNotificationsInput): Promise<ActionResult<{ count: number }>> {
     const { session } = await requireBuildingAccess(input.buildingId)
 
     const validated = createCalendarEventSchema.safeParse(input)
@@ -36,15 +45,101 @@ export async function createCalendarEvent(input: CreateEventInput): Promise<Acti
 
     updateTag(`calendar-${input.buildingId}`)
 
-    // Notify residents after response (non-blocking)
+    // Handle notifications after response (non-blocking)
     const eventTitle = validated.data.title
     const eventDate = validated.data.startDate
+    const eventTime = validated.data.startTime || null
+    const eventDescription = validated.data.description || null
+    const notificationOptions = input.notificationOptions
+
     after(async () => {
-        await notifyUpcomingEvent(
-            input.buildingId,
-            eventTitle,
-            eventDate
-        )
+        try {
+            // Default behavior: send app notification to all
+            if (!notificationOptions) {
+                await notifyBuildingResidents({
+                    buildingId: input.buildingId,
+                    type: 'calendar_event',
+                    title: 'Novo evento',
+                    message: eventTitle,
+                    link: '/dashboard/calendar',
+                }, session.user.id)
+                return
+            }
+
+            // Custom notification handling
+            const { sendAppNotification, sendEmail: shouldSendEmail, recipients } = notificationOptions
+
+            // Get building name for email
+            let buildingName = ''
+            if (shouldSendEmail) {
+                const [buildingData] = await db
+                    .select({ name: building.name })
+                    .from(building)
+                    .where(eq(building.id, input.buildingId))
+                    .limit(1)
+                buildingName = buildingData?.name || ''
+            }
+
+            // Get recipient user IDs
+            const userIds = recipients === 'all'
+                ? undefined
+                : recipients
+
+            // Send app notifications
+            if (sendAppNotification) {
+                if (recipients === 'all') {
+                    await notifyBuildingResidents({
+                        buildingId: input.buildingId,
+                        type: 'calendar_event',
+                        title: 'Novo evento',
+                        message: eventTitle,
+                        link: '/dashboard/calendar',
+                    }, session.user.id)
+                } else if (userIds && userIds.length > 0) {
+                    // Send to specific users
+                    await Promise.all(
+                        userIds.map(userId =>
+                            createNotification({
+                                buildingId: input.buildingId,
+                                userId,
+                                type: 'calendar_event',
+                                title: 'Novo evento',
+                                message: eventTitle,
+                                link: '/dashboard/calendar',
+                            })
+                        )
+                    )
+                }
+            }
+
+            // Send emails
+            if (shouldSendEmail) {
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gestmais.pt'
+                const link = `${baseUrl}/dashboard/calendar`
+                const template = getCalendarEventEmailTemplate(
+                    buildingName,
+                    eventTitle,
+                    eventDate,
+                    eventTime,
+                    eventDescription,
+                    link
+                )
+
+                const emailRecipients = await getResidentEmails(input.buildingId, userIds)
+                // Filter out the creator
+                const filteredRecipients = emailRecipients.filter(r => r.userId !== session.user.id)
+
+                if (filteredRecipients.length > 0) {
+                    await sendBulkEmails({
+                        recipients: filteredRecipients.map(r => ({ email: r.email, name: r.name })),
+                        subject: `📅 ${eventTitle} - ${buildingName}`,
+                        template,
+                    })
+                }
+            }
+        } catch (error) {
+            console.error("Failed to send event notifications:", error)
+        }
     })
 
     return { success: true, data: { count: result.data.length } }

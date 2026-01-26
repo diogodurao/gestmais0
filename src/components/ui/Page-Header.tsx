@@ -29,9 +29,9 @@ export const PageHeader = forwardRef<HTMLDivElement, PageHeaderProps>(
         <div className="flex items-center gap-1.5">
           {backAction && <div>{backAction}</div>}
           <div>
-            <h1 className="text-[14px] font-semibold text-[#343A40]">{title}</h1>
+            <h1 className="text-heading font-semibold text-gray-800">{title}</h1>
             {description && (
-              <p className="text-[10px] text-[#8E9AAF]">{description}</p>
+              <p className="text-label text-secondary">{description}</p>
             )}
           </div>
         </div>
@@ -57,9 +57,9 @@ export const PageTitle = forwardRef<HTMLDivElement, PageTitleProps>(
   ({ className, title, description, ...props }, ref) => {
     return (
       <div ref={ref} className={cn("mb-1.5", className)} {...props}>
-        <h1 className="text-[14px] font-semibold text-[#343A40]">{title}</h1>
+        <h1 className="text-heading font-semibold text-gray-800">{title}</h1>
         {description && (
-          <p className="text-[10px] text-[#8E9AAF]">{description}</p>
+          <p className="text-label text-secondary">{description}</p>
         )}
       </div>
     )

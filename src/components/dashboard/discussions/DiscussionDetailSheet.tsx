@@ -249,7 +249,7 @@ export function DiscussionDetailSheet({
                         </div>
 
                         {/* Date */}
-                        <div className="flex items-center gap-1 text-[10px] text-[#6C757D]">
+                        <div className="flex items-center gap-1 text-label text-gray-500">
                             <Calendar className="h-3 w-3" />
                             <span>{formatDateTime(discussion.createdAt)}</span>
                         </div>
@@ -259,17 +259,17 @@ export function DiscussionDetailSheet({
                         {/* Content */}
                         {discussion.content && (
                             <div>
-                                <p className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide mb-0.5">
+                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-0.5">
                                     Conteúdo
                                 </p>
-                                <p className="text-[11px] text-[#495057] whitespace-pre-wrap leading-relaxed">
+                                <p className="text-body text-gray-600 whitespace-pre-wrap leading-relaxed">
                                     {discussion.content}
                                 </p>
                             </div>
                         )}
 
                         {/* Stats */}
-                        <div className="flex items-center gap-3 text-[9px] text-[#8E9AAF]">
+                        <div className="flex items-center gap-3 text-xs text-secondary">
                             <span className="flex items-center gap-0.5">
                                 <MessageSquare className="h-3 w-3" />
                                 {comments.length} comentários
@@ -286,7 +286,7 @@ export function DiscussionDetailSheet({
                                         variant="outline"
                                         size="sm"
                                         onClick={() => setEditModalOpen(true)}
-                                        className="text-[10px] h-6 px-2"
+                                        className="text-label h-6 px-2"
                                     >
                                         <Edit className="w-3 h-3 mr-1" /> Editar
                                     </Button>
@@ -298,7 +298,7 @@ export function DiscussionDetailSheet({
                                             size="sm"
                                             onClick={handleTogglePin}
                                             disabled={isPending}
-                                            className="text-[10px] h-6 px-2"
+                                            className="text-label h-6 px-2"
                                         >
                                             {discussion.isPinned ? (
                                                 <><PinOff className="w-3 h-3 mr-1" /> Desafixar</>
@@ -311,7 +311,7 @@ export function DiscussionDetailSheet({
                                             size="sm"
                                             onClick={handleCloseDiscussion}
                                             disabled={isPending}
-                                            className="text-[10px] h-6 px-2"
+                                            className="text-label h-6 px-2"
                                         >
                                             <Lock className="w-3 h-3 mr-1" /> Encerrar
                                         </Button>
@@ -321,7 +321,7 @@ export function DiscussionDetailSheet({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="text-[10px] h-6 px-2 text-red-600 border-red-200 hover:bg-red-50"
+                                        className="text-label h-6 px-2 text-error border-error-light hover:bg-error-light"
                                         onClick={handleDelete}
                                         disabled={isPending}
                                     >
@@ -335,12 +335,12 @@ export function DiscussionDetailSheet({
 
                         {/* Comments Section */}
                         <div>
-                            <p className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide mb-1">
+                            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
                                 Comentários ({comments.length})
                             </p>
                             <div className="space-y-1.5 max-h-64 overflow-y-auto">
                                 {comments.length === 0 ? (
-                                    <p className="text-[10px] text-[#ADB5BD] italic py-4 text-center">
+                                    <p className="text-label text-gray-400 italic py-4 text-center">
                                         Seja o primeiro a comentar
                                     </p>
                                 ) : (
@@ -355,21 +355,21 @@ export function DiscussionDetailSheet({
                                                 className={cn(
                                                     "rounded-md p-2",
                                                     isManager && comment.createdBy === currentUserId
-                                                        ? "bg-[#E8F4EA]"
-                                                        : "bg-[#F8F9FA]"
+                                                        ? "bg-primary-light"
+                                                        : "bg-gray-100"
                                                 )}
                                             >
                                                 <div className="flex items-center justify-between mb-0.5">
                                                     <div className="flex items-center gap-1">
                                                         <Avatar size="sm" fallback={comment.creatorName?.charAt(0) || "?"} alt={comment.creatorName || ""} />
-                                                        <span className="text-[10px] font-medium text-[#495057]">
+                                                        <span className="text-label font-medium text-gray-600">
                                                             {comment.creatorName}
                                                         </span>
                                                         {comment.isEdited && (
-                                                            <span className="text-[8px] text-[#ADB5BD]">(editado)</span>
+                                                            <span className="text-micro text-gray-400">(editado)</span>
                                                         )}
                                                     </div>
-                                                    <span className="text-[9px] text-[#ADB5BD]">
+                                                    <span className="text-xs text-gray-400">
                                                         {formatDistanceToNow(comment.createdAt)}
                                                     </span>
                                                 </div>
@@ -379,14 +379,14 @@ export function DiscussionDetailSheet({
                                                         <Input
                                                             value={editingCommentContent}
                                                             onChange={(e) => setEditingCommentContent(e.target.value)}
-                                                            className="text-[10px]"
+                                                            className="text-label"
                                                         />
                                                         <div className="flex gap-1">
                                                             <Button
                                                                 size="sm"
                                                                 onClick={handleSaveCommentEdit}
                                                                 disabled={isPending}
-                                                                className="text-[9px] h-5 px-2"
+                                                                className="text-xs h-5 px-2"
                                                             >
                                                                 Guardar
                                                             </Button>
@@ -397,7 +397,7 @@ export function DiscussionDetailSheet({
                                                                     setEditingCommentId(null)
                                                                     setEditingCommentContent("")
                                                                 }}
-                                                                className="text-[9px] h-5 px-2"
+                                                                className="text-xs h-5 px-2"
                                                             >
                                                                 Cancelar
                                                             </Button>
@@ -405,13 +405,13 @@ export function DiscussionDetailSheet({
                                                     </div>
                                                 ) : (
                                                     <>
-                                                        <p className="text-[10px] text-[#6C757D] ml-6">{comment.content}</p>
+                                                        <p className="text-label text-gray-500 ml-6">{comment.content}</p>
                                                         {(canEditComment || canDeleteComment) && (
                                                             <div className="flex items-center gap-2 mt-1 ml-6">
                                                                 {canEditComment && (
                                                                     <button
                                                                         onClick={() => handleEditComment(comment)}
-                                                                        className="text-[9px] text-[#ADB5BD] hover:text-[#495057]"
+                                                                        className="text-xs text-gray-400 hover:text-gray-600"
                                                                     >
                                                                         Editar
                                                                     </button>
@@ -419,7 +419,7 @@ export function DiscussionDetailSheet({
                                                                 {canDeleteComment && (
                                                                     <button
                                                                         onClick={() => handleDeleteComment(comment.id)}
-                                                                        className="text-[9px] text-[#ADB5BD] hover:text-red-500"
+                                                                        className="text-xs text-gray-400 hover:text-error"
                                                                     >
                                                                         Eliminar
                                                                     </button>
@@ -442,25 +442,25 @@ export function DiscussionDetailSheet({
                                         value={newComment}
                                         onChange={(e) => setNewComment(e.target.value)}
                                         onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
-                                        className="flex-1 text-[10px] h-7"
+                                        className="flex-1 text-label h-7"
                                     />
                                     <IconButton
                                         icon={<Send className="h-3.5 w-3.5" />}
                                         label="Enviar comentário"
                                         onClick={handleAddComment}
                                         disabled={!newComment.trim() || isPending}
-                                        className="bg-[#8FB996] text-white hover:bg-[#7DA886]"
+                                        className="bg-primary text-white hover:bg-primary-dark"
                                     />
                                 </div>
                             ) : (
-                                <p className="text-[10px] text-[#ADB5BD] text-center py-2 mt-2">
+                                <p className="text-label text-gray-400 text-center py-2 mt-2">
                                     Esta discussão está encerrada.
                                 </p>
                             )}
                         </div>
                     </div>
                 ) : (
-                    <p className="text-[11px] text-[#ADB5BD] text-center py-4">
+                    <p className="text-body text-gray-400 text-center py-4">
                         Discussão não encontrada.
                     </p>
                 )}

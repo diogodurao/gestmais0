@@ -13,44 +13,44 @@ interface ApartmentBadgeProps extends HTMLAttributes<HTMLDivElement> {
 
 const statusStyles: Record<ApartmentStatus, { bg: string; text: string; border: string }> = {
   paid: {
-    bg: "bg-[#E8F0EA]",
-    text: "text-[#6A9B72]",
-    border: "border-[#D4E5D7]",
+    bg: "bg-primary-light",
+    text: "text-primary-dark",
+    border: "border-primary-light",
   },
   pending: {
-    bg: "bg-[#FBF6EC]",
-    text: "text-[#B8963E]",
-    border: "border-[#F0E4C8]",
+    bg: "bg-warning-light",
+    text: "text-warning",
+    border: "border-warning-light",
   },
   overdue: {
-    bg: "bg-[#F9ECEE]",
-    text: "text-[#B86B73]",
-    border: "border-[#EFCDD1]",
+    bg: "bg-error-light",
+    text: "text-error",
+    border: "border-error-light",
   },
   empty: {
-    bg: "bg-[#F1F3F5]",
-    text: "text-[#ADB5BD]",
-    border: "border-[#E9ECEF]",
+    bg: "bg-gray-100",
+    text: "text-gray-400",
+    border: "border-gray-200",
   },
   default: {
-    bg: "bg-[#F8F9FA]",
-    text: "text-[#495057]",
-    border: "border-[#E9ECEF]",
+    bg: "bg-gray-50",
+    text: "text-gray-700",
+    border: "border-gray-200",
   },
 }
 
 const sizeStyles = {
   sm: {
-    wrapper: "w-6 h-6 text-[9px]",
-    floor: "text-[7px]",
+    wrapper: "w-6 h-6 text-xs",
+    floor: "text-micro",
   },
   md: {
-    wrapper: "w-8 h-8 text-[11px]",
-    floor: "text-[8px]",
+    wrapper: "w-8 h-8 text-body",
+    floor: "text-micro",
   },
   lg: {
-    wrapper: "w-10 h-10 text-[12px]",
-    floor: "text-[9px]",
+    wrapper: "w-10 h-10 text-base",
+    floor: "text-xs",
   },
 }
 
@@ -83,7 +83,7 @@ export const ApartmentBadge = forwardRef<HTMLDivElement, ApartmentBadgeProps>(
         <div className="flex flex-col items-center leading-none">
           <span>{unit}</span>
           {showFloor && floor && (
-            <span className={cn("text-[#8E9AAF]", sizeStyle.floor)}>
+            <span className={cn("text-secondary", sizeStyle.floor)}>
               {floor}º
             </span>
           )}
@@ -130,23 +130,23 @@ export const ApartmentInfo = forwardRef<HTMLDivElement, ApartmentInfoProps>(
         <div className="min-w-0 flex-1">
           {residentName ? (
             <span className={cn(
-              "font-medium text-[#495057] truncate block",
-              size === "sm" ? "text-[10px]" : "text-[11px]"
+              "font-medium text-gray-700 truncate block",
+              size === "sm" ? "text-label" : "text-body"
             )}>
               {residentName}
             </span>
           ) : (
             <span className={cn(
-              "text-[#ADB5BD] italic",
-              size === "sm" ? "text-[9px]" : "text-[10px]"
+              "text-gray-400 italic",
+              size === "sm" ? "text-xs" : "text-label"
             )}>
               Sem residente
             </span>
           )}
           {showDebt && debtAmount > 0 && (
             <span className={cn(
-              "text-[#B86B73]",
-              size === "sm" ? "text-[8px]" : "text-[9px]"
+              "text-error",
+              size === "sm" ? "text-micro" : "text-xs"
             )}>
               Dívida: {formatCurrency(debtAmount)}
             </span>

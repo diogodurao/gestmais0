@@ -115,9 +115,96 @@ export async function cleanupOldNotifications() {
     return await notificationService.cleanupOld()
 }
 
+// Get building residents for notification selector
+export async function getBuildingResidentsForSelector(buildingId: string) {
+    const session = await requireSession()
+
+    // Manager only
+    if (session.user.role !== 'manager') {
+        return []
+    }
+
+    const { getResidentEmails } = await import("@/lib/actions/email-notifications")
+    const residents = await getResidentEmails(buildingId)
+
+    return residents.map(r => ({
+        id: r.userId,
+        name: r.name,
+    }))
+}
+
 // --- Domain-Specific Notification Helpers ---
 
 // --- Occurrence Notifications ---
+
+export async function notifyUrgentOccurrenceWithEmail(
+    buildingId: string,
+    buildingName: string,
+    occurrenceTitle: string,
+    occurrenceDescription: string | null,
+    creatorName: string,
+    occurrenceId: number,
+    excludeUserId?: string
+) {
+    const { getUrgentOccurrenceEmailTemplate } = await import("@/lib/email")
+    const { sendBulkEmails, getResidentEmails, getManagerEmail } = await import("@/lib/actions/email-notifications")
+    const { db } = await import("@/db")
+    const { building } = await import("@/db/schema")
+    const { eq } = await import("drizzle-orm")
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gestmais.pt'
+    const link = `${baseUrl}/dashboard/occurrences?id=${occurrenceId}`
+
+    // Create in-app notification for all building residents
+    await notifyBuildingResidents({
+        buildingId,
+        type: 'occurrence_created',
+        title: '⚠️ Ocorrência Urgente',
+        message: occurrenceTitle,
+        link: `/dashboard/occurrences?id=${occurrenceId}`,
+    }, excludeUserId)
+
+    // Get building manager
+    const [buildingData] = await db
+        .select({ managerId: building.managerId })
+        .from(building)
+        .where(eq(building.id, buildingId))
+        .limit(1)
+
+    // Collect all email recipients (residents + manager)
+    const residents = await getResidentEmails(buildingId)
+    const manager = buildingData?.managerId ? await getManagerEmail(buildingData.managerId) : null
+
+    // Build unique recipients list
+    const recipientMap = new Map<string, { email: string; name: string }>()
+    for (const r of residents) {
+        if (r.userId !== excludeUserId) {
+            recipientMap.set(r.userId, { email: r.email, name: r.name })
+        }
+    }
+    if (manager && manager.userId !== excludeUserId) {
+        recipientMap.set(manager.userId, { email: manager.email, name: manager.name })
+    }
+
+    const recipients = Array.from(recipientMap.values())
+
+    if (recipients.length === 0) return
+
+    // Send bulk email
+    const template = getUrgentOccurrenceEmailTemplate(
+        buildingName,
+        occurrenceTitle,
+        occurrenceDescription,
+        creatorName,
+        link
+    )
+
+    await sendBulkEmails({
+        recipients,
+        subject: `Ocorrência Urgente - ${buildingName}`,
+        template,
+    })
+}
 
 export async function notifyOccurrenceCreated(
     buildingId: string,
@@ -251,12 +338,99 @@ export async function notifyEvaluationOpen(buildingId: string) {
     })
 }
 
+// --- Payment Notifications ---
+
+export async function notifyPaymentOverdueWithEmail(
+    buildingId: string,
+    _apartmentId: number,
+    residentId: string,
+    residentName: string,
+    residentEmail: string,
+    amount: number,
+    overdueMonths: number
+) {
+    const { sendEmail } = await import("@/lib/email")
+    const { getPaymentOverdueEmailTemplate } = await import("@/lib/email")
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gestmais.pt'
+    const link = `${baseUrl}/dashboard/my-payments`
+
+    // Create in-app notification
+    await createNotification({
+        buildingId,
+        userId: residentId,
+        type: 'payment_overdue',
+        title: 'Pagamento em atraso',
+        message: `Tem ${overdueMonths} ${overdueMonths === 1 ? 'mês' : 'meses'} de quota em atraso`,
+        link: '/dashboard/my-payments',
+    })
+
+    // Send email
+    const template = getPaymentOverdueEmailTemplate(
+        residentName,
+        amount,
+        overdueMonths,
+        link
+    )
+
+    await sendEmail({
+        to: residentEmail,
+        subject: 'Pagamento em atraso - GestMais',
+        text: template.text,
+        html: template.html,
+    })
+}
+
+// --- Extraordinary Payment Notifications ---
+
+export async function notifyExtraordinaryPaymentOverdueWithEmail(
+    buildingId: string,
+    residentId: string,
+    residentName: string,
+    residentEmail: string,
+    projectName: string,
+    amount: number,
+    overdueInstallments: number
+) {
+    const { sendEmail } = await import("@/lib/email")
+    const { getExtraordinaryPaymentOverdueEmailTemplate } = await import("@/lib/email")
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gestmais.pt'
+    const link = `${baseUrl}/dashboard/my-payments`
+
+    // Create in-app notification
+    await createNotification({
+        buildingId,
+        userId: residentId,
+        type: 'payment_overdue',
+        title: 'Pagamento extraordinário em atraso',
+        message: `Tem ${overdueInstallments} ${overdueInstallments === 1 ? 'prestação' : 'prestações'} em atraso do projeto "${projectName}"`,
+        link: '/dashboard/my-payments',
+    })
+
+    // Send email
+    const template = getExtraordinaryPaymentOverdueEmailTemplate(
+        residentName,
+        projectName,
+        amount,
+        overdueInstallments,
+        link
+    )
+
+    await sendEmail({
+        to: residentEmail,
+        subject: 'Pagamento extraordinário em atraso - GestMais',
+        text: template.text,
+        html: template.html,
+    })
+}
+
 // --- Calendar Notifications ---
 
 export async function notifyUpcomingEvent(
     buildingId: string,
     eventTitle: string,
-    eventDate: string
+    _eventDate: string
 ) {
     await notifyBuildingResidents({
         buildingId,

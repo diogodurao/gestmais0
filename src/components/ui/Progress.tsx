@@ -19,11 +19,11 @@ const sizeStyles: Record<ProgressSize, string> = {
 }
 
 const variantStyles: Record<ProgressVariant, string> = {
-  default: "bg-[#8FB996]",
-  success: "bg-[#8FB996]",
-  warning: "bg-[#B8963E]",
-  error: "bg-[#B86B73]",
-  info: "bg-[#6C757D]",
+  default: "bg-primary",
+  success: "bg-primary",
+  warning: "bg-warning",
+  error: "bg-error",
+  info: "bg-gray-600",
 }
 
 // Dynamic variant based on value
@@ -47,7 +47,7 @@ export function Progress({
     <div className={cn("w-full", className)}>
       {showLabel && (
         <div className="flex justify-between mb-0.5">
-          <span className="text-[9px] text-[#8E9AAF]">{Math.round(percentage)}%</span>
+          <span className="text-xs text-secondary">{Math.round(percentage)}%</span>
         </div>
       )}
       <div
@@ -56,7 +56,7 @@ export function Progress({
         aria-valuemin={0}
         aria-valuemax={max}
         className={cn(
-          "w-full overflow-hidden rounded-full bg-[#E9ECEF]",
+          "w-full overflow-hidden rounded-full bg-gray-200",
           sizeStyles[size]
         )}
       >
@@ -120,9 +120,9 @@ export function LabeledProgress({
 
   return (
     <div className={cn("", className)}>
-      <div className="mb-0.5 flex justify-between text-[10px]">
-        <span className="text-[#8E9AAF]">{label}</span>
-        <span className="font-medium text-[#495057]">{Math.round(percentage)}%</span>
+      <div className="mb-0.5 flex justify-between text-label">
+        <span className="text-secondary">{label}</span>
+        <span className="font-medium text-gray-700">{Math.round(percentage)}%</span>
       </div>
       <Progress value={value} max={max} size={size} variant={variant} />
     </div>

@@ -13,24 +13,24 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: "bg-[#F1F3F5] text-[#495057] border-[#E9ECEF]",
-  success: "bg-[#E8F0EA] text-[#6A9B72] border-[#D4E5D7]",
-  warning: "bg-[#FBF6EC] text-[#B8963E] border-[#F0E4C8]",
-  error: "bg-[#F9ECEE] text-[#B86B73] border-[#EFCDD1]",
-  info: "bg-[#E9ECF0] text-[#6C757D] border-[#DEE2E6]",
+  default: "bg-gray-100 text-gray-700 border-gray-200",
+  success: "bg-success-light text-primary-dark border-primary-light",
+  warning: "bg-warning-light text-warning border-warning-light",
+  error: "bg-error-light text-error border-error-light",
+  info: "bg-secondary-light text-gray-600 border-gray-300",
   // Payment status variants
-  paid: "bg-[#E8F0EA] text-[#6A9B72] border-[#D4E5D7]",
-  pending: "bg-[#FBF6EC] text-[#B8963E] border-[#F0E4C8]",
-  overdue: "bg-[#F9ECEE] text-[#B86B73] border-[#EFCDD1]",
+  paid: "bg-success-light text-primary-dark border-primary-light",
+  pending: "bg-warning-light text-warning border-warning-light",
+  overdue: "bg-error-light text-error border-error-light",
   // Status variants
-  active: "bg-[#E8F0EA] text-[#6A9B72] border-[#D4E5D7]",
-  inactive: "bg-[#F1F3F5] text-[#6C757D] border-[#E9ECEF]",
+  active: "bg-success-light text-primary-dark border-primary-light",
+  inactive: "bg-gray-100 text-gray-600 border-gray-200",
 }
 
 const sizeStyles: Record<BadgeSize, string> = {
-  sm: "px-0.5 py-0 text-[8px]",
-  md: "px-1 py-0.5 text-[9px]",
-  lg: "px-1.5 py-0.5 text-[10px]",
+  sm: "px-0.5 py-0 text-micro",
+  md: "px-1 py-0.5 text-xs",
+  lg: "px-1.5 py-0.5 text-label",
 }
 
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
@@ -58,16 +58,16 @@ interface BadgeWithDotProps extends BadgeProps {
 export const BadgeWithDot = forwardRef<HTMLSpanElement, BadgeWithDotProps>(
   ({ className, variant = "default", size = "md", showDot = true, children, ...props }, ref) => {
     const dotColors: Record<BadgeVariant, string> = {
-      default: "bg-[#6C757D]",
-      success: "bg-[#8FB996]",
-      warning: "bg-[#B8963E]",
-      error: "bg-[#B86B73]",
-      info: "bg-[#6C757D]",
-      paid: "bg-[#8FB996]",
-      pending: "bg-[#B8963E]",
-      overdue: "bg-[#B86B73]",
-      active: "bg-[#8FB996]",
-      inactive: "bg-[#ADB5BD]",
+      default: "bg-gray-600",
+      success: "bg-primary",
+      warning: "bg-warning",
+      error: "bg-error",
+      info: "bg-gray-600",
+      paid: "bg-primary",
+      pending: "bg-warning",
+      overdue: "bg-error",
+      active: "bg-primary",
+      inactive: "bg-gray-400",
     }
 
     return (

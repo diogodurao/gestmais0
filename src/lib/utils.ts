@@ -71,7 +71,36 @@ export function getPaymentStatusIcon(status: string): LucideIcon | null {
 // FORMATTING UTILITIES
 // ==========================================
 
+/**
+ * Format amount in cents to currency string
+ */
+export function formatCurrency(cents: number): string {
+    const euros = cents / 100
+    return new Intl.NumberFormat('pt-PT', {
+        style: 'currency',
+        currency: 'EUR',
+    }).format(euros)
+}
 
+/**
+ * Format date to relative time string (e.g., "há 5 minutos")
+ */
+export function formatRelativeTime(date: Date | string): string {
+    const now = new Date()
+    const target = typeof date === 'string' ? new Date(date) : date
+    const diffMs = now.getTime() - target.getTime()
+    const diffSecs = Math.floor(diffMs / 1000)
+    const diffMins = Math.floor(diffSecs / 60)
+    const diffHours = Math.floor(diffMins / 60)
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffSecs < 60) return 'Agora mesmo'
+    if (diffMins < 60) return `Há ${diffMins} ${diffMins === 1 ? 'minuto' : 'minutos'}`
+    if (diffHours < 24) return `Há ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`
+    if (diffDays < 7) return `Há ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`
+
+    return target.toLocaleDateString('pt-PT')
+}
 
 /**
  * Format permillage display

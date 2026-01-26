@@ -58,12 +58,12 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             <div className="flex items-start justify-between">
               <div>
                 {title && (
-                  <h2 id="modal-title" className="text-[14px] font-medium text-gray-900">
+                  <h2 id="modal-title" className="text-heading font-medium text-gray-900">
                     {title}
                   </h2>
                 )}
                 {description && (
-                  <p className="mt-1 text-[11px] text-gray-500">{description}</p>
+                  <p className="mt-1 text-body text-gray-500">{description}</p>
                 )}
               </div>
               <button
@@ -75,7 +75,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             </div>
           </div>
         )}
-        <div className="p-1.5">{children}</div>
+        <div className="max-h-[70vh] overflow-y-auto p-1.5">{children}</div>
         {footer && (
           <div className="border-t border-gray-200 px-1.5 py-1.5">{footer}</div>
         )}

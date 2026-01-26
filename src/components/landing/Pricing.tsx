@@ -26,7 +26,7 @@ export function Pricing() {
                     <Card variant="neutral" className="transition-shadow" style={{ boxShadow: 'var(--shadow-sm)' }}>
                         <CardContent className="p-6">
                             <div className="mb-4">
-                                <span className="text-[24px] font-semibold text-gray-900">3€</span>
+                                <span className="text-2xl font-semibold text-gray-900">3€</span>
                                 <span className="text-body text-gray-600 block mt-1">/ por fração</span>
                             </div>
 

@@ -438,14 +438,17 @@ export class PaymentService {
         apartmentId: number
     ): Promise<{ success: true; data: PaymentStatusSummary } | { success: false; error: string }> {
         try {
-            // Get apartment and resident
+            // Get apartment with building info (including monthlyQuota and paymentDueDay)
             const apartmentResult = await db
                 .select({
                     id: apartments.id,
                     unit: apartments.unit,
                     buildingId: apartments.buildingId,
+                    monthlyQuota: building.monthlyQuota,
+                    paymentDueDay: building.paymentDueDay,
                 })
                 .from(apartments)
+                .innerJoin(building, eq(apartments.buildingId, building.id))
                 .where(eq(apartments.id, apartmentId))
                 .limit(1)
 
@@ -454,6 +457,8 @@ export class PaymentService {
             }
 
             const apartment = apartmentResult[0]
+            const monthlyQuota = apartment.monthlyQuota || 0
+            const paymentDueDay = apartment.paymentDueDay || 1 // Default to 1st if not set
 
             // Get resident if any
             const residentResult = await db
@@ -466,15 +471,21 @@ export class PaymentService {
             const residentName = residentResult[0]?.name || "Sem residente"
 
             const now = new Date()
+            const currentDay = now.getDate()
             const currentMonth = now.getMonth() + 1
             const currentYear = now.getFullYear()
 
-            // Get extraordinary payments
+            // Determine which months are due based on paymentDueDay
+            // If today is before the due day, current month is NOT yet due
+            const monthsDueCount = currentDay >= paymentDueDay ? currentMonth : currentMonth - 1
+
+            // Get extraordinary payments (with project's paymentDueDay)
             const extraPaymentsResult = await db
                 .select({
                     projectId: extraordinaryProjects.id,
                     startMonth: extraordinaryProjects.startMonth,
                     startYear: extraordinaryProjects.startYear,
+                    projectPaymentDueDay: extraordinaryProjects.paymentDueDay,
                     installmentNumber: extraordinaryPayments.installment,
                     expectedAmount: extraordinaryPayments.expectedAmount,
                     paidAmount: extraordinaryPayments.paidAmount,
@@ -507,9 +518,14 @@ export class PaymentService {
                     payment.startYear
                 )
 
+                // Use project's paymentDueDay or default to 1
+                const projectDueDay = payment.projectPaymentDueDay || 1
+
+                // Check if this installment is due based on project's paymentDueDay
                 const isDue =
                     dueYear < currentYear ||
-                    (dueYear === currentYear && dueMonth <= currentMonth)
+                    (dueYear === currentYear && dueMonth < currentMonth) ||
+                    (dueYear === currentYear && dueMonth === currentMonth && currentDay >= projectDueDay)
 
                 if (isDue) {
                     extraTotalDue += payment.expectedAmount
@@ -523,42 +539,43 @@ export class PaymentService {
 
             const extraBalance = extraTotalDue - extraTotalPaid
 
-            // Get regular payments summary
+            // Get regular payments for current year
             const regularPaymentsResult = await db
                 .select({
-                    expectedAmount: payments.amount,
-                    paidAmount: sql<number>`CASE WHEN ${payments.status} = 'paid' THEN ${payments.amount} ELSE 0 END`,
                     month: payments.month,
-                    year: payments.year,
                     status: payments.status,
+                    amount: payments.amount,
                 })
                 .from(payments)
-                .where(eq(payments.apartmentId, apartmentId))
+                .where(and(
+                    eq(payments.apartmentId, apartmentId),
+                    eq(payments.year, currentYear)
+                ))
 
-            let regularTotalDue = 0
+            // Calculate regular quotas based on monthlyQuota * monthsDueCount (respects paymentDueDay)
+            const regularTotalDue = monthlyQuota * Math.max(0, monthsDueCount)
             let regularTotalPaid = 0
             let regularOverdueMonths = 0
-            let currentMonthPaid = true
+            let currentMonthPaid = false
 
-            for (const payment of regularPaymentsResult) {
-                const isDue =
-                    payment.year < currentYear ||
-                    (payment.year === currentYear && payment.month <= currentMonth)
+            // Create Map for O(1) payment lookups
+            const paymentsByMonth = new Map(regularPaymentsResult.map(p => [p.month, p]))
 
-                if (isDue) {
-                    regularTotalDue += payment.expectedAmount
-                    regularTotalPaid += payment.paidAmount
-
-                    if (payment.status !== "paid") {
-                        regularOverdueMonths++
-                    }
-
-                    if (payment.month === currentMonth && payment.year === currentYear) {
-                        currentMonthPaid = payment.status === "paid"
-                    }
+            // Only count months that are actually due
+            for (let m = 1; m <= monthsDueCount; m++) {
+                const p = paymentsByMonth.get(m)
+                if (p?.status === 'paid') {
+                    regularTotalPaid += p.amount
+                } else {
+                    regularOverdueMonths++
                 }
             }
-            const regularBalance = regularTotalDue - regularTotalPaid
+
+            // Check if current month is paid (even if not yet due)
+            const currentMonthPayment = paymentsByMonth.get(currentMonth)
+            currentMonthPaid = currentMonthPayment?.status === 'paid'
+
+            const regularBalance = Math.max(0, regularTotalDue - regularTotalPaid)
             const totalBalance = extraBalance + regularBalance
             const totalOverdue = extraOverdueCount + regularOverdueMonths
 

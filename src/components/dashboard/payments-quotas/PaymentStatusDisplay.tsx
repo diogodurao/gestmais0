@@ -32,7 +32,7 @@ export function PaymentStatusDisplay({ data, className }: PaymentStatusDisplayPr
 
     return (
         <div className={cn("flex flex-col gap-1.5 w-full", className)}>
-            <div className="flex items-center gap-1.5 text-[10px] font-medium text-[#8E9AAF] uppercase tracking-wide">
+            <div className="flex items-center gap-1.5 text-label font-medium text-secondary uppercase tracking-wide">
                 {label}
             </div>
             <Alert variant={regVariant} className="w-full h-fit">

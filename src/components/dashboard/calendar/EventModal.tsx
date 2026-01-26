@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Modal } from "@/components/ui/Modal"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
@@ -8,8 +8,10 @@ import { Textarea } from "@/components/ui/Textarea"
 import { Select } from "@/components/ui/Select"
 import { ConfirmModal } from "@/components/ui/ConfirmModal"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
+import { NotificationOptionsSection, type Resident } from "@/components/ui/ResidentSelector"
 import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "@/lib/actions/calendar"
-import { CalendarEvent } from "@/lib/types"
+import { getBuildingResidentsForSelector } from "@/lib/actions/notification"
+import { CalendarEvent, NotificationOptions } from "@/lib/types"
 import { EVENT_TYPE_SUGGESTIONS } from "@/lib/constants/ui"
 import { useToast } from "@/components/ui/Toast"
 
@@ -20,9 +22,10 @@ interface Props {
     initialDate: string | null
     event: CalendarEvent | null
     readOnly?: boolean
+    isManager?: boolean
 }
 
-export function EventModal({ isOpen, onClose, buildingId, initialDate, event, readOnly }: Props) {
+export function EventModal({ isOpen, onClose, buildingId, initialDate, event, readOnly, isManager }: Props) {
     const { addToast } = useToast()
     const isEditing = !!event
 
@@ -36,6 +39,17 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
     const [isLoading, setIsLoading] = useState(false)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
+    // Notification options (only for creating new events as manager)
+    const [sendAppNotification, setSendAppNotification] = useState(true)
+    const [sendEmail, setSendEmail] = useState(false)
+    const [recipients, setRecipients] = useState<'all' | string[]>('all')
+
+    const fetchResidents = useCallback(async (buildingId: string): Promise<Resident[]> => {
+        return getBuildingResidentsForSelector(buildingId)
+    }, [])
+
+    const showNotificationOptions = isManager && !isEditing && !readOnly
+
     const resetForm = () => {
         setTitle(event?.title || "")
         setType(event?.type || "")
@@ -44,6 +58,9 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
         setEndDate(event?.endDate || "")
         setStartTime(event?.startTime || "")
         setRecurrence("none")
+        setSendAppNotification(true)
+        setSendEmail(false)
+        setRecipients('all')
     }
 
     const handleSubmit = async () => {
@@ -67,11 +84,21 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                 addToast({ title: "Erro", description: result.error, variant: "error" })
             }
         } else {
+            // Build notification options for new events
+            const notificationOptions: NotificationOptions | undefined = showNotificationOptions
+                ? {
+                    sendAppNotification,
+                    sendEmail,
+                    recipients,
+                }
+                : undefined
+
             const result = await createCalendarEvent({
                 buildingId, title, type, description, startDate,
                 endDate: endDate || undefined,
                 startTime: startTime || undefined,
                 recurrence,
+                notificationOptions,
             })
             if (result.success) {
                 addToast({ title: "Sucesso", description: `${result.data.count} evento(s) criado(s)`, variant: "success" })
@@ -231,10 +258,25 @@ export function EventModal({ isOpen, onClose, buildingId, initialDate, event, re
                     </FormField>
                 )}
 
+                {/* Notification Options (manager only, create mode) */}
+                {showNotificationOptions && (
+                    <NotificationOptionsSection
+                        sendAppNotification={sendAppNotification}
+                        onSendAppNotificationChange={setSendAppNotification}
+                        sendEmail={sendEmail}
+                        onSendEmailChange={setSendEmail}
+                        recipients={recipients}
+                        onRecipientsChange={setRecipients}
+                        buildingId={buildingId}
+                        fetchResidents={fetchResidents}
+                        disabled={isLoading}
+                    />
+                )}
+
                 {!readOnly && (
                     <div className="flex gap-2 pt-2">
                         {isEditing && (
-                            <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={handleDeleteClick} disabled={isLoading}>
+                            <Button variant="outline" className="text-error border-error-light hover:bg-error-light" onClick={handleDeleteClick} disabled={isLoading}>
                                 Eliminar
                             </Button>
                         )}

@@ -11,6 +11,22 @@
 
 ---
 
+## MCP Usage
+
+Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+
+
+# thinking and code generation
+
+- Read the library's actual behavior, not what I assume it does.
+- Don't assume anything, always verify --> use context7 mcp
+- when generating and changing code, never change the code that is not related to the task. If its not clear, ask questions or plan mode until it is clear.
+- if the task is extensive, use a task list or plan mode; Choose what you think is best.
+- if you need to change something, ask me first.
+
+
+---
+
 ## TypeScript
 
 - Use strict mode; avoid `any` types
@@ -47,9 +63,23 @@ Use `useId()` instead of `Math.random()` for stable IDs across SSR/hydration.
 
 ## Styling
 
-- TailwindCSS v4 with CSS-first configuration
-- Design tokens defined in `globals.css` via `@theme`
-- Use `clsx` + `tailwind-merge` for className composition
+**Always read `@/globals.css` before writing any styles.**
+(tailwindCSS v4 with CSS-first configuration)
+
+Use design tokens from `@theme`:
+- Colors, spacing, border radius
+- Font families, sizes, weights, line heights
+- Shadows, transition durations, timing
+
+Use utility classes from `@layer utilities`:
+- Typography
+- Focus states
+- Mobile responsive utilities
+
+Never hardcode values (no `bg-[#xxx]`, `text-[12px]`, `p-[16px]`, etc.). If a token or utility doesn't exist, ask before using arbitrary values.
+
+Use `cn()` from `@/lib/utils.ts` (clsx + tailwind-merge) for className composition.
+
 
 ---
 

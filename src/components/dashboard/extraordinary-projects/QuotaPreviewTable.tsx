@@ -43,7 +43,7 @@ export function QuotaPreviewTable({
             <button
                 type="button"
                 onClick={onToggle}
-                className="flex items-center gap-2 text-[10px] font-bold text-info uppercase hover:text-info"
+                className="flex items-center gap-2 text-label font-bold text-info uppercase hover:text-info"
             >
                 {isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 {isOpen ? "Ocultar" : "Mostrar"} Previsão de Quotas ({apartments.length} frações)

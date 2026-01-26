@@ -16,28 +16,28 @@ interface TagProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<TagVariant, string> = {
-  default: "bg-[#F1F3F5] text-[#495057] border-[#E9ECEF]",
-  success: "bg-[#E8F0EA] text-[#6A9B72] border-[#D4E5D7]",
-  warning: "bg-[#FBF6EC] text-[#B8963E] border-[#F0E4C8]",
-  error: "bg-[#F9ECEE] text-[#B86B73] border-[#EFCDD1]",
-  info: "bg-[#E9ECF0] text-[#6C757D] border-[#DEE2E6]",
-  primary: "bg-[#E8F0EA] text-[#6A9B72] border-[#D4E5D7]",
-  secondary: "bg-[#F8F9FA] text-[#6C757D] border-[#E9ECEF]",
+  default: "bg-gray-100 text-gray-700 border-gray-200",
+  success: "bg-success-light text-primary-dark border-primary-light",
+  warning: "bg-warning-light text-warning border-warning-light",
+  error: "bg-error-light text-error border-error-light",
+  info: "bg-secondary-light text-gray-600 border-gray-300",
+  primary: "bg-success-light text-primary-dark border-primary-light",
+  secondary: "bg-gray-50 text-gray-600 border-gray-200",
 }
 
 const sizeStyles: Record<TagSize, string> = {
-  sm: "px-1 py-0.5 text-[9px]",
-  md: "px-1.5 py-0.5 text-[10px]",
+  sm: "px-1 py-0.5 text-xs",
+  md: "px-1.5 py-0.5 text-label",
 }
 
 const removeButtonStyles: Record<TagVariant, string> = {
-  default: "hover:bg-[#E9ECEF]",
-  success: "hover:bg-[#D4E5D7]",
-  warning: "hover:bg-[#F0E4C8]",
-  error: "hover:bg-[#EFCDD1]",
-  info: "hover:bg-[#DEE2E6]",
-  primary: "hover:bg-[#D4E5D7]",
-  secondary: "hover:bg-[#E9ECEF]",
+  default: "hover:bg-gray-200",
+  success: "hover:bg-primary-light",
+  warning: "hover:bg-warning-light",
+  error: "hover:bg-error-light",
+  info: "hover:bg-gray-300",
+  primary: "hover:bg-primary-light",
+  secondary: "hover:bg-gray-200",
 }
 
 export const Tag = forwardRef<HTMLSpanElement, TagProps>(

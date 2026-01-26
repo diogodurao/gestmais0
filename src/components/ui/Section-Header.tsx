@@ -11,18 +11,18 @@ interface SectionHeaderProps extends HTMLAttributes<HTMLDivElement> {
 
 const sizeStyles = {
   sm: {
-    title: "text-[9px]",
-    description: "text-[8px]",
+    title: "text-xs",
+    description: "text-micro",
     gap: "gap-0.5",
   },
   md: {
-    title: "text-[10px]",
-    description: "text-[9px]",
+    title: "text-label",
+    description: "text-xs",
     gap: "gap-0.5",
   },
   lg: {
-    title: "text-[11px]",
-    description: "text-[10px]",
+    title: "text-body",
+    description: "text-label",
     gap: "gap-1",
   },
 }
@@ -52,7 +52,7 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         <div>
           <h3
             className={cn(
-              "font-medium text-[#8E9AAF]",
+              "font-medium text-secondary",
               sizes.title,
               uppercase && "uppercase tracking-wide"
             )}
@@ -60,7 +60,7 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
             {title}
           </h3>
           {description && (
-            <p className={cn("text-[#ADB5BD]", sizes.description)}>
+            <p className={cn("text-gray-400", sizes.description)}>
               {description}
             </p>
           )}

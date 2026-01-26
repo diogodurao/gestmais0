@@ -136,7 +136,7 @@ export function ExtraProjectForm({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-label font-bold text-gray-500 uppercase mb-1">
                                     Mês de Início
@@ -163,6 +163,26 @@ export function ExtraProjectForm({
                                         <option key={year} value={year}>{year}</option>
                                     ))}
                                 </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-label font-bold text-gray-500 uppercase mb-1">
+                                    Dia de Vencimento
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="28"
+                                    {...register("paymentDueDay")}
+                                    className="w-full px-3 py-2 text-body border border-gray-200 focus:outline-none focus:border-gray-400 font-mono"
+                                    placeholder="Ex: 8"
+                                />
+                                {errors.paymentDueDay && (
+                                    <p className="text-xs text-error mt-1">{errors.paymentDueDay.message}</p>
+                                )}
+                                <p className="text-xs text-gray-400 mt-1">
+                                    Dia do mês em que passa a estar em atraso (1-28)
+                                </p>
                             </div>
                         </div>
                     </div>

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { Search, Filter } from "lucide-react"
 import { Input } from "./Input"
 import { Button } from "./Button"
-import { Dropdown, DropdownItem, DropdownDivider } from "./Dropdown"
+import { Dropdown, DropdownTrigger, DropdownContent, DropdownItem } from "./Dropdown"
 
 interface FilterOption {
   value: string
@@ -47,7 +47,7 @@ export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
         {/* Search Input */}
         {onSearchChange && (
           <div className="relative flex-1 min-w-[150px]">
-            <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-[#8E9AAF]" />
+            <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-secondary" />
             <Input
               type="text"
               placeholder={searchPlaceholder}
@@ -60,25 +60,25 @@ export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
 
         {/* Filter Dropdowns */}
         {filters.map((filter, idx) => (
-          <Dropdown
-            key={idx}
-            trigger={
+          <Dropdown key={idx}>
+            <DropdownTrigger asChild>
               <Button variant="outline" size="sm">
                 <Filter className="h-3 w-3" />
                 <span className="hidden sm:inline ml-1">
                   {filter.options.find((o) => o.value === filter.value)?.label || filter.label}
                 </span>
               </Button>
-            }
-          >
-            {filter.options.map((option) => (
-              <DropdownItem
-                key={option.value}
-                onClick={() => filter.onChange(option.value)}
-              >
-                {option.label}
-              </DropdownItem>
-            ))}
+            </DropdownTrigger>
+            <DropdownContent>
+              {filter.options.map((option) => (
+                <DropdownItem
+                  key={option.value}
+                  onClick={() => filter.onChange(option.value)}
+                >
+                  {option.label}
+                </DropdownItem>
+              ))}
+            </DropdownContent>
           </Dropdown>
         ))}
 
@@ -92,7 +92,7 @@ export const FilterBar = forwardRef<HTMLDivElement, FilterBarProps>(
 FilterBar.displayName = "FilterBar"
 
 // Simple Search Bar
-interface SearchBarProps extends HTMLAttributes<HTMLDivElement> {
+interface SearchBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   value?: string
   onChange?: (value: string) => void
   placeholder?: string
@@ -108,7 +108,7 @@ export const SearchBar = forwardRef<HTMLDivElement, SearchBarProps>(
   }, ref) => {
     return (
       <div ref={ref} className={cn("relative", className)} {...props}>
-        <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-[#8E9AAF]" />
+        <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-secondary" />
         <Input
           type="text"
           placeholder={placeholder}
@@ -124,7 +124,7 @@ export const SearchBar = forwardRef<HTMLDivElement, SearchBarProps>(
 SearchBar.displayName = "SearchBar"
 
 // Filter Button Group
-interface FilterButtonGroupProps extends HTMLAttributes<HTMLDivElement> {
+interface FilterButtonGroupProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   options: FilterOption[]
   value: string
   onChange: (value: string) => void

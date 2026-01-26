@@ -209,8 +209,8 @@ export function PaymentGrid({
 
             {/* Page header */}
             <div className="mb-1.5">
-                <h1 className="text-[14px] font-semibold text-gray-800">Quotas Mensais</h1>
-                <p className="text-[10px] text-gray-500">Gestão de pagamentos de quotas do condomínio - {year}</p>
+                <h1 className="text-base font-semibold text-gray-800">Quotas Mensais</h1>
+                <p className="text-label text-gray-500">Gestão de pagamentos de quotas do condomínio - {year}</p>
             </div>
 
             {/* Stats */}
@@ -276,7 +276,7 @@ export function PaymentGrid({
                                     placeholder="Pesquisar..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-6 w-32 h-7 text-[10px]"
+                                    className="pl-6 w-32 h-7 text-label"
                                 />
                             </div>
 

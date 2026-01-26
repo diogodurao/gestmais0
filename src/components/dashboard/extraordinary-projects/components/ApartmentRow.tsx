@@ -41,8 +41,8 @@ export const ApartmentRow = memo(function ApartmentRow({
 
     return (
         <tr className={cn(
-            "border-b border-[#F1F3F5] transition-colors hover:bg-gray-50",
-            rowIndex % 2 === 1 && "bg-[#FAFBFC]"
+            "border-b border-gray-100 transition-colors hover:bg-gray-50",
+            rowIndex % 2 === 1 && "bg-gray-50"
         )}>
             <td className="sticky left-0 z-10 bg-inherit px-1.5 py-1 text-center font-medium text-gray-800">
                 {apartment.unit}

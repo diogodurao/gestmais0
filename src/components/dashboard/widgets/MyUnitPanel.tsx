@@ -41,11 +41,11 @@ export function MyUnitPanel({ apartment, buildingInfo }: MyUnitPanelProps) {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="rounded-lg bg-[#F8F9FA] border border-[#E9ECEF] p-1.5 space-y-1">
+                <div className="rounded-lg bg-gray-100 border border-gray-200 p-1.5 space-y-1">
                     <InfoRow
                         label="Fração"
                         value={
-                            <span className="font-mono font-bold text-[#343A40]">
+                            <span className="font-mono font-bold text-gray-800">
                                 {apartment?.unit || "N/A"}
                             </span>
                         }
@@ -64,7 +64,7 @@ export function MyUnitPanel({ apartment, buildingInfo }: MyUnitPanelProps) {
                         <InfoRow
                             label="Quota Mensal"
                             value={
-                                <span className="font-mono text-[#6A9B72]">
+                                <span className="font-mono text-primary-dark">
                                     €{(building.monthlyQuota / 100).toFixed(2)}
                                 </span>
                             }
@@ -73,13 +73,13 @@ export function MyUnitPanel({ apartment, buildingInfo }: MyUnitPanelProps) {
                     {address && (
                         <InfoRow
                             label="Morada"
-                            value={<span className="text-[10px]">{address}</span>}
+                            value={<span className="text-label">{address}</span>}
                         />
                     )}
                     {buildingInfo?.manager && (
                         <InfoRow
                             label="Admin."
-                            value={<span className="text-[#495057]">{buildingInfo.manager.name}</span>}
+                            value={<span className="text-gray-600">{buildingInfo.manager.name}</span>}
                         />
                     )}
                 </div>

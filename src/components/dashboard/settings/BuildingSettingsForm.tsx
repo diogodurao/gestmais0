@@ -23,6 +23,7 @@ type Building = {
     number: string | null
     quotaMode: string | null
     monthlyQuota: number | null
+    paymentDueDay: number | null
     totalApartments: number | null
 }
 
@@ -38,6 +39,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         number: building.number || "",
         quotaMode: building.quotaMode || "global",
         totalApartments: building.totalApartments?.toString() || "",
+        paymentDueDay: building.paymentDueDay?.toString() || "",
     })
     const [monthlyQuotaStr, setMonthlyQuotaStr] = useState(
         building.monthlyQuota ? (building.monthlyQuota / 100).toFixed(2) : ""
@@ -58,6 +60,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
     const { execute: saveSettings, isPending } = useAsyncAction(async () => {
         const parsedQuota = parseFloat(monthlyQuotaStr)
         const parsedTotalUnits = parseInt(formData.totalApartments)
+        const parsedDueDay = parseInt(formData.paymentDueDay)
 
         return await updateBuilding(building.id, {
             ...formData,
@@ -67,6 +70,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
             street: formData.street || null,
             number: formData.number || null,
             monthlyQuota: isNaN(parsedQuota) ? 0 : Math.round(parsedQuota * 100),
+            paymentDueDay: isNaN(parsedDueDay) ? null : parsedDueDay,
             totalApartments: isNaN(parsedTotalUnits) ? 0 : parsedTotalUnits,
         })
     }, {
@@ -93,6 +97,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
             number: building.number || "",
             quotaMode: building.quotaMode || "global",
             totalApartments: building.totalApartments?.toString() || "",
+            paymentDueDay: building.paymentDueDay?.toString() || "",
         })
         setMonthlyQuotaStr(
             building.monthlyQuota ? (building.monthlyQuota / 100).toFixed(2) : ""
@@ -217,6 +222,22 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                 />
                             </FormField>
                         </div>
+
+                        <FormField>
+                            <FormLabel>Dia de Vencimento da Quota</FormLabel>
+                            <Input
+                                type="number"
+                                value={formData.paymentDueDay}
+                                onChange={(e) => handleChange("paymentDueDay", e.target.value)}
+                                disabled={!isEditing}
+                                min={1}
+                                max={28}
+                                placeholder="Ex: 8"
+                            />
+                            <p className="text-label text-gray-500 mt-0.5">
+                                Dia do mês em que a quota passa a estar em atraso (1-28)
+                            </p>
+                        </FormField>
                     </div>
 
                     {error && (

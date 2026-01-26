@@ -58,8 +58,8 @@ export function ResidentExtraPayments() {
             </CardHeader>
             <CardContent className="p-0">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 border-b border-[#E9ECEF]">
-                    <div className="p-1.5 border-r border-[#E9ECEF] text-center">
+                <div className="grid grid-cols-2 border-b border-gray-200">
+                    <div className="p-1.5 border-r border-gray-200 text-center">
                         <div className="flex items-center justify-center gap-1 text-error mb-0.5">
                             <TrendingDown className="w-3 h-3" />
                             <span className="text-label font-medium uppercase">Total em Dívida</span>
@@ -103,7 +103,7 @@ export function ResidentExtraPayments() {
                         </p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-[#F1F3F5]">
+                    <div className="divide-y divide-gray-100">
                         {payments.map((payment, idx) => (
                             <div key={idx} className="p-1.5">
                                 <div className="flex items-center justify-between mb-1">

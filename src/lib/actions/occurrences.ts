@@ -7,11 +7,35 @@ import { occurrenceService } from "@/services/occurrence.service"
 import { CreateOccurrenceInput, UpdateOccurrenceInput, OccurrenceStatus } from "@/lib/types"
 import { createOccurrenceSchema, updateOccurrenceSchema } from "@/lib/zod-schemas"
 import { ActionResult } from "@/lib/types"
-import { notifyOccurrenceCreated, notifyOccurrenceComment, notifyOccurrenceStatus } from "@/lib/actions/notification"
+import { notifyOccurrenceCreated, notifyOccurrenceComment, notifyOccurrenceStatus, notifyUrgentOccurrenceWithEmail } from "@/lib/actions/notification"
 import { db } from "@/db"
-import { building, occurrenceAttachments } from "@/db/schema"
+import { building, occurrenceAttachments, user } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { getSignedDownloadUrl } from "@/lib/r2"
+
+interface BuildingManagerInfo {
+    managerId: string
+    managerName: string
+    managerEmail: string
+    buildingName: string
+}
+
+async function getBuildingManagerInfo(buildingId: string): Promise<BuildingManagerInfo> {
+    const [result] = await db
+        .select({
+            managerId: building.managerId,
+            buildingName: building.name,
+            managerName: user.name,
+            managerEmail: user.email,
+        })
+        .from(building)
+        .innerJoin(user, eq(building.managerId, user.id))
+        .where(eq(building.id, buildingId))
+        .limit(1)
+
+    if (!result) throw new Error("Building not found")
+    return result
+}
 
 async function getManagerId(buildingId: string): Promise<string> {
     const result = await db
@@ -82,10 +106,26 @@ export async function createOccurrence(input: CreateOccurrenceInput): Promise<Ac
     const created = result.data
     updateTag(`occurrences-${input.buildingId}`)
 
-    // Notify manager after response (non-blocking)
-    if (session.user.role !== 'manager') {
-        after(async () => {
-            try {
+    // Notify after response (non-blocking)
+    const isUrgent = input.priority === 'urgent'
+    const creatorName = session.user.name || (session.user.role === 'manager' ? 'Gestor' : 'Um residente')
+
+    after(async () => {
+        try {
+            if (isUrgent) {
+                // Send urgent notification with email to ALL (residents + manager)
+                const managerInfo = await getBuildingManagerInfo(input.buildingId)
+                await notifyUrgentOccurrenceWithEmail(
+                    input.buildingId,
+                    managerInfo.buildingName,
+                    input.title,
+                    input.description || null,
+                    creatorName,
+                    created.id,
+                    session.user.id // exclude creator from receiving notification
+                )
+            } else if (session.user.role !== 'manager') {
+                // Regular notification to manager only (no email)
                 const managerId = await getManagerId(input.buildingId)
                 await notifyOccurrenceCreated(
                     input.buildingId,
@@ -93,11 +133,11 @@ export async function createOccurrence(input: CreateOccurrenceInput): Promise<Ac
                     input.title,
                     created.id
                 )
-            } catch (error) {
-                console.error("Failed to notify manager:", error)
             }
-        })
-    }
+        } catch (error) {
+            console.error("Failed to notify:", error)
+        }
+    })
 
     return { success: true, data: { id: created.id } }
 }

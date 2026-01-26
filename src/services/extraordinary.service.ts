@@ -22,6 +22,7 @@ export interface CreateProjectInput {
     numInstallments: number
     startMonth: number
     startYear: number
+    paymentDueDay?: number // day of month when installment becomes late (1-28)
     documentUrl?: string
     documentName?: string
 }
@@ -30,6 +31,7 @@ export interface UpdateProjectInput {
     projectId: number
     name?: string
     description?: string
+    paymentDueDay?: number | null // day of month when installment becomes late (1-28)
     documentUrl?: string
     documentName?: string
     status?: ProjectStatus
@@ -138,6 +140,7 @@ export class ExtraordinaryService {
                         numInstallments: input.numInstallments,
                         startMonth: input.startMonth,
                         startYear: input.startYear,
+                        paymentDueDay: input.paymentDueDay || null,
                         documentUrl: input.documentUrl || null,
                         documentName: input.documentName || null,
                         status: "active",
@@ -221,6 +224,7 @@ export class ExtraordinaryService {
 
             if (input.name !== undefined) updateData.name = input.name.trim()
             if (input.description !== undefined) updateData.description = input.description?.trim() || null
+            if (input.paymentDueDay !== undefined) updateData.paymentDueDay = input.paymentDueDay
             if (input.documentUrl !== undefined) updateData.documentUrl = input.documentUrl || null
             if (input.documentName !== undefined) updateData.documentName = input.documentName || null
             if (input.status !== undefined) updateData.status = input.status

@@ -16,7 +16,7 @@ export function PollCard({ poll, hasVoted, onClick }: Props) {
 
     return (
         <Card
-            className="cursor-pointer hover:border-[#DEE2E6] transition-colors"
+            className="cursor-pointer hover:border-gray-300 transition-colors"
             onClick={onClick}
         >
             <CardHeader>
@@ -28,21 +28,21 @@ export function PollCard({ poll, hasVoted, onClick }: Props) {
                         </div>
                         <CardTitle className="truncate">{poll.title}</CardTitle>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-[#DEE2E6] shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
                 </div>
             </CardHeader>
             <CardContent>
                 {poll.description && (
-                    <p className="text-[10px] text-[#8E9AAF] line-clamp-2 mb-1.5">{poll.description}</p>
+                    <p className="text-label text-secondary line-clamp-2 mb-1.5">{poll.description}</p>
                 )}
-                <div className="flex items-center gap-2 text-[9px] text-[#ADB5BD]">
+                <div className="flex items-center gap-2 text-xs text-gray-400">
                     <span>{POLL_TYPE_CONFIG[poll.type].label}</span>
                     <span>•</span>
                     <span>{WEIGHT_MODE_CONFIG[poll.weightMode].label}</span>
                 </div>
             </CardContent>
             <CardFooter>
-                <div className="flex items-center justify-between w-full text-[9px] text-[#8E9AAF]">
+                <div className="flex items-center justify-between w-full text-xs text-secondary">
                     <span className="flex items-center gap-0.5">
                         <Users className="h-3 w-3" />
                         {poll.voteCount || 0} votos

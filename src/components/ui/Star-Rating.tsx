@@ -17,17 +17,17 @@ const sizeStyles = {
   sm: {
     star: "h-3 w-3",
     gap: "gap-0.5",
-    text: "text-[9px]",
+    text: "text-label",
   },
   md: {
     star: "h-4 w-4",
     gap: "gap-0.5",
-    text: "text-[10px]",
+    text: "text-body",
   },
   lg: {
     star: "h-6 w-6",
     gap: "gap-1",
-    text: "text-[12px]",
+    text: "text-heading",
   },
 }
 
@@ -68,14 +68,14 @@ export const StarRating = forwardRef<HTMLDivElement, StarRatingProps>(
               className={cn(
                 sizes.star,
                 (hover || value) >= star
-                  ? "fill-[#B8963E] text-[#B8963E]"
-                  : "text-[#DEE2E6]"
+                  ? "fill-warning text-warning"
+                  : "text-gray-300"
               )}
             />
           </button>
         ))}
         {showValue && (
-          <span className={cn("font-medium text-[#495057] ml-1", sizes.text)}>
+          <span className={cn("font-medium text-gray-700 ml-1", sizes.text)}>
             {value.toFixed(1)}
           </span>
         )}
@@ -104,10 +104,10 @@ export function RatingDisplay({
 
   return (
     <div className={cn("flex items-center justify-between", className)}>
-      <span className={cn("text-[#8E9AAF]", sizes.text)}>{label}</span>
+      <span className={cn("text-secondary", sizes.text)}>{label}</span>
       <div className="flex items-center gap-1">
         <StarRating value={Math.round(rating)} size={size} readonly />
-        <span className={cn("font-medium text-[#495057] w-6 text-right", sizes.text)}>
+        <span className={cn("font-medium text-gray-700 w-6 text-right", sizes.text)}>
           {rating.toFixed(1)}
         </span>
       </div>

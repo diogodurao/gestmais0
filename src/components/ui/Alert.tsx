@@ -13,20 +13,20 @@ interface AlertProps extends HTMLAttributes<HTMLDivElement> {
 
 const variantStyles: Record<AlertVariant, { container: string; icon: string }> = {
   info: {
-    container: "border-[#DEE2E6] bg-[#F8F9FA] text-[#495057]",
-    icon: "text-[#8E9AAF]",
+    container: "border-gray-300 bg-gray-50 text-gray-700",
+    icon: "text-secondary",
   },
   success: {
-    container: "border-[#D4E5D7] bg-[#E8F0EA] text-[#495057]",
-    icon: "text-[#8FB996]",
+    container: "border-primary-light bg-success-light text-gray-700",
+    icon: "text-primary",
   },
   warning: {
-    container: "border-[#F0E4C8] bg-[#FBF6EC] text-[#495057]",
-    icon: "text-[#E5C07B]",
+    container: "border-warning-light bg-warning-light text-gray-700",
+    icon: "text-warning",
   },
   error: {
-    container: "border-[#EFCDD1] bg-[#F9ECEE] text-[#495057]",
-    icon: "text-[#D4848C]",
+    container: "border-error-light bg-error-light text-gray-700",
+    icon: "text-error",
   },
 }
 

@@ -12,6 +12,9 @@ export const paymentStatusEnum = pgEnum('payment_status', ['pending', 'paid', 'l
 export const projectStatusEnum = pgEnum('project_status', ['draft', 'active', 'completed', 'cancelled', 'archived'])
 export const quotaModeEnum = pgEnum('quota_mode', ['global', 'permillage'])
 export const subscriptionStatusEnum = pgEnum('subscription_status', ['incomplete', 'active', 'canceled', 'past_due'])
+export const bankConnectionStatusEnum = pgEnum('bank_connection_status', ['pending', 'active', 'expired', 'revoked', 'error'])
+export const bankTransactionTypeEnum = pgEnum('bank_transaction_type', ['credit', 'debit'])
+export const transactionMatchStatusEnum = pgEnum('transaction_match_status', ['unmatched', 'matched', 'ignored'])
 export const notificationTypeEnum = pgEnum('notification_type', [
     'occurrence_created',
     'occurrence_comment',
@@ -104,6 +107,8 @@ export const building = pgTable('building', {
     monthlyQuota: integer('monthly_quota'), // in cents
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    // Payment settings
+    paymentDueDay: integer('payment_due_day'), // Day of month when regular quota becomes late (1-28)
     // Stripe Subscription Fields
     stripeSubscriptionId: text('stripe_subscription_id'),
     stripePriceId: text('stripe_price_id'),
@@ -168,6 +173,7 @@ export const extraordinaryProjects = pgTable("extraordinary_projects", {
     numInstallments: integer("num_installments").notNull(),
     startMonth: integer("start_month").notNull(),
     startYear: integer("start_year").notNull(),
+    paymentDueDay: integer("payment_due_day"), // Day of month when installment becomes late (1-28)
 
     // Document storage
     documentUrl: text("document_url"),
@@ -408,6 +414,88 @@ export const documents = pgTable('documents', {
     idxDocumentOriginal: index("idx_document_original").on(table.originalId),
 }))
 
+// --- Banking / Open Banking Tables ---
+
+// Bank connection (one per building) - stores OAuth tokens from Tink
+export const bankConnections = pgTable('bank_connections', {
+    id: serial('id').primaryKey(),
+    buildingId: text('building_id').notNull().references(() => building.id).unique(),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    tokenExpiresAt: timestamp('token_expires_at'),
+    providerName: text('provider_name'), // Bank name from Tink
+    status: bankConnectionStatusEnum('status').default('pending'),
+    lastSyncAt: timestamp('last_sync_at'),
+    lastError: text('last_error'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+    createdBy: text('created_by').references(() => user.id),
+}, (table) => ({
+    idxBankConnectionBuilding: index("idx_bank_connection_building").on(table.buildingId),
+    idxBankConnectionStatus: index("idx_bank_connection_status").on(table.status),
+}))
+
+// Bank accounts linked to a connection
+export const bankAccounts = pgTable('bank_accounts', {
+    id: serial('id').primaryKey(),
+    connectionId: integer('connection_id').notNull().references(() => bankConnections.id, { onDelete: 'cascade' }),
+    buildingId: text('building_id').notNull().references(() => building.id),
+    tinkAccountId: text('tink_account_id').unique(),
+    name: text('name'),
+    iban: text('iban'),
+    balance: integer('balance'), // in cents
+    availableBalance: integer('available_balance'), // in cents
+    currency: text('currency').default('EUR'),
+    accountType: text('account_type'),
+    lastSyncAt: timestamp('last_sync_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+    idxBankAccountConnection: index("idx_bank_account_connection").on(table.connectionId),
+    idxBankAccountBuilding: index("idx_bank_account_building").on(table.buildingId),
+    idxBankAccountIban: index("idx_bank_account_iban").on(table.iban),
+}))
+
+// Bank transactions with counterparty IBAN for matching
+export const bankTransactions = pgTable('bank_transactions', {
+    id: serial('id').primaryKey(),
+    accountId: integer('account_id').notNull().references(() => bankAccounts.id, { onDelete: 'cascade' }),
+    buildingId: text('building_id').notNull().references(() => building.id),
+    tinkTransactionId: text('tink_transaction_id').unique(),
+    amount: integer('amount').notNull(), // in cents (positive=credit, negative=debit)
+    type: bankTransactionTypeEnum('type').notNull(),
+    description: text('description'),
+    originalDescription: text('original_description'),
+    transactionDate: date('transaction_date', { mode: 'string' }).notNull(),
+    bookingDate: date('booking_date', { mode: 'string' }),
+    counterpartyName: text('counterparty_name'),
+    counterpartyIban: text('counterparty_iban'), // KEY: used for apartment matching
+    matchedApartmentId: integer('matched_apartment_id').references(() => apartments.id),
+    matchedPaymentId: integer('matched_payment_id').references(() => payments.id),
+    matchStatus: transactionMatchStatusEnum('match_status').default('unmatched'),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    idxBankTxAccount: index("idx_bank_tx_account").on(table.accountId),
+    idxBankTxBuilding: index("idx_bank_tx_building").on(table.buildingId),
+    idxBankTxCounterpartyIban: index("idx_bank_tx_counterparty_iban").on(table.counterpartyIban),
+    idxBankTxMatchStatus: index("idx_bank_tx_match_status").on(table.matchStatus),
+    idxBankTxTransactionDate: index("idx_bank_tx_transaction_date").on(table.transactionDate),
+}))
+
+// Resident IBANs - allows multiple IBANs per apartment for matching
+export const residentIbans = pgTable('resident_ibans', {
+    id: serial('id').primaryKey(),
+    apartmentId: integer('apartment_id').notNull().references(() => apartments.id, { onDelete: 'cascade' }),
+    iban: text('iban').notNull(),
+    label: text('label'), // e.g., "Primary", "Spouse account"
+    isPrimary: boolean('is_primary').default(false),
+    createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+    idxResidentIbansApartment: index("idx_resident_ibans_apartment").on(table.apartmentId),
+    idxResidentIbansIban: index("idx_resident_ibans_iban").on(table.iban),
+    uniqueApartmentIban: unique("unique_apartment_iban").on(table.apartmentId, table.iban),
+}))
+
 // --- Relations ---
 export const buildingRelations = relations(building, ({ many }) => ({
     apartments: many(apartments),
@@ -589,5 +677,57 @@ export const documentsRelations = relations(documents, ({ one }) => ({
     original: one(documents, {
         fields: [documents.originalId],
         references: [documents.id],
+    }),
+}))
+
+// --- Banking Relations ---
+
+export const bankConnectionsRelations = relations(bankConnections, ({ one, many }) => ({
+    building: one(building, {
+        fields: [bankConnections.buildingId],
+        references: [building.id],
+    }),
+    creator: one(user, {
+        fields: [bankConnections.createdBy],
+        references: [user.id],
+    }),
+    accounts: many(bankAccounts),
+}))
+
+export const bankAccountsRelations = relations(bankAccounts, ({ one, many }) => ({
+    connection: one(bankConnections, {
+        fields: [bankAccounts.connectionId],
+        references: [bankConnections.id],
+    }),
+    building: one(building, {
+        fields: [bankAccounts.buildingId],
+        references: [building.id],
+    }),
+    transactions: many(bankTransactions),
+}))
+
+export const bankTransactionsRelations = relations(bankTransactions, ({ one }) => ({
+    account: one(bankAccounts, {
+        fields: [bankTransactions.accountId],
+        references: [bankAccounts.id],
+    }),
+    building: one(building, {
+        fields: [bankTransactions.buildingId],
+        references: [building.id],
+    }),
+    matchedApartment: one(apartments, {
+        fields: [bankTransactions.matchedApartmentId],
+        references: [apartments.id],
+    }),
+    matchedPayment: one(payments, {
+        fields: [bankTransactions.matchedPaymentId],
+        references: [payments.id],
+    }),
+}))
+
+export const residentIbansRelations = relations(residentIbans, ({ one }) => ({
+    apartment: one(apartments, {
+        fields: [residentIbans.apartmentId],
+        references: [apartments.id],
     }),
 }))

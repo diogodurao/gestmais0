@@ -38,7 +38,7 @@ export function CalendarHeader({
                         onClick={() => onNavigate(1)}
                         disabled={isPending}
                     />
-                    <span className="text-[12px] font-medium text-[#495057] ml-1">
+                    <span className="text-base font-medium text-gray-600 ml-1">
                         {monthName} {year}
                     </span>
                 </div>

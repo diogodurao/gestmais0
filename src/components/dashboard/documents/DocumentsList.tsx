@@ -33,13 +33,13 @@ function CategoryCard({
     return (
         <button
             onClick={onClick}
-            className="flex items-center gap-3 p-4 rounded-lg border border-[#E9ECEF] bg-white hover:bg-[#F8F9FA] hover:border-[#DEE2E6] transition-colors w-full text-left"
+            className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 bg-white hover:bg-gray-100 hover:border-gray-300 transition-colors w-full text-left"
         >
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#495057]">{config.label}</p>
-                <p className="text-xs text-[#8E9AAF]">{count} {count === 1 ? 'documento' : 'documentos'}</p>
+                <p className="text-sm font-medium text-gray-600">{config.label}</p>
+                <p className="text-xs text-secondary">{count} {count === 1 ? 'documento' : 'documentos'}</p>
             </div>
-            <FolderOpen className="h-5 w-5 text-[#DEE2E6]" />
+            <FolderOpen className="h-5 w-5 text-gray-300" />
         </button>
     )
 }
@@ -77,8 +77,8 @@ export function DocumentsList({ buildingId, documents, isManager }: Props) {
             {/* Header */}
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-lg font-semibold text-[#343A40]">Documentos</h1>
-                    <p className="text-sm text-[#8E9AAF]">Repositório de documentos do condomínio</p>
+                    <h1 className="text-lg font-semibold text-gray-800">Documentos</h1>
+                    <p className="text-sm text-secondary">Repositório de documentos do condomínio</p>
                 </div>
                 {isManager && (
                     <Button size="sm" onClick={() => setUploadModalOpen(true)}>
@@ -145,11 +145,11 @@ export function DocumentsList({ buildingId, documents, isManager }: Props) {
 
                     <Card>
                         <CardContent className="p-4">
-                            <div className="mb-4 pb-3 border-b border-[#E9ECEF]">
-                                <h2 className="text-base font-semibold text-[#343A40]">
+                            <div className="mb-4 pb-3 border-b border-gray-200">
+                                <h2 className="text-base font-semibold text-gray-800">
                                     {DOCUMENT_CATEGORY_CONFIG[selectedCategory].label}
                                 </h2>
-                                <p className="text-xs text-[#8E9AAF]">
+                                <p className="text-xs text-secondary">
                                     {filteredDocuments.length} {filteredDocuments.length === 1 ? 'documento' : 'documentos'}
                                 </p>
                             </div>

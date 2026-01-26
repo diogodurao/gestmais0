@@ -47,14 +47,14 @@ const sizeStyles: Record<StepperSize, {
     circle: "w-7 h-7",
     icon: "w-3.5 h-3.5",
     checkIcon: "w-3.5 h-3.5",
-    title: "text-[10px]",
+    title: "text-body",
     gap: "gap-1.5",
   },
   md: {
     circle: "w-10 h-10",
     icon: "w-5 h-5",
     checkIcon: "w-5 h-5",
-    title: "text-[9px]",
+    title: "text-label",
     gap: "gap-0.5",
   },
 }
@@ -97,9 +97,9 @@ export const StepperItem = forwardRef<HTMLDivElement, StepperItemProps>(
           className={cn(
             "rounded-full flex items-center justify-center transition-colors",
             styles.circle,
-            status === "current" && "bg-[#8FB996] text-white",
-            status === "completed" && "bg-[#E8F0EA] text-[#6A9B72]",
-            status === "pending" && "bg-[#F1F3F5] text-[#ADB5BD]"
+            status === "current" && "bg-primary text-white",
+            status === "completed" && "bg-primary-light text-primary-dark",
+            status === "pending" && "bg-gray-100 text-gray-400"
           )}
         >
           {status === "completed" ? (
@@ -117,9 +117,9 @@ export const StepperItem = forwardRef<HTMLDivElement, StepperItemProps>(
               styles.title,
               orientation === "vertical" && "text-center",
               orientation === "horizontal" && "hidden sm:block",
-              status === "current" && "text-[#495057]",
-              status === "completed" && "text-[#6A9B72]",
-              status === "pending" && "text-[#ADB5BD]"
+              status === "current" && "text-gray-700",
+              status === "completed" && "text-primary-dark",
+              status === "pending" && "text-gray-400"
             )}
           >
             {title}
@@ -143,7 +143,7 @@ export const StepperConnector = forwardRef<HTMLDivElement, StepperConnectorProps
       return (
         <ChevronRight
           className={cn(
-            "text-[#DEE2E6] shrink-0",
+            "text-gray-300 shrink-0",
             size === "sm" ? "w-3 h-3" : "w-4 h-4",
             className
           )}
@@ -155,7 +155,7 @@ export const StepperConnector = forwardRef<HTMLDivElement, StepperConnectorProps
       <div
         ref={ref}
         className={cn(
-          "h-px bg-[#E9ECEF]",
+          "h-px bg-gray-200",
           size === "sm" ? "w-6" : "w-8",
           className
         )}
@@ -191,12 +191,12 @@ export const ProgressStepper = forwardRef<HTMLDivElement, ProgressStepperProps>(
       >
         <div
           className={cn(
-            "w-full overflow-hidden rounded-full bg-[#E9ECEF]",
+            "w-full overflow-hidden rounded-full bg-gray-200",
             heightStyles[size]
           )}
         >
           <div
-            className="h-full rounded-full bg-[#8FB996] transition-all duration-300"
+            className="h-full rounded-full bg-primary transition-all duration-300"
             style={{ width: `${percentage}%` }}
           />
         </div>

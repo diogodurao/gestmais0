@@ -52,7 +52,7 @@ export function ResidentsList({
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             placeholder="Procurar..."
-                            className="bg-[#F8F9FA] border border-[#E9ECEF] text-[10px] px-2 py-1 rounded focus:outline-none focus:border-[#DEE2E6] w-24"
+                            className="bg-gray-100 border border-gray-200 text-label px-2 py-1 rounded focus:outline-none focus:border-gray-300 w-24"
                         />
                     </div>
                 </div>
@@ -60,7 +60,7 @@ export function ResidentsList({
             <CardContent>
                 <List variant="card" className="max-h-[400px] overflow-y-auto">
                     {filteredResidents.length === 0 && (
-                        <div className="p-4 text-center text-[10px] text-[#8E9AAF]">
+                        <div className="p-4 text-center text-label text-secondary">
                             Sem resultados
                         </div>
                     )}

@@ -9,7 +9,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { getResidentApartment } from "@/lib/actions/building"
 import { Card, CardHeader, CardContent } from "@/components/ui/Card"
 
-export const dynamic = 'force-dynamic'
 
 export default async function MyPaymentsPage() {
     const session = await auth.api.getSession({
@@ -20,9 +19,6 @@ export default async function MyPaymentsPage() {
         return redirect("/dashboard")
     }
 
-    // MANDATORY SETUP CHECK
-
-    // MANDATORY SETUP CHECK
     const apartment = await getResidentApartment()
     if (!session.user.buildingId || !apartment || !session.user.iban) {
         return redirect("/dashboard")

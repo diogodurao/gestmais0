@@ -73,32 +73,32 @@ export function BuildingStatusPanel({
                     <>
                         {/* Metrics */}
                         <div className="flex items-center gap-1.5 mb-2">
-                            <Users className="w-4 h-4 text-[#8E9AAF]" />
-                            <span className="text-xs font-medium text-[#8E9AAF] uppercase">Métricas</span>
+                            <Users className="w-4 h-4 text-secondary" />
+                            <span className="text-xs font-medium text-secondary uppercase">Métricas</span>
                             <Badge className="ml-auto">{occupancyRate}% ocupação</Badge>
                         </div>
                         <div className="grid grid-cols-2 gap-2 mb-2">
-                            <div className="rounded-lg bg-[#E8F0EA] p-2 text-center">
-                                <p className="text-[18px] font-bold text-[#6A9B72]">{residentCount}</p>
-                                <p className="text-[9px] font-medium text-[#6A9B72] uppercase">Residentes</p>
+                            <div className="rounded-lg bg-primary-light p-2 text-center">
+                                <p className="text-heading font-bold text-primary-dark">{residentCount}</p>
+                                <p className="text-xs font-medium text-primary-dark uppercase">Residentes</p>
                             </div>
-                            <div className="rounded-lg bg-[#FBF6EC] p-2 text-center">
-                                <p className="text-[18px] font-bold text-[#B8963E]">{unclaimedUnits?.length || 0}</p>
-                                <p className="text-[9px] font-medium text-[#B8963E] uppercase">Não atribuídos</p>
+                            <div className="rounded-lg bg-warning-light p-2 text-center">
+                                <p className="text-heading font-bold text-warning">{unclaimedUnits?.length || 0}</p>
+                                <p className="text-xs font-medium text-warning uppercase">Não atribuídos</p>
                             </div>
                         </div>
 
                         <Divider className="my-2" />
 
                         {/* Code Display */}
-                        <div className="rounded-lg bg-[#F8F9FA] border-2 border-dashed border-[#E9ECEF] p-2 text-center">
-                            <p className="text-[9px] font-medium text-[#8E9AAF] uppercase tracking-wide mb-1">
+                        <div className="rounded-lg bg-gray-100 border-2 border-dashed border-gray-200 p-2 text-center">
+                            <p className="text-xs font-medium text-secondary uppercase tracking-wide mb-1">
                                 Partilhe este código
                             </p>
-                            <p className="text-[20px] font-bold font-mono text-[#343A40] tracking-[0.3em]">
+                            <p className="text-xl font-bold font-mono text-gray-800 tracking-[0.3em]">
                                 {buildingCode}
                             </p>
-                            <p className="text-[9px] text-[#ADB5BD] mt-1 flex items-center justify-center gap-1">
+                            <p className="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 Regenera automaticamente a cada 30 dias
                             </p>
@@ -116,7 +116,7 @@ export function BuildingStatusPanel({
                         </div>
 
                         {/* Subscription Status */}
-                        <div className="mt-2 p-1.5 rounded-lg bg-[#F8F9FA] border border-[#E9ECEF]">
+                        <div className="mt-2 p-1.5 rounded-lg bg-gray-100 border border-gray-200">
                             <InfoRow
                                 label="Subscrição"
                                 value={
@@ -128,9 +128,9 @@ export function BuildingStatusPanel({
                         </div>
                     </>
                 ) : (
-                    <div className="rounded-lg bg-[#F8F9FA] border-2 border-dashed border-[#E9ECEF] p-4 text-center">
-                        <Lock className="w-6 h-6 text-[#ADB5BD] mx-auto mb-2" />
-                        <p className="text-[10px] font-medium text-[#8E9AAF] uppercase">
+                    <div className="rounded-lg bg-gray-100 border-2 border-dashed border-gray-200 p-4 text-center">
+                        <Lock className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                        <p className="text-label font-medium text-secondary uppercase">
                             Subscrição necessária
                         </p>
                     </div>

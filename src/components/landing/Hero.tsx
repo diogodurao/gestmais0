@@ -14,7 +14,7 @@ export function Hero({ cityName }: HeroProps) {
     return (
         <header className="pt-24 pb-8 px-6 bg-pearl min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center text-center">
             <div className="max-w-2xl mt-8 mb-4">
-                <h1 className="text-[28px] md:text-[32px] font-semibold text-gray-900 mb-4 leading-tight">
+                <h1 className="text-display-sm md:text-display font-semibold text-gray-900 mb-4 leading-tight">
                     {titleLine1}
                     <br />
                     <span className="text-gray-500">Engenharia de Precisão.</span>

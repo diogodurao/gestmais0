@@ -16,14 +16,14 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
         id={id}
         className={cn(
           "h-4 w-4 cursor-pointer appearance-none rounded-full border border-gray-300 bg-white transition-colors",
-          "checked:border-[5px] checked:border-blue-600",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+          "checked:border-[5px] checked:border-primary",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         {...props}
       />
-      {label && <span className="text-[13px] text-gray-700">{label}</span>}
+      {label && <span className="text-subtitle text-gray-700">{label}</span>}
     </label>
   )
 )

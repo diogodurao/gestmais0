@@ -86,7 +86,7 @@ interface FormDescriptionProps {
 
 export function FormDescription({ children, className }: FormDescriptionProps) {
   return (
-    <p className={cn("text-[11px] text-gray-500", className)}>
+    <p className={cn("text-body text-gray-500", className)}>
       {children}
     </p>
   )
@@ -103,7 +103,7 @@ export function FormError({ className }: FormErrorProps) {
   if (!error) return null
 
   return (
-    <p id={errorId} className={cn("text-[11px] text-red-600", className)}>
+    <p id={errorId} className={cn("text-body text-error", className)}>
       {error}
     </p>
   )

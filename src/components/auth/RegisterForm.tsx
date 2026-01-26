@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { FormField, FormLabel, FormControl, FormError, FormDescription } from "@/components/ui/Form-Field"
+import { Alert } from "@/components/ui/Alert"
 import { authClient } from "@/lib/auth-client"
 import { isValidNif } from "@/lib/validations"
 
@@ -21,6 +22,7 @@ export function RegisterForm() {
     const [role, setRole] = useState<"manager" | "resident">("resident")
     const [isPending, startTransition] = useTransition()
     const [errors, setErrors] = useState<FormErrors>({})
+    const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
@@ -80,13 +82,30 @@ export function RegisterForm() {
                 return
             }
 
-            // Redirect based on role
-            if (role === "manager") {
-                router.push("/onboarding/manager/personal")
-            } else {
-                router.push("/onboarding/resident/join")
-            }
+            // Show verification notice
+            setRegisteredEmail(email)
         })
+    }
+
+    // Show verification notice after successful registration
+    if (registeredEmail) {
+        return (
+            <div className="space-y-4">
+                <Alert variant="info">
+                    Enviámos um email de verificação para <strong>{registeredEmail}</strong>.
+                </Alert>
+                <p className="text-body text-gray-600 text-center">
+                    Verifique a sua caixa de entrada e pasta de spam. Após verificar o email, poderá completar o registo.
+                </p>
+                <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setRegisteredEmail(null)}
+                >
+                    Registar outra conta
+                </Button>
+            </div>
+        )
     }
 
     return (

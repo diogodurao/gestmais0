@@ -2,11 +2,12 @@
 
 /**
  * Server Actions for Extraordinary Projects & Payments
- * 
+ *
  * These actions handle CRUD operations for extraordinary payment projects
  * and their associated payment records.
  */
 
+import { after } from "next/server"
 import { requireSession, requireBuildingAccess, requireProjectAccess, requireResidentSession } from "@/lib/auth-helpers"
 import { extraordinaryService } from "@/services/extraordinary.service"
 import {
@@ -159,9 +160,9 @@ export async function getResidentExtraordinaryPayments() {
 export async function updateExtraordinaryPayment(
     input: UpdatePaymentInput
 ) {
-    // Check access via project or apartment? 
-    // Usually input has apartmentId/projectId. 
-    // Let's assume input has projectId (based on service likely needs it). 
+    // Check access via project or apartment?
+    // Usually input has apartmentId/projectId.
+    // Let's assume input has projectId (based on service likely needs it).
     // Checking service definition would be best, but let's assume projectId is available or we check via apartment.
     // Given the service signature `updateExtraordinaryPayment(input, userId)`, let's look at `UpdatePaymentInput`.
     // It likely has `projectId` or `paymentId`.
@@ -172,7 +173,79 @@ export async function updateExtraordinaryPayment(
     const validated = updateExtraPaymentSchema.safeParse(input)
     if (!validated.success) throw new Error(validated.error.issues[0].message)
 
-    return await extraordinaryService.updateExtraordinaryPayment(validated.data as UpdatePaymentInput, session.user.id)
+    const result = await extraordinaryService.updateExtraordinaryPayment(validated.data as UpdatePaymentInput, session.user.id)
+
+    // Send email notification if status is 'late'
+    if (input.status === 'late') {
+        after(async () => {
+            try {
+                await sendExtraordinaryPaymentOverdueEmail(input.paymentId)
+            } catch (error) {
+                console.error("Failed to send extraordinary payment overdue email:", error)
+            }
+        })
+    }
+
+    return result
+}
+
+// --- Helper Functions ---
+
+async function sendExtraordinaryPaymentOverdueEmail(paymentId: number) {
+    const { db } = await import("@/db")
+    const { extraordinaryPayments, extraordinaryProjects, apartments, user } = await import("@/db/schema")
+    const { eq, and } = await import("drizzle-orm")
+
+    // Get payment with project and apartment info
+    const [paymentData] = await db
+        .select({
+            projectId: extraordinaryPayments.projectId,
+            apartmentId: extraordinaryPayments.apartmentId,
+            expectedAmount: extraordinaryPayments.expectedAmount,
+            projectName: extraordinaryProjects.name,
+            buildingId: extraordinaryProjects.buildingId,
+            residentId: apartments.residentId,
+            residentName: user.name,
+            residentEmail: user.email,
+        })
+        .from(extraordinaryPayments)
+        .innerJoin(extraordinaryProjects, eq(extraordinaryPayments.projectId, extraordinaryProjects.id))
+        .innerJoin(apartments, eq(extraordinaryPayments.apartmentId, apartments.id))
+        .innerJoin(user, eq(apartments.residentId, user.id))
+        .where(eq(extraordinaryPayments.id, paymentId))
+        .limit(1)
+
+    if (!paymentData?.residentId) return
+
+    // Count overdue installments for this apartment in this project
+    const overduePayments = await db
+        .select()
+        .from(extraordinaryPayments)
+        .where(
+            and(
+                eq(extraordinaryPayments.projectId, paymentData.projectId),
+                eq(extraordinaryPayments.apartmentId, paymentData.apartmentId),
+                eq(extraordinaryPayments.status, 'late')
+            )
+        )
+
+    const overdueInstallments = overduePayments.length
+    const totalOverdueAmount = overduePayments.reduce((sum, p) => sum + p.expectedAmount - (p.paidAmount || 0), 0)
+
+    if (overdueInstallments === 0) return
+
+    // Import and call the notification helper
+    const { notifyExtraordinaryPaymentOverdueWithEmail } = await import("@/lib/actions/notification")
+
+    await notifyExtraordinaryPaymentOverdueWithEmail(
+        paymentData.buildingId,
+        paymentData.residentId,
+        paymentData.residentName,
+        paymentData.residentEmail,
+        paymentData.projectName,
+        totalOverdueAmount,
+        overdueInstallments
+    )
 }
 
 // ===========================================

@@ -106,7 +106,7 @@ export function NotificationSettings() {
                                     <p className="text-body font-medium text-gray-700">Notificações push</p>
                                     <p className="text-xs text-gray-500">Bloqueadas nas definições do browser</p>
                                 </div>
-                                <div className="flex items-center gap-1 text-xs font-medium text-[#B86B73]">
+                                <div className="flex items-center gap-1 text-xs font-medium text-error">
                                     <BellOff className="w-3 h-3" />
                                     Bloqueadas
                                 </div>

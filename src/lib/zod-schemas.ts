@@ -16,6 +16,7 @@ export const updateBuildingSchema = z.object({
     number: z.string().optional().nullable(),
     quotaMode: z.enum(["global", "permillage"]).optional(),
     monthlyQuota: z.number().min(0).optional(),
+    paymentDueDay: z.number().int().min(1).max(28).optional().nullable(),
     totalApartments: z.number().int().min(1).optional(),
 })
 
@@ -60,6 +61,7 @@ export const createProjectSchema = z.object({
     numInstallments: z.number().int().min(1, "Must have at least 1 installment"),
     startMonth: z.number().int().min(1).max(12),
     startYear: z.number().int().min(2000).max(2100),
+    paymentDueDay: z.number().int().min(1).max(28).optional().nullable(),
     documentUrl: z.string().optional(),
     documentName: z.string().optional(),
 })
@@ -68,6 +70,7 @@ export const updateProjectSchema = z.object({
     projectId: z.number().int(),
     name: z.string().min(1).optional(),
     description: z.string().optional(),
+    paymentDueDay: z.number().int().min(1).max(28).optional().nullable(),
     documentUrl: z.string().optional(),
     documentName: z.string().optional(),
     status: z.enum(["draft", "active", "completed", "cancelled", "archived"]).optional()

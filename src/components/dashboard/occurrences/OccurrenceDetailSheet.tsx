@@ -180,7 +180,7 @@ export function OccurrenceDetailSheet({
                         {/* Badges */}
                         <div className="flex items-center gap-1.5 flex-wrap">
                             <Badge variant={statusConfig?.variant}>{statusConfig?.label}</Badge>
-                            <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", priorityConfig?.bg, priorityConfig?.color)}>
+                            <span className={cn("px-1.5 py-0.5 rounded text-xs font-medium", priorityConfig?.bg, priorityConfig?.color)}>
                                 {priorityConfig?.label}
                             </span>
                             <Badge variant="default">{getCategoryLabel(occurrence.type)}</Badge>
@@ -190,10 +190,10 @@ export function OccurrenceDetailSheet({
 
                         {/* Description */}
                         <div>
-                            <p className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide mb-0.5">
+                            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-0.5">
                                 Descrição
                             </p>
-                            <p className="text-[11px] text-[#495057] whitespace-pre-wrap">
+                            <p className="text-body text-gray-600 whitespace-pre-wrap">
                                 {occurrence.description || "Sem descrição"}
                             </p>
                         </div>
@@ -201,10 +201,10 @@ export function OccurrenceDetailSheet({
                         {/* Date */}
                         <div className="grid grid-cols-2 gap-2">
                             <div>
-                                <p className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide mb-0.5">
+                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-0.5">
                                     Data
                                 </p>
-                                <div className="flex items-center gap-1 text-[10px] text-[#6C757D]">
+                                <div className="flex items-center gap-1 text-label text-gray-500">
                                     <Calendar className="h-3 w-3" />
                                     <span>{formatDateTime(occurrence.createdAt)}</span>
                                 </div>
@@ -214,7 +214,7 @@ export function OccurrenceDetailSheet({
                         {/* Images */}
                         {attachments.length > 0 && (
                             <div>
-                                <p className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide mb-1">
+                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
                                     Fotos
                                 </p>
                                 <PhotoGallery
@@ -234,14 +234,14 @@ export function OccurrenceDetailSheet({
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setEditModalOpen(true)}
-                                    className="text-[10px] h-6 px-2"
+                                    className="text-label h-6 px-2"
                                 >
                                     <Edit className="w-3 h-3 mr-1" /> Editar
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-[10px] h-6 px-2 text-red-600 border-red-200 hover:bg-red-50"
+                                    className="text-label h-6 px-2 text-error border-error-light hover:bg-error-light"
                                     onClick={handleDelete}
                                     disabled={isPending}
                                 >
@@ -253,7 +253,7 @@ export function OccurrenceDetailSheet({
                         {/* Status Change (Manager Only) */}
                         {isManager && (
                             <div>
-                                <p className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide mb-1">
+                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
                                     Alterar Estado
                                 </p>
                                 <div className="flex flex-wrap gap-1">
@@ -264,7 +264,7 @@ export function OccurrenceDetailSheet({
                                             size="sm"
                                             onClick={() => handleStatusChange(status)}
                                             disabled={isPending}
-                                            className="text-[10px] h-6 px-2"
+                                            className="text-label h-6 px-2"
                                         >
                                             {OCCURRENCE_STATUS_CONFIG[status].label}
                                         </Button>
@@ -277,12 +277,12 @@ export function OccurrenceDetailSheet({
 
                         {/* Comments */}
                         <div>
-                            <p className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide mb-1">
+                            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
                                 Comentários ({comments.length})
                             </p>
                             <div className="space-y-1.5 max-h-36 overflow-y-auto">
                                 {comments.length === 0 ? (
-                                    <p className="text-[10px] text-[#ADB5BD] italic">Sem comentários</p>
+                                    <p className="text-label text-gray-400 italic">Sem comentários</p>
                                 ) : (
                                     comments.map((comment) => {
                                         const isManagerComment = comment.createdBy === managerId || isManager && comment.createdBy === currentUserId
@@ -291,23 +291,23 @@ export function OccurrenceDetailSheet({
                                                 key={comment.id}
                                                 className={cn(
                                                     "rounded-md p-2",
-                                                    isManagerComment ? "bg-[#E8F4EA]" : "bg-[#F8F9FA]"
+                                                    isManagerComment ? "bg-primary-light" : "bg-gray-100"
                                                 )}
                                             >
                                                 <div className="flex items-center justify-between mb-0.5">
                                                     <div className="flex items-center gap-1">
-                                                        <span className="text-[10px] font-medium text-[#495057]">
+                                                        <span className="text-label font-medium text-gray-600">
                                                             {comment.creatorName}
                                                         </span>
                                                         {isManagerComment && (
                                                             <Badge variant="success" className="ml-1">Admin</Badge>
                                                         )}
                                                     </div>
-                                                    <span className="text-[9px] text-[#ADB5BD]">
+                                                    <span className="text-xs text-gray-400">
                                                         {formatDistanceToNow(comment.createdAt)}
                                                     </span>
                                                 </div>
-                                                <p className="text-[10px] text-[#6C757D]">{comment.content}</p>
+                                                <p className="text-label text-gray-500">{comment.content}</p>
                                             </div>
                                         )
                                     })
@@ -322,25 +322,25 @@ export function OccurrenceDetailSheet({
                                         value={newComment}
                                         onChange={(e) => setNewComment(e.target.value)}
                                         onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
-                                        className="flex-1 text-[10px] h-7"
+                                        className="flex-1 text-label h-7"
                                     />
                                     <IconButton
                                         icon={<Send className="h-3.5 w-3.5" />}
                                         label="Enviar comentário"
                                         onClick={handleAddComment}
                                         disabled={!newComment.trim() || isPending}
-                                        className="bg-[#8FB996] text-white hover:bg-[#7DA886]"
+                                        className="bg-primary text-white hover:bg-primary-dark"
                                     />
                                 </div>
                             ) : (
-                                <p className="text-[10px] text-[#ADB5BD] text-center py-2 mt-2">
+                                <p className="text-label text-gray-400 text-center py-2 mt-2">
                                     Esta ocorrência está resolvida.
                                 </p>
                             )}
                         </div>
                     </div>
                 ) : (
-                    <p className="text-[11px] text-[#ADB5BD] text-center py-4">
+                    <p className="text-body text-gray-400 text-center py-4">
                         Ocorrência não encontrada.
                     </p>
                 )}

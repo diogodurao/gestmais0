@@ -250,25 +250,25 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
 
                     {/* Description */}
                     {poll.description && (
-                        <p className="text-[11px] text-[#495057]">{poll.description}</p>
+                        <p className="text-body text-gray-600">{poll.description}</p>
                     )}
 
                     <Divider />
 
                     {/* Dates */}
-                    <div className="flex items-center gap-1 text-[10px] text-[#6C757D]">
+                    <div className="flex items-center gap-1 text-label text-gray-500">
                         <Calendar className="h-3 w-3" />
                         <span>Criada {formatDate(poll.createdAt)}</span>
                         {poll.closedAt && (
-                            <span className="text-[#ADB5BD]">• Encerrada {formatDate(poll.closedAt)}</span>
+                            <span className="text-gray-400">• Encerrada {formatDate(poll.closedAt)}</span>
                         )}
                     </div>
 
                     {/* Participation */}
                     <div>
                         <div className="flex items-center justify-between mb-0.5">
-                            <span className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide">Participação</span>
-                            <span className="text-[10px] font-medium text-[#495057]">{votes.length} votos</span>
+                            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Participação</span>
+                            <span className="text-label font-medium text-gray-600">{votes.length} votos</span>
                         </div>
                         <Progress value={participationRate} size="sm" />
                     </div>
@@ -277,7 +277,7 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
 
                     {/* Voting / Results */}
                     <div>
-                        <p className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide mb-1">
+                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
                             {shouldShowVoting ? (userVote ? "Alterar o seu voto" : "Selecione a sua opção") : "Resultados"}
                         </p>
 
@@ -289,15 +289,15 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
                                         key={option.value}
                                         onClick={() => handleOptionSelect(option.value)}
                                         className={cn(
-                                            "rounded-lg border p-1.5 transition-colors cursor-pointer hover:border-[#8FB996]",
-                                            isOptionSelected(option.value) && "border-[#8FB996] bg-[#E8F0EA]",
-                                            !isOptionSelected(option.value) && "border-[#E9ECEF]"
+                                            "rounded-lg border p-1.5 transition-colors cursor-pointer hover:border-primary",
+                                            isOptionSelected(option.value) && "border-primary bg-primary-light",
+                                            !isOptionSelected(option.value) && "border-gray-200"
                                         )}
                                     >
-                                        <span className="text-[11px] flex items-center gap-1 text-[#495057]">
+                                        <span className="text-body flex items-center gap-1 text-gray-600">
                                             <span className={cn(
                                                 "w-3 h-3 rounded-full border-2 flex items-center justify-center",
-                                                isOptionSelected(option.value) ? "border-[#8FB996] bg-[#8FB996]" : "border-[#DEE2E6]"
+                                                isOptionSelected(option.value) ? "border-primary bg-primary" : "border-gray-300"
                                             )}>
                                                 {isOptionSelected(option.value) && <Check className="h-2 w-2 text-white" />}
                                             </span>
@@ -330,7 +330,7 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
                         ) : isRestricted ? (
                             // Restricted results - show vote button
                             <div className="text-center py-4">
-                                <p className="text-[11px] text-[#6C757D] mb-2">{(results as { message: string }).message}</p>
+                                <p className="text-body text-gray-500 mb-2">{(results as { message: string }).message}</p>
                                 {canVote && (
                                     <Button size="sm" onClick={() => setShowVoteForm(true)}>
                                         <Vote className="h-3 w-3 mr-1" />
@@ -352,18 +352,18 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
                                             key={option.value}
                                             className={cn(
                                                 "rounded-lg border p-1.5",
-                                                isUserVote ? "border-[#D4E5D7] bg-[#E8F0EA]" : "border-[#E9ECEF]"
+                                                isUserVote ? "border-primary-light bg-primary-light" : "border-gray-200"
                                             )}
                                         >
                                             <div className="flex items-center justify-between mb-0.5">
                                                 <span className={cn(
-                                                    "text-[11px] flex items-center gap-1",
-                                                    isUserVote ? "font-medium text-[#6A9B72]" : "text-[#495057]"
+                                                    "text-body flex items-center gap-1",
+                                                    isUserVote ? "font-medium text-primary-dark" : "text-gray-600"
                                                 )}>
                                                     {isUserVote && <Check className="h-3 w-3" />}
                                                     {option.label}
                                                 </span>
-                                                <span className="text-[10px] font-medium text-[#495057]">
+                                                <span className="text-label font-medium text-gray-600">
                                                     {poll.weightMode === "permilagem" ? `${value.toFixed(1)}‰` : value} ({percentage}%)
                                                 </span>
                                             </div>
@@ -387,8 +387,8 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
 
                                 {/* Individual voter details (transparency) */}
                                 {votes.length > 0 && (
-                                    <div className="pt-2 mt-2 border-t border-[#E9ECEF]">
-                                        <p className="text-[9px] font-medium text-[#ADB5BD] uppercase tracking-wide mb-1">
+                                    <div className="pt-2 mt-2 border-t border-gray-200">
+                                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
                                             Votos individuais
                                         </p>
                                         <div className="space-y-1.5">
@@ -398,18 +398,18 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
 
                                                 return (
                                                     <div key={option.value}>
-                                                        <p className="text-[10px] font-medium text-[#6C757D] mb-0.5">
+                                                        <p className="text-label font-medium text-gray-500 mb-0.5">
                                                             {option.label} ({optionVotes.length})
                                                         </p>
                                                         <div className="flex flex-wrap gap-1">
                                                             {optionVotes.map((vote) => (
                                                                 <span
                                                                     key={vote.id}
-                                                                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-[#F1F3F5] rounded text-[9px] text-[#495057]"
+                                                                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 rounded text-xs text-gray-600"
                                                                 >
                                                                     {vote.userName}
                                                                     {poll.weightMode === "permilagem" && vote.apartmentPermillage && (
-                                                                        <span className="text-[#ADB5BD]">
+                                                                        <span className="text-gray-400">
                                                                             ({vote.apartmentPermillage}‰)
                                                                         </span>
                                                                     )}
@@ -437,7 +437,7 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
                                         size="sm"
                                         onClick={handleCloseAction}
                                         disabled={isPending}
-                                        className="text-[10px]"
+                                        className="text-label"
                                     >
                                         <Lock className="w-3 h-3 mr-1" /> Encerrar
                                     </Button>
@@ -448,7 +448,7 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
                                         size="sm"
                                         onClick={handleDelete}
                                         disabled={isPending}
-                                        className="text-[10px] text-red-600 border-red-200 hover:bg-red-50"
+                                        className="text-label text-error border-error-light hover:bg-error-light"
                                     >
                                         <Trash2 className="w-3 h-3 mr-1" /> Eliminar
                                     </Button>
@@ -458,7 +458,7 @@ export function PollDetailSheet({ pollId, open, onClose, isManager }: Props) {
                     )}
                 </div>
             ) : (
-                <p className="text-[11px] text-[#ADB5BD] text-center py-4">
+                <p className="text-body text-gray-400 text-center py-4">
                     Votação não encontrada.
                 </p>
             )}
