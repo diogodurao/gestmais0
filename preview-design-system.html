@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GestMais Design System & Full Dashboard</title>
+  <style>
+    /* ============================================
+       DESIGN SYSTEM - TOKENS
+       ============================================ */
+    :root {
+      /* === COLORS === */
+      --white: #ffffff;
+      --pearl: #F8F8F6;
+
+      /* Gray Scale (only scale needed) */
+      --gray-50: #F8F9FA;
+      --gray-100: #F1F3F5;
+      --gray-200: #E9ECEF;
+      --gray-300: #DEE2E6;
+      --gray-400: #ADB5BD;
+      --gray-500: #8E9AAF;
+      --gray-600: #6C757D;
+      --gray-700: #495057;
+      --gray-800: #343A40;
+      --gray-900: #212529;
+
+      /* Semantic (minimal palette) */
+      --positive: #6A9B72;
+      --positive-bg: #E8F0EA;
+      --warning: #C9A227;
+      --warning-bg: #FBF6EC;
+      --negative: #C45D5D;
+      --negative-bg: #F9ECEE;
+
+      /* === SPACING (locked: 8, 16, 32) === */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-12: 48px;
+
+      /* === TYPOGRAPHY === */
+      --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+      /*
+       * TYPE SCALE (strict - only these sizes)
+       * All UI text uses this scale. No exceptions.
+       */
+      --text-2xs: 9px;   /* micro labels, timestamps */
+      --text-xs: 10px;   /* section headers, badges, status */
+      --text-sm: 11px;   /* body text, table cells, descriptions */
+      --text-base: 12px; /* default, inputs, buttons */
+      --text-md: 13px;   /* card titles, emphasized text */
+      --text-lg: 14px;   /* page subtitles */
+      --text-xl: 16px;   /* page titles */
+      --text-2xl: 20px;  /* large numbers (summary values) */
+
+      /* Line heights */
+      --leading-tight: 1.25;
+      --leading-normal: 1.5;
+
+      /* Font weights */
+      --font-normal: 400;
+      --font-medium: 500;
+      --font-semibold: 600;
+      --font-bold: 700;
+
+      /* === BORDERS === */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --border-color: var(--gray-200);
+
+      /* === LAYOUT === */
+      --sidebar-width: 180px;
+      --header-height: 44px;
+      --max-content: 960px;
+    }
+
+    /* ============================================
+       BASE RESET
+       ============================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: var(--text-sm);
+      line-height: var(--leading-normal);
+      color: var(--gray-700);
+      background: var(--gray-100);
+    }
+
+    /* ============================================
+       TYPOGRAPHY CLASSES
+       ============================================ */
+
+    /* Page title - largest text in UI */
+    .text-page-title {
+      font-size: var(--text-xl);
+      font-weight: var(--font-semibold);
+      line-height: var(--leading-tight);
+      color: var(--gray-800);
+    }
+
+    /* Page description */
+    .text-page-desc {
+      font-size: var(--text-sm);
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+
+    /* Section header - uppercase, small */
+    .text-section {
+      font-size: var(--text-xs);
+      font-weight: var(--font-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--gray-500);
+    }
+
+    /* Card/component title */
+    .text-title {
+      font-size: var(--text-md);
+      font-weight: var(--font-medium);
+      color: var(--gray-800);
+    }
+
+    /* Card description */
+    .text-desc {
+      font-size: var(--text-sm);
+      color: var(--gray-500);
+    }
+
+    /* Body text (default) */
+    .text-body {
+      font-size: var(--text-sm);
+      color: var(--gray-700);
+    }
+
+    /* Small/muted text */
+    .text-muted {
+      font-size: var(--text-xs);
+      color: var(--gray-500);
+    }
+
+    /* Micro text (timestamps, etc) */
+    .text-micro {
+      font-size: var(--text-2xs);
+      color: var(--gray-400);
+    }
+
+    /* Summary value (large numbers) */
+    .text-value {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-bold);
+      font-family: var(--font-mono);
+      line-height: 1;
+      color: var(--gray-800);
+    }
+
+    .text-value.positive { color: var(--positive); }
+    .text-value.negative { color: var(--negative); }
+    .text-value.warning { color: var(--warning); }
+
+    /* Mono text */
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    /* ============================================
+       LAYOUT SHELL
+       ============================================ */
+    .shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      background: var(--pearl);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-4);
+    }
+
+    .sidebar-brand {
+      font-size: var(--text-md);
+      font-weight: var(--font-semibold);
+      color: var(--gray-800);
+      padding-bottom: var(--space-4);
+      margin-bottom: var(--space-4);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: var(--space-2) var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--gray-600);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+    }
+
+    .nav-item:hover {
+      background: var(--gray-200);
+    }
+
+    .nav-item.active {
+      background: var(--positive-bg);
+      color: var(--positive);
+      font-weight: var(--font-medium);
+    }
+
+    /* Main */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--white);
+    }
+
+    /* Header */
+    .header {
+      height: var(--header-height);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-4);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-title {
+      font-size: var(--text-md);
+      font-weight: var(--font-medium);
+      color: var(--gray-700);
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--gray-300);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xs);
+      font-weight: var(--font-medium);
+      color: var(--gray-600);
+    }
+
+    /* Content */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-8);
+    }
+
+    .content-inner {
+      max-width: var(--max-content);
+      margin: 0 auto;
+    }
+
+    /* ============================================
+       COMPONENTS
+       ============================================ */
+
+    /* --- Alert --- */
+    .alert {
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-sm);
+      border-left: 3px solid var(--gray-400);
+      background: var(--gray-50);
+      color: var(--gray-600);
+      margin-bottom: var(--space-8);
+    }
+
+    .alert-info {
+      border-left-color: var(--gray-500);
+    }
+
+    /* --- Summary Row --- */
+    .summary-row {
+      display: flex;
+      gap: var(--space-8);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: var(--space-8);
+    }
+
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .summary-label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--gray-500);
+    }
+
+    .summary-meta {
+      font-size: var(--text-2xs);
+      color: var(--gray-400);
+    }
+
+    /* --- Section --- */
+    .section {
+      margin-bottom: var(--space-8);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+
+    .section-action {
+      font-size: var(--text-xs);
+      color: var(--gray-500);
+      text-decoration: none;
+    }
+
+    .section-action:hover {
+      text-decoration: underline;
+    }
+
+    /* --- Card --- */
+    .card {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--white);
+    }
+
+    .card-header {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-body {
+      padding: var(--space-4);
+    }
+
+    /* --- Table --- */
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      text-align: left;
+      font-size: var(--text-xs);
+      font-weight: var(--font-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--gray-500);
+      padding: var(--space-2) var(--space-2);
+      border-bottom: 1px solid var(--border-color);
+      background: var(--gray-50);
+    }
+
+    tbody td {
+      font-size: var(--text-sm);
+      padding: var(--space-2) var(--space-2);
+      border-bottom: 1px solid var(--gray-100);
+      color: var(--gray-700);
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: var(--gray-50);
+    }
+
+    .cell-right { text-align: right; }
+    .cell-center { text-align: center; }
+    .cell-muted { color: var(--gray-500); font-size: var(--text-xs); }
+    .cell-nowrap { white-space: nowrap; }
+
+    /* --- Status --- */
+    .status {
+      font-size: var(--text-xs);
+      font-weight: var(--font-medium);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .status-positive { color: var(--positive); }
+    .status-warning { color: var(--warning); }
+    .status-negative { color: var(--negative); }
+    .status-neutral { color: var(--gray-500); }
+
+    /* --- Button --- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-base);
+      font-weight: var(--font-medium);
+      font-family: inherit;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 150ms;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--gray-800);
+      color: var(--white);
+      border-color: var(--gray-800);
+    }
+
+    .btn-primary:hover {
+      background: var(--gray-700);
+    }
+
+    .btn-neutral {
+      background: var(--white);
+      color: var(--gray-600);
+      border-color: var(--gray-300);
+    }
+
+    .btn-neutral:hover {
+      background: var(--gray-50);
+    }
+
+    .btn-sm {
+      padding: var(--space-1) var(--space-2);
+      font-size: var(--text-xs);
+    }
+
+    /* --- Info Grid --- */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-2) var(--space-6);
+    }
+
+    .info-grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .info-label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      color: var(--gray-500);
+    }
+
+    .info-value {
+      font-size: var(--text-sm);
+      color: var(--gray-700);
+    }
+
+    /* --- Empty State --- */
+    .empty-state {
+      padding: var(--space-12) var(--space-4);
+      text-align: center;
+    }
+
+    .empty-statement {
+      font-size: var(--text-md);
+      font-weight: var(--font-medium);
+      color: var(--gray-700);
+      margin-bottom: var(--space-1);
+    }
+
+    .empty-reason {
+      font-size: var(--text-sm);
+      color: var(--gray-500);
+      margin-bottom: var(--space-4);
+    }
+
+    /* --- Input --- */
+    .input {
+      padding: var(--space-2) var(--space-2);
+      font-size: var(--text-base);
+      font-family: inherit;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--gray-700);
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--gray-400);
+    }
+
+    .input-sm {
+      padding: var(--space-1) var(--space-2);
+      font-size: var(--text-xs);
+    }
+
+    /* --- Divider --- */
+    .divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: var(--space-8) 0;
+    }
+
+    /* --- Layout Helpers --- */
+    .grid-2-1 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-8);
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stack-4 { gap: var(--space-4); }
+    .stack-8 { gap: var(--space-8); }
+
+    .row {
+      display: flex;
+      align-items: center;
+    }
+
+    .row-between {
+      justify-content: space-between;
+    }
+
+    .gap-2 { gap: var(--space-2); }
+    .gap-4 { gap: var(--space-4); }
+
+    @media (max-width: 768px) {
+      .grid-2-1 { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .summary-row { flex-wrap: wrap; }
+    }
+
+    /* ============================================
+       PREVIEW HELPERS
+       ============================================ */
+    .preview-section {
+      margin-bottom: var(--space-12);
+      padding-bottom: var(--space-8);
+      border-bottom: 2px dashed var(--gray-300);
+    }
+
+    .preview-label {
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gray-400);
+      margin-bottom: var(--space-4);
+      padding: var(--space-2) 0;
+    }
+
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .type-sample {
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .type-meta {
+      font-size: var(--text-2xs);
+      font-family: var(--font-mono);
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================
+     PART 1: FULL DASHBOARD PREVIEW
+     ============================================ -->
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">GestMais</div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active">Painel</a>
+      <a href="#" class="nav-item">Quotas</a>
+      <a href="#" class="nav-item">Quotas Extra</a>
+      <a href="#" class="nav-item">Agenda</a>
+      <a href="#" class="nav-item">Ocorrencias</a>
+      <a href="#" class="nav-item">Votacoes</a>
+      <a href="#" class="nav-item">Discussoes</a>
+      <a href="#" class="nav-item">Avaliacoes</a>
+      <a href="#" class="nav-item">Documentos</a>
+      <a href="#" class="nav-item">Definicoes</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Header -->
+    <header class="header">
+      <span class="header-title">Edificio Aurora</span>
+      <div class="header-user">
+        <span class="text-muted">Diogo Durao</span>
+        <div class="avatar">DD</div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="content">
+      <div class="content-inner">
+
+        <!-- Page Header -->
+        <div style="margin-bottom: var(--space-8);">
+          <h1 class="text-page-title">Painel Geral</h1>
+          <p class="text-page-desc">Visao geral do condominio</p>
+        </div>
+
+        <!-- Alert: Upcoming Event -->
+        <div class="alert alert-info">
+          Assembleia Geral agendada para 15 de Fevereiro de 2026 as 18:00.
+        </div>
+
+        <!-- Summary Row (replaces PaymentStatusCard + EvaluationWidget) -->
+        <div class="summary-row">
+          <div class="summary-item">
+            <span class="summary-label">Minhas Quotas 2026</span>
+            <span class="text-value positive">10 / 12</span>
+            <span class="summary-meta">83% em dia</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Em Atraso</span>
+            <span class="text-value">0</span>
+            <span class="summary-meta">Sem atrasos</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Edificio 2026</span>
+            <span class="text-value">142 / 192</span>
+            <span class="summary-meta">74% recebido</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Avaliacao Jan</span>
+            <span class="text-value positive">Submetida</span>
+            <span class="summary-meta">Editar ate 31 Jan</span>
+          </div>
+        </div>
+
+        <!-- Main Grid: 2/3 + 1/3 -->
+        <div class="grid-2-1">
+
+          <!-- Left Column -->
+          <div class="stack stack-8">
+
+            <!-- Residents Section (Manager only) -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="text-section">Residentes</h2>
+                <div class="row gap-2">
+                  <span class="text-muted">12 registados, 10 ativos</span>
+                  <input type="text" placeholder="Procurar..." class="input input-sm" style="width: 100px;">
+                </div>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Fracao</th>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Estado</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="mono">A1</td>
+                      <td>Maria Santos</td>
+                      <td class="cell-muted">maria.santos@email.com</td>
+                      <td><span class="status status-positive">Ativo</span></td>
+                      <td class="cell-muted">...</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">A2</td>
+                      <td>Joao Silva</td>
+                      <td class="cell-muted">joao.silva@email.com</td>
+                      <td><span class="status status-positive">Ativo</span></td>
+                      <td class="cell-muted">...</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">B1</td>
+                      <td>Ana Costa</td>
+                      <td class="cell-muted">ana.costa@email.com</td>
+                      <td><span class="status status-positive">Ativo</span></td>
+                      <td class="cell-muted">...</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">B2</td>
+                      <td>Pedro Oliveira</td>
+                      <td class="cell-muted">pedro.oliveira@email.com</td>
+                      <td><span class="status status-warning">Pendente</span></td>
+                      <td class="cell-muted">...</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">C1</td>
+                      <td>Sofia Ferreira</td>
+                      <td class="cell-muted">sofia.f@email.com</td>
+                      <td><span class="status status-positive">Ativo</span></td>
+                      <td class="cell-muted">...</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">C2</td>
+                      <td class="cell-muted">Nao atribuido</td>
+                      <td class="cell-muted">-</td>
+                      <td><span class="status status-neutral">Vago</span></td>
+                      <td class="cell-muted">...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- Notifications Section -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="text-section">Notificacoes</h2>
+                <a href="#" class="section-action">Ver todas</a>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Mensagem</th>
+                      <th style="width: 100px;">Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Novo residente registado na fracao B2</td>
+                      <td class="cell-muted cell-nowrap">Hoje, 14:32</td>
+                    </tr>
+                    <tr>
+                      <td>Pagamento de quota recebido - A1, Janeiro</td>
+                      <td class="cell-muted cell-nowrap">Ontem, 09:15</td>
+                    </tr>
+                    <tr>
+                      <td>Nova ocorrencia: Elevador avariado</td>
+                      <td class="cell-muted cell-nowrap">23 Jan, 16:48</td>
+                    </tr>
+                    <tr>
+                      <td>Votacao "Horario de obras" encerrada</td>
+                      <td class="cell-muted cell-nowrap">20 Jan, 00:00</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- Recent Payments Section -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="text-section">Pagamentos Recentes</h2>
+                <a href="#" class="section-action">Ver grelha</a>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Fracao</th>
+                      <th>Mes</th>
+                      <th class="cell-right">Valor</th>
+                      <th>Estado</th>
+                      <th>Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="mono">A1</td>
+                      <td>Janeiro 2026</td>
+                      <td class="mono cell-right">45.00</td>
+                      <td><span class="status status-positive">Pago</span></td>
+                      <td class="cell-muted">24 Jan</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">A2</td>
+                      <td>Janeiro 2026</td>
+                      <td class="mono cell-right">45.00</td>
+                      <td><span class="status status-positive">Pago</span></td>
+                      <td class="cell-muted">22 Jan</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">B1</td>
+                      <td>Janeiro 2026</td>
+                      <td class="mono cell-right">52.50</td>
+                      <td><span class="status status-warning">Pendente</span></td>
+                      <td class="cell-muted">-</td>
+                    </tr>
+                    <tr>
+                      <td class="mono">C1</td>
+                      <td>Janeiro 2026</td>
+                      <td class="mono cell-right">38.75</td>
+                      <td><span class="status status-positive">Pago</span></td>
+                      <td class="cell-muted">20 Jan</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+          </div>
+
+          <!-- Right Column -->
+          <div class="stack stack-8">
+
+            <!-- My Unit Panel -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="text-section">A Minha Fracao</h2>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Fracao</span>
+                      <span class="info-value mono" style="font-weight: var(--font-bold);">A1</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Permilagem</span>
+                      <span class="info-value mono">62.50‰</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Quota Mensal</span>
+                      <span class="info-value mono" style="color: var(--positive);">€45.00</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Edificio</span>
+                      <span class="info-value">Aurora</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Building Status Panel (Manager only) -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="text-section">Condominio</h2>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Fracoes</span>
+                      <span class="info-value">16</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Residentes</span>
+                      <span class="info-value">12</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Ocupacao</span>
+                      <span class="info-value">75%</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Subscricao</span>
+                      <span class="info-value" style="color: var(--positive);">Ativa</span>
+                    </div>
+                  </div>
+
+                  <div class="divider" style="margin: var(--space-4) 0;"></div>
+
+                  <div class="info-item" style="margin-bottom: var(--space-3);">
+                    <span class="info-label">Codigo de Convite</span>
+                    <span class="info-value mono" style="font-size: var(--text-lg); font-weight: var(--font-bold); letter-spacing: 0.1em;">AUR-2024</span>
+                  </div>
+
+                  <p class="text-muted" style="margin-bottom: var(--space-3);">
+                    Partilhe este codigo com novos residentes.
+                  </p>
+
+                  <button class="btn btn-neutral" style="width: 100%;">Copiar codigo</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="section">
+              <div class="section-header">
+                <h2 class="text-section">Acoes</h2>
+              </div>
+
+              <div class="stack stack-4">
+                <button class="btn btn-primary" style="width: 100%;">Registar pagamento</button>
+                <button class="btn btn-neutral" style="width: 100%;">Ver definicoes</button>
+              </div>
+            </section>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================
+     PART 2: COMPONENT DESIGN GUIDE
+     ============================================ -->
+
+<div style="background: var(--white); padding: var(--space-8);">
+  <div style="max-width: 1000px; margin: 0 auto;">
+
+    <h1 class="text-page-title" style="margin-bottom: var(--space-8); padding-top: var(--space-8); border-top: 4px solid var(--gray-800);">
+      Component Design Guide
+    </h1>
+
+    <!-- TYPOGRAPHY -->
+    <div class="preview-section">
+      <div class="preview-label">Typography Scale</div>
+
+      <div class="type-sample">
+        <span class="text-page-title">Page Title</span>
+        <div class="type-meta">--text-xl (16px) / semibold / gray-800</div>
+      </div>
+      <div class="type-sample">
+        <span class="text-page-desc">Page description text goes here</span>
+        <div class="type-meta">--text-sm (11px) / normal / gray-500</div>
+      </div>
+      <div class="type-sample">
+        <span class="text-section">Section Header</span>
+        <div class="type-meta">--text-xs (10px) / semibold / uppercase / gray-500</div>
+      </div>
+      <div class="type-sample">
+        <span class="text-title">Card Title</span>
+        <div class="type-meta">--text-md (13px) / medium / gray-800</div>
+      </div>
+      <div class="type-sample">
+        <span class="text-body">Body text for descriptions and content</span>
+        <div class="type-meta">--text-sm (11px) / normal / gray-700</div>
+      </div>
+      <div class="type-sample">
+        <span class="text-muted">Muted helper text</span>
+        <div class="type-meta">--text-xs (10px) / normal / gray-500</div>
+      </div>
+      <div class="type-sample">
+        <span class="text-micro">Micro timestamp text</span>
+        <div class="type-meta">--text-2xs (9px) / normal / gray-400</div>
+      </div>
+      <div class="type-sample">
+        <span class="text-value">1,234.56</span>
+        <div class="type-meta">--text-2xl (20px) / bold / mono / gray-800</div>
+      </div>
+    </div>
+
+    <!-- COLORS -->
+    <div class="preview-section">
+      <div class="preview-label">Color Palette</div>
+
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-2); margin-bottom: var(--space-4);">
+        <div style="text-align: center;">
+          <div style="height: 40px; background: var(--gray-50); border: 1px solid var(--gray-200);"></div>
+          <span class="text-micro">gray-50</span>
+        </div>
+        <div style="text-align: center;">
+          <div style="height: 40px; background: var(--gray-200);"></div>
+          <span class="text-micro">gray-200</span>
+        </div>
+        <div style="text-align: center;">
+          <div style="height: 40px; background: var(--gray-500);"></div>
+          <span class="text-micro">gray-500</span>
+        </div>
+        <div style="text-align: center;">
+          <div style="height: 40px; background: var(--gray-700);"></div>
+          <span class="text-micro">gray-700</span>
+        </div>
+        <div style="text-align: center;">
+          <div style="height: 40px; background: var(--gray-800);"></div>
+          <span class="text-micro">gray-800</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2);">
+        <div style="text-align: center;">
+          <div style="height: 40px; background: var(--positive);"></div>
+          <span class="text-micro">positive (#6A9B72)</span>
+        </div>
+        <div style="text-align: center;">
+          <div style="height: 40px; background: var(--warning);"></div>
+          <span class="text-micro">warning (#C9A227)</span>
+        </div>
+        <div style="text-align: center;">
+          <div style="height: 40px; background: var(--negative);"></div>
+          <span class="text-micro">negative (#C45D5D)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPACING -->
+    <div class="preview-section">
+      <div class="preview-label">Spacing Scale (locked)</div>
+
+      <div style="display: flex; align-items: flex-end; gap: var(--space-4);">
+        <div style="text-align: center;">
+          <div style="width: 8px; height: 8px; background: var(--gray-400);"></div>
+          <span class="text-micro">8px</span>
+        </div>
+        <div style="text-align: center;">
+          <div style="width: 16px; height: 16px; background: var(--gray-400);"></div>
+          <span class="text-micro">16px</span>
+        </div>
+        <div style="text-align: center;">
+          <div style="width: 32px; height: 32px; background: var(--gray-400);"></div>
+          <span class="text-micro">32px</span>
+        </div>
+      </div>
+
+      <p class="text-muted" style="margin-top: var(--space-4);">
+        Primary spacing: 8px (components), 16px (card padding), 32px (sections)
+      </p>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="preview-section">
+      <div class="preview-label">Buttons</div>
+
+      <div class="component-grid">
+        <div>
+          <button class="btn btn-primary">Primary Action</button>
+          <div class="type-meta">One per screen. Dark background.</div>
+        </div>
+        <div>
+          <button class="btn btn-neutral">Neutral Action</button>
+          <div class="type-meta">All other actions. Outline style.</div>
+        </div>
+        <div>
+          <button class="btn btn-neutral btn-sm">Small Button</button>
+          <div class="type-meta">For inline/table actions.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="preview-section">
+      <div class="preview-label">Status Indicators (text-only)</div>
+
+      <div class="row gap-4">
+        <span class="status status-positive">Pago</span>
+        <span class="status status-positive">Ativo</span>
+        <span class="status status-warning">Pendente</span>
+        <span class="status status-warning">Em progresso</span>
+        <span class="status status-negative">Em atraso</span>
+        <span class="status status-negative">Rejeitado</span>
+        <span class="status status-neutral">Vago</span>
+        <span class="status status-neutral">Rascunho</span>
+      </div>
+
+      <p class="text-muted" style="margin-top: var(--space-4);">
+        No badges, no pills, no backgrounds. Just colored uppercase text.
+      </p>
+    </div>
+
+    <!-- INPUTS -->
+    <div class="preview-section">
+      <div class="preview-label">Form Inputs</div>
+
+      <div class="component-grid">
+        <div>
+          <input type="text" class="input" placeholder="Default input" style="width: 100%;">
+          <div class="type-meta">12px font, 8px padding</div>
+        </div>
+        <div>
+          <input type="text" class="input input-sm" placeholder="Small input" style="width: 100%;">
+          <div class="type-meta">10px font, 4px padding</div>
+        </div>
+        <div>
+          <select class="input" style="width: 100%;">
+            <option>Select option</option>
+          </select>
+          <div class="type-meta">Same styling as input</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS -->
+    <div class="preview-section">
+      <div class="preview-label">Card (used sparingly)</div>
+
+      <div style="max-width: 300px;">
+        <div class="card">
+          <div class="card-header">
+            <span class="text-title">Card Title</span>
+          </div>
+          <div class="card-body">
+            <p class="text-body">Card content goes here. Cards are containers for grouped info, not decoration.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-muted" style="margin-top: var(--space-4);">
+        Use cards only when grouping related info (My Unit, Building Info). Never for lists or data.
+      </p>
+    </div>
+
+    <!-- TABLES -->
+    <div class="preview-section">
+      <div class="preview-label">Tables (primary data display)</div>
+
+      <div class="table-wrap" style="max-width: 600px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Column A</th>
+              <th>Column B</th>
+              <th class="cell-right">Value</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">ID-001</td>
+              <td>Description text</td>
+              <td class="mono cell-right">123.45</td>
+              <td><span class="status status-positive">Active</span></td>
+            </tr>
+            <tr>
+              <td class="mono">ID-002</td>
+              <td>Another item</td>
+              <td class="mono cell-right">67.89</td>
+              <td><span class="status status-warning">Pending</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-muted" style="margin-top: var(--space-4);">
+        Uppercase headers (10px, semibold). Body cells (11px). Mono for IDs/values.
+      </p>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div class="preview-section">
+      <div class="preview-label">Empty State</div>
+
+      <div style="max-width: 400px; border: 1px dashed var(--gray-300); border-radius: var(--radius-md);">
+        <div class="empty-state">
+          <p class="empty-statement">No items found</p>
+          <p class="empty-reason">There are no items matching your criteria. Try adjusting your filters.</p>
+          <button class="btn btn-neutral">Create item</button>
+        </div>
+      </div>
+
+      <p class="text-muted" style="margin-top: var(--space-4);">
+        Statement → Reason → Action. No icons, no illustrations, no emojis.
+      </p>
+    </div>
+
+    <!-- SUMMARY ROW -->
+    <div class="preview-section">
+      <div class="preview-label">Summary Row (replaces stat cards)</div>
+
+      <div class="summary-row" style="border-bottom: none; margin-bottom: 0;">
+        <div class="summary-item">
+          <span class="summary-label">Label One</span>
+          <span class="text-value">1,234</span>
+          <span class="summary-meta">Helper text</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Label Two</span>
+          <span class="text-value positive">89%</span>
+          <span class="summary-meta">Positive state</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Label Three</span>
+          <span class="text-value negative">-5</span>
+          <span class="summary-meta">Negative state</span>
+        </div>
+      </div>
+
+      <p class="text-muted" style="margin-top: var(--space-4);">
+        Horizontal row of key metrics. Replaces PaymentStatusCard, EvaluationWidget stat displays.
+      </p>
+    </div>
+
+    <!-- COMPONENT MAPPING -->
+    <div class="preview-section">
+      <div class="preview-label">Component Mapping: Current → New</div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Current Component</th>
+              <th>New Pattern</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PaymentStatusCard</td>
+              <td>SummaryRow item</td>
+              <td class="cell-muted">Inline stat, no card wrapper</td>
+            </tr>
+            <tr>
+              <td>EvaluationWidget</td>
+              <td>SummaryRow item</td>
+              <td class="cell-muted">Text-only status, no colored card</td>
+            </tr>
+            <tr>
+              <td>ResidentsList (Card + List)</td>
+              <td>Section + Table</td>
+              <td class="cell-muted">Remove card, use section header + table</td>
+            </tr>
+            <tr>
+              <td>NotificationCard</td>
+              <td>Section + Table</td>
+              <td class="cell-muted">Remove card, remove bell icon</td>
+            </tr>
+            <tr>
+              <td>MyUnitPanel</td>
+              <td>Section + Card + InfoGrid</td>
+              <td class="cell-muted">Keep card (grouping), remove icon</td>
+            </tr>
+            <tr>
+              <td>BuildingStatusPanel</td>
+              <td>Section + Card + InfoGrid</td>
+              <td class="cell-muted">Keep card, remove all icons</td>
+            </tr>
+            <tr>
+              <td>Badge (status)</td>
+              <td>StatusText</td>
+              <td class="cell-muted">Text-only, no background pill</td>
+            </tr>
+            <tr>
+              <td>Avatar (with status dot)</td>
+              <td>Remove</td>
+              <td class="cell-muted">Use text initials only in header</td>
+            </tr>
+            <tr>
+              <td>Alert (with icon)</td>
+              <td>Alert (left border only)</td>
+              <td class="cell-muted">Remove info/warning icons</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FILE STRUCTURE -->
+    <div class="preview-section">
+      <div class="preview-label">Suggested Component File Structure</div>
+
+      <pre style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--gray-600); background: var(--gray-50); padding: var(--space-4); border-radius: var(--radius-sm); overflow-x: auto;">
+src/components/
+├── ui/
+│   ├── Button.tsx        # btn-primary, btn-neutral, btn-sm
+│   ├── Card.tsx          # card, card-header, card-body (simplified)
+│   ├── Input.tsx         # input, input-sm, select
+│   ├── Table.tsx         # table wrapper with proper classes
+│   ├── StatusText.tsx    # status-positive, status-warning, status-negative
+│   ├── Alert.tsx         # left-border alert, no icons
+│   ├── EmptyState.tsx    # statement, reason, action pattern
+│   └── InfoGrid.tsx      # info-grid layout helper
+│
+├── layout/
+│   ├── Shell.tsx         # sidebar + main + header structure
+│   ├── Sidebar.tsx       # nav items
+│   ├── Header.tsx        # title + user avatar
+│   ├── Content.tsx       # max-width wrapper
+│   ├── Section.tsx       # section-header + children
+│   └── SummaryRow.tsx    # horizontal metrics display
+│
+└── dashboard/
+    ├── DashboardPage.tsx     # orchestrates layout
+    ├── ResidentsTable.tsx    # section + table (no card)
+    ├── NotificationsTable.tsx
+    ├── PaymentsTable.tsx
+    ├── MyUnitCard.tsx        # card + info-grid
+    └── BuildingCard.tsx      # card + info-grid
+      </pre>
+    </div>
+
+    <!-- RULES CHECKLIST -->
+    <div class="preview-section" style="border-bottom: none;">
+      <div class="preview-label">Design Checklist</div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Rule</th>
+              <th>Check</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Does this work without color?</td>
+              <td class="cell-muted">Text hierarchy should be clear in grayscale</td>
+            </tr>
+            <tr>
+              <td>Can I remove the card and keep clarity?</td>
+              <td class="cell-muted">If yes, use section + table instead</td>
+            </tr>
+            <tr>
+              <td>Is there more than one primary action?</td>
+              <td class="cell-muted">Only one btn-primary per screen</td>
+            </tr>
+            <tr>
+              <td>Am I using an icon for decoration?</td>
+              <td class="cell-muted">Remove it. Icons only for essential function</td>
+            </tr>
+            <tr>
+              <td>Would this look ridiculous printed?</td>
+              <td class="cell-muted">If yes, simplify</td>
+            </tr>
+            <tr>
+              <td>Am I using spacing other than 8/16/32?</td>
+              <td class="cell-muted">Stick to the locked scale</td>
+            </tr>
+            <tr>
+              <td>Am I using a font size not in the scale?</td>
+              <td class="cell-muted">Use only: 9, 10, 11, 12, 13, 14, 16, 20px</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
