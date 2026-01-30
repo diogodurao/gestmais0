@@ -9,7 +9,7 @@ export function SubscriptionBlockedCheck() {
     const { session, activeBuilding } = useDashboard()
     const pathname = usePathname()
 
-    // Only check for managers
+    // Only check for managers (not residents or professionals)
     const isManager = session?.role === 'manager'
     if (!isManager) return null
 

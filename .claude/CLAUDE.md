@@ -21,10 +21,16 @@ Always use Context7 MCP when I need library/API documentation, code generation, 
 - Read the library's actual behavior, not what I assume it does.
 - Don't assume anything, always verify --> use context7 mcp
 - when generating and changing code, never change the code that is not related to the task. If its not clear, ask questions or plan mode until it is clear.
-- if the task is extensive, use a task list or plan mode; Choose what you think is best.
 - if you need to change something, ask me first.
 - always make a quick plan before making any changes. dont matter how small the change is.
 - always create a brief schema from the last changes to understand the context.
+
+- in the implementation plan, show implementation order and if appropriate, show a brief visual schema of the proposed changes.
+
+- if the task is extensive, use a task list or plan mode; Choose what you think is best.
+
+- when in plan mode, do not code until the human aproves the implementation plan.
+
 ---
 
 ## TypeScript

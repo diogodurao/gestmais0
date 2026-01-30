@@ -1,3 +1,4 @@
+import type { ProfessionalType } from "@/lib/types"
 import nodemailer from "nodemailer"
 
 const transporter = nodemailer.createTransport({
@@ -470,6 +471,189 @@ export function getSubscriptionPaymentFailedEmailTemplate(
                       </a>
                       <p style="margin: 24px 0 0; font-size: 12px; color: #8E9AAF;">
                         Se precisar de ajuda, contacte o suporte em suporte@gestmais.pt
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `,
+  }
+}
+
+export function getResidentInvitationEmailTemplate(
+  recipientEmail: string,
+  buildingName: string,
+  inviterName: string,
+  invitationLink: string
+) {
+  const safeBuildingName = escapeHtml(buildingName)
+  const safeInviterName = escapeHtml(inviterName)
+
+  return {
+    text: `Foi convidado por ${inviterName} para se juntar ao edifício "${buildingName}" na plataforma GestMais. Clique no link para aceitar o convite e criar a sua conta: ${invitationLink}. Este convite expira em 7 dias. Se já tens conta na aplicação, ignora este email.`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #F8F8F6;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table width="400" cellpadding="0" cellspacing="0" style="background: white; border-radius: 8px; border: 1px solid #E9ECEF;">
+                  <tr>
+                    <td style="padding: 32px;">
+                      <h1 style="margin: 0 0 24px; font-size: 20px; font-weight: 600; color: #212529;">
+                        Convite para Residente
+                      </h1>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        <strong>${safeInviterName}</strong> convidou-o para se juntar ao edifício:
+                      </p>
+                      <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.5; color: #343A40; font-weight: 600;">
+                        "${safeBuildingName}"
+                      </p>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        A <strong>GestMais</strong> é uma plataforma de gestão de condomínios. Como residente, poderá consultar quotas, documentos, votações e muito mais.
+                      </p>
+                      <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        Clique no botão abaixo para aceitar o convite e criar a sua conta.
+                      </p>
+                      <a href="${invitationLink}" style="display: inline-block; padding: 12px 24px; background-color: #8FB996; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;">
+                        Aceitar Convite
+                      </a>
+                      <p style="margin: 24px 0 0; font-size: 12px; color: #8E9AAF;">
+                        Este convite expira em 7 dias. Se já tens conta na aplicação, ignora este email.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `,
+  }
+}
+
+const PROFESSIONAL_TYPE_LABELS: Record<ProfessionalType, string> = {
+  accountant: "Contabilista",
+  lawyer: "Advogado",
+  consultant: "Consultor",
+}
+
+export function getProfessionalInvitationEmailTemplate(
+  recipientEmail: string,
+  buildingName: string,
+  inviterName: string,
+  professionalType: ProfessionalType,
+  invitationLink: string
+) {
+  const safeBuildingName = escapeHtml(buildingName)
+  const safeInviterName = escapeHtml(inviterName)
+  const typeLabel = PROFESSIONAL_TYPE_LABELS[professionalType]
+
+  return {
+    text: `Foi convidado por ${inviterName} para colaborar como ${typeLabel} na gestão do edifício "${buildingName}" na plataforma GestMais. A GestMais é uma plataforma de gestão de condomínios que permite aos gestores e profissionais externos colaborar na administração de edifícios. Clique no link para aceitar o convite: ${invitationLink}. Este convite expira em 7 dias.`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #F8F8F6;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table width="400" cellpadding="0" cellspacing="0" style="background: white; border-radius: 8px; border: 1px solid #E9ECEF;">
+                  <tr>
+                    <td style="padding: 32px;">
+                      <h1 style="margin: 0 0 24px; font-size: 20px; font-weight: 600; color: #212529;">
+                        Convite para Profissional Externo
+                      </h1>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        <strong>${safeInviterName}</strong> convidou-o para colaborar como <strong>${typeLabel}</strong> na gestão do edifício:
+                      </p>
+                      <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.5; color: #343A40; font-weight: 600;">
+                        "${safeBuildingName}"
+                      </p>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        A <strong>GestMais</strong> é uma plataforma de gestão de condomínios. Como profissional externo, terá acesso de consulta a quotas, documentos e relatórios do edifício.
+                      </p>
+                      <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        Clique no botão abaixo para aceitar o convite e criar a sua conta.
+                      </p>
+                      <a href="${invitationLink}" style="display: inline-block; padding: 12px 24px; background-color: #8FB996; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;">
+                        Aceitar Convite
+                      </a>
+                      <p style="margin: 24px 0 0; font-size: 12px; color: #8E9AAF;">
+                        Este convite expira em 7 dias. Se não pretende aceitar, pode simplesmente ignorar este email.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `,
+  }
+}
+
+export function getCollaboratorInvitationEmailTemplate(
+  recipientName: string,
+  buildingName: string,
+  inviterName: string,
+  invitationLink: string
+) {
+  const safeName = escapeHtml(recipientName)
+  const safeBuildingName = escapeHtml(buildingName)
+  const safeInviterName = escapeHtml(inviterName)
+
+  return {
+    text: `Olá ${recipientName}, foi convidado por ${inviterName} para colaborar na gestão do edifício "${buildingName}". Como colaborador, poderá ajudar na gestão de quotas, eventos, votações e muito mais. Aceitar convite: ${invitationLink}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #F8F8F6;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table width="400" cellpadding="0" cellspacing="0" style="background: white; border-radius: 8px; border: 1px solid #E9ECEF;">
+                  <tr>
+                    <td style="padding: 32px;">
+                      <h1 style="margin: 0 0 24px; font-size: 20px; font-weight: 600; color: #212529;">
+                        Convite para Colaborador
+                      </h1>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        Olá ${safeName},
+                      </p>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        <strong>${safeInviterName}</strong> convidou-o para colaborar na gestão do edifício:
+                      </p>
+                      <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.5; color: #343A40; font-weight: 600;">
+                        "${safeBuildingName}"
+                      </p>
+                      <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.5; color: #495057;">
+                        Como colaborador, poderá ajudar na gestão de quotas, eventos, votações, ocorrências e muito mais.
+                      </p>
+                      <a href="${invitationLink}" style="display: inline-block; padding: 12px 24px; background-color: #8FB996; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;">
+                        Ver Convite
+                      </a>
+                      <p style="margin: 24px 0 0; font-size: 12px; color: #8E9AAF;">
+                        Este convite expira em 7 dias. Se não pretende aceitar, pode simplesmente ignorar este email.
                       </p>
                     </td>
                   </tr>

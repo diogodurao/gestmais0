@@ -7,7 +7,7 @@ import { Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "./SidebarProvider"
 import { useDashboard } from "@/contexts/DashboardContext"
-import { managerNavItems, residentNavItems } from "@/config/navigation"
+import { managerNavItems, residentNavItems, professionalNavItems } from "@/config/navigation"
 
 export function Sidebar() {
     const { isCollapsed, toggleCollapsed } = useSidebar()
@@ -24,7 +24,11 @@ export function Sidebar() {
     const userRole = session?.role || "resident"
 
     // 2. Select the correct menu
-    const allItems = userRole === "manager" ? managerNavItems : residentNavItems
+    const allItems = userRole === "manager"
+        ? managerNavItems
+        : userRole === "professional"
+            ? professionalNavItems
+            : residentNavItems
 
     // 3. Filter items based on permissions
     const hasActiveSubscription = activeBuilding?.building.subscriptionStatus === 'active'

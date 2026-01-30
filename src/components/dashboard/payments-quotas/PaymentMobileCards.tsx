@@ -10,27 +10,26 @@ import { type PaymentToolType, type PaymentData } from "@/lib/types"
 
 interface PaymentMobileCardsProps {
     data: PaymentData[]
-    monthlyQuota: number
+    quotaMode: string
     activeTool: PaymentToolType
     onCellClick: (aptId: number, monthIdx: number) => void
 }
 
 interface MobilePaymentCardProps {
     apartment: PaymentData
-    monthlyQuota: number
     activeTool: PaymentToolType
     onCellClick: (aptId: number, monthIdx: number) => void
 }
 
 function MobilePaymentCard({
     apartment,
-    monthlyQuota,
     activeTool,
     onCellClick,
 }: MobilePaymentCardProps) {
     const [isExpanded, setIsExpanded] = useState(false)
     const hasDebt = apartment.balance > 0
-    const expectedTotal = 12 * monthlyQuota
+    // Use apartment-specific quota
+    const expectedTotal = 12 * apartment.apartmentQuota
     const progressPercent = expectedTotal > 0 ? Math.round((apartment.totalPaid / expectedTotal) * 100) : 0
     const isInteractive = !!activeTool
 
@@ -175,7 +174,7 @@ function MobilePaymentCard({
 
 export function PaymentMobileCards({
     data,
-    monthlyQuota,
+    quotaMode: _quotaMode,
     activeTool,
     onCellClick
 }: PaymentMobileCardsProps) {
@@ -199,7 +198,6 @@ export function PaymentMobileCards({
                 <MobilePaymentCard
                     key={apartment.apartmentId}
                     apartment={apartment}
-                    monthlyQuota={monthlyQuota}
                     activeTool={activeTool}
                     onCellClick={onCellClick}
                 />

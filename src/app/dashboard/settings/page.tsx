@@ -10,6 +10,8 @@ import { NotificationSettings } from "@/components/dashboard/settings/Notificati
 import { SettingsLayout } from "@/components/dashboard/settings/SettingsLayout"
 import { BillingSubscriptionCard } from "@/components/dashboard/subscription/BillingSubscriptionCard"
 import { BankingSection } from "@/components/dashboard/banking/BankingSection"
+import { ResidentInviteSection } from "@/components/dashboard/settings/ResidentInviteSection"
+import { getResidentPendingInvitations } from "@/lib/actions/resident-invitations"
 import { Building2 } from "lucide-react"
 import { getApartmentDisplayName } from "@/lib/utils"
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
@@ -67,6 +69,7 @@ export default async function SettingsPage() {
     let apartmentsData: Awaited<ReturnType<typeof getBuildingApartments>> = []
 
     let bankConnectionStatus = null
+    let residentPendingInvitations: import("@/lib/types").ResidentInvitation[] = []
 
     if (session.user.role === 'manager' && managerActiveBuildingId) {
         building = await getBuilding(managerActiveBuildingId)
@@ -76,6 +79,11 @@ export default async function SettingsPage() {
             const bankResult = await getBankConnectionStatus(managerActiveBuildingId)
             if (bankResult.success) {
                 bankConnectionStatus = bankResult.data
+            }
+            // Fetch pending resident invitations
+            const invitationsResult = await getResidentPendingInvitations(managerActiveBuildingId)
+            if (invitationsResult.success) {
+                residentPendingInvitations = invitationsResult.data
             }
         }
     }
@@ -106,7 +114,13 @@ export default async function SettingsPage() {
                     profile: <ProfileSettings user={userData} />,
 
                     building: building ? (
-                        <BuildingSettingsForm building={building} />
+                        <div className="space-y-4">
+                            <BuildingSettingsForm building={building} />
+                            <ResidentInviteSection
+                                buildingId={building.id}
+                                pendingInvitations={residentPendingInvitations}
+                            />
+                        </div>
                     ) : null,
 
                     apartments: building ? (

@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Sidebar } from "@/components/layout/Sidebar"
@@ -30,6 +31,15 @@ async function DashboardLayoutContent({
     const session = await auth.api.getSession({
         headers: await headers()
     })
+
+    if (!session?.user) {
+        redirect("/sign-in")
+    }
+
+    // Enforce email verification before dashboard access
+    if (!session.user.emailVerified) {
+        redirect("/verify-email")
+    }
 
     // Fetch context data (user, building, etc.)
     const initialData = await getDashboardContext(session as any)

@@ -152,7 +152,7 @@ export function ManageSubscriptionButton({ buildingId, variant = "default" }: Ma
             }
         >
             <CreditCard className="w-3.5 h-3.5" />
-            {isPending ? "A abrir..." : "Atualizar Pagamento"}
+            {isPending ? "A abrir..." : "Gerir Subscrição"}
         </Button>
     )
 }

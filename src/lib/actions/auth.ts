@@ -1,7 +1,13 @@
 "use server"
 
+import { headers } from "next/headers"
+import { eq } from "drizzle-orm"
+import { auth } from "@/lib/auth"
+import { db } from "@/db"
+import { user } from "@/db/schema"
 import { authClient } from "@/lib/auth-client"
 import { isValidNif } from "@/lib/validations"
+import { ActionResult, Ok, Err, ErrorCodes } from "@/lib/types"
 
 // Server Action State Types
 export type LoginState = {
@@ -122,4 +128,51 @@ export async function registerAction(
       },
     }
   }
+}
+
+/**
+ * Create a new user account with role (server-side).
+ * Uses auth.api.signUpEmail (server) instead of authClient (client)
+ * to set role via DB after creation (role has input: false in auth config).
+ */
+export async function createAccount(data: {
+    name: string
+    email: string
+    password: string
+    nif: string
+    role: "manager" | "resident"
+}): Promise<ActionResult<void>> {
+    try {
+        // 1. Create user via Better Auth (without role — input: false)
+        const signUpResult = await auth.api.signUpEmail({
+            body: {
+                name: data.name,
+                email: data.email,
+                password: data.password,
+                nif: data.nif,
+            },
+            headers: await headers(),
+        })
+
+        if (!signUpResult?.user?.id) {
+            return Err("Falha ao criar conta", ErrorCodes.INTERNAL_ERROR)
+        }
+
+        // 2. Set role via DB update
+        await db
+            .update(user)
+            .set({ role: data.role })
+            .where(eq(user.id, signUpResult.user.id))
+
+        return Ok(undefined)
+    } catch (error) {
+        console.error("[createAccount] Error:", error)
+
+        const errorMessage = error instanceof Error ? error.message : "Falha ao criar conta"
+        if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {
+            return Err("Já existe uma conta com este email", ErrorCodes.VALIDATION_FAILED)
+        }
+
+        return Err(errorMessage, ErrorCodes.INTERNAL_ERROR)
+    }
 }

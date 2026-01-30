@@ -105,8 +105,9 @@ export function BillingSubscriptionCard({
     )
 
     const renderActiveContent = () => (
-        <div className="space-y-2">
+        <div className="space-y-4">
             <p className="text-body text-gray-500">Todas as funcionalidades estão disponíveis.</p>
+            <ManageSubscriptionButton buildingId={buildingId} />
         </div>
     )
 

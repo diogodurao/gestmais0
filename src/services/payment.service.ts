@@ -40,22 +40,25 @@ export interface PaymentStatusSummary {
 }
 
 export class PaymentService {
-    async getPaymentMap(buildingId: string, year: number): Promise<{ gridData: PaymentData[], monthlyQuota: number }> {
-        if (!buildingId) return { gridData: [], monthlyQuota: 0 }
+    async getPaymentMap(buildingId: string, year: number): Promise<{ gridData: PaymentData[], monthlyQuota: number, quotaMode: string }> {
+        if (!buildingId) return { gridData: [], monthlyQuota: 0, quotaMode: 'global' }
 
         const buildingInfo = await db.select({
             monthlyQuota: building.monthlyQuota,
+            quotaMode: building.quotaMode,
         })
             .from(building)
             .where(eq(building.id, buildingId))
             .limit(1)
 
         const monthlyQuota = buildingInfo[0]?.monthlyQuota || 0
+        const quotaMode = buildingInfo[0]?.quotaMode || 'global'
 
         const buildingApartments = await db.select({
             id: apartments.id,
             unit: apartments.unit,
             residentName: user.name,
+            permillage: apartments.permillage,
         })
             .from(apartments)
             .leftJoin(user, eq(apartments.residentId, user.id))
@@ -85,6 +88,15 @@ export class PaymentService {
         // Build grid data
         const gridData: PaymentData[] = sortedApartments.map(apt => {
             const aptPayments = paymentsByApartment.get(apt.id) || {}
+            const permillage = apt.permillage || 0
+
+            // Calculate apartment-specific quota based on quotaMode
+            // If global: use monthlyQuota for all
+            // If permillage: apartmentQuota = (monthlyQuota × permillage) / 1000
+            const apartmentQuota = quotaMode === 'permillage' && permillage > 0
+                ? Math.round((monthlyQuota * permillage) / 1000)
+                : monthlyQuota
+
             let totalPaid = 0
             let totalOwed = 0
 
@@ -99,7 +111,7 @@ export class PaymentService {
 
                 // If it's the current month or earlier, they should have paid.
                 if (m <= currentMonth) {
-                    totalOwed += monthlyQuota
+                    totalOwed += apartmentQuota
                 }
             }
 
@@ -107,13 +119,15 @@ export class PaymentService {
                 apartmentId: apt.id,
                 unit: apt.unit,
                 residentName: apt.residentName,
+                permillage,
+                apartmentQuota,
                 payments: aptPayments,
                 totalPaid,
                 balance: Math.max(0, totalOwed - totalPaid)
             }
         })
 
-        return { gridData, monthlyQuota }
+        return { gridData, monthlyQuota, quotaMode }
     }
 
     async updatePaymentStatus(
@@ -133,15 +147,26 @@ export class PaymentService {
         let finalAmount = amount
         if (finalAmount === undefined) {
             if (status === 'paid') {
-                // Single JOIN query instead of cascading lookups
+                // Fetch building quota info and apartment permillage
                 const [result] = await db
-                    .select({ monthlyQuota: building.monthlyQuota })
+                    .select({
+                        monthlyQuota: building.monthlyQuota,
+                        quotaMode: building.quotaMode,
+                        permillage: apartments.permillage,
+                    })
                     .from(apartments)
                     .innerJoin(building, eq(apartments.buildingId, building.id))
                     .where(eq(apartments.id, apartmentId))
                     .limit(1)
 
-                finalAmount = result?.monthlyQuota || 0
+                const monthlyQuota = result?.monthlyQuota || 0
+                const quotaMode = result?.quotaMode || 'global'
+                const permillage = result?.permillage || 0
+
+                // Calculate apartment-specific quota based on quotaMode
+                finalAmount = quotaMode === 'permillage' && permillage > 0
+                    ? Math.round((monthlyQuota * permillage) / 1000)
+                    : monthlyQuota
             } else {
                 finalAmount = 0
             }
@@ -191,6 +216,8 @@ export class PaymentService {
                     unit: apartments.unit,
                     buildingId: apartments.buildingId,
                     monthlyQuota: building.monthlyQuota,
+                    quotaMode: building.quotaMode,
+                    permillage: apartments.permillage,
                 })
                 .from(apartments)
                 .innerJoin(building, eq(apartments.buildingId, building.id))
@@ -202,7 +229,14 @@ export class PaymentService {
             }
 
             const apartment = apartmentResult[0]
-            const monthlyQuota = apartment.monthlyQuota || 0
+            const buildingMonthlyQuota = apartment.monthlyQuota || 0
+            const quotaMode = apartment.quotaMode || 'global'
+            const permillage = apartment.permillage || 0
+
+            // Calculate apartment-specific quota based on quotaMode
+            const monthlyQuota = quotaMode === 'permillage' && permillage > 0
+                ? Math.round((buildingMonthlyQuota * permillage) / 1000)
+                : buildingMonthlyQuota
 
             // Regular Quotas calculation
             const regPayments = await db
@@ -338,6 +372,7 @@ export class PaymentService {
             if (!buildingResult.length) return { success: false, error: "Condomínio não encontrado" }
             const currentBuilding = buildingResult[0]
             const monthlyQuota = currentBuilding.monthlyQuota || 0
+            const quotaMode = currentBuilding.quotaMode || 'global'
 
             // Regular Quotas Summary
             const regPayments = await db
@@ -354,10 +389,33 @@ export class PaymentService {
                     eq(payments.status, 'paid')
                 ))
 
-            const totalAptsResult = await db.select({ count: count() }).from(apartments).where(eq(apartments.buildingId, buildingId))
-            const totalApts = totalAptsResult[0].count
+            // Calculate total due based on quotaMode
+            let totalDueRegular: number
 
-            const totalDueRegular = totalApts * monthlyQuota * currentMonth
+            if (quotaMode === 'permillage') {
+                // Fetch all apartments with their permillage to calculate individual quotas
+                const buildingApartments = await db
+                    .select({ permillage: apartments.permillage })
+                    .from(apartments)
+                    .where(eq(apartments.buildingId, buildingId))
+
+                // Sum of all apartment quotas for each month
+                const totalMonthlyExpected = buildingApartments.reduce((sum, apt) => {
+                    const permillage = apt.permillage || 0
+                    const aptQuota = permillage > 0
+                        ? Math.round((monthlyQuota * permillage) / 1000)
+                        : monthlyQuota
+                    return sum + aptQuota
+                }, 0)
+
+                totalDueRegular = totalMonthlyExpected * currentMonth
+            } else {
+                // Global mode: flat calculation
+                const totalAptsResult = await db.select({ count: count() }).from(apartments).where(eq(apartments.buildingId, buildingId))
+                const totalApts = totalAptsResult[0].count
+                totalDueRegular = totalApts * monthlyQuota * currentMonth
+            }
+
             const totalPaidRegular = Number(regPayments[0].totalPaid) || 0
             const regBalance = Math.max(0, totalDueRegular - totalPaidRegular)
 
@@ -445,6 +503,8 @@ export class PaymentService {
                     unit: apartments.unit,
                     buildingId: apartments.buildingId,
                     monthlyQuota: building.monthlyQuota,
+                    quotaMode: building.quotaMode,
+                    permillage: apartments.permillage,
                     paymentDueDay: building.paymentDueDay,
                 })
                 .from(apartments)
@@ -457,8 +517,15 @@ export class PaymentService {
             }
 
             const apartment = apartmentResult[0]
-            const monthlyQuota = apartment.monthlyQuota || 0
+            const buildingMonthlyQuota = apartment.monthlyQuota || 0
+            const quotaMode = apartment.quotaMode || 'global'
+            const permillage = apartment.permillage || 0
             const paymentDueDay = apartment.paymentDueDay || 1 // Default to 1st if not set
+
+            // Calculate apartment-specific quota based on quotaMode
+            const monthlyQuota = quotaMode === 'permillage' && permillage > 0
+                ? Math.round((buildingMonthlyQuota * permillage) / 1000)
+                : buildingMonthlyQuota
 
             // Get resident if any
             const residentResult = await db

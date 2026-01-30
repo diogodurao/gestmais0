@@ -28,7 +28,30 @@ export const notificationTypeEnum = pgEnum('notification_type', [
     'payment_due',
     'payment_overdue',
     'poll',
-    'subscription_payment_failed'
+    'subscription_payment_failed',
+    'collaborator_invited',
+    'collaborator_accepted',
+    'collaborator_declined'
+])
+
+export const collaboratorInvitationStatusEnum = pgEnum('collaborator_invitation_status', [
+    'pending',
+    'accepted',
+    'declined',
+    'cancelled',
+    'expired'
+])
+
+export const managerBuildingRoleEnum = pgEnum('manager_building_role', [
+    'owner',
+    'collaborator'
+])
+
+// External professional types
+export const professionalTypeEnum = pgEnum('professional_type', [
+    'accountant',
+    'lawyer',
+    'consultant'
 ])
 
 // --- Auth Tables (Better-Auth) ---
@@ -42,7 +65,7 @@ export const user = pgTable('user', {
     createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at').notNull(),
     // Custom fields
-    role: text('role'), // 'manager' | 'resident'
+    role: text('role'), // 'manager' | 'resident' | 'professional'
     nif: text('nif'),
     iban: text('iban'), // Personal IBAN for residents
     buildingId: text('building_id'), // For residents: their building
@@ -125,11 +148,121 @@ export const managerBuildings = pgTable('manager_buildings', {
     id: serial('id').primaryKey(),
     managerId: text('manager_id').notNull().references(() => user.id),
     buildingId: text('building_id').notNull().references(() => building.id),
-    isOwner: boolean('is_owner').default(false), // Original creator
+    isOwner: boolean('is_owner').default(false), // Original creator (legacy, use role instead)
+    role: managerBuildingRoleEnum('role').notNull().default('owner'), // 'owner' | 'collaborator'
     createdAt: timestamp('created_at').defaultNow(),
 }, (table) => ({
     idxManagerBuildingsManager: index("idx_manager_buildings_manager").on(table.managerId),
     idxManagerBuildingsBuilding: index("idx_manager_buildings_building").on(table.buildingId),
+}))
+
+// --- Collaborator Invitations ---
+
+export const collaboratorInvitations = pgTable('collaborator_invitations', {
+    id: serial('id').primaryKey(),
+    buildingId: text('building_id').notNull().references(() => building.id),
+
+    // For existing users (residents) - current implementation
+    invitedUserId: text('invited_user_id').references(() => user.id),
+
+    // For external professionals (future) - invite by email
+    invitedEmail: text('invited_email'),
+
+    invitedByUserId: text('invited_by_user_id').notNull().references(() => user.id),
+
+    // Role they'll have when they accept
+    role: managerBuildingRoleEnum('role').notNull().default('collaborator'),
+
+    status: collaboratorInvitationStatusEnum('status').notNull().default('pending'),
+    token: text('token').notNull().unique(),
+    expiresAt: timestamp('expires_at').notNull(),
+    respondedAt: timestamp('responded_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+    idxCollaboratorInvitationsBuilding: index("idx_collaborator_invitations_building").on(table.buildingId),
+    idxCollaboratorInvitationsInvitedUser: index("idx_collaborator_invitations_invited_user").on(table.invitedUserId),
+    idxCollaboratorInvitationsToken: index("idx_collaborator_invitations_token").on(table.token),
+    idxCollaboratorInvitationsStatus: index("idx_collaborator_invitations_status").on(table.status),
+    idxCollaboratorInvitationsEmail: index("idx_collaborator_invitations_email").on(table.invitedEmail),
+}));
+
+// --- Professional Invitations ---
+
+export const professionalInvitations = pgTable('professional_invitations', {
+    id: serial('id').primaryKey(),
+    buildingId: text('building_id').notNull().references(() => building.id),
+    invitedEmail: text('invited_email').notNull(),
+    invitedByUserId: text('invited_by_user_id').notNull().references(() => user.id),
+    professionalType: professionalTypeEnum('professional_type').notNull(),
+    status: collaboratorInvitationStatusEnum('status').notNull().default('pending'),
+    token: text('token').notNull().unique(),
+    expiresAt: timestamp('expires_at').notNull(),
+    respondedAt: timestamp('responded_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+    idxProfessionalInvitationsBuilding: index("idx_professional_invitations_building").on(table.buildingId),
+    idxProfessionalInvitationsToken: index("idx_professional_invitations_token").on(table.token),
+    idxProfessionalInvitationsStatus: index("idx_professional_invitations_status").on(table.status),
+    idxProfessionalInvitationsEmail: index("idx_professional_invitations_email").on(table.invitedEmail),
+}));
+
+// --- Resident Invitations ---
+
+export const residentInvitations = pgTable('resident_invitations', {
+    id: serial('id').primaryKey(),
+    buildingId: text('building_id').notNull().references(() => building.id),
+    invitedEmail: text('invited_email').notNull(),
+    invitedByUserId: text('invited_by_user_id').notNull().references(() => user.id),
+    status: collaboratorInvitationStatusEnum('status').notNull().default('pending'),
+    token: text('token').notNull().unique(),
+    expiresAt: timestamp('expires_at').notNull(),
+    respondedAt: timestamp('responded_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+    idxResidentInvitationsBuilding: index("idx_resident_invitations_building").on(table.buildingId),
+    idxResidentInvitationsToken: index("idx_resident_invitations_token").on(table.token),
+    idxResidentInvitationsStatus: index("idx_resident_invitations_status").on(table.status),
+    idxResidentInvitationsEmail: index("idx_resident_invitations_email").on(table.invitedEmail),
+}));
+
+// --- External Professional Profiles ---
+
+export const professionalProfiles = pgTable('professional_profiles', {
+    id: serial('id').primaryKey(),
+    userId: text('user_id').notNull().references(() => user.id),
+    professionalId: text('professional_id').notNull(), // Cédula profissional (5-6 digits + optional letter, e.g. 12345P)
+    professionalType: professionalTypeEnum('professional_type').notNull(),
+    companyName: text('company_name'),
+    phone: text('phone').notNull(),
+    nif: text('nif'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+    idxProfessionalProfilesUser: index("idx_professional_profiles_user").on(table.userId),
+    idxProfessionalProfilesType: index("idx_professional_profiles_type").on(table.professionalType),
+    uniqueProfessionalId: unique("unique_professional_id_type").on(table.professionalId, table.professionalType),
+}));
+
+// --- External Professionals linked to Buildings ---
+
+export const buildingProfessionals = pgTable('building_professionals', {
+    id: serial('id').primaryKey(),
+    professionalId: text('professional_id').notNull().references(() => user.id),
+    buildingId: text('building_id').notNull().references(() => building.id),
+    invitedByUserId: text('invited_by_user_id').notNull().references(() => user.id),
+    professionalType: professionalTypeEnum('professional_type').notNull(),
+    // Permission flags based on professional type
+    canViewPayments: boolean('can_view_payments').notNull().default(false),
+    canViewDocuments: boolean('can_view_documents').notNull().default(false),
+    canViewReports: boolean('can_view_reports').notNull().default(false),
+    canViewOccurrences: boolean('can_view_occurrences').notNull().default(false),
+    canViewPolls: boolean('can_view_polls').notNull().default(false),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+    idxBuildingProfessionalsProfessional: index("idx_building_professionals_professional").on(table.professionalId),
+    idxBuildingProfessionalsBuilding: index("idx_building_professionals_building").on(table.buildingId),
+    idxBuildingProfessionalsType: index("idx_building_professionals_type").on(table.professionalType),
+    uniqueProfessionalBuilding: unique("unique_professional_building").on(table.professionalId, table.buildingId),
 }));
 
 // --- Unit/Apartment Tables ---
@@ -732,5 +865,79 @@ export const residentIbansRelations = relations(residentIbans, ({ one }) => ({
     apartment: one(apartments, {
         fields: [residentIbans.apartmentId],
         references: [apartments.id],
+    }),
+}))
+
+// --- Collaborator Invitations Relations ---
+
+export const collaboratorInvitationsRelations = relations(collaboratorInvitations, ({ one }) => ({
+    building: one(building, {
+        fields: [collaboratorInvitations.buildingId],
+        references: [building.id],
+    }),
+    invitedUser: one(user, {
+        fields: [collaboratorInvitations.invitedUserId],
+        references: [user.id],
+        relationName: 'invitedUser',
+    }),
+    invitedBy: one(user, {
+        fields: [collaboratorInvitations.invitedByUserId],
+        references: [user.id],
+        relationName: 'invitedBy',
+    }),
+}))
+
+export const managerBuildingsRelations = relations(managerBuildings, ({ one }) => ({
+    manager: one(user, {
+        fields: [managerBuildings.managerId],
+        references: [user.id],
+    }),
+    building: one(building, {
+        fields: [managerBuildings.buildingId],
+        references: [building.id],
+    }),
+}))
+
+export const professionalProfilesRelations = relations(professionalProfiles, ({ one }) => ({
+    user: one(user, {
+        fields: [professionalProfiles.userId],
+        references: [user.id],
+    }),
+}))
+
+export const buildingProfessionalsRelations = relations(buildingProfessionals, ({ one }) => ({
+    professional: one(user, {
+        fields: [buildingProfessionals.professionalId],
+        references: [user.id],
+    }),
+    building: one(building, {
+        fields: [buildingProfessionals.buildingId],
+        references: [building.id],
+    }),
+    invitedBy: one(user, {
+        fields: [buildingProfessionals.invitedByUserId],
+        references: [user.id],
+    }),
+}))
+
+export const professionalInvitationsRelations = relations(professionalInvitations, ({ one }) => ({
+    building: one(building, {
+        fields: [professionalInvitations.buildingId],
+        references: [building.id],
+    }),
+    invitedBy: one(user, {
+        fields: [professionalInvitations.invitedByUserId],
+        references: [user.id],
+    }),
+}))
+
+export const residentInvitationsRelations = relations(residentInvitations, ({ one }) => ({
+    building: one(building, {
+        fields: [residentInvitations.buildingId],
+        references: [building.id],
+    }),
+    invitedBy: one(user, {
+        fields: [residentInvitations.invitedByUserId],
+        references: [user.id],
     }),
 }))

@@ -123,6 +123,7 @@ export async function updateBuilding(
         quotaMode?: string
         monthlyQuota?: number
         totalApartments?: number
+        paymentDueDay?: number | null
     }
 ): Promise<ActionResult<{ id: string }>> {
     await requireBuildingAccess(buildingId)

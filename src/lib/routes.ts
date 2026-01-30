@@ -16,7 +16,11 @@ export const ROUTES = {
         POLL_DETAIL: (id: number) => `/dashboard/polls/${id}`,
         EVALUATIONS: "/dashboard/evaluations",
         DOCUMENTS: "/dashboard/documents",
+        COLLABORATORS: "/dashboard/collaborators",
+        INVITATIONS: "/dashboard/invitations",
+        PROFESSIONALS: "/dashboard/professionals",
     },
+    INVITE: "/invite",
     AUTH: {
         LOGIN: "/auth/login",
     },

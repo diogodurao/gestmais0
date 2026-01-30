@@ -1,6 +1,6 @@
 "use server"
 
-import { requireSession } from "@/lib/auth-helpers"
+import { requireBuildingOwnerAccess } from "@/lib/auth-helpers"
 import { stripeService } from "@/services/stripe.service"
 
 type SyncResult = {
@@ -10,7 +10,8 @@ type SyncResult = {
 }
 
 export async function syncSubscriptionStatus(buildingId: string): Promise<SyncResult> {
-    const session = await requireSession()
+    // Only building owners can manage subscriptions
+    const { session } = await requireBuildingOwnerAccess(buildingId)
 
     const result = await stripeService.syncSubscriptionStatus(
         buildingId,
@@ -26,7 +27,8 @@ export async function syncSubscriptionStatus(buildingId: string): Promise<SyncRe
 }
 
 export async function createCheckoutSession(buildingId: string): Promise<{ success: true; url: string } | { success: false; error: string }> {
-    const session = await requireSession()
+    // Only building owners can manage subscriptions
+    const { session } = await requireBuildingOwnerAccess(buildingId)
 
     const result = await stripeService.createCheckoutSession(
         buildingId,
@@ -47,7 +49,8 @@ export async function createCheckoutSession(buildingId: string): Promise<{ succe
 }
 
 export async function createBillingPortalSession(buildingId: string): Promise<{ success: true; url: string } | { success: false; error: string }> {
-    const session = await requireSession()
+    // Only building owners can manage subscriptions
+    const { session } = await requireBuildingOwnerAccess(buildingId)
 
     const result = await stripeService.createBillingPortalSession(
         buildingId,

@@ -1,4 +1,4 @@
-import type { SessionUser, UserRole, SubscriptionStatus } from "./types"
+import type { SessionUser, UserRole, SubscriptionStatus, ManagerBuildingRole, ProfessionalPermissions } from "./types"
 import { SUBSCRIPTION_GRACE_PERIOD_DAYS } from "./constants/timing"
 
 // ==========================================
@@ -10,6 +10,10 @@ type BuildingContext = {
     managerId?: string
     setupComplete?: boolean | null
     subscriptionPastDueAt?: Date | string | null
+}
+
+type ManagerBuildingContext = {
+    role?: ManagerBuildingRole | null
 }
 
 type PermissionContext = {
@@ -27,6 +31,10 @@ export function isManager(user: SessionUser | null): boolean {
 
 export function isResident(user: SessionUser | null): boolean {
     return user?.role === "resident"
+}
+
+export function isProfessional(user: SessionUser | null): boolean {
+    return user?.role === "professional"
 }
 
 export function hasRole(user: SessionUser | null, role: UserRole): boolean {
@@ -244,5 +252,142 @@ export function requireManagerWithSubscription(
 ): asserts user is SessionUser {
     requireManager(user)
     requireActiveSubscription(building)
+}
+
+// ==========================================
+// PROFESSIONAL PERMISSIONS
+// ==========================================
+
+export const PROFESSIONAL_DEFAULT_PERMISSIONS: ProfessionalPermissions = {
+    canViewPayments: true,
+    canViewDocuments: true,
+    canViewReports: true,
+    canViewOccurrences: false,
+    canViewPolls: false,
+}
+
+// ==========================================
+// COLLABORATOR PERMISSION CHECKS
+// ==========================================
+
+/**
+ * Check if the user has the 'owner' role for the building
+ */
+export function isBuildingOwner(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+    return managerBuilding?.role === 'owner'
+}
+
+/**
+ * Check if the user has the 'collaborator' role for the building
+ */
+export function isBuildingCollaborator(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+    return managerBuilding?.role === 'collaborator'
+}
+
+/**
+ * Check if user is either owner or collaborator
+ */
+export function isOwnerOrCollaborator(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+    return managerBuilding?.role === 'owner' || managerBuilding?.role === 'collaborator'
+}
+
+/**
+ * Collaborator-aware permission checks
+ * These check if an action is allowed based on the user's role in the building
+ */
+export const canCollaborator = {
+    /**
+     * Can manage collaborators (invite/remove)
+     * Only building owners can manage collaborators
+     */
+    manageCollaborators(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+        return isBuildingOwner(managerBuilding)
+    },
+
+    /**
+     * Can delete residents from the building
+     * Only building owners can delete residents
+     */
+    deleteResident(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+        return isBuildingOwner(managerBuilding)
+    },
+
+    /**
+     * Can delete the building
+     * Only building owners can delete the building
+     */
+    deleteBuilding(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+        return isBuildingOwner(managerBuilding)
+    },
+
+    /**
+     * Can manage subscription/billing
+     * Only building owners can manage subscriptions
+     */
+    manageSubscription(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+        return isBuildingOwner(managerBuilding)
+    },
+
+    /**
+     * Can view and manage payments
+     * Both owners and collaborators can manage payments
+     */
+    managePayments(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+        return isOwnerOrCollaborator(managerBuilding)
+    },
+
+    /**
+     * Can view and manage residents (but not delete)
+     * Both owners and collaborators can manage residents
+     */
+    manageResidents(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+        return isOwnerOrCollaborator(managerBuilding)
+    },
+
+    /**
+     * Can create/edit events, polls, discussions
+     * Both owners and collaborators can manage these
+     */
+    manageContent(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+        return isOwnerOrCollaborator(managerBuilding)
+    },
+
+    /**
+     * Can edit building settings
+     * Both owners and collaborators can edit settings (except billing-related)
+     */
+    editSettings(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+        return isOwnerOrCollaborator(managerBuilding)
+    },
+
+    /**
+     * Can invite external professionals
+     * Both owners and collaborators can invite professionals
+     */
+    inviteProfessionals(managerBuilding: ManagerBuildingContext | null | undefined): boolean {
+        return isOwnerOrCollaborator(managerBuilding)
+    },
+}
+
+// ==========================================
+// COLLABORATOR GUARD HELPERS
+// ==========================================
+
+/**
+ * Throws if user is not a building owner
+ */
+export function requireBuildingOwner(managerBuilding: ManagerBuildingContext | null | undefined): void {
+    if (!isBuildingOwner(managerBuilding)) {
+        throw new Error("Building owner access required")
+    }
+}
+
+/**
+ * Throws if user is not owner or collaborator
+ */
+export function requireOwnerOrCollaborator(managerBuilding: ManagerBuildingContext | null | undefined): void {
+    if (!isOwnerOrCollaborator(managerBuilding)) {
+        throw new Error("Building access required")
+    }
 }
 

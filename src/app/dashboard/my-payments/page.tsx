@@ -27,7 +27,7 @@ export default async function MyPaymentsPage() {
     const year = new Date().getFullYear()
 
     // Fetch payment map as usual
-    const { gridData, monthlyQuota } = await getPaymentMap(session.user.buildingId, year)
+    const { gridData, monthlyQuota, quotaMode } = await getPaymentMap(session.user.buildingId, year)
 
     return (
         <div className="max-w-350 mx-auto">
@@ -39,6 +39,7 @@ export default async function MyPaymentsPage() {
                 <PaymentGrid
                     data={gridData}
                     monthlyQuota={monthlyQuota}
+                    quotaMode={quotaMode}
                     buildingId={session.user.buildingId}
                     year={year}
                     readOnly={true}

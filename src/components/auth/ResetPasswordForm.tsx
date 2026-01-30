@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Input"
+import { PasswordInput } from "@/components/ui/PasswordInput"
 import { FormField, FormLabel, FormControl, FormError, FormDescription } from "@/components/ui/Form-Field"
 import { Alert } from "@/components/ui/Alert"
 import { authClient } from "@/lib/auth-client"
@@ -119,10 +119,9 @@ export function ResetPasswordForm() {
                 <FormLabel>Nova palavra-passe</FormLabel>
                 <FormControl>
                     {(props) => (
-                        <Input
+                        <PasswordInput
                             {...props}
                             name="password"
-                            type="password"
                             placeholder="••••••••"
                             autoComplete="new-password"
                             required
@@ -139,10 +138,9 @@ export function ResetPasswordForm() {
                 <FormLabel>Confirmar palavra-passe</FormLabel>
                 <FormControl>
                     {(props) => (
-                        <Input
+                        <PasswordInput
                             {...props}
                             name="confirmPassword"
-                            type="password"
                             placeholder="••••••••"
                             autoComplete="new-password"
                             required

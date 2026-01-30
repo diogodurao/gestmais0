@@ -2,7 +2,7 @@ import { calendarEvents } from "@/db/schema"
 
 export type PaymentStatus = "paid" | "pending" | "late" | "partial"
 export type ProjectStatus = "active" | "completed" | "cancelled" | "archived"
-export type UserRole = "manager" | "resident"
+export type UserRole = "manager" | "resident" | "professional"
 export type ComponentSize = "xs" | "sm" | "md" | "lg"
 
 /**
@@ -277,6 +277,7 @@ export type DashboardInitialData = {
     activeBuilding: ManagedBuilding | null
     residentApartment: Apartment | null
     setupComplete: boolean
+    professionalPermissions?: ProfessionalPermissions | null
 }
 
 // ==========================================
@@ -640,4 +641,97 @@ export interface BankConnectionSummary {
 export interface UnmatchedTransaction extends BankTransaction {
     accountName: string | null
     accountIban: string | null
+}
+
+// ==========================================
+// COLLABORATOR TYPES
+// ==========================================
+
+export type ManagerBuildingRole = 'owner' | 'collaborator'
+
+export type CollaboratorInvitationStatus = 'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired'
+
+export interface CollaboratorInvitation {
+    id: number
+    buildingId: string
+    invitedUserId: string | null
+    invitedEmail: string | null
+    invitedByUserId: string
+    role: ManagerBuildingRole
+    status: CollaboratorInvitationStatus
+    token: string
+    expiresAt: Date | string
+    respondedAt: Date | string | null
+    createdAt: Date | string
+    invitedUserName?: string | null
+    invitedByUserName?: string | null
+    buildingName?: string | null
+}
+
+export interface Collaborator {
+    id: number
+    managerId: string
+    buildingId: string
+    role: ManagerBuildingRole
+    createdAt: Date | string | null
+    name: string
+    email: string
+}
+
+// ==========================================
+// PROFESSIONAL TYPES
+// ==========================================
+
+export type ProfessionalType = "accountant" | "lawyer" | "consultant"
+
+export interface ResidentInvitation {
+    id: number
+    buildingId: string
+    invitedEmail: string
+    invitedByUserId: string
+    status: CollaboratorInvitationStatus
+    token: string
+    expiresAt: Date | string
+    respondedAt: Date | string | null
+    createdAt: Date | string
+    invitedByUserName?: string | null
+    buildingName?: string | null
+}
+
+export interface ProfessionalInvitation {
+    id: number
+    buildingId: string
+    invitedEmail: string
+    invitedByUserId: string
+    professionalType: ProfessionalType
+    status: CollaboratorInvitationStatus
+    token: string
+    expiresAt: Date | string
+    respondedAt: Date | string | null
+    createdAt: Date | string
+    invitedByUserName?: string | null
+    buildingName?: string | null
+}
+
+export interface BuildingProfessional {
+    id: number
+    professionalId: string
+    buildingId: string
+    professionalType: ProfessionalType
+    canViewPayments: boolean
+    canViewDocuments: boolean
+    canViewReports: boolean
+    canViewOccurrences: boolean
+    canViewPolls: boolean
+    createdAt: Date | string
+    userName?: string | null
+    userEmail?: string | null
+}
+
+export interface ProfessionalPermissions {
+    canViewPayments: boolean
+    canViewDocuments: boolean
+    canViewReports: boolean
+    canViewOccurrences: boolean
+    canViewPolls: boolean
 }

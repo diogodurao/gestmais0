@@ -1,9 +1,9 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { db } from "@/db"
-import { managerBuildings, apartments, extraordinaryProjects } from "@/db/schema"
+import { managerBuildings, apartments, extraordinaryProjects, buildingProfessionals } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
-import { isManager, isResident } from "@/lib/permissions"
+import { isManager, isResident, isProfessional } from "@/lib/permissions"
 import type { SessionUser } from "@/lib/types"
 
 // ==========================================
@@ -88,6 +88,20 @@ export async function requireBuildingAccess(buildingId: string) {
 }
 
 /**
+ * Verify manager has owner access to a specific building
+ * Use this for actions that only owners can perform (not collaborators)
+ */
+export async function requireBuildingOwnerAccess(buildingId: string) {
+    const { session, access } = await requireBuildingAccess(buildingId)
+
+    if (access.role !== 'owner') {
+        throw new Error("Unauthorized: Building owner access required")
+    }
+
+    return { session, access }
+}
+
+/**
  * Verify manager has access to a specific apartment (via building)
  */
 export async function requireApartmentAccess(apartmentId: number) {
@@ -129,6 +143,54 @@ export async function requireProjectAccess(projectId: number) {
 
     // 2. Verify building access
     return await requireBuildingAccess(project.buildingId)
+}
+
+/**
+ * Require professional role or throw
+ */
+export async function requireProfessionalSession() {
+    const session = await requireSession()
+    const sessionUser = session.user as unknown as SessionUser
+
+    if (!isProfessional(sessionUser)) {
+        throw new Error("Unauthorized: Professional role required")
+    }
+
+    return session
+}
+
+/**
+ * Verify user has manager or collaborator access to a building
+ * Both owners and collaborators can invite professionals
+ */
+export async function requireManagerOrCollaboratorAccess(buildingId: string) {
+    const session = await requireManagerSession()
+
+    const access = await db.select()
+        .from(managerBuildings)
+        .where(and(
+            eq(managerBuildings.managerId, session.user.id),
+            eq(managerBuildings.buildingId, buildingId)
+        ))
+        .limit(1)
+
+    if (!access.length) {
+        throw new Error("Unauthorized: You do not manage this building")
+    }
+
+    return { session, access: access[0] }
+}
+
+/**
+ * Get the building ID for a professional user
+ */
+export async function getProfessionalBuildingId(userId: string): Promise<string | null> {
+    const entry = await db.select({ buildingId: buildingProfessionals.buildingId })
+        .from(buildingProfessionals)
+        .where(eq(buildingProfessionals.professionalId, userId))
+        .limit(1)
+
+    return entry.length ? entry[0].buildingId : null
 }
 
 // Re-export SessionUser for backward compatibility

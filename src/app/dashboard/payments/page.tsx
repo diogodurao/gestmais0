@@ -7,27 +7,45 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { getOrCreateManagerBuilding } from "@/lib/actions/building"
 import { isProfileComplete, isBuildingComplete } from "@/lib/validations"
 import { getCachedPaymentMap } from "@/lib/cache/dashboard.cache"
+import { getProfessionalBuildingId } from "@/lib/auth-helpers"
 
 export default async function PaymentsPage() {
     const session = await auth.api.getSession({
         headers: await headers()
     })
 
-    if (!session || session.user.role !== 'manager') {
+    if (!session) {
         return redirect("/dashboard")
     }
 
-    // MANDATORY SETUP CHECK
-    const profileDone = isProfileComplete(session.user)
-    const building = await getOrCreateManagerBuilding()
-    const buildingDone = isBuildingComplete(building)
+    const isProfessional = session.user.role === 'professional'
+    const isManager = session.user.role === 'manager'
 
-    if (!profileDone || !buildingDone) {
+    // Only managers and professionals can access
+    if (!isManager && !isProfessional) {
         return redirect("/dashboard")
     }
 
-    // FIX: For managers, use activeBuildingId (not buildingId which is for residents)
-    const buildingId = session.user.activeBuildingId || building.id
+    let buildingId: string | null = null
+
+    if (isProfessional) {
+        buildingId = await getProfessionalBuildingId(session.user.id)
+        if (!buildingId) {
+            return redirect("/dashboard")
+        }
+    } else {
+        // Manager flow
+        const profileDone = isProfileComplete(session.user)
+        const building = await getOrCreateManagerBuilding()
+        const buildingDone = isBuildingComplete(building)
+
+        if (!profileDone || !buildingDone) {
+            return redirect("/dashboard")
+        }
+
+        buildingId = session.user.activeBuildingId || building.id
+    }
+
     const currentYear = new Date().getFullYear()
 
     return (
@@ -41,6 +59,7 @@ export default async function PaymentsPage() {
                     <PaymentsContent
                         buildingId={buildingId}
                         year={currentYear}
+                        readOnly={isProfessional}
                     />
                 </Suspense>
             </ErrorBoundary>
@@ -51,18 +70,22 @@ export default async function PaymentsPage() {
 async function PaymentsContent({
     buildingId,
     year,
+    readOnly,
 }: {
     buildingId: string
     year: number
+    readOnly?: boolean
 }) {
-    const { gridData, monthlyQuota } = await getCachedPaymentMap(buildingId, year)
+    const { gridData, monthlyQuota, quotaMode } = await getCachedPaymentMap(buildingId, year)
 
     return (
         <PaymentGrid
             data={gridData}
             monthlyQuota={monthlyQuota}
+            quotaMode={quotaMode}
             buildingId={buildingId}
             year={year}
+            readOnly={readOnly}
         />
     )
 }

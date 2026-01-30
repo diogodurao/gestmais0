@@ -28,7 +28,11 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
     totalApartments: building.totalApartments?.toString() || "",
     quotaMode: building.quotaMode || "global",
     monthlyQuota: building.monthlyQuota ? (building.monthlyQuota / 100).toString() : "",
+    paymentDueDay: "",
   })
+
+  // For permillage mode: whether user inputs annual or monthly value
+  const [inputPeriod, setInputPeriod] = useState<"monthly" | "annual">("monthly")
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -59,9 +63,26 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
       return
     }
 
+    const dueDay = parseInt(formData.paymentDueDay)
+    if (!formData.paymentDueDay || isNaN(dueDay) || dueDay < 1 || dueDay > 28) {
+      setError("Dia de vencimento inválido (deve ser entre 1 e 28)")
+      return
+    }
+
     setIsLoading(true)
 
     try {
+      // Calculate monthly quota (convert from annual if needed for permillage mode)
+      let monthlyQuotaInCents = 0
+      if (formData.monthlyQuota) {
+        const inputValue = parseFloat(formData.monthlyQuota)
+        // If permillage mode and annual input, divide by 12
+        const monthlyValue = formData.quotaMode === "permillage" && inputPeriod === "annual"
+          ? inputValue / 12
+          : inputValue
+        monthlyQuotaInCents = Math.round(monthlyValue * 100)
+      }
+
       const result = await updateBuilding(building.id, {
         name: `${formData.street} ${formData.number}`.trim(),
         nif: formData.nif,
@@ -70,10 +91,9 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
         number: formData.number || null,
         city: formData.city || null,
         quotaMode: formData.quotaMode,
-        monthlyQuota: formData.monthlyQuota
-          ? Math.round(parseFloat(formData.monthlyQuota) * 100)
-          : 0,
+        monthlyQuota: monthlyQuotaInCents,
         totalApartments: parseInt(formData.totalApartments) || 0,
+        paymentDueDay: dueDay,
       })
 
       if (result.success) {
@@ -136,7 +156,8 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
             <input
               type="text"
               value={formData.nif}
-              onChange={(e) => handleChange("nif", e.target.value)}
+              onChange={(e) => handleChange("nif", e.target.value.replace(/\D/g, ""))}
+              inputMode="numeric"
               className={`${ONBOARDING_INPUT_CLASS} font-mono`}
               maxLength={9}
             />
@@ -216,8 +237,32 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
 
           <div>
             <label className="block text-label font-semibold text-gray-500 uppercase mb-1">
-              Valor Base (€) *
+              {formData.quotaMode === "permillage" ? "Receita Total Esperada (€)" : "Quota Mensal (€)"} *
             </label>
+            {formData.quotaMode === "permillage" && (
+              <div className="flex gap-2 mb-1.5">
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="inputPeriod"
+                    checked={inputPeriod === "monthly"}
+                    onChange={() => setInputPeriod("monthly")}
+                    className="w-3 h-3 accent-primary"
+                  />
+                  <span className="text-label">Mensal</span>
+                </label>
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="inputPeriod"
+                    checked={inputPeriod === "annual"}
+                    onChange={() => setInputPeriod("annual")}
+                    className="w-3 h-3 accent-primary"
+                  />
+                  <span className="text-label">Anual</span>
+                </label>
+              </div>
+            )}
             <input
               type="number"
               step="0.01"
@@ -227,6 +272,29 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
               className={`${ONBOARDING_INPUT_CLASS} font-mono`}
               placeholder="0.00"
             />
+            {formData.quotaMode === "permillage" && (
+              <p className="text-label text-gray-500 mt-1">
+                Valor total {inputPeriod === "annual" ? "anual" : "mensal"} a dividir pelas frações conforme permilagem
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-label font-semibold text-gray-500 uppercase mb-1">
+              Dia de Vencimento *
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="28"
+              value={formData.paymentDueDay}
+              onChange={(e) => handleChange("paymentDueDay", e.target.value)}
+              className={`${ONBOARDING_INPUT_CLASS} font-mono`}
+              placeholder="Ex: 8"
+            />
+            <p className="text-label text-gray-500 mt-1">
+              Dia do mês em que a quota passa a estar em atraso (1-28)
+            </p>
           </div>
         </div>
       </div>
@@ -246,7 +314,10 @@ export function OnboardingStepBuilding({ building, onComplete }: OnboardingStepB
             !formData.iban.trim() ||
             !isValidIban(formData.iban) ||
             !formData.totalApartments ||
-            !formData.monthlyQuota
+            !formData.monthlyQuota ||
+            !formData.paymentDueDay ||
+            parseInt(formData.paymentDueDay) < 1 ||
+            parseInt(formData.paymentDueDay) > 28
           }
         >
           {isLoading ? "A guardar..." : "GUARDAR E CONTINUAR"}

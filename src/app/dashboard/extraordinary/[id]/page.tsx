@@ -40,7 +40,7 @@ export default async function ExtraordinaryProjectDetailPage({ params }: PagePro
         notFound()
     }
 
-    const isResident = session.user.role === 'resident'
+    const isManager = session.user.role === 'manager'
 
     return (
         <div className="p-4 md:p-6">
@@ -48,7 +48,7 @@ export default async function ExtraordinaryProjectDetailPage({ params }: PagePro
                 {/* 3. Pass the data directly to the client component */}
                 <ExtraProjectDetail
                     initialProject={projectResponse.data}
-                    readOnly={isResident}
+                    readOnly={!isManager}
                 />
             </Suspense>
         </div>

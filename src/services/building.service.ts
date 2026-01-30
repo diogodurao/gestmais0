@@ -264,6 +264,7 @@ export class BuildingService {
             quotaMode?: QuotaMode
             monthlyQuota?: number
             totalApartments?: number
+            paymentDueDay?: number | null
         }
     ): Promise<ActionResult<Building>> {
         const existing = await db.select().from(building).where(eq(building.id, buildingId)).limit(1)

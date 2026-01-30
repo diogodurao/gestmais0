@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/db";
@@ -8,6 +6,8 @@ import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 import * as Sentry from "@sentry/nextjs";
 import { notifySubscriptionPaymentFailed } from "@/lib/actions/notification";
+
+export const dynamic = "force-dynamic";
 
 type SubscriptionStatus = 'incomplete' | 'active' | 'canceled' | 'past_due' | 'unpaid'
 

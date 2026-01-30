@@ -17,6 +17,9 @@ import {
     MessageSquare,
     BarChart3,
     FolderOpen,
+    Users,
+    Mail,
+    Briefcase,
 } from "lucide-react"
 
 // ===========================================
@@ -32,7 +35,7 @@ export interface NavItem {
     /** Only show if subscription is active */
     requiresSubscription?: boolean
     /** Only show for specific roles */
-    roles?: ("manager" | "resident")[]
+    roles?: ("manager" | "resident" | "professional")[]
     /** Badge content (e.g., notification count) */
     badge?: string | number
 }
@@ -97,6 +100,18 @@ export const managerNavItems: NavItem[] = [
         requiresSetup: true,
     },
     {
+        href: ROUTES.DASHBOARD.COLLABORATORS,
+        label: "Colaboradores",
+        icon: Users,
+        requiresSetup: true,
+    },
+    {
+        href: ROUTES.DASHBOARD.PROFESSIONALS,
+        label: "Profissionais",
+        icon: Briefcase,
+        requiresSetup: true,
+    },
+    {
         href: ROUTES.DASHBOARD.SETTINGS,
         label: "Definições",
         icon: Settings,
@@ -156,9 +171,41 @@ export const residentNavItems: NavItem[] = [
         icon: FolderOpen,
     },
     {
+        href: ROUTES.DASHBOARD.INVITATIONS,
+        label: "Convites",
+        icon: Mail,
+    },
+    {
         href: ROUTES.DASHBOARD.SETTINGS,
         label: "Definições",
         icon: Settings,
+    },
+]
+
+// ===========================================
+// PROFESSIONAL NAVIGATION
+// ===========================================
+
+export const professionalNavItems: NavItem[] = [
+    {
+        href: ROUTES.DASHBOARD.HOME,
+        label: "Painel",
+        icon: LayoutDashboard,
+    },
+    {
+        href: ROUTES.DASHBOARD.PAYMENTS,
+        label: "Quotas",
+        icon: CreditCard,
+    },
+    {
+        href: ROUTES.DASHBOARD.EXTRAORDINARY,
+        label: "Quotas Extra",
+        icon: Hammer,
+    },
+    {
+        href: ROUTES.DASHBOARD.DOCUMENTS,
+        label: "Documentos",
+        icon: FolderOpen,
     },
 ]
 

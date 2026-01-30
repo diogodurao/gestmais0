@@ -2,10 +2,11 @@ import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { isManager } from "@/lib/permissions";
+import { isManager, isProfessional } from "@/lib/permissions";
 import type { SessionUser } from "@/lib/types";
 import { ManagerDashboard } from "@/components/dashboard/ManagerDashboard";
 import { ResidentDashboard } from "@/components/dashboard/ResidentDashboard";
+import { ProfessionalDashboard } from "@/components/dashboard/ProfessionalDashboard";
 
 export default async function DashboardPage() {
     return (
@@ -29,6 +30,10 @@ async function DashboardContent() {
 
     if (isManager(sessionUser)) {
         return <ManagerDashboard session={session as any} />
+    }
+
+    if (isProfessional(sessionUser)) {
+        return <ProfessionalDashboard />
     }
 
     return <ResidentDashboard session={session as any} />

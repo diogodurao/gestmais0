@@ -7,7 +7,7 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "./SidebarProvider"
 import { useDashboard } from "@/contexts/DashboardContext"
-import { managerNavItems, residentNavItems } from "@/config/navigation"
+import { managerNavItems, residentNavItems, professionalNavItems } from "@/config/navigation"
 
 export function MobileNav() {
     const { isMobileOpen, closeMobile } = useSidebar()
@@ -22,7 +22,11 @@ export function MobileNav() {
 
     // Reuse the same logic as Sidebar
     const userRole = session?.role || "resident"
-    const allItems = userRole === "manager" ? managerNavItems : residentNavItems
+    const allItems = userRole === "manager"
+        ? managerNavItems
+        : userRole === "professional"
+            ? professionalNavItems
+            : residentNavItems
     const hasActiveSubscription = activeBuilding?.building.subscriptionStatus === 'active'
 
     const filteredItems = allItems.filter((item) => {

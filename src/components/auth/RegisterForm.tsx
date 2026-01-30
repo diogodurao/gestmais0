@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
+import { PasswordInput } from "@/components/ui/PasswordInput"
 import { FormField, FormLabel, FormControl, FormError, FormDescription } from "@/components/ui/Form-Field"
 import { Alert } from "@/components/ui/Alert"
-import { authClient } from "@/lib/auth-client"
+import { createAccount } from "@/lib/actions/auth"
 import { isValidNif } from "@/lib/validations"
 
 type FormErrors = {
@@ -18,10 +19,10 @@ type FormErrors = {
 }
 
 export function RegisterForm() {
-    const router = useRouter()
     const [role, setRole] = useState<"manager" | "resident">("resident")
     const [isPending, startTransition] = useTransition()
     const [errors, setErrors] = useState<FormErrors>({})
+    const [isCreating, setIsCreating] = useState(false)
     const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -66,18 +67,16 @@ export function RegisterForm() {
             return
         }
 
-        startTransition(async () => {
-            const result = await authClient.signUp.email({
-                email,
-                password,
-                name,
-                role,
-                nif,
-            } as Parameters<typeof authClient.signUp.email>[0] & { role: string; nif: string })
+        // Show loading screen immediately — signup runs in background
+        setIsCreating(true)
 
-            if (result.error) {
+        startTransition(async () => {
+            const result = await createAccount({ name, email, password, nif, role })
+
+            if (!result.success) {
+                setIsCreating(false)
                 setErrors({
-                    form: result.error.message || "Ocorreu um erro ao criar conta",
+                    form: result.error || "Ocorreu um erro ao criar conta",
                 })
                 return
             }
@@ -85,6 +84,16 @@ export function RegisterForm() {
             // Show verification notice
             setRegisteredEmail(email)
         })
+    }
+
+    // Show loading screen while creating account
+    if (isCreating && !registeredEmail) {
+        return (
+            <div className="flex flex-col items-center justify-center py-8 gap-3">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <p className="text-body text-gray-600">A criar a sua conta...</p>
+            </div>
+        )
     }
 
     // Show verification notice after successful registration
@@ -100,7 +109,10 @@ export function RegisterForm() {
                 <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setRegisteredEmail(null)}
+                    onClick={() => {
+                        setRegisteredEmail(null)
+                        setIsCreating(false)
+                    }}
                 >
                     Registar outra conta
                 </Button>
@@ -169,10 +181,9 @@ export function RegisterForm() {
                 <FormLabel>Palavra-passe</FormLabel>
                 <FormControl>
                     {(props) => (
-                        <Input
+                        <PasswordInput
                             {...props}
                             name="password"
-                            type="password"
                             placeholder="••••••••"
                             autoComplete="new-password"
                             required
@@ -194,10 +205,12 @@ export function RegisterForm() {
                             name="nif"
                             type="text"
                             inputMode="numeric"
-                            pattern="[0-9]*"
                             placeholder="206578465"
                             maxLength={9}
                             required
+                            onChange={(e) => {
+                                e.target.value = e.target.value.replace(/\D/g, "")
+                            }}
                         />
                     )}
                 </FormControl>

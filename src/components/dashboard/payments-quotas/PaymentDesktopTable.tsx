@@ -7,7 +7,7 @@ import { type PaymentToolType, type PaymentData } from "@/lib/types"
 
 interface PaymentDesktopTableProps {
     data: PaymentData[]
-    monthlyQuota: number
+    quotaMode: string
     readOnly: boolean
     activeTool: PaymentToolType
     highlightedId: number | null
@@ -17,7 +17,7 @@ interface PaymentDesktopTableProps {
 
 export function PaymentDesktopTable({
     data,
-    monthlyQuota,
+    quotaMode,
     readOnly,
     activeTool,
     highlightedId,
@@ -115,7 +115,7 @@ export function PaymentDesktopTable({
                                                     )}
                                                 >
                                                     {status === "paid"
-                                                        ? formatCurrency(payment?.amount || monthlyQuota)
+                                                        ? formatCurrency(payment?.amount || apt.apartmentQuota)
                                                         : status === "late"
                                                             ? "DÍVIDA"
                                                             : "-"}

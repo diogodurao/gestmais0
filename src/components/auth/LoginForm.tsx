@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
+import { PasswordInput } from "@/components/ui/PasswordInput"
 import { FormField, FormLabel, FormControl, FormError } from "@/components/ui/Form-Field"
 import { authClient } from "@/lib/auth-client"
 
@@ -33,6 +34,11 @@ export function LoginForm() {
             })
 
             if (result.error) {
+                // 403 = email not verified (Better Auth's requireEmailVerification)
+                if (result.error.status === 403) {
+                    router.push("/verify-email")
+                    return
+                }
                 setError(result.error.message || "Credenciais inválidas")
                 return
             }
@@ -64,10 +70,9 @@ export function LoginForm() {
                 <FormLabel>Palavra-passe</FormLabel>
                 <FormControl>
                     {(props) => (
-                        <Input
+                        <PasswordInput
                             {...props}
                             name="password"
-                            type="password"
                             placeholder="••••••••"
                             autoComplete="current-password"
                             required

@@ -8,7 +8,7 @@
  */
 
 import { after } from "next/server"
-import { requireSession, requireBuildingAccess, requireProjectAccess, requireResidentSession } from "@/lib/auth-helpers"
+import { requireSession, requireBuildingAccess, requireProjectAccess, requireResidentSession, getProfessionalBuildingId } from "@/lib/auth-helpers"
 import { extraordinaryService } from "@/services/extraordinary.service"
 import {
     CreateProjectInput,
@@ -94,12 +94,17 @@ export async function getExtraordinaryProjects(
 ) {
     const session = await requireSession()
 
-    // Check if user is manager or resident of this building
+    // Check if user has access to this building
     if (session.user.role === 'manager') {
         await requireBuildingAccess(buildingId)
     } else if (session.user.role === 'resident') {
         if (session.user.buildingId !== buildingId) {
             throw new Error("Unauthorized: You are not a resident of this building")
+        }
+    } else if (session.user.role === 'professional') {
+        const profBuildingId = await getProfessionalBuildingId(session.user.id)
+        if (profBuildingId !== buildingId) {
+            throw new Error("Unauthorized")
         }
     } else {
         throw new Error("Unauthorized")
@@ -119,10 +124,7 @@ export async function getExtraordinaryProjectDetail(
 
     if (session.user.role === 'manager') {
         await requireProjectAccess(projectId)
-    } else if (session.user.role === 'resident') {
-        // We need to verify the project belongs to the resident's building
-        // We can fetch the detail and then check, or check before.
-        // Checking before is safer to avoid leaking data if unauthorized.
+    } else if (session.user.role === 'resident' || session.user.role === 'professional') {
         const { db } = await import("@/db")
         const { extraordinaryProjects } = await import("@/db/schema")
         const { eq } = await import("drizzle-orm")
@@ -134,7 +136,11 @@ export async function getExtraordinaryProjectDetail(
 
         if (!project.length) throw new Error("Project not found")
 
-        if (session.user.buildingId !== project[0].buildingId) {
+        const userBuildingId = session.user.role === 'resident'
+            ? session.user.buildingId
+            : await getProfessionalBuildingId(session.user.id)
+
+        if (userBuildingId !== project[0].buildingId) {
             throw new Error("Unauthorized: Project not in your building")
         }
     } else {

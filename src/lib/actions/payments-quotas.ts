@@ -31,7 +31,7 @@ async function getApartmentBuildingId(apartmentId: number): Promise<string | nul
 
 export type { PaymentStatus, PaymentData }
 
-export async function getPaymentMap(buildingId: string, year: number): Promise<{ gridData: PaymentData[], monthlyQuota: number }> {
+export async function getPaymentMap(buildingId: string, year: number): Promise<{ gridData: PaymentData[], monthlyQuota: number, quotaMode: string }> {
     const session = await requireSession()
 
     // Check if user is manager or resident of this building

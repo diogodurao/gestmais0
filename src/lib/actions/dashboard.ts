@@ -2,8 +2,13 @@
 
 import { getResidentApartment, getManagerBuildings, getBuilding, getBuildingApartments, getResidentBuildingDetails } from "@/lib/actions/building"
 import { isProfileComplete, isBuildingComplete, isUnitsComplete } from "@/lib/validations"
-import { isManager, isResident } from "@/lib/permissions"
-import type { SessionUser, DashboardInitialData, ManagedBuilding } from "@/lib/types"
+import { isManager, isResident, isProfessional } from "@/lib/permissions"
+import { getProfessionalBuildingId } from "@/lib/auth-helpers"
+import { professionalService } from "@/services/professional.service"
+import { db } from "@/db"
+import { building } from "@/db/schema"
+import { eq } from "drizzle-orm"
+import type { SessionUser, DashboardInitialData, ManagedBuilding, ProfessionalPermissions } from "@/lib/types"
 
 export async function getDashboardContext(session: { user: SessionUser } | null): Promise<DashboardInitialData> {
 
@@ -12,6 +17,7 @@ export async function getDashboardContext(session: { user: SessionUser } | null)
     let managerBuildings: ManagedBuilding[] = []
     let activeBuilding: ManagedBuilding | null = null // explicit null for JSON serialization
     let residentApartment: Awaited<ReturnType<typeof getResidentApartment>> | null = null
+    let professionalPermissions: ProfessionalPermissions | null = null
 
     if (session?.user) {
         const sessionUser = session.user
@@ -50,6 +56,38 @@ export async function getDashboardContext(session: { user: SessionUser } | null)
                 }
             } else {
                 setupComplete = false
+            }
+        } else if (isProfessional(sessionUser)) {
+            // Professionals: linked via buildingProfessionals
+            const buildingId = await getProfessionalBuildingId(session.user.id)
+
+            if (buildingId) {
+                const [buildingData, permissions] = await Promise.all([
+                    db.query.building.findFirst({
+                        where: eq(building.id, buildingId),
+                        columns: { id: true, name: true, code: true, subscriptionStatus: true, subscriptionPastDueAt: true }
+                    }),
+                    professionalService.getProfessionalPermissions(session.user.id, buildingId),
+                ])
+
+                if (buildingData) {
+                    activeBuilding = {
+                        building: {
+                            id: buildingData.id,
+                            name: buildingData.name,
+                            code: buildingData.code,
+                            subscriptionStatus: buildingData.subscriptionStatus,
+                            subscriptionPastDueAt: buildingData.subscriptionPastDueAt
+                        },
+                        isOwner: false
+                    }
+                }
+
+                if (permissions) {
+                    professionalPermissions = permissions
+                }
+
+                setupComplete = true // No onboarding needed
             }
         } else if (isManager(sessionUser)) {
             // Fetch their buildings for the selector
@@ -102,6 +140,7 @@ export async function getDashboardContext(session: { user: SessionUser } | null)
         managerBuildings,
         activeBuilding: activeBuilding || null, // Ensure null if undefined
         residentApartment,
-        setupComplete
+        setupComplete,
+        professionalPermissions,
     }
 }

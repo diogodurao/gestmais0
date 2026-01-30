@@ -4,14 +4,22 @@ import { redirect } from "next/navigation"
 import { ROUTES } from "@/lib/routes"
 import { DocumentsList } from "@/components/dashboard/documents/DocumentsList"
 import { getCachedDocuments } from "@/lib/cache/dashboard.cache"
+import { getProfessionalBuildingId } from "@/lib/auth-helpers"
 
 export default async function DocumentsPage() {
     const session = await requireSession()
     const isManager = session.user.role === 'manager'
+    const isProfessional = session.user.role === 'professional'
 
-    const buildingId = isManager
-        ? session.user.activeBuildingId
-        : session.user.buildingId
+    let buildingId: string | null = null
+
+    if (isProfessional) {
+        buildingId = await getProfessionalBuildingId(session.user.id)
+    } else if (isManager) {
+        buildingId = session.user.activeBuildingId ?? null
+    } else {
+        buildingId = session.user.buildingId ?? null
+    }
 
     if (!buildingId) {
         redirect(ROUTES.DASHBOARD.HOME)
@@ -20,7 +28,10 @@ export default async function DocumentsPage() {
     return (
         <div className="p-4 md:p-6">
             <Suspense fallback={<DocumentsListSkeleton />}>
-                <DocumentsContent buildingId={buildingId} isManager={isManager} />
+                <DocumentsContent
+                    buildingId={buildingId}
+                    isManager={isManager && !isProfessional}
+                />
             </Suspense>
         </div>
     )

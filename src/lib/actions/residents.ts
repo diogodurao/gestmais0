@@ -4,13 +4,14 @@ import { db } from "@/db"
 import { apartments, user } from "@/db/schema"
 import { eq, and, isNull } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { requireManagerSession, requireBuildingAccess } from "@/lib/auth-helpers"
+import { requireManagerSession, requireBuildingAccess, requireBuildingOwnerAccess } from "@/lib/auth-helpers"
 import { residentService } from "@/services/resident.service"
 import { ActionResult } from "@/lib/types"
 import { ROUTES } from "@/lib/routes"
 
 export async function removeResidentFromBuilding(residentId: string, buildingId: string): Promise<ActionResult<boolean>> {
-    await requireBuildingAccess(buildingId)
+    // Only building owners can remove residents
+    await requireBuildingOwnerAccess(buildingId)
     try {
         await db.update(apartments)
             .set({ residentId: null })
@@ -28,13 +29,12 @@ export async function removeResidentFromBuilding(residentId: string, buildingId:
 }
 
 export async function unclaimApartmentAction(apartmentId: number): Promise<ActionResult<boolean>> {
-    const session = await requireManagerSession()
-
     try {
         const apt = await db.select().from(apartments).where(eq(apartments.id, apartmentId)).limit(1)
         if (!apt.length) return { success: false, error: "Apartment not found" }
 
-        await requireBuildingAccess(apt[0].buildingId)
+        // Only building owners can unclaim apartments
+        await requireBuildingOwnerAccess(apt[0].buildingId)
 
         await residentService.unclaimApartment(apartmentId)
 

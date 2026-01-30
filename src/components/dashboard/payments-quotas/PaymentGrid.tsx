@@ -31,6 +31,7 @@ import { PAYMENT_TOOL_TO_STATUS } from "@/lib/constants/ui"
 interface PaymentGridProps {
     data: PaymentData[]
     monthlyQuota: number
+    quotaMode: string
     buildingId: string
     year: number
     readOnly?: boolean
@@ -39,6 +40,7 @@ interface PaymentGridProps {
 export function PaymentGrid({
     data,
     monthlyQuota,
+    quotaMode,
     buildingId: _buildingId,
     year,
     readOnly = false,
@@ -47,29 +49,31 @@ export function PaymentGrid({
     const { addToast } = useToast()
     const [isPending, startTransition] = useTransition()
 
-    // Optimistic State
+    // Optimistic State - uses apartment-specific quota (apartmentQuota) for calculations
     const [optimisticData, addOptimistic] = useOptimistic(
         data,
         (state: PaymentData[], action: { aptId: number; monthNum: number; status: string }) => {
             return state.map((apt) => {
                 if (apt.apartmentId === action.aptId) {
                     const dbStatus = action.status
+                    // Use apartment-specific quota for amount calculation
+                    const aptQuota = apt.apartmentQuota
                     const newPayments = {
                         ...apt.payments,
                         [action.monthNum]: {
                             status: dbStatus,
-                            amount: dbStatus === 'paid' ? monthlyQuota : 0
+                            amount: dbStatus === 'paid' ? aptQuota : 0
                         }
                     }
 
                     const totalPaid = Object.values(newPayments).reduce((sum, p) =>
-                        sum + (p.status === 'paid' ? (p.amount || monthlyQuota) : 0), 0
+                        sum + (p.status === 'paid' ? (p.amount || aptQuota) : 0), 0
                     )
 
                     const currentMonth = new Date().getMonth() + 1
                     const isCurrentYear = new Date().getFullYear() === year
                     const monthsToCount = isCurrentYear ? currentMonth : 12
-                    const expectedTotal = monthsToCount * monthlyQuota
+                    const expectedTotal = monthsToCount * aptQuota
                     const balance = Math.max(0, expectedTotal - totalPaid)
 
                     return {
@@ -326,7 +330,7 @@ export function PaymentGrid({
             {/* Desktop Table */}
             <PaymentDesktopTable
                 data={filteredData}
-                monthlyQuota={monthlyQuota}
+                quotaMode={quotaMode}
                 readOnly={readOnly}
                 activeTool={activeTool}
                 highlightedId={highlightedId}
@@ -338,7 +342,7 @@ export function PaymentGrid({
             <div className="sm:hidden">
                 <PaymentMobileCards
                     data={filteredData}
-                    monthlyQuota={monthlyQuota}
+                    quotaMode={quotaMode}
                     activeTool={activeTool}
                     onCellClick={handleCellClick}
                 />

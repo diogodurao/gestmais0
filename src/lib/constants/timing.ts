@@ -22,6 +22,19 @@ export const NOTIFICATION_READ_RETENTION_DAYS = 7
 export const NOTIFICATION_UNREAD_RETENTION_DAYS = 30
 
 // ==========================================
+// COLLABORATOR INVITATIONS
+// ==========================================
+
+/** Days until a collaborator invitation expires */
+export const COLLABORATOR_INVITATION_EXPIRY_DAYS = 7
+
+/** Days until a professional invitation expires */
+export const PROFESSIONAL_INVITATION_EXPIRY_DAYS = 7
+
+/** Days until a resident invitation expires */
+export const RESIDENT_INVITATION_EXPIRY_DAYS = 7
+
+// ==========================================
 // CALENDAR / RECURRENCE
 // ==========================================
 

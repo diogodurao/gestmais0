@@ -45,6 +45,9 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         building.monthlyQuota ? (building.monthlyQuota / 100).toFixed(2) : ""
     )
 
+    // For permillage mode: whether user inputs annual or monthly value
+    const [inputPeriod, setInputPeriod] = useState<"monthly" | "annual">("monthly")
+
     const buildingComplete = isBuildingComplete({
         ...building,
         ...formData,
@@ -62,6 +65,16 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
         const parsedTotalUnits = parseInt(formData.totalApartments)
         const parsedDueDay = parseInt(formData.paymentDueDay)
 
+        // Calculate monthly quota (convert from annual if needed for permillage mode)
+        let monthlyQuotaInCents = 0
+        if (!isNaN(parsedQuota)) {
+            // If permillage mode and annual input, divide by 12
+            const monthlyValue = formData.quotaMode === "permillage" && inputPeriod === "annual"
+                ? parsedQuota / 12
+                : parsedQuota
+            monthlyQuotaInCents = Math.round(monthlyValue * 100)
+        }
+
         return await updateBuilding(building.id, {
             ...formData,
             name: `${formData.street} ${formData.number}`,
@@ -69,7 +82,7 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
             city: formData.city || null,
             street: formData.street || null,
             number: formData.number || null,
-            monthlyQuota: isNaN(parsedQuota) ? 0 : Math.round(parsedQuota * 100),
+            monthlyQuota: monthlyQuotaInCents,
             paymentDueDay: isNaN(parsedDueDay) ? null : parsedDueDay,
             totalApartments: isNaN(parsedTotalUnits) ? 0 : parsedTotalUnits,
         })
@@ -201,7 +214,33 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
 
                         <div className="grid grid-cols-2 gap-1.5">
                             <FormField>
-                                <FormLabel>Quota Mensal (€)</FormLabel>
+                                <FormLabel>
+                                    {formData.quotaMode === "permillage" ? "Receita Total Esperada (€)" : "Quota Mensal (€)"}
+                                </FormLabel>
+                                {formData.quotaMode === "permillage" && isEditing && (
+                                    <div className="flex gap-2 mb-1">
+                                        <label className="flex items-center gap-1 cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="inputPeriodSettings"
+                                                checked={inputPeriod === "monthly"}
+                                                onChange={() => setInputPeriod("monthly")}
+                                                className="w-3 h-3 accent-primary"
+                                            />
+                                            <span className="text-label">Mensal</span>
+                                        </label>
+                                        <label className="flex items-center gap-1 cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="inputPeriodSettings"
+                                                checked={inputPeriod === "annual"}
+                                                onChange={() => setInputPeriod("annual")}
+                                                className="w-3 h-3 accent-primary"
+                                            />
+                                            <span className="text-label">Anual</span>
+                                        </label>
+                                    </div>
+                                )}
                                 <Input
                                     type="number"
                                     value={monthlyQuotaStr}
@@ -210,6 +249,11 @@ export function BuildingSettingsForm({ building }: { building: Building }) {
                                     placeholder="0.00"
                                     className="font-mono"
                                 />
+                                {formData.quotaMode === "permillage" && (
+                                    <p className="text-label text-gray-500 mt-0.5">
+                                        Valor total {inputPeriod === "annual" ? "anual" : "mensal"} a dividir pelas frações
+                                    </p>
+                                )}
                             </FormField>
                             <FormField>
                                 <FormLabel>Total de Frações</FormLabel>

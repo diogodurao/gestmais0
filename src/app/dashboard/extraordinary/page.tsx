@@ -12,6 +12,7 @@ import { ExtraProjectsList } from "@/components/dashboard/extraordinary-projects
 import { requireSession } from "@/lib/auth-helpers"
 import { redirect } from "next/navigation"
 import { getResidentApartment, getBuildingApartments } from "@/lib/actions/building"
+import { getProfessionalBuildingId } from "@/lib/auth-helpers"
 import { ROUTES } from "@/lib/routes"
 
 export const metadata = {
@@ -22,16 +23,25 @@ export const metadata = {
 export default async function ExtraordinaryProjectsPage() {
     const session = await requireSession()
     const isManager = session.user.role === 'manager'
+    const isProfessional = session.user.role === 'professional'
 
-    // Check for building association
-    const buildingId = isManager ? session.user.activeBuildingId : session.user.buildingId
+    // Determine buildingId based on role
+    let buildingId: string | null = null
+
+    if (isProfessional) {
+        buildingId = await getProfessionalBuildingId(session.user.id)
+    } else if (isManager) {
+        buildingId = session.user.activeBuildingId ?? null
+    } else {
+        buildingId = session.user.buildingId ?? null
+    }
 
     if (!buildingId) {
         redirect(ROUTES.DASHBOARD.HOME)
     }
 
     // For residents, check if they have an apartment
-    if (!isManager) {
+    if (!isManager && !isProfessional) {
         const apartment = await getResidentApartment()
         if (!apartment) {
             redirect(ROUTES.DASHBOARD.HOME)
